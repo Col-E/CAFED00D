@@ -157,16 +157,12 @@ public class ClassFileReader {
 	 */
 	private Attribute readAttribute(AttributeContext context) throws IOException {
 		int nameIndex = is.readUnsignedShort();
-		// TODO: Be aware of intentionally illegal length attributes
-		//       And attributes that do not belong in the context
-		// Example: If the length of "StackMapTable" is <= 2 then this is wrong
-		//  - Because the next thing should be "U2 number_of_entries" plus any entries.
 		int length = is.readInt();
 		String name = ((CpUtf8) pool.get(nameIndex)).getText();
 		switch (name) {
 			case Attribute.CODE:
-				// Check for illegal length value applied to non-methods.
-				if (context != AttributeContext.METHOD && length <= 12) {
+				// Check for illegal usage of code on non-method items
+				if (context != AttributeContext.METHOD) {
 					is.skipBytes(length);
 					return null;
 				}
