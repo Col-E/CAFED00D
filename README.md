@@ -2,6 +2,11 @@
 
 Another class library. 
 
+## Features
+
+* Supports Oak classes
+* Drop malformed attributes from classes added by obfuscators
+
 ## Usage
 
 ### Add dependency
