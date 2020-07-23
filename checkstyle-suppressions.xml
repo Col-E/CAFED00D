@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+		"-//Checkstyle//DTD SuppressionFilter Configuration 1.0//EN"
+		"https://checkstyle.org/dtds/suppressions_1_0.dtd">
+<suppressions>
+	<!-- Too many closely related types, referenced/instantiated.
+	 	 Unavoidable due to architecture.
+	 	 Refactoring would make the design less legible / maintainable.
+	 -->
+	<suppress checks="ClassDataAbstractionCoupling"
+			  files="ClassFileReader.java"
+			  lines="0-9999"/>
+	<suppress checks="CyclomaticComplexity"
+			  files="ClassFileReader.java"
+			  lines="0-9999"/>
+	<suppress checks="ClassFanOutComplexity"
+			  files="ClassFileReader.java"
+			  lines="0-9999"/>
+			  
+	<suppress checks="ClassDataAbstractionCoupling"
+			  files="ClassFileWriter.java"
+			  lines="0-9999"/>
+	<suppress checks="CyclomaticComplexity"
+			  files="ClassFileWriter.java"
+			  lines="0-9999"/>
+	<suppress checks="ClassFanOutComplexity"
+			  files="ClassFileWriter.java"
+			  lines="0-9999"/>
+</suppressions>
