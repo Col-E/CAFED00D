@@ -2,7 +2,9 @@ package me.coley.cafedude;
 
 import me.coley.cafedude.constant.ConstPoolEntry;
 
-import java.util.ListIterator;
+import java.util.Iterator;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Constant pool wrapper.
@@ -82,10 +84,69 @@ public class ConstPool implements Iterable<ConstPoolEntry> {
 		return last.getCpIndex();
 	}
 
+	/**
+	 * @param entry
+	 * 		Entry to fetch index of. Must not be {@code null}.
+	 *
+	 * @return Index in pool. {@code -1} if not in pool.
+	 */
+	public int indexOf(ConstPoolEntry entry) {
+		CpIter it = (CpIter) iterator();
+		ConstPoolEntry itEntry = null;
+		while ((itEntry = it.next()) != null) {
+			if (entry.equals(itEntry))
+				return it.currentIndex();
+		}
+		return -1;
+	}
+
+
+	/**
+	 * Removes all entries in the pool that matches the given filter.
+	 *
+	 * @param filter
+	 * 		Filter for constant matching.
+	 */
+	public void removeIf(Predicate<ConstPoolEntry> filter) {
+		CpIter it = (CpIter) iterator();
+		ConstPoolEntry entry = null;
+		while ((entry = it.next()) != null) {
+			if (filter.test(entry))
+				it.remove();
+		}
+	}
+
+	/**
+	 * Replace all entries in the pool that matches the given filter.
+	 *
+	 * @param filter
+	 * 		Filter for constant matching.
+	 * @param replacer
+	 * 		Function of old constant to replacement constant.
+	 */
+	public void replaceIf(Predicate<ConstPoolEntry> filter, Function<ConstPoolEntry, ConstPoolEntry> replacer) {
+		CpIter it = (CpIter) iterator();
+		ConstPoolEntry entry = null;
+		while ((entry = it.next()) != null) {
+			if (filter.test(entry))
+				it.replace(replacer.apply(entry));
+		}
+	}
+
 	@Override
-	public ListIterator<ConstPoolEntry> iterator() {
+	public Iterator<ConstPoolEntry> iterator() {
 		assertNotEmpty();
-		return new CpIter(first);
+		return new CpIter(first, true);
+	}
+
+	/**
+	 * Iterates over the constant pool from the last to the first.
+	 *
+	 * @return Backwards iterator.
+	 */
+	public Iterator<ConstPoolEntry> backwardsIterator() {
+		assertNotEmpty();
+		return new CpIter(last, false);
 	}
 
 	/**
@@ -124,8 +185,10 @@ public class ConstPool implements Iterable<ConstPoolEntry> {
 
 	/**
 	 * Linked list entry wrapper.
+	 *
+	 * @author Matt Coley
 	 */
-	protected static class CpListNode {
+	public static class CpListNode {
 		private ConstPoolEntry entry;
 		private CpListNode next;
 		private CpListNode prev;
@@ -218,12 +281,37 @@ public class ConstPool implements Iterable<ConstPoolEntry> {
 
 	/**
 	 * Linked list iterator.
+	 *
+	 * @author Matt Coley
 	 */
-	private static class CpIter implements ListIterator<ConstPoolEntry> {
+	public static class CpIter implements Iterator<ConstPoolEntry> {
+		private final boolean forward;
 		private CpListNode current;
 
-		private CpIter(CpListNode initial) {
+		private CpIter(CpListNode initial, boolean forward) {
 			current = initial;
+			this.forward = forward;
+		}
+
+		/**
+		 * @return Current index.
+		 */
+		public int currentIndex() {
+			return current.getCpIndex();
+		}
+
+		/**
+		 * Replace the current constant pool entry.
+		 *
+		 * @param entry
+		 * 		New constant pool entry.
+		 */
+		public void replace(ConstPoolEntry entry) {
+			if (forward) {
+				current.prev.set(entry);
+			} else {
+				current.next.set(entry);
+			}
 		}
 
 		@Override
@@ -232,46 +320,21 @@ public class ConstPool implements Iterable<ConstPoolEntry> {
 		}
 
 		@Override
-		public boolean hasPrevious() {
-			return current.prev != null;
-		}
-
-		@Override
-		public int nextIndex() {
-			return current.getCpIndex() + current.getCpEntrySize();
-		}
-
-		@Override
-		public int previousIndex() {
-			return current.getCpIndex() - current.prev.getCpEntrySize();
-		}
-
-		@Override
 		public ConstPoolEntry next() {
 			ConstPoolEntry value = current.entry;
-			current = current.next;
+			current = forward ? current.next : current.prev;
 			return value;
-		}
 
-		@Override
-		public ConstPoolEntry previous() {
-			current = current.prev;
-			return current.entry;
 		}
 
 		@Override
 		public void remove() {
-			current.delete();
-		}
-
-		@Override
-		public void set(ConstPoolEntry entry) {
-			current.set(entry);
-		}
-
-		@Override
-		public void add(ConstPoolEntry entry) {
-			current.insertAfter(entry);
+			// This is valid because to get the "current" value the user will have to call "next"
+			if (forward) {
+				current.prev.delete();
+			} else {
+				current.next.delete();
+			}
 		}
 	}
 }
