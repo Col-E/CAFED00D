@@ -93,7 +93,7 @@ public class ConstPool implements Iterable<ConstPoolEntry> {
 	public int indexOf(ConstPoolEntry entry) {
 		CpIter it = (CpIter) iterator();
 		ConstPoolEntry itEntry = null;
-		while ((itEntry = it.next()) != null) {
+		while (it.hasNext() && (itEntry = it.next()) != null) {
 			if (entry.equals(itEntry))
 				return it.currentIndex();
 		}
@@ -110,7 +110,7 @@ public class ConstPool implements Iterable<ConstPoolEntry> {
 	public void removeIf(Predicate<ConstPoolEntry> filter) {
 		CpIter it = (CpIter) iterator();
 		ConstPoolEntry entry = null;
-		while ((entry = it.next()) != null) {
+		while (it.hasNext() && (entry = it.next()) != null) {
 			if (filter.test(entry))
 				it.remove();
 		}
@@ -127,7 +127,7 @@ public class ConstPool implements Iterable<ConstPoolEntry> {
 	public void replaceIf(Predicate<ConstPoolEntry> filter, Function<ConstPoolEntry, ConstPoolEntry> replacer) {
 		CpIter it = (CpIter) iterator();
 		ConstPoolEntry entry = null;
-		while ((entry = it.next()) != null) {
+		while (it.hasNext() && (entry = it.next()) != null) {
 			if (filter.test(entry))
 				it.replace(replacer.apply(entry));
 		}
