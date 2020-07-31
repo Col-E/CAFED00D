@@ -1,6 +1,6 @@
 # CAFEDOOD [![Build Status](https://cloud.drone.io/api/badges/Col-E/CAFED00D/status.svg)](https://cloud.drone.io/Col-E/CAFED00D) [![](https://jitpack.io/v/Col-E/CAFED00D.svg)](https://jitpack.io/#Col-E/CAFED00D)
 
-Another class library. 
+Another class library.
 
 ## Features
 
@@ -28,7 +28,7 @@ allprojects {
     }
 }
 ```
-Add SimAnalyzer dependency _(where `VERSION` is the latest version)_
+Add CafeDude dependency _(where `VERSION` is the latest version)_
 ```xml
 <dependency>
     <groupId>com.github.Col-E</groupId>
@@ -37,7 +37,7 @@ Add SimAnalyzer dependency _(where `VERSION` is the latest version)_
 </dependency>
 ```
 ```groovy
-implementation 'com.github.Col-E:SimAnalyzer:VERSION'
+implementation 'com.github.Col-E:cafedude:VERSION'
 ```
 
 ### Reading and writing classes
