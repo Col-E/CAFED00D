@@ -36,7 +36,7 @@ public class HotspotPatchingTest {
 				assertDoesNotThrow(() -> {
 					ClassReader cr = new ClassReader(modified);
 					cr.accept(new ClassNode(Opcodes.ASM8), 0);
-				});
+				}, "Failure to patch class: " + sub.getName());
 			}
 		} catch (IOException e) {
 			fail("Failed to read class, IO error", e);

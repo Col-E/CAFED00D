@@ -1,5 +1,7 @@
 package me.coley.cafedude.constant;
 
+import me.coley.cafedude.Constants;
+
 /**
  * Base reference pool entry. Points to a reference's {@link CpClass defining class} in pool
  * and the reference's {@link CpNameType name and descriptor} in pool.
@@ -13,7 +15,8 @@ public abstract class ConstRef extends ConstPoolEntry {
 	/**
 	 * @param type
 	 * 		Reference type.
-	 * 		Must be {@link #FIELD_REF}, {@link #METHOD_REF}, or {@link #INTERFACE_METHOD_REF}.
+	 * 		Must be {@link Constants.ConstantPool#FIELD_REF}, {@link Constants.ConstantPool#METHOD_REF},
+	 * 		or {@link Constants.ConstantPool#INTERFACE_METHOD_REF}.
 	 * @param classIndex
 	 * 		Index of reference {@link CpClass defining class} in pool.
 	 * @param nameTypeIndex

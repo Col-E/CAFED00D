@@ -2,6 +2,8 @@ package me.coley.cafedude;
 
 import me.coley.cafedude.attribute.Attribute;
 import me.coley.cafedude.constant.ConstPoolEntry;
+import me.coley.cafedude.constant.CpClass;
+import me.coley.cafedude.constant.CpUtf8;
 
 import java.util.List;
 
@@ -58,6 +60,32 @@ public class ClassFile {
 		this.fields = fields;
 		this.methods = methods;
 		this.attributes = attributes;
+	}
+
+	/**
+	 * @return Class name.
+	 */
+	public String getName() {
+		return getClassName(classIndex);
+	}
+
+	/**
+	 * @return Parent class name.
+	 */
+	public String getSuperName() {
+		return getClassName(superIndex);
+	}
+
+	/**
+	 * @param classIndex
+	 * 		CP index pointing to a class.
+	 *
+	 * @return Name of class.
+	 */
+	private String getClassName(int classIndex) {
+		CpClass cpClass = (CpClass) getCp(classIndex);
+		CpUtf8 cpClassName = (CpUtf8) getCp(cpClass.getIndex());
+		return cpClassName.getText();
 	}
 
 	/**

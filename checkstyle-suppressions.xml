@@ -26,4 +26,21 @@
 	<suppress checks="ClassFanOutComplexity"
 			  files="ClassFileWriter.java"
 			  lines="0-9999"/>
+
+	<suppress checks="ClassDataAbstractionCoupling"
+			  files="AnnotationReader.java"
+			  lines="0-9999"/>
+	<suppress checks="ClassFanOutComplexity"
+			  files="AnnotationReader.java"
+			  lines="0-9999"/>
+	<suppress checks="ClassFanOutComplexity"
+			  files="AnnotationWriter.java"
+			  lines="0-9999"/>
+	<suppress checks="CyclomaticComplexity"
+			  files="TargetInfoType.java"
+			  lines="0-9999"/>
+
+	<suppress checks="CyclomaticComplexity"
+			  files="AttributeContext.java"
+			  lines="0-9999"/>
 </suppressions>
