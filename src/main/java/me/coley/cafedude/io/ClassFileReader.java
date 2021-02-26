@@ -77,6 +77,7 @@ import me.coley.cafedude.attribute.ConstantValueAttribute;
 import me.coley.cafedude.attribute.DebugExtensionAttribute;
 import me.coley.cafedude.attribute.DefaultAttribute;
 import me.coley.cafedude.attribute.DeprecatedAttribute;
+import me.coley.cafedude.attribute.EnclosingMethodAttribute;
 import me.coley.cafedude.attribute.ExceptionsAttribute;
 import me.coley.cafedude.attribute.InnerClassesAttribute;
 import me.coley.cafedude.attribute.InnerClassesAttribute.InnerClass;
@@ -301,6 +302,8 @@ public class ClassFileReader {
 				return new ConstantValueAttribute(nameIndex, is.readUnsignedShort());
 			case DEPRECATED:
 				return new DeprecatedAttribute(nameIndex);
+			case ENCLOSING_METHOD:
+				return new EnclosingMethodAttribute(nameIndex, is.readUnsignedShort(), is.readUnsignedShort());
 			case EXCEPTIONS:
 				int numberOfExceptionIndices = is.readUnsignedShort();
 				int[] exceptionIndexTable = new int[numberOfExceptionIndices];
@@ -398,7 +401,6 @@ public class ClassFileReader {
 			case BOOTSTRAP_METHODS:
 			case CHARACTER_RANGE_TABLE:
 			case COMPILATION_ID:
-			case ENCLOSING_METHOD:
 			case LINE_NUMBER_TABLE:
 			case LOCAL_VARIABLE_TABLE:
 			case LOCAL_VARIABLE_TYPE_TABLE:

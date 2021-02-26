@@ -69,13 +69,10 @@ public class ClassFileWriter {
 	}
 
 	/**
-	 * @param entry
-	 * 		Constant pool entry to write.
+	 * @param entry Constant pool entry to write.
 	 *
-	 * @throws IOException
-	 * 		When the stream cannot be written to.
-	 * @throws InvalidClassException
-	 * 		When the class has unexpected data.
+	 * @throws IOException           When the stream cannot be written to.
+	 * @throws InvalidClassException When the class has unexpected data.
 	 */
 	private void writeCpEntry(ConstPoolEntry entry) throws IOException, InvalidClassException {
 		int tag = entry.getTag();
@@ -139,15 +136,12 @@ public class ClassFileWriter {
 	}
 
 	/**
-	 * @param attribute
-	 * 		Attribute to write.
-	 * @param clazz
-	 * 		Class to pull constant pool data from.
+	 * @param attribute Attribute to write.
+	 * @param clazz     Class to pull constant pool data from.
 	 *
-	 * @throws IOException
-	 * 		When the stream cannot be written to.
-	 * @throws InvalidClassException
-	 * 		When the attribute name points to a non-utf8 constant.
+	 * @throws IOException           When the stream cannot be written to.
+	 * @throws InvalidClassException When the attribute name points to a non-utf8
+	 *                               constant.
 	 */
 	private void writeAttribute(Attribute attribute, ClassFile clazz) throws IOException, InvalidClassException {
 		if (attribute instanceof DefaultAttribute) {
@@ -186,8 +180,8 @@ public class ClassFileWriter {
 					break;
 				case Constants.Attributes.CONSTANT_VALUE:
 					out.writeShort(attribute.getNameIndex());
-					out.writeInt(2);//Only a unsigned short as body
-					out.writeShort(((ConstantValueAttribute)attribute).getConstantValueIndex());
+					out.writeInt(2);// Only a unsigned short as body
+					out.writeShort(((ConstantValueAttribute) attribute).getConstantValueIndex());
 					break;
 				case Constants.Attributes.COMPILATION_ID:
 					break;
@@ -197,13 +191,18 @@ public class ClassFileWriter {
 					out.writeInt(0);
 					break;
 				case Constants.Attributes.ENCLOSING_METHOD:
+					EnclosingMethodAttribute enclosingMethodAttribute = (EnclosingMethodAttribute) attribute;
+					out.writeShort(enclosingMethodAttribute.getNameIndex());
+					out.writeInt(4);
+					out.writeShort(enclosingMethodAttribute.getClassIndex());
+					out.writeShort(enclosingMethodAttribute.getMethodIndex());
 					break;
 				case Constants.Attributes.EXCEPTIONS:
 					ExceptionsAttribute exceptionsAttribute = (ExceptionsAttribute) attribute;
 					out.writeShort(exceptionsAttribute.getNameIndex());
 					out.writeInt(exceptionsAttribute.computeInternalLength());
 					out.writeShort(exceptionsAttribute.getExceptionIndexTable().length);
-					for(int index : exceptionsAttribute.getExceptionIndexTable()) {
+					for (int index : exceptionsAttribute.getExceptionIndexTable()) {
 						out.writeShort(index);
 					}
 					break;
@@ -212,7 +211,7 @@ public class ClassFileWriter {
 					out.writeShort(innerClassesAttribute.getNameIndex());
 					out.writeInt(innerClassesAttribute.computeInternalLength());
 					out.writeShort(innerClassesAttribute.getInnerClasses().length);
-					for(InnerClass ic : innerClassesAttribute.getInnerClasses()) {
+					for (InnerClass ic : innerClassesAttribute.getInnerClasses()) {
 						out.writeShort(ic.getInnerClassInfoIndex());
 						out.writeShort(ic.getOuterClassInfoIndex());
 						out.writeShort(ic.getInnerNameIndex());
@@ -247,22 +246,18 @@ public class ClassFileWriter {
 					break;
 				case Constants.Attributes.RUNTIME_VISIBLE_ANNOTATIONS:
 				case Constants.Attributes.RUNTIME_INVISIBLE_ANNOTATIONS:
-					new AnnotationWriter(out)
-							.writeAnnotations((AnnotationsAttribute) attribute);
+					new AnnotationWriter(out).writeAnnotations((AnnotationsAttribute) attribute);
 					break;
 				case Constants.Attributes.RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
 				case Constants.Attributes.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
-					new AnnotationWriter(out)
-							.writeParameterAnnotations((ParameterAnnotationsAttribute) attribute);
+					new AnnotationWriter(out).writeParameterAnnotations((ParameterAnnotationsAttribute) attribute);
 					break;
 				case Constants.Attributes.RUNTIME_VISIBLE_TYPE_ANNOTATIONS:
 				case Constants.Attributes.RUNTIME_INVISIBLE_TYPE_ANNOTATIONS:
-					new AnnotationWriter(out)
-							.writeTypeAnnotations((AnnotationsAttribute) attribute);
+					new AnnotationWriter(out).writeTypeAnnotations((AnnotationsAttribute) attribute);
 					break;
 				case Constants.Attributes.ANNOTATION_DEFAULT:
-					new AnnotationWriter(out)
-							.writeAnnotationDefault((AnnotationDefault) attribute);
+					new AnnotationWriter(out).writeAnnotationDefault((AnnotationDefault) attribute);
 					break;
 				case Constants.Attributes.PERMITTED_SUBCLASSES:
 					break;
@@ -289,15 +284,11 @@ public class ClassFileWriter {
 	}
 
 	/**
-	 * @param field
-	 * 		Field to write.
-	 * @param clazz
-	 * 		Declaring class.
+	 * @param field Field to write.
+	 * @param clazz Declaring class.
 	 *
-	 * @throws IOException
-	 * 		When the stream cannot be written to.
-	 * @throws InvalidClassException
-	 * 		When an attached attribute is invalid.
+	 * @throws IOException           When the stream cannot be written to.
+	 * @throws InvalidClassException When an attached attribute is invalid.
 	 */
 	private void writeField(Field field, ClassFile clazz) throws IOException, InvalidClassException {
 		out.writeShort(field.getAccess());
@@ -309,15 +300,11 @@ public class ClassFileWriter {
 	}
 
 	/**
-	 * @param method
-	 * 		Method to write.
-	 * @param clazz
-	 * 		Declaring class.
+	 * @param method Method to write.
+	 * @param clazz  Declaring class.
 	 *
-	 * @throws IOException
-	 * 		When the stream cannot be written to.
-	 * @throws InvalidClassException
-	 * 		When an attached attribute is invalid.
+	 * @throws IOException           When the stream cannot be written to.
+	 * @throws InvalidClassException When an attached attribute is invalid.
 	 */
 	private void writeMethod(Method method, ClassFile clazz) throws IOException, InvalidClassException {
 		out.writeShort(method.getAccess());
