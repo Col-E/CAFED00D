@@ -185,6 +185,9 @@ public class ClassFileWriter {
 						writeAttribute(subAttribute, clazz);
 					break;
 				case Constants.Attributes.CONSTANT_VALUE:
+					out.writeShort(attribute.getNameIndex());
+					out.writeInt(2);//Only a unsigned short as body
+					out.writeShort(((ConstantValueAttribute)attribute).getConstantValueIndex());
 					break;
 				case Constants.Attributes.COMPILATION_ID:
 					break;

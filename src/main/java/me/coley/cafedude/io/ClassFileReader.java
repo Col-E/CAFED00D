@@ -73,6 +73,7 @@ import me.coley.cafedude.InvalidClassException;
 import me.coley.cafedude.Method;
 import me.coley.cafedude.attribute.Attribute;
 import me.coley.cafedude.attribute.CodeAttribute;
+import me.coley.cafedude.attribute.ConstantValueAttribute;
 import me.coley.cafedude.attribute.DebugExtensionAttribute;
 import me.coley.cafedude.attribute.DefaultAttribute;
 import me.coley.cafedude.attribute.DeprecatedAttribute;
@@ -296,6 +297,8 @@ public class ClassFileReader {
 						attributes.add(attr);
 				}
 				return new CodeAttribute(nameIndex, maxStack, maxLocals, code, exceptions, attributes);
+			case CONSTANT_VALUE:
+				return new ConstantValueAttribute(nameIndex, is.readUnsignedShort());
 			case DEPRECATED:
 				return new DeprecatedAttribute(nameIndex);
 			case EXCEPTIONS:
@@ -395,7 +398,6 @@ public class ClassFileReader {
 			case BOOTSTRAP_METHODS:
 			case CHARACTER_RANGE_TABLE:
 			case COMPILATION_ID:
-			case CONSTANT_VALUE:
 			case ENCLOSING_METHOD:
 			case LINE_NUMBER_TABLE:
 			case LOCAL_VARIABLE_TABLE:

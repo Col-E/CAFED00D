@@ -20,7 +20,7 @@ public class CodeAttribute extends Attribute {
 	 * @param maxStack
 	 * 		Maximum number of values on the stack in the method.
 	 * @param maxLocals
-	 * 		Maximum number of local variables usaed in the method.
+	 * 		Maximum number of local variables used in the method.
 	 * @param code
 	 * 		Instruction code data.
 	 * @param exceptionTable
@@ -70,7 +70,7 @@ public class CodeAttribute extends Attribute {
 	}
 
 	/**
-	 * @return Maximum number of local variables usaed in the method.
+	 * @return Maximum number of local variables used in the method.
 	 */
 	public int getMaxLocals() {
 		return maxLocals;
@@ -78,7 +78,7 @@ public class CodeAttribute extends Attribute {
 
 	/**
 	 * @param maxLocals
-	 * 		New maximum number of local variables usaed in the method.
+	 * 		New maximum number of local variables used in the method.
 	 */
 	public void setMaxLocals(int maxLocals) {
 		this.maxLocals = maxLocals;
