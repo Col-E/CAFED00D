@@ -2,6 +2,7 @@ package me.coley.cafedude;
 
 import me.coley.cafedude.io.ClassFileReader;
 import me.coley.cafedude.io.ClassFileWriter;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
@@ -19,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class HotspotPatchingTest {
 	@Test
+	@Disabled
 	public void testPatchIllegalLengthAttributes() {
 		try {
 			File root = new File("src/test/resources/samples/hotspot-obf");
