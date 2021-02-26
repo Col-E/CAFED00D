@@ -196,6 +196,13 @@ public class ClassFileWriter {
 				case Constants.Attributes.ENCLOSING_METHOD:
 					break;
 				case Constants.Attributes.EXCEPTIONS:
+					ExceptionsAttribute exceptionsAttibute = (ExceptionsAttribute) attribute;
+					out.writeShort(exceptionsAttibute.getNameIndex());
+					out.writeInt(exceptionsAttibute.computeInternalLength());
+					out.writeShort(exceptionsAttibute.getExceptionIndexTable().length);
+					for(int index : exceptionsAttibute.getExceptionIndexTable()) {
+						out.writeShort(index);
+					}
 					break;
 				case Constants.Attributes.INNER_CLASSES:
 					break;

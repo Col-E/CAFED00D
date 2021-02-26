@@ -6,7 +6,7 @@ package me.coley.cafedude.attribute;
  * @author JCWasmx86
  *
  */
-public class InnerClasses extends Attribute{
+public class InnerClassesAttribute extends Attribute{
 	private InnerClass[] innerClasses;
 
 
@@ -16,7 +16,7 @@ public class InnerClasses extends Attribute{
 	 * @param classes
 	 * 		All inner classes.
 	 */
-	public InnerClasses(int nameIndex,InnerClass[] classes) {
+	public InnerClassesAttribute(int nameIndex,InnerClass[] classes) {
 		super(nameIndex);
 		this.innerClasses = classes;
 	}

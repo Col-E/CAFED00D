@@ -213,6 +213,13 @@ public class ClassFileReader {
 				return new CodeAttribute(nameIndex, maxStack, maxLocals, code, exceptions, attributes);
 			case DEPRECATED:
 				return new DeprecatedAttribute(nameIndex);
+			case EXCEPTIONS:
+				int numberOfExceptionIndices = is.readUnsignedShort();
+				int[] exceptionIndexTable = new int[numberOfExceptionIndices];
+				for(int i = 0; i < numberOfExceptionIndices; i++) {
+					exceptionIndexTable[i] = is.readUnsignedShort();
+				}
+				return new ExceptionsAttribute(nameIndex, exceptionIndexTable);
 			case NEST_HOST:
 				// Check for:
 				//  - Illegal usage of code on non-class items
@@ -297,7 +304,6 @@ public class ClassFileReader {
 			case COMPILATION_ID:
 			case CONSTANT_VALUE:
 			case ENCLOSING_METHOD:
-			case EXCEPTIONS:
 			case INNER_CLASSES:
 			case LINE_NUMBER_TABLE:
 			case LOCAL_VARIABLE_TABLE:
