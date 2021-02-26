@@ -166,10 +166,9 @@ public class ClassFileWriter {
 				case Constants.Attributes.CHARACTER_RANGE_TABLE:
 					break;
 				case Constants.Attributes.CODE:
-					// TODO: Explain where the "- 6" comes from
 					CodeAttribute code = (CodeAttribute) attribute;
 					out.writeShort(code.getNameIndex());
-					out.writeInt(code.computeInternalLength() - 6);
+					out.writeInt(code.computeInternalLength());
 					out.writeShort(code.getMaxStack());
 					out.writeShort(code.getMaxLocals());
 					out.writeInt(code.getCode().length);

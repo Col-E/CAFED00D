@@ -118,7 +118,7 @@ public class CodeAttribute extends Attribute {
 	public int computeInternalLength() {
 		// u2: name_index
 		// u4: attribute_length
-		int len = 6;
+		int len = 0;
 		// u2: max_stack
 		// u2: max_locals
 		len += 4;
