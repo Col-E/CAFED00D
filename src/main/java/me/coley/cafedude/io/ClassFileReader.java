@@ -1,10 +1,58 @@
 package me.coley.cafedude.io;
 
-import me.coley.cafedude.*;
-import me.coley.cafedude.attribute.*;
-import me.coley.cafedude.constant.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static me.coley.cafedude.Constants.JAVA1;
+import static me.coley.cafedude.Constants.Attributes.ANNOTATION_DEFAULT;
+import static me.coley.cafedude.Constants.Attributes.BOOTSTRAP_METHODS;
+import static me.coley.cafedude.Constants.Attributes.CHARACTER_RANGE_TABLE;
+import static me.coley.cafedude.Constants.Attributes.CODE;
+import static me.coley.cafedude.Constants.Attributes.COMPILATION_ID;
+import static me.coley.cafedude.Constants.Attributes.CONSTANT_VALUE;
+import static me.coley.cafedude.Constants.Attributes.DEPRECATED;
+import static me.coley.cafedude.Constants.Attributes.ENCLOSING_METHOD;
+import static me.coley.cafedude.Constants.Attributes.EXCEPTIONS;
+import static me.coley.cafedude.Constants.Attributes.INNER_CLASSES;
+import static me.coley.cafedude.Constants.Attributes.LINE_NUMBER_TABLE;
+import static me.coley.cafedude.Constants.Attributes.LOCAL_VARIABLE_TABLE;
+import static me.coley.cafedude.Constants.Attributes.LOCAL_VARIABLE_TYPE_TABLE;
+import static me.coley.cafedude.Constants.Attributes.METHOD_PARAMETERS;
+import static me.coley.cafedude.Constants.Attributes.MODULE_HASHES;
+import static me.coley.cafedude.Constants.Attributes.MODULE_MAIN_CLASS;
+import static me.coley.cafedude.Constants.Attributes.MODULE_PACKAGES;
+import static me.coley.cafedude.Constants.Attributes.MODULE_RESOLUTION;
+import static me.coley.cafedude.Constants.Attributes.MODULE_TARGET;
+import static me.coley.cafedude.Constants.Attributes.NEST_HOST;
+import static me.coley.cafedude.Constants.Attributes.NEST_MEMBERS;
+import static me.coley.cafedude.Constants.Attributes.PERMITTED_SUBCLASSES;
+import static me.coley.cafedude.Constants.Attributes.RECORD;
+import static me.coley.cafedude.Constants.Attributes.RUNTIME_INVISIBLE_ANNOTATIONS;
+import static me.coley.cafedude.Constants.Attributes.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS;
+import static me.coley.cafedude.Constants.Attributes.RUNTIME_INVISIBLE_TYPE_ANNOTATIONS;
+import static me.coley.cafedude.Constants.Attributes.RUNTIME_VISIBLE_ANNOTATIONS;
+import static me.coley.cafedude.Constants.Attributes.RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS;
+import static me.coley.cafedude.Constants.Attributes.RUNTIME_VISIBLE_TYPE_ANNOTATIONS;
+import static me.coley.cafedude.Constants.Attributes.SIGNATURE;
+import static me.coley.cafedude.Constants.Attributes.SOURCE_DEBUG_EXTENSION;
+import static me.coley.cafedude.Constants.Attributes.SOURCE_FILE;
+import static me.coley.cafedude.Constants.Attributes.SOURCE_ID;
+import static me.coley.cafedude.Constants.Attributes.STACK_MAP;
+import static me.coley.cafedude.Constants.Attributes.STACK_MAP_TABLE;
+import static me.coley.cafedude.Constants.Attributes.SYNTHETIC;
+import static me.coley.cafedude.Constants.ConstantPool.CLASS;
+import static me.coley.cafedude.Constants.ConstantPool.DOUBLE;
+import static me.coley.cafedude.Constants.ConstantPool.DYNAMIC;
+import static me.coley.cafedude.Constants.ConstantPool.FIELD_REF;
+import static me.coley.cafedude.Constants.ConstantPool.FLOAT;
+import static me.coley.cafedude.Constants.ConstantPool.INTEGER;
+import static me.coley.cafedude.Constants.ConstantPool.INTERFACE_METHOD_REF;
+import static me.coley.cafedude.Constants.ConstantPool.INVOKE_DYNAMIC;
+import static me.coley.cafedude.Constants.ConstantPool.LONG;
+import static me.coley.cafedude.Constants.ConstantPool.METHOD_HANDLE;
+import static me.coley.cafedude.Constants.ConstantPool.METHOD_REF;
+import static me.coley.cafedude.Constants.ConstantPool.METHOD_TYPE;
+import static me.coley.cafedude.Constants.ConstantPool.NAME_TYPE;
+import static me.coley.cafedude.Constants.ConstantPool.PACKAGE;
+import static me.coley.cafedude.Constants.ConstantPool.STRING;
+import static me.coley.cafedude.Constants.ConstantPool.UTF8;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -12,9 +60,46 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static me.coley.cafedude.Constants.*;
-import static me.coley.cafedude.Constants.Attributes.*;
-import static me.coley.cafedude.Constants.ConstantPool.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import me.coley.cafedude.ClassFile;
+import me.coley.cafedude.ConstPool;
+import me.coley.cafedude.Constants;
+import me.coley.cafedude.Constants.Attributes;
+import me.coley.cafedude.Constants.ConstantPool;
+import me.coley.cafedude.Field;
+import me.coley.cafedude.InvalidClassException;
+import me.coley.cafedude.Method;
+import me.coley.cafedude.attribute.Attribute;
+import me.coley.cafedude.attribute.CodeAttribute;
+import me.coley.cafedude.attribute.DebugExtensionAttribute;
+import me.coley.cafedude.attribute.DefaultAttribute;
+import me.coley.cafedude.attribute.DeprecatedAttribute;
+import me.coley.cafedude.attribute.ExceptionsAttribute;
+import me.coley.cafedude.attribute.InnerClassesAttribute;
+import me.coley.cafedude.attribute.InnerClassesAttribute.InnerClass;
+import me.coley.cafedude.attribute.NestHostAttribute;
+import me.coley.cafedude.attribute.NestMembersAttribute;
+import me.coley.cafedude.attribute.SyntheticAttribute;
+import me.coley.cafedude.constant.ConstPoolEntry;
+import me.coley.cafedude.constant.CpClass;
+import me.coley.cafedude.constant.CpDouble;
+import me.coley.cafedude.constant.CpDynamic;
+import me.coley.cafedude.constant.CpFieldRef;
+import me.coley.cafedude.constant.CpFloat;
+import me.coley.cafedude.constant.CpInt;
+import me.coley.cafedude.constant.CpInterfaceMethodRef;
+import me.coley.cafedude.constant.CpInvokeDynamic;
+import me.coley.cafedude.constant.CpLong;
+import me.coley.cafedude.constant.CpMethodHandle;
+import me.coley.cafedude.constant.CpMethodRef;
+import me.coley.cafedude.constant.CpMethodType;
+import me.coley.cafedude.constant.CpModule;
+import me.coley.cafedude.constant.CpNameType;
+import me.coley.cafedude.constant.CpPackage;
+import me.coley.cafedude.constant.CpString;
+import me.coley.cafedude.constant.CpUtf8;
 
 /**
  * Class file format parser.
@@ -220,6 +305,14 @@ public class ClassFileReader {
 					exceptionIndexTable[i] = is.readUnsignedShort();
 				}
 				return new ExceptionsAttribute(nameIndex, exceptionIndexTable);
+			case INNER_CLASSES:
+				int numberOfInnerClasses = is.readUnsignedShort();
+				InnerClass[] innerClasses = new InnerClass[numberOfInnerClasses];
+				for(int i = 0; i < numberOfInnerClasses; i++) {
+					innerClasses[i] = new InnerClass(is.readUnsignedShort(), 
+							is.readUnsignedShort(), is.readUnsignedShort(), is.readUnsignedShort());
+				}
+				return new InnerClassesAttribute(nameIndex, innerClasses);
 			case NEST_HOST:
 				// Check for:
 				//  - Illegal usage of code on non-class items
@@ -304,7 +397,6 @@ public class ClassFileReader {
 			case COMPILATION_ID:
 			case CONSTANT_VALUE:
 			case ENCLOSING_METHOD:
-			case INNER_CLASSES:
 			case LINE_NUMBER_TABLE:
 			case LOCAL_VARIABLE_TABLE:
 			case LOCAL_VARIABLE_TYPE_TABLE:

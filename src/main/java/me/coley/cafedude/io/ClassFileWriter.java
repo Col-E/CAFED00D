@@ -2,6 +2,7 @@ package me.coley.cafedude.io;
 
 import me.coley.cafedude.*;
 import me.coley.cafedude.attribute.*;
+import me.coley.cafedude.attribute.InnerClassesAttribute.InnerClass;
 import me.coley.cafedude.constant.*;
 
 import java.io.ByteArrayOutputStream;
@@ -196,15 +197,25 @@ public class ClassFileWriter {
 				case Constants.Attributes.ENCLOSING_METHOD:
 					break;
 				case Constants.Attributes.EXCEPTIONS:
-					ExceptionsAttribute exceptionsAttibute = (ExceptionsAttribute) attribute;
-					out.writeShort(exceptionsAttibute.getNameIndex());
-					out.writeInt(exceptionsAttibute.computeInternalLength());
-					out.writeShort(exceptionsAttibute.getExceptionIndexTable().length);
-					for(int index : exceptionsAttibute.getExceptionIndexTable()) {
+					ExceptionsAttribute exceptionsAttribute = (ExceptionsAttribute) attribute;
+					out.writeShort(exceptionsAttribute.getNameIndex());
+					out.writeInt(exceptionsAttribute.computeInternalLength());
+					out.writeShort(exceptionsAttribute.getExceptionIndexTable().length);
+					for(int index : exceptionsAttribute.getExceptionIndexTable()) {
 						out.writeShort(index);
 					}
 					break;
 				case Constants.Attributes.INNER_CLASSES:
+					InnerClassesAttribute innerClassesAttribute = (InnerClassesAttribute) attribute;
+					out.writeShort(innerClassesAttribute.getNameIndex());
+					out.writeInt(innerClassesAttribute.computeInternalLength());
+					out.writeShort(innerClassesAttribute.getInnerClasses().length);
+					for(InnerClass ic : innerClassesAttribute.getInnerClasses()) {
+						out.writeShort(ic.getInnerClassInfoIndex());
+						out.writeShort(ic.getOuterClassInfoIndex());
+						out.writeShort(ic.getInnerNameIndex());
+						out.writeShort(ic.getInnerClassAccessFlags());
+					}
 					break;
 				case Constants.Attributes.LINE_NUMBER_TABLE:
 					break;
