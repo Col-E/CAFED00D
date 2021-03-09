@@ -264,7 +264,7 @@ public class ClassFileReader {
 		if (doDropForwardVersioned()) {
 			int introducedAt = AttributeVersions.getIntroducedVersion(name);
 			if (introducedAt > version) {
-				logger.warn("Found '{}' in class version {}, min supported is {}", name, version, introducedAt);
+				logger.debug("Found '{}' in class version {}, min supported is {}", name, version, introducedAt);
 				is.skipBytes(length);
 				return null;
 			}
@@ -272,7 +272,7 @@ public class ClassFileReader {
 		// Check for illegal usage contexts
 		Collection<AttributeContext> allowedContexts = AttributeContexts.getAllowedContexts(name);
 		if (!allowedContexts.contains(context)) {
-			logger.info("Found '{}' declared in illegal context {}, allowed contexts: {}",
+			logger.debug("Found '{}' declared in illegal context {}, allowed contexts: {}",
 					name, context.name(), allowedContexts);
 			is.skipBytes(length);
 			return null;
