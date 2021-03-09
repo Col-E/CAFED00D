@@ -261,7 +261,7 @@ public class ClassFileReader {
 		int length = is.readInt();
 		String name = ((CpUtf8) pool.get(nameIndex)).getText();
 		// Check for illegally inserted attributes from future versions
-		if (dropForwardVersioned) {
+		if (doDropForwardVersioned()) {
 			int introducedAt = AttributeVersions.getIntroducedVersion(name);
 			if (introducedAt > version) {
 				logger.warn("Found '{}' in class version {}, min supported is {}", name, version, introducedAt);
@@ -477,4 +477,18 @@ public class ClassFileReader {
 		return new Method(attributes, access, nameIndex, typeIndex);
 	}
 
+	/**
+	 * @return {@code true} if attributes declared from future versions should be removed.
+	 */
+	public boolean doDropForwardVersioned() {
+		return dropForwardVersioned;
+	}
+
+	/**
+	 * @param dropForwardVersioned
+	 *        {@code true} if attributes declared from future versions should be removed.
+	 */
+	public void setDropForwardVersioned(boolean dropForwardVersioned) {
+		this.dropForwardVersioned = dropForwardVersioned;
+	}
 }
