@@ -1,6 +1,7 @@
 package me.coley.cafedude;
 
 import me.coley.cafedude.constant.ConstPoolEntry;
+import me.coley.cafedude.constant.CpUtf8;
 
 import java.util.Iterator;
 import java.util.function.Function;
@@ -73,6 +74,22 @@ public class ConstPool implements Iterable<ConstPoolEntry> {
 	 */
 	public ConstPoolEntry get(int index) {
 		return getNode(index).entry;
+	}
+
+	/**
+	 * @param index
+	 * 		CP index of UTF8 constant.
+	 *
+	 * @return String value of constant.
+	 *
+	 * @throws IllegalArgumentException
+	 * 		When the index is not a UTF8 constant.
+	 */
+	public String getUtf(int index) {
+		ConstPoolEntry entry = get(index);
+		if (entry instanceof CpUtf8)
+			return ((CpUtf8) entry).getText();
+		throw new IllegalArgumentException("Index " + index + " not UTF8");
 	}
 
 	/**

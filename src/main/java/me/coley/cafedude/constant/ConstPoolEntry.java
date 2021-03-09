@@ -1,30 +1,13 @@
 package me.coley.cafedude.constant;
 
+import me.coley.cafedude.Constants;
+
 /**
  * Base constant pool entry.
  *
  * @author Matt Coley
  */
-public abstract class ConstPoolEntry {
-	// Constants
-	public static final int UTF8 = 1;
-	public static final int INTEGER = 3;
-	public static final int FLOAT = 4;
-	public static final int LONG = 5;
-	public static final int DOUBLE = 6;
-	public static final int CLASS = 7;
-	public static final int STRING = 8;
-	public static final int FIELD_REF = 9;
-	public static final int METHOD_REF = 10;
-	public static final int INTERFACE_METHOD_REF = 11;
-	public static final int NAME_TYPE = 12;
-	public static final int METHOD_HANDLE = 15;
-	public static final int METHOD_TYPE = 16;
-	public static final int DYNAMIC = 17;
-	public static final int INVOKE_DYNAMIC = 18;
-	public static final int MODULE = 19;
-	public static final int PACKAGE = 20;
-	// Instance fields
+public abstract class ConstPoolEntry implements Constants.ConstantPool {
 	private final int tag;
 
 	/**

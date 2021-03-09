@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,8 +22,8 @@ public class EqualityIOTest {
 	@Test
 	public void testSamples() {
 		try {
+			visitRootDir("samples/annos");
 			visitRootDir("samples/javac");
-			visitRootDir("samples/obfuscated");
 		} catch (IOException e) {
 			System.err.println(lastLoaded.getPath());
 			fail("Failed to read class, IO error", e);
@@ -33,10 +34,10 @@ public class EqualityIOTest {
 		System.out.println("Successes: " + successes);
 	}
 
-	private void assertReadWriteEquality(byte[] code) throws InvalidClassException {
+	private void assertReadWriteEquality(byte[] code) throws InvalidClassException, IOException {
 		ClassFile cf = new ClassFileReader().read(code);
 		byte[] out = new ClassFileWriter().write(cf);
-		assertEquals(code.length, out.length);
+		assertEquals(code.length, out.length, "Class difference for: " + cf.getName());
 		assertArrayEquals(code, out);
 	}
 
