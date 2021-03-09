@@ -25,9 +25,11 @@ public interface Constants {
 	int JAVA14 = 58;
 	int JAVA15 = 59;
 	int JAVA16 = 60;
+	int JAVA17 = 61;
 
 	// TODO: Move this to access flag utility
 	int ACC_ANNOTATION = 0x2000;
+
 
 	/**
 	 * Constants for constant pool.
@@ -73,6 +75,8 @@ public interface Constants {
 	 * Constants for attributes.
 	 */
 	interface Attributes {
+		// TODO: Differentiate in documentation
+		//  - More definitions @ https://github.com/openjdk/jdk/blob/master/src/jdk.compiler/share/classes/com/sun/tools/javac/util/Names.java
 		/** Attribute string value, used to indicate an attribute's type when parsed. */
 		String ANNOTATION_DEFAULT = "AnnotationDefault";
 		/** Attribute string value, used to indicate an attribute's type when parsed. */
@@ -141,8 +145,6 @@ public interface Constants {
 		String SOURCE_FILE = "SourceFile";
 		/** Attribute string value, used to indicate an attribute's type when parsed. */
 		String SOURCE_ID = "SourceID";
-		/** Attribute string value, used to indicate an attribute's type when parsed. */
-		String STACK_MAP = "StackMap";
 		/** Attribute string value, used to indicate an attribute's type when parsed. */
 		String STACK_MAP_TABLE = "StackMapTable";
 		/** Attribute string value, used to indicate an attribute's type when parsed. */

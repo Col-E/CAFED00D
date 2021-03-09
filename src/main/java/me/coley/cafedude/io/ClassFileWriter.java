@@ -273,8 +273,6 @@ public class ClassFileWriter {
 					break;
 				case Constants.Attributes.SOURCE_ID:
 					break;
-				case Constants.Attributes.STACK_MAP:
-					break;
 				case Constants.Attributes.STACK_MAP_TABLE:
 					break;
 				default:

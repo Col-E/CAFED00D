@@ -34,7 +34,6 @@ import static me.coley.cafedude.Constants.Attributes.SIGNATURE;
 import static me.coley.cafedude.Constants.Attributes.SOURCE_DEBUG_EXTENSION;
 import static me.coley.cafedude.Constants.Attributes.SOURCE_FILE;
 import static me.coley.cafedude.Constants.Attributes.SOURCE_ID;
-import static me.coley.cafedude.Constants.Attributes.STACK_MAP;
 import static me.coley.cafedude.Constants.Attributes.STACK_MAP_TABLE;
 import static me.coley.cafedude.Constants.Attributes.SYNTHETIC;
 import static me.coley.cafedude.Constants.ConstantPool.CLASS;
@@ -58,8 +57,11 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import me.coley.cafedude.attribute.AttributeContexts;
+import me.coley.cafedude.attribute.AttributeVersions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,6 +119,8 @@ public class ClassFileReader {
 	private boolean isOakVersion;
 	private boolean isAnnotation;
 	private int version;
+	// config
+	private boolean dropForwardVersioned = true;
 
 	/**
 	 * @param code
@@ -256,14 +260,25 @@ public class ClassFileReader {
 		int nameIndex = is.readUnsignedShort();
 		int length = is.readInt();
 		String name = ((CpUtf8) pool.get(nameIndex)).getText();
+		// Check for illegally inserted attributes from future versions
+		if (dropForwardVersioned) {
+			int introducedAt = AttributeVersions.getIntroducedVersion(name);
+			if (introducedAt > version) {
+				logger.warn("Found '{}' in class version {}, min supported is {}", name, version, introducedAt);
+				is.skipBytes(length);
+				return null;
+			}
+		}
+		// Check for illegal usage contexts
+		Collection<AttributeContext> allowedContexts = AttributeContexts.getAllowedContexts(name);
+		if (!allowedContexts.contains(context)) {
+			logger.info("Found '{}' declared in illegal context {}, allowed contexts: {}",
+					name, context.name(), allowedContexts);
+			is.skipBytes(length);
+			return null;
+		}
 		switch (name) {
 			case CODE:
-				// Check for illegal usage on non-method items
-				if (context != AttributeContext.METHOD) {
-					logger.info("Found Code declared in non-method context: {}", context.name());
-					is.skipBytes(length);
-					return null;
-				}
 				int maxStack = -1;
 				int maxLocals = -1;
 				int codeLength = -1;
@@ -320,19 +335,6 @@ public class ClassFileReader {
 				}
 				return new InnerClassesAttribute(nameIndex, innerClasses);
 			case NEST_HOST:
-				// Check for:
-				//  - Illegal usage of code on non-class items
-				//  - Usage in code below java 11
-				if (version < Constants.JAVA11) {
-					logger.debug("Found NestHost declared class below supported Java version");
-					is.skipBytes(length);
-					return null;
-				}
-				if (context != AttributeContext.CLASS) {
-					logger.debug("Found NestHost applied in non-class context: {}", context.name());
-					is.skipBytes(length);
-					return null;
-				}
 				if (length != 2) {
 					logger.debug("Found NestHost with illegal content length: {} != 2", length);
 					is.skipBytes(length);
@@ -347,17 +349,6 @@ public class ClassFileReader {
 				}
 				return new NestHostAttribute(nameIndex, hostClassIndex);
 			case NEST_MEMBERS:
-				// Check for illegal usage on non-class items
-				if (version < Constants.JAVA11) {
-					logger.debug("Found NestMembers declared class below supported Java version");
-					is.skipBytes(length);
-					return null;
-				}
-				if (context != AttributeContext.CLASS) {
-					logger.debug("Found NestMembers applied in non-class context: {}", context.name());
-					is.skipBytes(length);
-					return null;
-				}
 				int count = is.readUnsignedShort();
 				List<Integer> memberClassIndices = new ArrayList<>();
 				for (int i = 0; i < count; i++) {
@@ -416,7 +407,6 @@ public class ClassFileReader {
 			case SIGNATURE:
 			case SOURCE_FILE:
 			case SOURCE_ID:
-			case STACK_MAP:
 			case STACK_MAP_TABLE:
 			default:
 				// No known/unhandled attribute length is less than 2.

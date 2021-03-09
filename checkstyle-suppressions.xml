@@ -43,4 +43,10 @@
 	<suppress checks="CyclomaticComplexity"
 			  files="AttributeContext.java"
 			  lines="0-9999"/>
+	<suppress checks="CyclomaticComplexity"
+			  files="AttributeContexts.java"
+			  lines="0-9999"/>
+	<suppress checks="CyclomaticComplexity"
+			  files="AttributeVersions.java"
+			  lines="0-9999"/>
 </suppressions>
