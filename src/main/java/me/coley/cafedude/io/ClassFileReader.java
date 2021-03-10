@@ -62,6 +62,8 @@ import java.util.List;
 
 import me.coley.cafedude.attribute.AttributeContexts;
 import me.coley.cafedude.attribute.AttributeVersions;
+import me.coley.cafedude.attribute.BootstrapMethodsAttribute;
+import me.coley.cafedude.attribute.BootstrapMethodsAttribute.BootstrapMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -390,6 +392,18 @@ public class ClassFileReader {
 			case SYNTHETIC:
 				return new SyntheticAttribute(nameIndex);
 			case BOOTSTRAP_METHODS:
+				List<BootstrapMethod> bootstrapMethods = new ArrayList<>();
+				int bsmCount = is.readUnsignedShort();
+				for (int i = 0; i < bsmCount; i++) {
+					int methodRef = is.readUnsignedShort();
+					int argCount = is.readUnsignedShort();
+					List<Integer> args = new ArrayList<>();
+					for (int j = 0; j < argCount; j++) {
+						args.add(is.readUnsignedShort());
+					}
+					bootstrapMethods.add(new BootstrapMethod(methodRef, args));
+				}
+				return new BootstrapMethodsAttribute(nameIndex, bootstrapMethods);
 			case CHARACTER_RANGE_TABLE:
 			case COMPILATION_ID:
 			case LINE_NUMBER_TABLE:
@@ -409,17 +423,18 @@ public class ClassFileReader {
 			case SOURCE_ID:
 			case STACK_MAP_TABLE:
 			default:
-				// No known/unhandled attribute length is less than 2.
-				// So if that is given, we likely have an intentionally malformed attribute.
-				if (length < 2) {
-					logger.debug("Invalid attribute, its content length <= 1");
-					is.skipBytes(length);
-					return null;
-				}
-				byte[] data = new byte[length];
-				is.readFully(data);
-				return new DefaultAttribute(nameIndex, data);
+				break;
 		}
+		// No known/unhandled attribute length is less than 2.
+		// So if that is given, we likely have an intentionally malformed attribute.
+		if (length < 2) {
+			logger.debug("Invalid attribute, its content length <= 1");
+			is.skipBytes(length);
+			return null;
+		}
+		byte[] data = new byte[length];
+		is.readFully(data);
+		return new DefaultAttribute(nameIndex, data);
 	}
 
 	/**

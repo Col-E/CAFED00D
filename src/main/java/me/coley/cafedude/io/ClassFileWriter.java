@@ -2,6 +2,7 @@ package me.coley.cafedude.io;
 
 import me.coley.cafedude.*;
 import me.coley.cafedude.attribute.*;
+import me.coley.cafedude.attribute.BootstrapMethodsAttribute.BootstrapMethod;
 import me.coley.cafedude.attribute.InnerClassesAttribute.InnerClass;
 import me.coley.cafedude.constant.*;
 
@@ -156,6 +157,17 @@ public class ClassFileWriter {
 			String attrName = ((CpUtf8) cpName).getText();
 			switch (attrName) {
 				case Constants.Attributes.BOOTSTRAP_METHODS:
+					BootstrapMethodsAttribute bsms = (BootstrapMethodsAttribute) attribute;
+					out.writeShort(bsms.getNameIndex());
+					out.writeInt(bsms.computeInternalLength());
+					out.writeShort(bsms.getBootstrapMethods().size());
+					for (BootstrapMethod bsm : bsms.getBootstrapMethods()) {
+						out.writeShort(bsm.getBsmMethodref());
+						out.writeShort(bsm.getArgs().size());
+						for (int arg : bsm.getArgs()) {
+							out.writeShort(arg);
+						}
+					}
 					break;
 				case Constants.Attributes.CHARACTER_RANGE_TABLE:
 					break;
@@ -239,8 +251,19 @@ public class ClassFileWriter {
 				case Constants.Attributes.MODULE_TARGET:
 					break;
 				case Constants.Attributes.NEST_HOST:
+					NestHostAttribute nestHost = (NestHostAttribute) attribute;
+					out.writeShort(nestHost.getNameIndex());
+					out.writeInt(nestHost.computeInternalLength());
+					out.writeShort(nestHost.getHostClassIndex());
 					break;
 				case Constants.Attributes.NEST_MEMBERS:
+					NestMembersAttribute nestMembers = (NestMembersAttribute) attribute;
+					out.writeShort(nestMembers.getNameIndex());
+					out.writeInt(nestMembers.computeInternalLength());
+					out.writeShort(nestMembers.getMemberClassIndices().size());
+					for (int classIndex : nestMembers.getMemberClassIndices()) {
+						out.writeShort(classIndex);
+					}
 					break;
 				case Constants.Attributes.RECORD:
 					break;

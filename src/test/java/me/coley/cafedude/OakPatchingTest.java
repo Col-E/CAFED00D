@@ -38,7 +38,7 @@ public class OakPatchingTest {
 				// Reading with ASM works
 				assertDoesNotThrow(() -> {
 					ClassReader cr = new ClassReader(modified);
-					cr.accept(new ClassNode(Opcodes.ASM8), 0);
+					cr.accept(new ClassNode(Opcodes.ASM9), 0);
 				});
 			}
 		} catch (IOException e) {
