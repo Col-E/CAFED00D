@@ -18,7 +18,7 @@ public class AnnotationElementValue extends ElementValue {
 		super(tag);
 		if (tag != '@')
 			throw new IllegalArgumentException("Annotation element value must have '@' tag");
-		this.annotation = this.annotation;
+		this.annotation = annotation;
 	}
 
 	/**
