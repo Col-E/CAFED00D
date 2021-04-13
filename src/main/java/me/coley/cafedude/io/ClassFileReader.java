@@ -1,72 +1,5 @@
 package me.coley.cafedude.io;
 
-import static me.coley.cafedude.Constants.JAVA1;
-import static me.coley.cafedude.Constants.Attributes.ANNOTATION_DEFAULT;
-import static me.coley.cafedude.Constants.Attributes.BOOTSTRAP_METHODS;
-import static me.coley.cafedude.Constants.Attributes.CHARACTER_RANGE_TABLE;
-import static me.coley.cafedude.Constants.Attributes.CODE;
-import static me.coley.cafedude.Constants.Attributes.COMPILATION_ID;
-import static me.coley.cafedude.Constants.Attributes.CONSTANT_VALUE;
-import static me.coley.cafedude.Constants.Attributes.DEPRECATED;
-import static me.coley.cafedude.Constants.Attributes.ENCLOSING_METHOD;
-import static me.coley.cafedude.Constants.Attributes.EXCEPTIONS;
-import static me.coley.cafedude.Constants.Attributes.INNER_CLASSES;
-import static me.coley.cafedude.Constants.Attributes.LINE_NUMBER_TABLE;
-import static me.coley.cafedude.Constants.Attributes.LOCAL_VARIABLE_TABLE;
-import static me.coley.cafedude.Constants.Attributes.LOCAL_VARIABLE_TYPE_TABLE;
-import static me.coley.cafedude.Constants.Attributes.METHOD_PARAMETERS;
-import static me.coley.cafedude.Constants.Attributes.MODULE_HASHES;
-import static me.coley.cafedude.Constants.Attributes.MODULE_MAIN_CLASS;
-import static me.coley.cafedude.Constants.Attributes.MODULE_PACKAGES;
-import static me.coley.cafedude.Constants.Attributes.MODULE_RESOLUTION;
-import static me.coley.cafedude.Constants.Attributes.MODULE_TARGET;
-import static me.coley.cafedude.Constants.Attributes.NEST_HOST;
-import static me.coley.cafedude.Constants.Attributes.NEST_MEMBERS;
-import static me.coley.cafedude.Constants.Attributes.PERMITTED_SUBCLASSES;
-import static me.coley.cafedude.Constants.Attributes.RECORD;
-import static me.coley.cafedude.Constants.Attributes.RUNTIME_INVISIBLE_ANNOTATIONS;
-import static me.coley.cafedude.Constants.Attributes.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS;
-import static me.coley.cafedude.Constants.Attributes.RUNTIME_INVISIBLE_TYPE_ANNOTATIONS;
-import static me.coley.cafedude.Constants.Attributes.RUNTIME_VISIBLE_ANNOTATIONS;
-import static me.coley.cafedude.Constants.Attributes.RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS;
-import static me.coley.cafedude.Constants.Attributes.RUNTIME_VISIBLE_TYPE_ANNOTATIONS;
-import static me.coley.cafedude.Constants.Attributes.SIGNATURE;
-import static me.coley.cafedude.Constants.Attributes.SOURCE_DEBUG_EXTENSION;
-import static me.coley.cafedude.Constants.Attributes.SOURCE_FILE;
-import static me.coley.cafedude.Constants.Attributes.SOURCE_ID;
-import static me.coley.cafedude.Constants.Attributes.STACK_MAP_TABLE;
-import static me.coley.cafedude.Constants.Attributes.SYNTHETIC;
-import static me.coley.cafedude.Constants.ConstantPool.CLASS;
-import static me.coley.cafedude.Constants.ConstantPool.DOUBLE;
-import static me.coley.cafedude.Constants.ConstantPool.DYNAMIC;
-import static me.coley.cafedude.Constants.ConstantPool.FIELD_REF;
-import static me.coley.cafedude.Constants.ConstantPool.FLOAT;
-import static me.coley.cafedude.Constants.ConstantPool.INTEGER;
-import static me.coley.cafedude.Constants.ConstantPool.INTERFACE_METHOD_REF;
-import static me.coley.cafedude.Constants.ConstantPool.INVOKE_DYNAMIC;
-import static me.coley.cafedude.Constants.ConstantPool.LONG;
-import static me.coley.cafedude.Constants.ConstantPool.METHOD_HANDLE;
-import static me.coley.cafedude.Constants.ConstantPool.METHOD_REF;
-import static me.coley.cafedude.Constants.ConstantPool.METHOD_TYPE;
-import static me.coley.cafedude.Constants.ConstantPool.NAME_TYPE;
-import static me.coley.cafedude.Constants.ConstantPool.PACKAGE;
-import static me.coley.cafedude.Constants.ConstantPool.STRING;
-import static me.coley.cafedude.Constants.ConstantPool.UTF8;
-
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import me.coley.cafedude.attribute.AttributeContexts;
-import me.coley.cafedude.attribute.AttributeVersions;
-import me.coley.cafedude.attribute.BootstrapMethodsAttribute;
-import me.coley.cafedude.attribute.BootstrapMethodsAttribute.BootstrapMethod;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import me.coley.cafedude.ClassFile;
 import me.coley.cafedude.ConstPool;
 import me.coley.cafedude.Constants;
@@ -76,6 +9,11 @@ import me.coley.cafedude.Field;
 import me.coley.cafedude.InvalidClassException;
 import me.coley.cafedude.Method;
 import me.coley.cafedude.attribute.Attribute;
+import me.coley.cafedude.attribute.AttributeContexts;
+import me.coley.cafedude.attribute.AttributeCpAccessValidator;
+import me.coley.cafedude.attribute.AttributeVersions;
+import me.coley.cafedude.attribute.BootstrapMethodsAttribute;
+import me.coley.cafedude.attribute.BootstrapMethodsAttribute.BootstrapMethod;
 import me.coley.cafedude.attribute.CodeAttribute;
 import me.coley.cafedude.attribute.ConstantValueAttribute;
 import me.coley.cafedude.attribute.DebugExtensionAttribute;
@@ -106,6 +44,19 @@ import me.coley.cafedude.constant.CpNameType;
 import me.coley.cafedude.constant.CpPackage;
 import me.coley.cafedude.constant.CpString;
 import me.coley.cafedude.constant.CpUtf8;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import static me.coley.cafedude.Constants.Attributes.*;
+import static me.coley.cafedude.Constants.ConstantPool.*;
+import static me.coley.cafedude.Constants.JAVA1;
 
 /**
  * Class file format parser.
@@ -123,6 +74,7 @@ public class ClassFileReader {
 	private int version;
 	// config
 	private boolean dropForwardVersioned = true;
+	private boolean dropIllegalCpRefs = true;
 
 	/**
 	 * @param code
@@ -176,7 +128,7 @@ public class ClassFileReader {
 				List<Attribute> attributes = new ArrayList<>();
 				for (int i = 0; i < numAttributes; i++) {
 					Attribute attr = readAttribute(AttributeContext.CLASS);
-					if (attr != null)
+					if (attr != null && (!doDropIllegalCpRefs() || AttributeCpAccessValidator.isValid(pool, attr)))
 						attributes.add(attr);
 				}
 				return new ClassFile(
@@ -309,14 +261,17 @@ public class ClassFileReader {
 				// Read attributes
 				int numAttributes = is.readUnsignedShort();
 				for (int i = 0; i < numAttributes; i++) {
-					// The reason for this null check is because illegal attributes return null and are dropped
+					// The reason for this null check is because illegal attributes return null and are dropped.
+					// The second validation check asserts that all CP refs in the attribute point to valid
+					// indices and are of the expected types.
 					Attribute attr = readAttribute(AttributeContext.ATTRIBUTE);
-					if (attr != null)
+					if (attr != null && (!doDropIllegalCpRefs() || AttributeCpAccessValidator.isValid(pool, attr)))
 						attributes.add(attr);
 				}
 				return new CodeAttribute(nameIndex, maxStack, maxLocals, code, exceptions, attributes);
 			case CONSTANT_VALUE:
-				return new ConstantValueAttribute(nameIndex, is.readUnsignedShort());
+				int valueIndex = is.readUnsignedShort();
+				return new ConstantValueAttribute(nameIndex, valueIndex);
 			case DEPRECATED:
 				return new DeprecatedAttribute(nameIndex);
 			case ENCLOSING_METHOD:
@@ -343,27 +298,12 @@ public class ClassFileReader {
 					return null;
 				}
 				int hostClassIndex = is.readUnsignedShort();
-				// Check for illegal out of bounds entries
-				if (hostClassIndex >= pool.size()) {
-					// We've already read the bytes, so nothing to skip here
-					logger.debug("Found NestHost with index out of pool range: {} >= {}", length, pool.size());
-					return null;
-				}
 				return new NestHostAttribute(nameIndex, hostClassIndex);
 			case NEST_MEMBERS:
 				int count = is.readUnsignedShort();
 				List<Integer> memberClassIndices = new ArrayList<>();
 				for (int i = 0; i < count; i++) {
 					int classIndex = is.readUnsignedShort();
-					// Check for illegal out of bounds entries
-					if (classIndex >= pool.size()) {
-						logger.debug("Found NestHost member with index out of pool range: {} >= {}",
-								classIndex, pool.size());
-						// count_u2 + count * (u2_classIndex)
-						int alreadyRead = (2 + ((i + 1) * 2));
-						is.skipBytes(length - alreadyRead);
-						return null;
-					}
 					memberClassIndices.add(classIndex);
 				}
 				return new NestMembersAttribute(nameIndex, memberClassIndices);
@@ -380,15 +320,15 @@ public class ClassFileReader {
 				return new DebugExtensionAttribute(nameIndex, debugExtension);
 			case RUNTIME_INVISIBLE_ANNOTATIONS:
 			case RUNTIME_VISIBLE_ANNOTATIONS:
-				return new AnnotationReader(is, length, nameIndex, context).readAnnotations();
+				return new AnnotationReader(pool, is, length, nameIndex, context).readAnnotations();
 			case RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
 			case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
-				return new AnnotationReader(is, length, nameIndex, context).readParameterAnnotations();
+				return new AnnotationReader(pool, is, length, nameIndex, context).readParameterAnnotations();
 			case RUNTIME_INVISIBLE_TYPE_ANNOTATIONS:
 			case RUNTIME_VISIBLE_TYPE_ANNOTATIONS:
-				return new AnnotationReader(is, length, nameIndex, context).readTypeAnnotations();
+				return new AnnotationReader(pool, is, length, nameIndex, context).readTypeAnnotations();
 			case ANNOTATION_DEFAULT:
-				return new AnnotationReader(is, length, nameIndex, context).readAnnotationDefault();
+				return new AnnotationReader(pool, is, length, nameIndex, context).readAnnotationDefault();
 			case SYNTHETIC:
 				return new SyntheticAttribute(nameIndex);
 			case BOOTSTRAP_METHODS:
@@ -466,7 +406,7 @@ public class ClassFileReader {
 		List<Attribute> attributes = new ArrayList<>();
 		for (int i = 0; i < numAttributes; i++) {
 			Attribute attr = readAttribute(AttributeContext.FIELD);
-			if (attr != null)
+			if (attr != null && (!doDropIllegalCpRefs() || AttributeCpAccessValidator.isValid(pool, attr)))
 				attributes.add(attr);
 		}
 		return new Field(attributes, access, nameIndex, typeIndex);
@@ -486,7 +426,7 @@ public class ClassFileReader {
 		List<Attribute> attributes = new ArrayList<>();
 		for (int i = 0; i < numAttributes; i++) {
 			Attribute attr = readAttribute(AttributeContext.METHOD);
-			if (attr != null)
+			if (attr != null && (!doDropIllegalCpRefs() || AttributeCpAccessValidator.isValid(pool, attr)))
 				attributes.add(attr);
 		}
 		return new Method(attributes, access, nameIndex, typeIndex);
@@ -505,5 +445,21 @@ public class ClassFileReader {
 	 */
 	public void setDropForwardVersioned(boolean dropForwardVersioned) {
 		this.dropForwardVersioned = dropForwardVersioned;
+	}
+
+	/**
+	 * @return {@code true} if attributes with CP refs to illegal positions should be removed.
+	 */
+	public boolean doDropIllegalCpRefs() {
+		return dropIllegalCpRefs;
+	}
+
+	/**
+	 * @param dropIllegalCpRefs
+	 *        {@code true} if attributes with CP refs to illegal positions should be removed.
+	 *        {@code false} to ignore and keep illegal positions.
+	 */
+	public void setDropIllegalCpRefs(boolean dropIllegalCpRefs) {
+		this.dropIllegalCpRefs = dropIllegalCpRefs;
 	}
 }

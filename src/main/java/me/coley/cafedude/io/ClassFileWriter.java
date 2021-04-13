@@ -280,7 +280,7 @@ public class ClassFileWriter {
 					new AnnotationWriter(out).writeTypeAnnotations((AnnotationsAttribute) attribute);
 					break;
 				case Constants.Attributes.ANNOTATION_DEFAULT:
-					new AnnotationWriter(out).writeAnnotationDefault((AnnotationDefault) attribute);
+					new AnnotationWriter(out).writeAnnotationDefault((AnnotationDefaultAttribute) attribute);
 					break;
 				case Constants.Attributes.PERMITTED_SUBCLASSES:
 					break;

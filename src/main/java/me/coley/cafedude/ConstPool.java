@@ -93,6 +93,23 @@ public class ConstPool implements Iterable<ConstPoolEntry> {
 	}
 
 	/**
+	 * @param index
+	 * 		CP index to check/
+	 * @param type
+	 * 		Type to assert.
+	 *
+	 * @return {@code true} when the entry at the index is the given type.
+	 */
+	public boolean isIndexOfType(int index, Class<? extends ConstPoolEntry> type) {
+		try {
+			ConstPoolEntry entry = get(index);
+			return type.isAssignableFrom(entry.getClass());
+		} catch (Throwable t) {
+			return false;
+		}
+	}
+
+	/**
 	 * @return Number of constants in the constant pool. Includes empty entries after wide values <i>(long/double)</i>
 	 */
 	public int size() {

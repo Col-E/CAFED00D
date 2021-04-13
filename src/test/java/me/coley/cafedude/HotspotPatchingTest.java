@@ -20,24 +20,26 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class HotspotPatchingTest {
 	@Test
-	@Disabled
+	//@Disabled
 	public void testPatchIllegalLengthAttributes() {
 		try {
 			File root = new File("src/test/resources/samples/hotspot-obf");
 			for (File sub : Objects.requireNonNull(root.listFiles())) {
+				//if (!sub.getName().endsWith("16.class"))
+				//	continue;
 				byte[] code = Files.readAllBytes(sub.toPath());
 				// Reading with ASM fails or produces incorrect representation...
 				assertThrows(Exception.class, () -> {
 					ClassReader cr = new ClassReader(code);
-					cr.accept(new ClassNode(Opcodes.ASM8), 0);
-				});
+					cr.accept(new ClassNode(Opcodes.ASM9), 0);
+				}, "Class does not break ASM: " + sub.getName());
 				// Patch obfuscated class
 				ClassFile cf = new ClassFileReader().read(code);
 				byte[] modified = new ClassFileWriter().write(cf);
 				// Reading with ASM works
 				assertDoesNotThrow(() -> {
 					ClassReader cr = new ClassReader(modified);
-					cr.accept(new ClassNode(Opcodes.ASM8), 0);
+					cr.accept(new ClassNode(Opcodes.ASM9), 0);
 				}, "Failure to patch class: " + sub.getName());
 			}
 		} catch (IOException e) {

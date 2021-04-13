@@ -7,7 +7,7 @@ import me.coley.cafedude.annotation.ElementValue;
  *
  * @author Matt Coley
  */
-public class AnnotationDefault extends Attribute {
+public class AnnotationDefaultAttribute extends Attribute {
 	private final ElementValue elementValue;
 
 	/**
@@ -17,7 +17,7 @@ public class AnnotationDefault extends Attribute {
 	 * 		Value of the annotation type element represented by the {@code method_info} structure
 	 * 		enclosing this attribute.
 	 */
-	public AnnotationDefault(int nameIndex, ElementValue elementValue) {
+	public AnnotationDefaultAttribute(int nameIndex, ElementValue elementValue) {
 		super(nameIndex);
 		this.elementValue = elementValue;
 	}

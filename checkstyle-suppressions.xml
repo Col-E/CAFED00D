@@ -49,4 +49,11 @@
 	<suppress checks="CyclomaticComplexity"
 			  files="AttributeVersions.java"
 			  lines="0-9999"/>
+
+	<suppress checks="CyclomaticComplexity"
+			  files="AttributeCpAccessValidator.java"
+			  lines="0-9999"/>
+	<suppress checks="ClassFanOutComplexity"
+			  files="AttributeCpAccessValidator.java"
+			  lines="0-9999"/>
 </suppressions>

@@ -41,11 +41,14 @@ implementation 'com.github.Col-E:cafedude:VERSION'
 ```
 
 ### Reading and writing classes
-
+The default settings have anti-obfuscation measures enabled.
 ```java
 // Reading
 byte[] code = ...
-ClassFile cf = new ClassFileReader().read(code);
+ClassFileReader cr = new ClassFileReader();
+// cr.setDropForwardVersioned(false) - enabled by default
+// cr.setDropIllegalCpRefs(false) - enabled by default
+ClassFile cf = cr.read(code);
 // Writing
 code = new ClassFileWriter().write(cf);
 ```

@@ -22,7 +22,7 @@ import me.coley.cafedude.annotation.TypeAnnotation;
 import me.coley.cafedude.annotation.TypePath;
 import me.coley.cafedude.annotation.TypePathElement;
 import me.coley.cafedude.annotation.Utf8ElementValue;
-import me.coley.cafedude.attribute.AnnotationDefault;
+import me.coley.cafedude.attribute.AnnotationDefaultAttribute;
 import me.coley.cafedude.attribute.AnnotationsAttribute;
 import me.coley.cafedude.attribute.Attribute;
 import me.coley.cafedude.attribute.ParameterAnnotationsAttribute;
@@ -51,7 +51,7 @@ public class AnnotationWriter {
 	}
 
 	/**
-	 * Writes an {@link AnnotationDefault} attribute.
+	 * Writes an {@link AnnotationDefaultAttribute} attribute.
 	 *
 	 * @param annoDefault
 	 * 		Default value attribute to write.
@@ -59,7 +59,7 @@ public class AnnotationWriter {
 	 * @throws IOException
 	 * 		When the stream cannot be written to.
 	 */
-	public void writeAnnotationDefault(AnnotationDefault annoDefault) throws IOException {
+	public void writeAnnotationDefault(AnnotationDefaultAttribute annoDefault) throws IOException {
 		writeCommon(annoDefault);
 		writeElementValue(annoDefault.getElementValue());
 	}

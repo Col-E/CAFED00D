@@ -1,5 +1,6 @@
 package me.coley.cafedude.io;
 
+import me.coley.cafedude.ConstPool;
 import me.coley.cafedude.annotation.Annotation;
 import me.coley.cafedude.annotation.AnnotationElementValue;
 import me.coley.cafedude.annotation.ArrayElementValue;
@@ -25,10 +26,11 @@ import me.coley.cafedude.annotation.TypePath;
 import me.coley.cafedude.annotation.TypePathElement;
 import me.coley.cafedude.annotation.TypePathKind;
 import me.coley.cafedude.annotation.Utf8ElementValue;
-import me.coley.cafedude.attribute.AnnotationDefault;
+import me.coley.cafedude.attribute.AnnotationDefaultAttribute;
 import me.coley.cafedude.attribute.AnnotationsAttribute;
 import me.coley.cafedude.attribute.Attribute;
 import me.coley.cafedude.attribute.ParameterAnnotationsAttribute;
+import me.coley.cafedude.constant.CpUtf8;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,16 +47,19 @@ import java.util.Map;
  *
  * @author Matt Coley
  */
-// TODO: Validate that indices used are valid
 public class AnnotationReader {
 	private static final Logger logger = LoggerFactory.getLogger(AnnotationReader.class);
+	private final ConstPool cp;
 	private final DataInputStream is;
 	private final int nameIndex;
 	private final AttributeContext context;
+	private final int maxCpIndex;
 
 	/**
 	 * Create an annotation reader.
 	 *
+	 * @param cp
+	 * 		The constant pool to use for reference.
 	 * @param is
 	 * 		Stream to read from.
 	 * @param length
@@ -68,25 +73,27 @@ public class AnnotationReader {
 	 * 		When the subsection of the given stream for annotation reading cannot be allocated,
 	 * 		possible due to out-of-bounds problems. This is an indicator of a malformed class.
 	 */
-	public AnnotationReader(DataInputStream is, int length, int nameIndex, AttributeContext context)
+	public AnnotationReader(ConstPool cp, DataInputStream is, int length, int nameIndex, AttributeContext context)
 			throws IOException {
+		this.cp = cp;
 		byte[] data = new byte[length];
 		is.readFully(data);
 		this.is = new DataInputStream(new ByteArrayInputStream(data));
 		this.nameIndex = nameIndex;
 		this.context = context;
+		this.maxCpIndex = cp.size();
 	}
 
 	/**
-	 * Reads an {@link AnnotationDefault} attribute.
+	 * Reads an {@link AnnotationDefaultAttribute} attribute.
 	 *
 	 * @return The annotation default attribute read. {@code null} when malformed.
 	 */
-	public AnnotationDefault readAnnotationDefault() {
+	public AnnotationDefaultAttribute readAnnotationDefault() {
 		try {
-			return new AnnotationDefault(nameIndex, readElementValue());
+			return new AnnotationDefaultAttribute(nameIndex, readElementValue());
 		} catch (Throwable t) {
-			logger.debug("Failed reading AnnotationDefault", t);
+			logger.debug("Illegally formatted AnnotationDefault", t);
 			return null;
 		}
 	}
@@ -115,7 +122,7 @@ public class AnnotationReader {
 			// Didn't throw exception, its valid
 			return new AnnotationsAttribute(nameIndex, annotations);
 		} catch (Throwable t) {
-			logger.debug("Failed reading Annotations", t);
+			logger.debug("Illegally formatted Annotations", t);
 			return null;
 		}
 	}
@@ -145,7 +152,7 @@ public class AnnotationReader {
 			// Didn't crash, its valid
 			return new ParameterAnnotationsAttribute(nameIndex, parameterAnnotations);
 		} catch (Throwable t) {
-			logger.debug("Failed reading ParameterAnnotations", t);
+			logger.debug("Illegally formatted ParameterAnnotations", t);
 			return null;
 		}
 	}
@@ -170,7 +177,7 @@ public class AnnotationReader {
 			// Didn't throw exception, its valid
 			return new AnnotationsAttribute(nameIndex, annotations);
 		} catch (Throwable t) {
-			logger.debug("Failed reading TypeAnnotations", t);
+			logger.debug("Illegally formatted TypeAnnotations", t);
 			return null;
 		}
 	}
@@ -183,6 +190,16 @@ public class AnnotationReader {
 	 */
 	private Annotation readAnnotation() throws IOException {
 		int typeIndex = is.readUnsignedShort();
+		// Validate the type points to an entry in the constant pool that is valid UTF8 item
+		if (typeIndex >= maxCpIndex) {
+			logger.warn("Illegally formatted Annotation item, out of CP bounds, type_index={} >= {}",
+					typeIndex, maxCpIndex);
+			throw new IllegalArgumentException("Annotation type_index out of CP bounds!");
+		}
+		if (!cp.isIndexOfType(typeIndex, CpUtf8.class)) {
+			logger.warn("Illegally formatted Annotation item, type_index={} != CP_UTF8", typeIndex);
+			throw new IllegalArgumentException("Annotation type_index doesn ot point to CP_UTF8!");
+		}
 		Map<Integer, ElementValue> values = readElementPairs();
 		return new Annotation(typeIndex, values);
 	}
