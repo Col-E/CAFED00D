@@ -162,7 +162,7 @@ public class AnnotationReader {
 	 *
 	 * @return The type annotation attribute read. {@code null} if the annotation was malformed.
 	 */
-	public Attribute readTypeAnnotations() {
+	public AnnotationsAttribute readTypeAnnotations() {
 		try {
 			// Skip if obvious junk
 			int numAnnotations = is.readUnsignedShort();

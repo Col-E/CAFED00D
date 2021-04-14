@@ -39,6 +39,13 @@ public class IndexableByteStream extends DataInputStream {
 	}
 
 	/**
+	 * @return Backing byte stream buffer.
+	 */
+	public byte[] getBuffer() {
+		return exposer.getBuffer();
+	}
+
+	/**
 	 * Exposes position in {@link java.io.ByteArrayInputStream}.
 	 *
 	 * @author Matt Coley
@@ -54,6 +61,10 @@ public class IndexableByteStream extends DataInputStream {
 
 		private int getIndex() {
 			return pos;
+		}
+
+		private byte[] getBuffer() {
+			return buf;
 		}
 	}
 }
