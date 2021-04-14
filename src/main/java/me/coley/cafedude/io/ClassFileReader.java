@@ -6,7 +6,6 @@ import me.coley.cafedude.Field;
 import me.coley.cafedude.InvalidClassException;
 import me.coley.cafedude.Method;
 import me.coley.cafedude.attribute.Attribute;
-import me.coley.cafedude.attribute.AttributeCpAccessValidator;
 import me.coley.cafedude.constant.ConstPoolEntry;
 import me.coley.cafedude.constant.CpClass;
 import me.coley.cafedude.constant.CpDouble;
@@ -33,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static me.coley.cafedude.Constants.ConstantPool.*;
+import static me.coley.cafedude.attribute.AttributeCpAccessValidator.isValid;
 
 /**
  * Class file format parser.
@@ -93,7 +93,7 @@ public class ClassFileReader {
 				int numAttributes = is.readUnsignedShort();
 				for (int i = 0; i < numAttributes; i++) {
 					Attribute attr = new AttributeReader(this, builder, is).readAttribute(AttributeContext.CLASS);
-					if (attr != null && (!doDropIllegalCpRefs() || AttributeCpAccessValidator.isValid(builder.getPool(), attr)))
+					if (attr != null && (!doDropIllegalCpRefs() || isValid(builder.getPool(), attr)))
 						builder.addAttribute(attr);
 				}
 				return builder.build();
@@ -158,7 +158,8 @@ public class ClassFileReader {
 	}
 
 	/**
-	 * @param builder Class being built/read.
+	 * @param builder
+	 * 		Class being built/read.
 	 *
 	 * @return Field member.
 	 *
@@ -173,14 +174,15 @@ public class ClassFileReader {
 		List<Attribute> attributes = new ArrayList<>();
 		for (int i = 0; i < numAttributes; i++) {
 			Attribute attr = new AttributeReader(this, builder, is).readAttribute(AttributeContext.FIELD);
-			if (attr != null && (!doDropIllegalCpRefs() || AttributeCpAccessValidator.isValid(builder.getPool(), attr)))
+			if (attr != null && (!doDropIllegalCpRefs() || isValid(builder.getPool(), attr)))
 				attributes.add(attr);
 		}
 		return new Field(attributes, access, nameIndex, typeIndex);
 	}
 
 	/**
-	 * @param builder Class being built/read.
+	 * @param builder
+	 * 		Class being built/read.
 	 *
 	 * @return Method member.
 	 *
@@ -195,7 +197,7 @@ public class ClassFileReader {
 		List<Attribute> attributes = new ArrayList<>();
 		for (int i = 0; i < numAttributes; i++) {
 			Attribute attr = new AttributeReader(this, builder, is).readAttribute(AttributeContext.METHOD);
-			if (attr != null && (!doDropIllegalCpRefs() || AttributeCpAccessValidator.isValid(builder.getPool(), attr)))
+			if (attr != null && (!doDropIllegalCpRefs() || isValid(builder.getPool(), attr)))
 				attributes.add(attr);
 		}
 		return new Method(attributes, access, nameIndex, typeIndex);

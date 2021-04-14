@@ -28,7 +28,6 @@ import me.coley.cafedude.annotation.TypePathKind;
 import me.coley.cafedude.annotation.Utf8ElementValue;
 import me.coley.cafedude.attribute.AnnotationDefaultAttribute;
 import me.coley.cafedude.attribute.AnnotationsAttribute;
-import me.coley.cafedude.attribute.Attribute;
 import me.coley.cafedude.attribute.ParameterAnnotationsAttribute;
 import me.coley.cafedude.constant.CpUtf8;
 import org.slf4j.Logger;

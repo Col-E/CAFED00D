@@ -56,4 +56,14 @@
 	<suppress checks="ClassFanOutComplexity"
 			  files="AttributeCpAccessValidator.java"
 			  lines="0-9999"/>
+
+	<suppress checks="CyclomaticComplexity"
+			  files="AttributeReader.java"
+			  lines="0-9999"/>
+	<suppress checks="ClassFanOutComplexity"
+			  files="AttributeReader.java"
+			  lines="0-9999"/>
+	<suppress checks="ClassDataAbstractionCoupling"
+			  files="AttributeReader.java"
+			  lines="0-9999"/>
 </suppressions>

@@ -37,12 +37,19 @@ import java.util.List;
 
 import static me.coley.cafedude.Constants.Attributes.*;
 
+/**
+ * Attribute reader for all attributes.
+ * <br>
+ * Annotations delegate to {@link AnnotationReader} due to complexity.
+ *
+ * @author Matt Coley
+ */
 public class AttributeReader {
 	private static final Logger logger = LoggerFactory.getLogger(AttributeReader.class);
 	private final IndexableByteStream is;
 	private final ClassFileReader reader;
 	private final ClassBuilder builder;
-	//
+	// Attribute info
 	private final int expectedContentLength;
 	private final int nameIndex;
 
@@ -60,12 +67,12 @@ public class AttributeReader {
 	public AttributeReader(ClassFileReader reader, ClassBuilder builder, DataInputStream is) throws IOException {
 		this.reader = reader;
 		this.builder = builder;
-		//
+		// Extract name/lengtjh
 		this.nameIndex = is.readUnsignedShort();
 		this.expectedContentLength = is.readInt();
+		// Create local stream
 		byte[] subsection = new byte[expectedContentLength];
 		is.readFully(subsection);
-		//
 		this.is = new IndexableByteStream(subsection);
 	}
 
@@ -292,7 +299,8 @@ public class AttributeReader {
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	private AnnotationsAttribute readAnnotations(AttributeContext context) throws IOException {
-		return new AnnotationReader(builder.getPool(), is, expectedContentLength, nameIndex, context).readAnnotations();
+		return new AnnotationReader(builder.getPool(), is, expectedContentLength, nameIndex, context)
+				.readAnnotations();
 	}
 
 	/**
@@ -305,7 +313,8 @@ public class AttributeReader {
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	private ParameterAnnotationsAttribute readParameterAnnotations(AttributeContext context) throws IOException {
-		return new AnnotationReader(builder.getPool(), is, expectedContentLength, nameIndex, context).readParameterAnnotations();
+		return new AnnotationReader(builder.getPool(), is, expectedContentLength, nameIndex, context)
+				.readParameterAnnotations();
 	}
 
 	/**
@@ -318,7 +327,8 @@ public class AttributeReader {
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	private AnnotationsAttribute readTypeAnnotations(AttributeContext context) throws IOException {
-		return new AnnotationReader(builder.getPool(), is, expectedContentLength, nameIndex, context).readTypeAnnotations();
+		return new AnnotationReader(builder.getPool(), is, expectedContentLength, nameIndex, context)
+				.readTypeAnnotations();
 	}
 
 	/**
@@ -331,7 +341,8 @@ public class AttributeReader {
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	private AnnotationDefaultAttribute readAnnotationDefault(AttributeContext context) throws IOException {
-		return new AnnotationReader(builder.getPool(), is, expectedContentLength, nameIndex, context).readAnnotationDefault();
+		return new AnnotationReader(builder.getPool(), is, expectedContentLength, nameIndex, context)
+				.readAnnotationDefault();
 	}
 
 	/**
