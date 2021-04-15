@@ -1,10 +1,27 @@
 package me.coley.cafedude.io;
 
-import me.coley.cafedude.*;
-import me.coley.cafedude.attribute.*;
-import me.coley.cafedude.attribute.BootstrapMethodsAttribute.BootstrapMethod;
-import me.coley.cafedude.attribute.InnerClassesAttribute.InnerClass;
-import me.coley.cafedude.constant.*;
+import me.coley.cafedude.ClassFile;
+import me.coley.cafedude.Constants;
+import me.coley.cafedude.Field;
+import me.coley.cafedude.InvalidClassException;
+import me.coley.cafedude.Method;
+import me.coley.cafedude.attribute.Attribute;
+import me.coley.cafedude.constant.ConstPoolEntry;
+import me.coley.cafedude.constant.ConstRef;
+import me.coley.cafedude.constant.CpClass;
+import me.coley.cafedude.constant.CpDouble;
+import me.coley.cafedude.constant.CpDynamic;
+import me.coley.cafedude.constant.CpFloat;
+import me.coley.cafedude.constant.CpInt;
+import me.coley.cafedude.constant.CpInvokeDynamic;
+import me.coley.cafedude.constant.CpLong;
+import me.coley.cafedude.constant.CpMethodHandle;
+import me.coley.cafedude.constant.CpMethodType;
+import me.coley.cafedude.constant.CpModule;
+import me.coley.cafedude.constant.CpNameType;
+import me.coley.cafedude.constant.CpPackage;
+import me.coley.cafedude.constant.CpString;
+import me.coley.cafedude.constant.CpUtf8;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -19,6 +36,7 @@ import java.io.IOException;
  */
 public class ClassFileWriter {
 	private DataOutputStream out;
+	private AttributeWriter attributeWriter;
 
 	/**
 	 * @param clazz
@@ -27,12 +45,13 @@ public class ClassFileWriter {
 	 * @return Bytecode of class.
 	 *
 	 * @throws InvalidClassException
-	 * 		when the class cannot be written.
+	 * 		When the class cannot be written.
 	 */
 	public byte[] write(ClassFile clazz) throws InvalidClassException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try (DataOutputStream out = new DataOutputStream(baos)) {
 			this.out = out;
+			attributeWriter = new AttributeWriter(clazz);
 			// Write magic header
 			out.writeInt(0xCAFEBABE);
 			// Version
@@ -54,15 +73,15 @@ public class ClassFileWriter {
 			// Fields
 			out.writeShort(clazz.getFields().size());
 			for (Field field : clazz.getFields())
-				writeField(field, clazz);
+				writeField(field);
 			// Methods
 			out.writeShort(clazz.getMethods().size());
 			for (Method method : clazz.getMethods())
-				writeMethod(method, clazz);
+				writeMethod(method);
 			// Attributes
 			out.writeShort(clazz.getAttributes().size());
 			for (Attribute attribute : clazz.getAttributes())
-				writeAttribute(attribute, clazz);
+				writeAttribute(attribute);
 			return baos.toByteArray();
 		} catch (IOException ex) {
 			throw new InvalidClassException(ex);
@@ -70,10 +89,13 @@ public class ClassFileWriter {
 	}
 
 	/**
-	 * @param entry Constant pool entry to write.
+	 * @param entry
+	 * 		Constant pool entry to write.
 	 *
-	 * @throws IOException           When the stream cannot be written to.
-	 * @throws InvalidClassException When the class has unexpected data.
+	 * @throws IOException
+	 * 		When the stream cannot be written to.
+	 * @throws InvalidClassException
+	 * 		When the class has unexpected data.
 	 */
 	private void writeCpEntry(ConstPoolEntry entry) throws IOException, InvalidClassException {
 		int tag = entry.getTag();
@@ -137,202 +159,52 @@ public class ClassFileWriter {
 	}
 
 	/**
-	 * @param attribute Attribute to write.
-	 * @param clazz     Class to pull constant pool data from.
+	 * @param attribute
+	 * 		Attribute to write.
 	 *
-	 * @throws IOException           When the stream cannot be written to.
-	 * @throws InvalidClassException When the attribute name points to a non-utf8
-	 *                               constant.
+	 * @throws IOException
+	 * 		When the stream cannot be written to.
+	 * @throws InvalidClassException
+	 * 		When the attribute name points to a non-utf8
+	 * 		constant.
 	 */
-	private void writeAttribute(Attribute attribute, ClassFile clazz) throws IOException, InvalidClassException {
-		if (attribute instanceof DefaultAttribute) {
-			DefaultAttribute dflt = (DefaultAttribute) attribute;
-			out.writeShort(dflt.getNameIndex());
-			out.writeInt(dflt.getData().length);
-			out.write(dflt.getData());
-		} else {
-			ConstPoolEntry cpName = clazz.getCp(attribute.getNameIndex());
-			if (!(cpName instanceof CpUtf8))
-				throw new InvalidClassException("Attribute name index does not point to CP_UTF8");
-			String attrName = ((CpUtf8) cpName).getText();
-			switch (attrName) {
-				case Constants.Attributes.BOOTSTRAP_METHODS:
-					BootstrapMethodsAttribute bsms = (BootstrapMethodsAttribute) attribute;
-					out.writeShort(bsms.getNameIndex());
-					out.writeInt(bsms.computeInternalLength());
-					out.writeShort(bsms.getBootstrapMethods().size());
-					for (BootstrapMethod bsm : bsms.getBootstrapMethods()) {
-						out.writeShort(bsm.getBsmMethodref());
-						out.writeShort(bsm.getArgs().size());
-						for (int arg : bsm.getArgs()) {
-							out.writeShort(arg);
-						}
-					}
-					break;
-				case Constants.Attributes.CHARACTER_RANGE_TABLE:
-					break;
-				case Constants.Attributes.CODE:
-					CodeAttribute code = (CodeAttribute) attribute;
-					out.writeShort(code.getNameIndex());
-					out.writeInt(code.computeInternalLength());
-					out.writeShort(code.getMaxStack());
-					out.writeShort(code.getMaxLocals());
-					out.writeInt(code.getCode().length);
-					out.write(code.getCode());
-					out.writeShort(code.getExceptionTable().size());
-					for (CodeAttribute.ExceptionTableEntry tableEntry : code.getExceptionTable()) {
-						out.writeShort(tableEntry.getStartPc());
-						out.writeShort(tableEntry.getEndPc());
-						out.writeShort(tableEntry.getHandlerPc());
-						out.writeShort(tableEntry.getCatchTypeIndex());
-					}
-					out.writeShort(code.getAttributes().size());
-					for (Attribute subAttribute : code.getAttributes())
-						writeAttribute(subAttribute, clazz);
-					break;
-				case Constants.Attributes.CONSTANT_VALUE:
-					out.writeShort(attribute.getNameIndex());
-					out.writeInt(2);// Only a unsigned short as body
-					out.writeShort(((ConstantValueAttribute) attribute).getConstantValueIndex());
-					break;
-				case Constants.Attributes.COMPILATION_ID:
-					break;
-				case Constants.Attributes.DEPRECATED:
-				case Constants.Attributes.SYNTHETIC:
-					out.writeShort(attribute.getNameIndex());
-					out.writeInt(0);
-					break;
-				case Constants.Attributes.ENCLOSING_METHOD:
-					EnclosingMethodAttribute enclosingMethodAttribute = (EnclosingMethodAttribute) attribute;
-					out.writeShort(enclosingMethodAttribute.getNameIndex());
-					out.writeInt(4);
-					out.writeShort(enclosingMethodAttribute.getClassIndex());
-					out.writeShort(enclosingMethodAttribute.getMethodIndex());
-					break;
-				case Constants.Attributes.EXCEPTIONS:
-					ExceptionsAttribute exceptionsAttribute = (ExceptionsAttribute) attribute;
-					out.writeShort(exceptionsAttribute.getNameIndex());
-					out.writeInt(exceptionsAttribute.computeInternalLength());
-					out.writeShort(exceptionsAttribute.getExceptionIndexTable().length);
-					for (int index : exceptionsAttribute.getExceptionIndexTable()) {
-						out.writeShort(index);
-					}
-					break;
-				case Constants.Attributes.INNER_CLASSES:
-					InnerClassesAttribute innerClassesAttribute = (InnerClassesAttribute) attribute;
-					out.writeShort(innerClassesAttribute.getNameIndex());
-					out.writeInt(innerClassesAttribute.computeInternalLength());
-					out.writeShort(innerClassesAttribute.getInnerClasses().length);
-					for (InnerClass ic : innerClassesAttribute.getInnerClasses()) {
-						out.writeShort(ic.getInnerClassInfoIndex());
-						out.writeShort(ic.getOuterClassInfoIndex());
-						out.writeShort(ic.getInnerNameIndex());
-						out.writeShort(ic.getInnerClassAccessFlags());
-					}
-					break;
-				case Constants.Attributes.LINE_NUMBER_TABLE:
-					break;
-				case Constants.Attributes.LOCAL_VARIABLE_TABLE:
-					break;
-				case Constants.Attributes.LOCAL_VARIABLE_TYPE_TABLE:
-					break;
-				case Constants.Attributes.METHOD_PARAMETERS:
-					break;
-				case Constants.Attributes.MODULE:
-					break;
-				case Constants.Attributes.MODULE_HASHES:
-					break;
-				case Constants.Attributes.MODULE_MAIN_CLASS:
-					break;
-				case Constants.Attributes.MODULE_PACKAGES:
-					break;
-				case Constants.Attributes.MODULE_RESOLUTION:
-					break;
-				case Constants.Attributes.MODULE_TARGET:
-					break;
-				case Constants.Attributes.NEST_HOST:
-					NestHostAttribute nestHost = (NestHostAttribute) attribute;
-					out.writeShort(nestHost.getNameIndex());
-					out.writeInt(nestHost.computeInternalLength());
-					out.writeShort(nestHost.getHostClassIndex());
-					break;
-				case Constants.Attributes.NEST_MEMBERS:
-					NestMembersAttribute nestMembers = (NestMembersAttribute) attribute;
-					out.writeShort(nestMembers.getNameIndex());
-					out.writeInt(nestMembers.computeInternalLength());
-					out.writeShort(nestMembers.getMemberClassIndices().size());
-					for (int classIndex : nestMembers.getMemberClassIndices()) {
-						out.writeShort(classIndex);
-					}
-					break;
-				case Constants.Attributes.RECORD:
-					break;
-				case Constants.Attributes.RUNTIME_VISIBLE_ANNOTATIONS:
-				case Constants.Attributes.RUNTIME_INVISIBLE_ANNOTATIONS:
-					new AnnotationWriter(out).writeAnnotations((AnnotationsAttribute) attribute);
-					break;
-				case Constants.Attributes.RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
-				case Constants.Attributes.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
-					new AnnotationWriter(out).writeParameterAnnotations((ParameterAnnotationsAttribute) attribute);
-					break;
-				case Constants.Attributes.RUNTIME_VISIBLE_TYPE_ANNOTATIONS:
-				case Constants.Attributes.RUNTIME_INVISIBLE_TYPE_ANNOTATIONS:
-					new AnnotationWriter(out).writeTypeAnnotations((AnnotationsAttribute) attribute);
-					break;
-				case Constants.Attributes.ANNOTATION_DEFAULT:
-					new AnnotationWriter(out).writeAnnotationDefault((AnnotationDefaultAttribute) attribute);
-					break;
-				case Constants.Attributes.PERMITTED_SUBCLASSES:
-					break;
-				case Constants.Attributes.SIGNATURE:
-					break;
-				case Constants.Attributes.SOURCE_DEBUG_EXTENSION:
-					DebugExtensionAttribute debugExtension = (DebugExtensionAttribute) attribute;
-					out.writeShort(debugExtension.getNameIndex());
-					out.writeInt(debugExtension.getDebugExtension().length);
-					out.write(debugExtension.getDebugExtension());
-					break;
-				case Constants.Attributes.SOURCE_FILE:
-					break;
-				case Constants.Attributes.SOURCE_ID:
-					break;
-				case Constants.Attributes.STACK_MAP_TABLE:
-					break;
-				default:
-					break;
-			}
-		}
+	private void writeAttribute(Attribute attribute) throws IOException, InvalidClassException {
+		out.write(attributeWriter.writeAttribute(attribute));
 	}
 
 	/**
-	 * @param field Field to write.
-	 * @param clazz Declaring class.
+	 * @param field
+	 * 		Field to write.
 	 *
-	 * @throws IOException           When the stream cannot be written to.
-	 * @throws InvalidClassException When an attached attribute is invalid.
+	 * @throws IOException
+	 * 		When the stream cannot be written to.
+	 * @throws InvalidClassException
+	 * 		When an attached attribute is invalid.
 	 */
-	private void writeField(Field field, ClassFile clazz) throws IOException, InvalidClassException {
+	private void writeField(Field field) throws IOException, InvalidClassException {
 		out.writeShort(field.getAccess());
 		out.writeShort(field.getNameIndex());
 		out.writeShort(field.getTypeIndex());
 		out.writeShort(field.getAttributes().size());
 		for (Attribute attribute : field.getAttributes())
-			writeAttribute(attribute, clazz);
+			writeAttribute(attribute);
 	}
 
 	/**
-	 * @param method Method to write.
-	 * @param clazz  Declaring class.
+	 * @param method
+	 * 		Method to write.
 	 *
-	 * @throws IOException           When the stream cannot be written to.
-	 * @throws InvalidClassException When an attached attribute is invalid.
+	 * @throws IOException
+	 * 		When the stream cannot be written to.
+	 * @throws InvalidClassException
+	 * 		When an attached attribute is invalid.
 	 */
-	private void writeMethod(Method method, ClassFile clazz) throws IOException, InvalidClassException {
+	private void writeMethod(Method method) throws IOException, InvalidClassException {
 		out.writeShort(method.getAccess());
 		out.writeShort(method.getNameIndex());
 		out.writeShort(method.getTypeIndex());
 		out.writeShort(method.getAttributes().size());
 		for (Attribute attribute : method.getAttributes())
-			writeAttribute(attribute, clazz);
+			writeAttribute(attribute);
 	}
 }

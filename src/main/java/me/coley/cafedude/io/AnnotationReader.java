@@ -50,8 +50,8 @@ public class AnnotationReader {
 	private static final Logger logger = LoggerFactory.getLogger(AnnotationReader.class);
 	private final ConstPool cp;
 	private final DataInputStream is;
-	private final int nameIndex;
 	private final AttributeContext context;
+	private final int nameIndex;
 	private final int maxCpIndex;
 
 	/**

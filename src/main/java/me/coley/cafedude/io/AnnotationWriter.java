@@ -24,7 +24,6 @@ import me.coley.cafedude.annotation.TypePathElement;
 import me.coley.cafedude.annotation.Utf8ElementValue;
 import me.coley.cafedude.attribute.AnnotationDefaultAttribute;
 import me.coley.cafedude.attribute.AnnotationsAttribute;
-import me.coley.cafedude.attribute.Attribute;
 import me.coley.cafedude.attribute.ParameterAnnotationsAttribute;
 
 import java.io.DataOutputStream;
@@ -60,7 +59,6 @@ public class AnnotationWriter {
 	 * 		When the stream cannot be written to.
 	 */
 	public void writeAnnotationDefault(AnnotationDefaultAttribute annoDefault) throws IOException {
-		writeCommon(annoDefault);
 		writeElementValue(annoDefault.getElementValue());
 	}
 
@@ -78,7 +76,6 @@ public class AnnotationWriter {
 	 * 		When the stream cannot be written to.
 	 */
 	public void writeAnnotations(AnnotationsAttribute annos) throws IOException {
-		writeCommon(annos);
 		out.writeShort(annos.getAnnotations().size());
 		for (Annotation annotation : annos.getAnnotations()) {
 			writeAnnotation(annotation);
@@ -98,7 +95,6 @@ public class AnnotationWriter {
 	 * 		When the stream cannot be written to.
 	 */
 	public void writeTypeAnnotations(AnnotationsAttribute annos) throws IOException {
-		writeCommon(annos);
 		out.writeShort(annos.getAnnotations().size());
 		for (Annotation annotation : annos.getAnnotations()) {
 			writeTypeAnnotation((TypeAnnotation) annotation);
@@ -115,7 +111,6 @@ public class AnnotationWriter {
 	 * 		When the stream cannot be written to.
 	 */
 	public void writeParameterAnnotations(ParameterAnnotationsAttribute annos) throws IOException {
-		writeCommon(annos);
 		out.writeByte(annos.getParameterAnnotations().size());
 		for (Map.Entry<Integer, List<Annotation>> parameterAnnotations : annos.getParameterAnnotations().entrySet()) {
 			List<Annotation> annotations = parameterAnnotations.getValue();
@@ -286,19 +281,5 @@ public class AnnotationWriter {
 			default:
 				break;
 		}
-	}
-
-	/**
-	 * Write annotation attribute name index and internal content length.
-	 *
-	 * @param attribute
-	 * 		Annotation to write.
-	 *
-	 * @throws IOException
-	 * 		When the stream cannot be written to.
-	 */
-	private void writeCommon(Attribute attribute) throws IOException {
-		out.writeShort(attribute.getNameIndex());
-		out.writeInt(attribute.computeInternalLength());
 	}
 }
