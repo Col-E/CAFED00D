@@ -18,7 +18,7 @@ public class ClassElementValue extends ElementValue {
 		super(tag);
 		if (tag != 'c')
 			throw new IllegalArgumentException("Class element value must have 'c' tag");
-		this.classIndex = this.classIndex;
+		this.classIndex = classIndex;
 	}
 
 	/**
