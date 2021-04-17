@@ -23,6 +23,8 @@ import me.coley.cafedude.attribute.InnerClassesAttribute.InnerClass;
 import me.coley.cafedude.attribute.NestHostAttribute;
 import me.coley.cafedude.attribute.NestMembersAttribute;
 import me.coley.cafedude.attribute.ParameterAnnotationsAttribute;
+import me.coley.cafedude.attribute.SignatureAttribute;
+import me.coley.cafedude.attribute.SourceFileAttribute;
 import me.coley.cafedude.attribute.SyntheticAttribute;
 import me.coley.cafedude.constant.CpUtf8;
 import org.slf4j.Logger;
@@ -163,6 +165,10 @@ public class AttributeReader {
 				return readSynthetic();
 			case BOOTSTRAP_METHODS:
 				return readBoostrapMethods();
+			case SIGNATURE:
+				return readSignature();
+			case SOURCE_FILE:
+				return readSourceFile();
 			case CHARACTER_RANGE_TABLE:
 			case COMPILATION_ID:
 			case LINE_NUMBER_TABLE:
@@ -177,8 +183,6 @@ public class AttributeReader {
 			case MODULE_TARGET:
 			case PERMITTED_SUBCLASSES:
 			case RECORD:
-			case SIGNATURE:
-			case SOURCE_FILE:
 			case SOURCE_ID:
 			case STACK_MAP_TABLE:
 			default:
@@ -194,6 +198,28 @@ public class AttributeReader {
 		// Default handling, skip remaining bytes
 		is.skipBytes(expectedContentLength);
 		return new DefaultAttribute(nameIndex, is.getBuffer());
+	}
+
+	/**
+	 * @return Signature attribute.
+	 *
+	 * @throws IOException
+	 * 		When the stream is unexpectedly closed or ends.
+	 */
+	private SignatureAttribute readSignature() throws IOException {
+		int signatureIndex = is.readUnsignedShort();
+		return new SignatureAttribute(nameIndex, signatureIndex);
+	}
+
+	/**
+	 * @return Source file name attribute.
+	 *
+	 * @throws IOException
+	 * 		When the stream is unexpectedly closed or ends.
+	 */
+	private SourceFileAttribute readSourceFile() throws IOException {
+		int sourceFileNameIndex = is.readUnsignedShort();
+		return new SourceFileAttribute(nameIndex, sourceFileNameIndex);
 	}
 
 	/**
@@ -216,9 +242,9 @@ public class AttributeReader {
 	 */
 	private ExceptionsAttribute readExceptions() throws IOException {
 		int numberOfExceptionIndices = is.readUnsignedShort();
-		int[] exceptionIndexTable = new int[numberOfExceptionIndices];
+		List<Integer> exceptionIndexTable = new ArrayList<>();
 		for (int i = 0; i < numberOfExceptionIndices; i++) {
-			exceptionIndexTable[i] = is.readUnsignedShort();
+			exceptionIndexTable.add(is.readUnsignedShort());
 		}
 		return new ExceptionsAttribute(nameIndex, exceptionIndexTable);
 	}
@@ -231,10 +257,14 @@ public class AttributeReader {
 	 */
 	private InnerClassesAttribute readInnerClasses() throws IOException {
 		int numberOfInnerClasses = is.readUnsignedShort();
-		InnerClass[] innerClasses = new InnerClass[numberOfInnerClasses];
+		List<InnerClass> innerClasses = new ArrayList<>();
 		for (int i = 0; i < numberOfInnerClasses; i++) {
-			innerClasses[i] = new InnerClass(is.readUnsignedShort(),
-					is.readUnsignedShort(), is.readUnsignedShort(), is.readUnsignedShort());
+			int innerClassInfoIndex = is.readUnsignedShort();
+			int outerClassInfoIndex = is.readUnsignedShort();
+			int innerNameIndex = is.readUnsignedShort();
+			int innerClassAccessFlags = is.readUnsignedShort();
+			innerClasses.add(new InnerClass(innerClassInfoIndex, outerClassInfoIndex,
+					innerNameIndex, innerClassAccessFlags));
 		}
 		return new InnerClassesAttribute(nameIndex, innerClasses);
 	}

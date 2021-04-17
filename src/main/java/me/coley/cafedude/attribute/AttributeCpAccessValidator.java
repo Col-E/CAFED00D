@@ -9,7 +9,11 @@ import me.coley.cafedude.annotation.ElementValue;
 import me.coley.cafedude.annotation.EnumElementValue;
 import me.coley.cafedude.annotation.PrimitiveElementValue;
 import me.coley.cafedude.annotation.Utf8ElementValue;
+import me.coley.cafedude.attribute.CodeAttribute.ExceptionTableEntry;
 import me.coley.cafedude.attribute.InnerClassesAttribute.InnerClass;
+import me.coley.cafedude.constant.ConstPoolEntry;
+import me.coley.cafedude.constant.CpClass;
+import me.coley.cafedude.constant.CpUtf8;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +32,17 @@ import static me.coley.cafedude.Constants.Attributes.*;
  */
 public class AttributeCpAccessValidator {
 	private static final Logger logger = LoggerFactory.getLogger(AttributeCpAccessValidator.class);
+	private final Map<Integer, Predicate<Integer>> expectedTypeMasks = new HashMap<>();
+	private final Map<Integer, Predicate<ConstPoolEntry>> cpEntryValidators = new HashMap<>();
+	private final ConstPool pool;
+
+	/**
+	 * @param pool
+	 * 		CP to pull from.
+	 */
+	private AttributeCpAccessValidator(ConstPool pool) {
+		this.pool = pool;
+	}
 
 	/**
 	 * Validate the given attribute.
@@ -43,13 +58,16 @@ public class AttributeCpAccessValidator {
 	 * {@code false} if the attribute has invalid CP references.
 	 */
 	public static <T extends Attribute> boolean isValid(ConstPool cp, T attribute) {
+		return new AttributeCpAccessValidator(cp).isValid(attribute);
+	}
+
+	private <T extends Attribute> boolean isValid(T attribute) {
 		// Check name index
-		int maxCpIndex = cp.size();
+		int maxCpIndex = pool.size();
 		if (attribute.getNameIndex() >= maxCpIndex)
 			return false;
 		// Check indices match certain types (key=cp_index, value=mask of allowed cp_tags)
-		String name = cp.getUtf(attribute.getNameIndex());
-		Map<Integer, Predicate<Integer>> expectedTypeMasks = new HashMap<>();
+		String name = pool.getUtf(attribute.getNameIndex());
 		boolean allow0Case = false;
 		switch (name) {
 			case CONSTANT_VALUE:
@@ -62,7 +80,7 @@ public class AttributeCpAccessValidator {
 			case RUNTIME_VISIBLE_TYPE_ANNOTATIONS:
 				AnnotationsAttribute annotations = (AnnotationsAttribute) attribute;
 				for (Annotation anno : annotations.getAnnotations())
-					addAnnotationValidation(expectedTypeMasks, anno);
+					addAnnotationValidation(anno);
 				break;
 			case RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
 			case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
@@ -70,54 +88,87 @@ public class AttributeCpAccessValidator {
 				Collection<List<Annotation>> parameterAnnos = paramAnnotations.getParameterAnnotations().values();
 				for (List<Annotation> annotationList : parameterAnnos)
 					for (Annotation anno : annotationList)
-						addAnnotationValidation(expectedTypeMasks, anno);
+						addAnnotationValidation(anno);
 				break;
 			case ANNOTATION_DEFAULT:
 				AnnotationDefaultAttribute annotationDefault = (AnnotationDefaultAttribute) attribute;
 				ElementValue elementValue = annotationDefault.getElementValue();
-				addElementValueValidation(expectedTypeMasks, elementValue);
+				addElementValueValidation(elementValue);
 				break;
 			case NEST_HOST:
 				NestHostAttribute nestHost = (NestHostAttribute) attribute;
 				expectedTypeMasks.put(nestHost.getHostClassIndex(), i -> i == ConstantPool.CLASS);
+				cpEntryValidators.put(nestHost.getHostClassIndex(), matchClassType());
 				break;
 			case NEST_MEMBERS:
 				NestMembersAttribute nestMembers = (NestMembersAttribute) attribute;
 				for (int memberIndex : nestMembers.getMemberClassIndices()) {
 					expectedTypeMasks.put(memberIndex, i -> i == ConstantPool.CLASS);
+					cpEntryValidators.put(memberIndex, matchClassType());
 				}
 				break;
 			case ENCLOSING_METHOD:
 				EnclosingMethodAttribute enclosingMethod = (EnclosingMethodAttribute) attribute;
 				expectedTypeMasks.put(enclosingMethod.getClassIndex(), i -> i == ConstantPool.CLASS);
+				cpEntryValidators.put(enclosingMethod.getClassIndex(), matchClassType());
 				// method_index must be zero if the current class was immediately enclosed in source code by an
 				//   instance initializer, static initializer, instance variable initializer,
 				//   or class variable initializer
 				// Otherwise it points to the method name_type value
 				expectedTypeMasks.put(enclosingMethod.getMethodIndex(), i -> i == 0 || i == ConstantPool.NAME_TYPE);
-				allow0Case = true;
+				allow0Case = (enclosingMethod.getMethodIndex() == 0);
 				break;
 			case EXCEPTIONS:
 				ExceptionsAttribute exceptions = (ExceptionsAttribute) attribute;
 				for (int exceptionTypeIndex : exceptions.getExceptionIndexTable()) {
 					expectedTypeMasks.put(exceptionTypeIndex, i -> i == ConstantPool.CLASS);
+					cpEntryValidators.put(exceptionTypeIndex, matchClassType());
 				}
 				break;
 			case INNER_CLASSES:
 				InnerClassesAttribute innerClasses = (InnerClassesAttribute) attribute;
 				for (InnerClass innerClass : innerClasses.getInnerClasses()) {
-					expectedTypeMasks.put(innerClass.getInnerClassInfoIndex(), i -> i == ConstantPool.CLASS);
+					expectedTypeMasks.put(innerClass.getInnerClassInfoIndex(), i -> i == 0 || i == ConstantPool.CLASS);
+					cpEntryValidators.put(innerClass.getInnerClassInfoIndex(), matchClassType());
 					// 0 if the defining class is the top-level class
 					expectedTypeMasks.put(innerClass.getOuterClassInfoIndex(), i -> i == 0 || i == ConstantPool.CLASS);
 					// 0 if anonymous, otherwise name index
 					expectedTypeMasks.put(innerClass.getInnerNameIndex(), i -> i == 0 || i == ConstantPool.UTF8);
-					allow0Case = true;
+					allow0Case |= innerClass.getInnerClassInfoIndex() == 0 || innerClass.getOuterClassInfoIndex() == 0;
 				}
 				break;
-			case SOURCE_DEBUG_EXTENSION:
 			case CODE:
+				CodeAttribute code = (CodeAttribute) attribute;
+				for (Attribute subAttr : code.getAttributes()) {
+					if (!isValid(subAttr)) {
+						logger.info("Attribute '{}' will be removed since a sub-attribute is not legal!", name);
+						return false;
+					}
+				}
+				for (ExceptionTableEntry entry : code.getExceptionTable()) {
+					expectedTypeMasks.put(entry.getCatchTypeIndex(), i -> i == 0 ||  i == ConstantPool.CLASS);
+					if (entry.getCatchTypeIndex() == 0) {
+						allow0Case = true;
+					} else {
+						cpEntryValidators.put(entry.getCatchTypeIndex(), matchClassType());
+					}
+				}
+				break;
+			case SIGNATURE:
+				SignatureAttribute signatureAttribute = (SignatureAttribute) attribute;
+				expectedTypeMasks.put(signatureAttribute.getSignatureIndex(), i -> i == ConstantPool.UTF8);
+				cpEntryValidators.put(signatureAttribute.getSignatureIndex(), isNonEmptyUtf8());
+				break;
+			case SOURCE_FILE:
+				SourceFileAttribute sourceFileAttribute = (SourceFileAttribute) attribute;
+				expectedTypeMasks.put(sourceFileAttribute.getSourceFileNameIndex(), i -> i == ConstantPool.UTF8);
+				cpEntryValidators.put(sourceFileAttribute.getSourceFileNameIndex(), isNonEmptyUtf8());
+				break;
+			case SOURCE_DEBUG_EXTENSION:
 			case DEPRECATED:
 			case SYNTHETIC:
+				// no-op
+				break;
 			case BOOTSTRAP_METHODS:
 			case CHARACTER_RANGE_TABLE:
 			case COMPILATION_ID:
@@ -133,7 +184,6 @@ public class AttributeCpAccessValidator {
 			case MODULE_TARGET:
 			case PERMITTED_SUBCLASSES:
 			case RECORD:
-			case SOURCE_FILE:
 			case SOURCE_ID:
 			case STACK_MAP_TABLE:
 			default:
@@ -152,33 +202,47 @@ public class AttributeCpAccessValidator {
 			// Referenced entry must match type
 			if (allow0Case && cpIndex == 0)
 				continue; // skip edge case
-			int tag = cp.get(cpIndex).getTag();
+			// cpEntryValidators
+			ConstPoolEntry cpEntry = pool.get(cpIndex);
+			if (cpEntry == null) {
+				logger.debug("No CP entry at index '{}' in Attribute '{}'", cpIndex, name);
+				return false;
+			}
+			int tag = cpEntry.getTag();
 			if (!entry.getValue().test(tag)) {
 				logger.debug("Invalid '{}' attribute, contains CP reference to index with wrong type!", name);
+				return false;
+			}
+			if (cpEntryValidators.containsKey(cpIndex) && !cpEntryValidators.get(cpIndex).test(cpEntry)) {
+				logger.debug("Invalid '{}' attribute," +
+						" contains CP reference to item that does not match criteria at index: {}", name, cpIndex);
 				return false;
 			}
 		}
 		return true;
 	}
 
-	private static void addAnnotationValidation(Map<Integer, Predicate<Integer>> expectedTypeMasks, Annotation anno) {
+	private void addAnnotationValidation(Annotation anno) {
 		expectedTypeMasks.put(anno.getTypeIndex(), i -> i == ConstantPool.UTF8);
+		cpEntryValidators.put(anno.getTypeIndex(), matchUtf8ClassType());
 		for (Map.Entry<Integer, ElementValue> entry : anno.getValues().entrySet()) {
 			int elementTypeIndex = entry.getKey();
 			expectedTypeMasks.put(elementTypeIndex, i -> i == ConstantPool.UTF8);
-			addElementValueValidation(expectedTypeMasks, entry.getValue());
+			cpEntryValidators.put(elementTypeIndex, matchUtf8ClassType());
+			addElementValueValidation(entry.getValue());
 		}
 	}
 
-	private static void addElementValueValidation(Map<Integer, Predicate<Integer>> expectedTypeMasks,
-												  ElementValue elementValue) {
+	private void addElementValueValidation(ElementValue elementValue) {
 		if (elementValue instanceof ClassElementValue) {
 			int classIndex = ((ClassElementValue) elementValue).getClassIndex();
 			expectedTypeMasks.put(classIndex, i -> i == ConstantPool.CLASS);
+			cpEntryValidators.put(classIndex, matchClassType());
 		} else if (elementValue instanceof EnumElementValue) {
 			EnumElementValue enumElementValue = (EnumElementValue) elementValue;
 			expectedTypeMasks.put(enumElementValue.getNameIndex(), i -> i == ConstantPool.UTF8);
 			expectedTypeMasks.put(enumElementValue.getTypeIndex(), i -> i == ConstantPool.UTF8);
+			cpEntryValidators.put(enumElementValue.getTypeIndex(), matchUtf8ClassType());
 		} else if (elementValue instanceof Utf8ElementValue) {
 			int utfIndex = ((Utf8ElementValue) elementValue).getUtfIndex();
 			expectedTypeMasks.put(utfIndex, i -> i == ConstantPool.UTF8);
@@ -186,5 +250,17 @@ public class AttributeCpAccessValidator {
 			int primValueIndex = ((PrimitiveElementValue) elementValue).getValueIndex();
 			expectedTypeMasks.put(primValueIndex, i -> (i >= ConstantPool.INTEGER && i <= ConstantPool.DOUBLE));
 		}
+	}
+
+	private Predicate<ConstPoolEntry> matchClassType() {
+		return e -> e instanceof CpClass && matchUtf8ClassType().test(pool.get(((CpClass) e).getIndex()));
+	}
+
+	private Predicate<ConstPoolEntry> matchUtf8ClassType() {
+		return isNonEmptyUtf8();
+	}
+
+	private Predicate<ConstPoolEntry> isNonEmptyUtf8() {
+		return e -> e instanceof CpUtf8 && ((CpUtf8) e).getText().length() > 0;
 	}
 }

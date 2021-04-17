@@ -19,6 +19,8 @@ import me.coley.cafedude.attribute.InnerClassesAttribute.InnerClass;
 import me.coley.cafedude.attribute.NestHostAttribute;
 import me.coley.cafedude.attribute.NestMembersAttribute;
 import me.coley.cafedude.attribute.ParameterAnnotationsAttribute;
+import me.coley.cafedude.attribute.SignatureAttribute;
+import me.coley.cafedude.attribute.SourceFileAttribute;
 import me.coley.cafedude.constant.ConstPoolEntry;
 import me.coley.cafedude.constant.CpUtf8;
 
@@ -122,14 +124,14 @@ public class AttributeWriter {
 					break;
 				case Constants.Attributes.EXCEPTIONS:
 					ExceptionsAttribute exceptionsAttribute = (ExceptionsAttribute) attribute;
-					out.writeShort(exceptionsAttribute.getExceptionIndexTable().length);
+					out.writeShort(exceptionsAttribute.getExceptionIndexTable().size());
 					for (int index : exceptionsAttribute.getExceptionIndexTable()) {
 						out.writeShort(index);
 					}
 					break;
 				case Constants.Attributes.INNER_CLASSES:
 					InnerClassesAttribute innerClassesAttribute = (InnerClassesAttribute) attribute;
-					out.writeShort(innerClassesAttribute.getInnerClasses().length);
+					out.writeShort(innerClassesAttribute.getInnerClasses().size());
 					for (InnerClass ic : innerClassesAttribute.getInnerClasses()) {
 						out.writeShort(ic.getInnerClassInfoIndex());
 						out.writeShort(ic.getOuterClassInfoIndex());
@@ -188,6 +190,8 @@ public class AttributeWriter {
 				case Constants.Attributes.PERMITTED_SUBCLASSES:
 					break;
 				case Constants.Attributes.SIGNATURE:
+					SignatureAttribute signatureAttribute = (SignatureAttribute) attribute;
+					out.writeShort(signatureAttribute.getSignatureIndex());
 					break;
 				case Constants.Attributes.SOURCE_DEBUG_EXTENSION:
 					DebugExtensionAttribute debugExtension = (DebugExtensionAttribute) attribute;
@@ -196,6 +200,8 @@ public class AttributeWriter {
 					out.write(debugExtension.getDebugExtension());
 					break;
 				case Constants.Attributes.SOURCE_FILE:
+					SourceFileAttribute sourceFileAttribute = (SourceFileAttribute) attribute;
+					out.writeShort(sourceFileAttribute.getSourceFileNameIndex());
 					break;
 				case Constants.Attributes.SOURCE_ID:
 					break;

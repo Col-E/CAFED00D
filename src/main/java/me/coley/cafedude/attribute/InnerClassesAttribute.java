@@ -1,14 +1,14 @@
 package me.coley.cafedude.attribute;
 
+import java.util.List;
+
 /**
  * Attribute describing the inner classes of a class.
- * 
- * @author JCWasmx86
  *
+ * @author JCWasmx86
  */
-public class InnerClassesAttribute extends Attribute{
-	private InnerClass[] innerClasses;
-
+public class InnerClassesAttribute extends Attribute {
+	private List<InnerClass> innerClasses;
 
 	/**
 	 * @param nameIndex
@@ -16,7 +16,7 @@ public class InnerClassesAttribute extends Attribute{
 	 * @param classes
 	 * 		All inner classes.
 	 */
-	public InnerClassesAttribute(int nameIndex,InnerClass[] classes) {
+	public InnerClassesAttribute(int nameIndex, List<InnerClass> classes) {
 		super(nameIndex);
 		this.innerClasses = classes;
 	}
@@ -24,26 +24,26 @@ public class InnerClassesAttribute extends Attribute{
 	/**
 	 * @return The inner classes of this class.
 	 */
-	public InnerClass[] getInnerClasses() {
+	public List<InnerClass> getInnerClasses() {
 		return innerClasses;
 	}
 
 	/**
 	 * @param innerClasses
-	 *		The new inner classes of this class.
+	 * 		The new inner classes of this class.
 	 */
-	public void setInnerClasses(InnerClass[] innerClasses) {
+	public void setInnerClasses(List<InnerClass> innerClasses) {
 		this.innerClasses = innerClasses;
 	}
 
 	@Override
 	public int computeInternalLength() {
-		return 2 + this.innerClasses.length * 8;
+		return 2 + this.innerClasses.size() * 8;
 	}
-	
+
 	/**
 	 * An inner class.
-	 * 
+	 *
 	 * @author JCWasmx86
 	 */
 	public static class InnerClass {
@@ -65,13 +65,13 @@ public class InnerClassesAttribute extends Attribute{
 		 * 		Access flags of the inner class.
 		 */
 		public InnerClass(int innerClassInfoIndex, int outerClassInfoIndex, int innerNameIndex,
-				int innerClassAccessFlags) {
+						  int innerClassAccessFlags) {
 			this.innerClassInfoIndex = innerClassInfoIndex;
 			this.outerClassInfoIndex = outerClassInfoIndex;
 			this.innerNameIndex = innerNameIndex;
 			this.innerClassAccessFlags = innerClassAccessFlags;
 		}
-		
+
 		/**
 		 * @return Index into the constant pool describing this inner class.
 		 */
@@ -89,7 +89,7 @@ public class InnerClassesAttribute extends Attribute{
 
 		/**
 		 * @return Index into the constant pool describing the outer class. 0 if this
-		 * 		is a local or anonymous class.
+		 * is a local or anonymous class.
 		 */
 		public int getOuterClassInfoIndex() {
 			return outerClassInfoIndex;
@@ -106,7 +106,7 @@ public class InnerClassesAttribute extends Attribute{
 
 		/**
 		 * @return Index into the constant pool. At this index, the name of this inner class
-		 * 		will be specified. 0 if this class is anonymous.
+		 * will be specified. 0 if this class is anonymous.
 		 */
 		public int getInnerNameIndex() {
 			return innerNameIndex;
