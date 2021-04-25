@@ -20,6 +20,11 @@ import me.coley.cafedude.attribute.EnclosingMethodAttribute;
 import me.coley.cafedude.attribute.ExceptionsAttribute;
 import me.coley.cafedude.attribute.InnerClassesAttribute;
 import me.coley.cafedude.attribute.InnerClassesAttribute.InnerClass;
+import me.coley.cafedude.attribute.ModuleAttribute;
+import me.coley.cafedude.attribute.ModuleAttribute.Exports;
+import me.coley.cafedude.attribute.ModuleAttribute.Opens;
+import me.coley.cafedude.attribute.ModuleAttribute.Provides;
+import me.coley.cafedude.attribute.ModuleAttribute.Requires;
 import me.coley.cafedude.attribute.NestHostAttribute;
 import me.coley.cafedude.attribute.NestMembersAttribute;
 import me.coley.cafedude.attribute.ParameterAnnotationsAttribute;
@@ -100,16 +105,26 @@ public class AttributeReader {
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	public Attribute readAttribute(AttributeContext context) throws IOException {
-		Attribute attribute = read(context);
-		if (attribute == null)
-			return null;
-		int read = is.getIndex();
-		if (read != expectedContentLength) {
-			String name = ((CpUtf8) builder.getPool().get(nameIndex)).getText();
-			logger.debug("Invalid '{}', claimed to be {} bytes, but was {}", name, expectedContentLength, read);
-			return null;
+		try {
+			Attribute attribute = read(context);
+			if (attribute == null)
+				return null;
+			int read = is.getIndex();
+			if (read != expectedContentLength) {
+				String name = ((CpUtf8) builder.getPool().get(nameIndex)).getText();
+				logger.debug("Invalid '{}', claimed to be {} bytes, but was {}", name, expectedContentLength, read);
+				return null;
+			}
+			return attribute;
+		} catch (IOException ex) {
+			if (reader.doDropEofAttributes()) {
+				String name = ((CpUtf8) builder.getPool().get(nameIndex)).getText();
+				logger.debug("Invalid '{}', EOF thrown when parsing attribute, expected {} bytes",
+						name, expectedContentLength);
+				return null;
+			} else
+				throw ex;
 		}
-		return attribute;
 	}
 
 	private Attribute read(AttributeContext context) throws IOException {
@@ -169,13 +184,14 @@ public class AttributeReader {
 				return readSignature();
 			case SOURCE_FILE:
 				return readSourceFile();
+			case Attributes.MODULE:
+				return readModule();
 			case CHARACTER_RANGE_TABLE:
 			case COMPILATION_ID:
 			case LINE_NUMBER_TABLE:
 			case LOCAL_VARIABLE_TABLE:
 			case LOCAL_VARIABLE_TYPE_TABLE:
 			case METHOD_PARAMETERS:
-			case Attributes.MODULE:
 			case MODULE_HASHES:
 			case MODULE_MAIN_CLASS:
 			case MODULE_PACKAGES:
@@ -198,6 +214,68 @@ public class AttributeReader {
 		// Default handling, skip remaining bytes
 		is.skipBytes(expectedContentLength);
 		return new DefaultAttribute(nameIndex, is.getBuffer());
+	}
+
+	/**
+	 * @return ModuleAttribute attribute.
+	 *
+	 * @throws IOException
+	 * 		When the stream is unexpectedly closed or ends.
+	 */
+	private ModuleAttribute readModule() throws IOException {
+		int moduleIndex = is.readUnsignedShort();
+		int flags = is.readUnsignedShort();
+		int versionIndex = is.readUnsignedShort();
+		List<Requires> requires = new ArrayList<>();
+		int count = is.readUnsignedShort();
+		for (int i = 0; i < count; i++) {
+			int reqIndex = is.readUnsignedShort();
+			int reqFlags = is.readUnsignedShort();
+			int reqVersion = is.readUnsignedShort();
+			requires.add(new Requires(reqIndex, reqFlags, reqVersion));
+		}
+		List<Exports> exports = new ArrayList<>();
+		count = is.readUnsignedShort();
+		for (int i = 0; i < count; i++) {
+			int expIndex = is.readUnsignedShort();
+			int expFlags = is.readUnsignedShort();
+			int expCount = is.readUnsignedShort();
+			List<Integer> indices = new ArrayList<>();
+			for (int j = 0; j < expCount; j++) {
+				indices.add(is.readUnsignedShort());
+			}
+			exports.add(new Exports(expIndex, expFlags, indices));
+		}
+		List<Opens> opens = new ArrayList<>();
+		count = is.readUnsignedShort();
+		for (int i = 0; i < count; i++) {
+			int openIndex = is.readUnsignedShort();
+			int openFlags = is.readUnsignedShort();
+			int openCount = is.readUnsignedShort();
+			List<Integer> indices = new ArrayList<>();
+			for (int j = 0; j < openCount; j++) {
+				indices.add(is.readUnsignedShort());
+			}
+			opens.add(new Opens(openIndex, openFlags, indices));
+		}
+		List<Integer> uses = new ArrayList<>();
+		count = is.readUnsignedShort();
+		for (int i = 0; i < count; i++) {
+			uses.add(is.readUnsignedShort());
+		}
+		List<Provides> provides = new ArrayList<>();
+		count = is.readUnsignedShort();
+		for (int i = 0; i < count; i++) {
+			int prvIndex = is.readUnsignedShort();
+			int prvCount = is.readUnsignedShort();
+			List<Integer> indices = new ArrayList<>();
+			for (int j = 0; j < prvCount; j++) {
+				indices.add(is.readUnsignedShort());
+			}
+			provides.add(new Provides(prvIndex, indices));
+		}
+		return new ModuleAttribute(nameIndex, moduleIndex, flags, versionIndex,
+				requires, exports, opens, uses, provides);
 	}
 
 	/**

@@ -11,6 +11,10 @@ import me.coley.cafedude.annotation.PrimitiveElementValue;
 import me.coley.cafedude.annotation.Utf8ElementValue;
 import me.coley.cafedude.attribute.CodeAttribute.ExceptionTableEntry;
 import me.coley.cafedude.attribute.InnerClassesAttribute.InnerClass;
+import me.coley.cafedude.attribute.ModuleAttribute.Exports;
+import me.coley.cafedude.attribute.ModuleAttribute.Opens;
+import me.coley.cafedude.attribute.ModuleAttribute.Provides;
+import me.coley.cafedude.attribute.ModuleAttribute.Requires;
 import me.coley.cafedude.constant.ConstPoolEntry;
 import me.coley.cafedude.constant.CpClass;
 import me.coley.cafedude.constant.CpUtf8;
@@ -164,6 +168,35 @@ public class AttributeCpAccessValidator {
 				expectedTypeMasks.put(sourceFileAttribute.getSourceFileNameIndex(), i -> i == ConstantPool.UTF8);
 				cpEntryValidators.put(sourceFileAttribute.getSourceFileNameIndex(), isNonEmptyUtf8());
 				break;
+			case Attributes.MODULE:
+				ModuleAttribute moduleAttribute = (ModuleAttribute) attribute;
+				expectedTypeMasks.put(moduleAttribute.getModuleIndex(), i -> i == ConstantPool.MODULE);
+				expectedTypeMasks.put(moduleAttribute.getVersionIndex(), i -> i == 0 || i == ConstantPool.UTF8);
+				if (moduleAttribute.getVersionIndex() == 0)
+					allow0Case = true;
+				for (Requires requires : moduleAttribute.getRequires()) {
+					expectedTypeMasks.put(requires.getIndex(), i -> i == ConstantPool.MODULE);
+					expectedTypeMasks.put(requires.getVersionIndex(), i -> i == 0 || i == ConstantPool.UTF8);
+				}
+				for (Exports exports : moduleAttribute.getExports()) {
+					expectedTypeMasks.put(exports.getIndex(), i -> i == ConstantPool.PACKAGE);
+					for (int moduleIndex : exports.getToIndices())
+						expectedTypeMasks.put(moduleIndex, i -> i == ConstantPool.MODULE);
+				}
+				for (Opens opens : moduleAttribute.getOpens()) {
+					expectedTypeMasks.put(opens.getIndex(), i -> i == ConstantPool.PACKAGE);
+					for (int moduleIndex : opens.getToIndices())
+						expectedTypeMasks.put(moduleIndex, i -> i == ConstantPool.MODULE);
+				}
+				for (Provides provides : moduleAttribute.getProvides()) {
+					expectedTypeMasks.put(provides.getIndex(), i -> i == ConstantPool.CLASS);
+					for (int implIndex : provides.getWithIndices())
+						expectedTypeMasks.put(implIndex, i -> i == ConstantPool.CLASS);
+				}
+				for (int use : moduleAttribute.getUses()) {
+					expectedTypeMasks.put(use, i -> i == ConstantPool.CLASS);
+				}
+				break;
 			case SOURCE_DEBUG_EXTENSION:
 			case DEPRECATED:
 			case SYNTHETIC:
@@ -176,7 +209,6 @@ public class AttributeCpAccessValidator {
 			case LOCAL_VARIABLE_TABLE:
 			case LOCAL_VARIABLE_TYPE_TABLE:
 			case METHOD_PARAMETERS:
-			case Attributes.MODULE:
 			case MODULE_HASHES:
 			case MODULE_MAIN_CLASS:
 			case MODULE_PACKAGES:

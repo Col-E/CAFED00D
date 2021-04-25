@@ -22,6 +22,7 @@ public class EqualityIOTest {
 	public void testSamples() {
 		try {
 			visitRootDir("samples/annos");
+			visitRootDir("samples/modules");
 			visitRootDir("samples/javac");
 		} catch (IOException e) {
 			System.err.println(lastLoaded.getPath());

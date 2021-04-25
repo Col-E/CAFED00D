@@ -49,6 +49,7 @@ public class ClassFileReader {
 	// config
 	private boolean dropForwardVersioned = true;
 	private boolean dropIllegalCpRefs = true;
+	private boolean dropEofAttributes = true;
 
 	/**
 	 * @param code
@@ -230,6 +231,21 @@ public class ClassFileReader {
 	 */
 	public boolean doDropIllegalCpRefs() {
 		return dropIllegalCpRefs;
+	}
+
+	/**
+	 * @return {@code true} if attributes that when parsed yield EOF exceptions should be removed.
+	 */
+	public boolean doDropEofAttributes() {
+		return dropEofAttributes;
+	}
+
+	/**
+	 * @param dropEofAttributes
+	 *        {@code true} if attributes that when parsed yield EOF exceptions should be removed.
+	 */
+	public void setDropEofAttributes(boolean dropEofAttributes) {
+		this.dropEofAttributes = dropEofAttributes;
 	}
 
 	/**

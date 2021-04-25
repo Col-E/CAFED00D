@@ -16,6 +16,11 @@ import me.coley.cafedude.attribute.EnclosingMethodAttribute;
 import me.coley.cafedude.attribute.ExceptionsAttribute;
 import me.coley.cafedude.attribute.InnerClassesAttribute;
 import me.coley.cafedude.attribute.InnerClassesAttribute.InnerClass;
+import me.coley.cafedude.attribute.ModuleAttribute;
+import me.coley.cafedude.attribute.ModuleAttribute.Exports;
+import me.coley.cafedude.attribute.ModuleAttribute.Opens;
+import me.coley.cafedude.attribute.ModuleAttribute.Provides;
+import me.coley.cafedude.attribute.ModuleAttribute.Requires;
 import me.coley.cafedude.attribute.NestHostAttribute;
 import me.coley.cafedude.attribute.NestMembersAttribute;
 import me.coley.cafedude.attribute.ParameterAnnotationsAttribute;
@@ -148,6 +153,47 @@ public class AttributeWriter {
 				case Constants.Attributes.METHOD_PARAMETERS:
 					break;
 				case Constants.Attributes.MODULE:
+					ModuleAttribute moduleAttribute = (ModuleAttribute) attribute;
+					out.writeShort(moduleAttribute.getModuleIndex());
+					out.writeShort(moduleAttribute.getFlags());
+					out.writeShort(moduleAttribute.getVersionIndex());
+					// requires
+					out.writeShort(moduleAttribute.getRequires().size());
+					for (Requires requires : moduleAttribute.getRequires()) {
+						out.writeShort(requires.getIndex());
+						out.writeShort(requires.getFlags());
+						out.writeShort(requires.getVersionIndex());
+					}
+					// exports
+					out.writeShort(moduleAttribute.getExports().size());
+					for (Exports exports : moduleAttribute.getExports()) {
+						out.writeShort(exports.getIndex());
+						out.writeShort(exports.getFlags());
+						out.writeShort(exports.getToIndices().size());
+						for (int i : exports.getToIndices())
+							out.writeShort(i);
+					}
+					// opens
+					out.writeShort(moduleAttribute.getOpens().size());
+					for (Opens opens : moduleAttribute.getOpens()) {
+						out.writeShort(opens.getIndex());
+						out.writeShort(opens.getFlags());
+						out.writeShort(opens.getToIndices().size());
+						for (int i : opens.getToIndices())
+							out.writeShort(i);
+					}
+					// uses
+					out.writeShort(moduleAttribute.getUses().size());
+					for (int i : moduleAttribute.getUses())
+						out.writeShort(i);
+					// provides
+					out.writeShort(moduleAttribute.getProvides().size());
+					for (Provides provides : moduleAttribute.getProvides()) {
+						out.writeShort(provides.getIndex());
+						out.writeShort(provides.getWithIndices().size());
+						for (int i : provides.getWithIndices())
+							out.writeShort(i);
+					}
 					break;
 				case Constants.Attributes.MODULE_HASHES:
 					break;
