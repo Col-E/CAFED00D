@@ -50,6 +50,7 @@ public class ClassFileReader {
 	private boolean dropForwardVersioned = true;
 	private boolean dropIllegalCpRefs = true;
 	private boolean dropEofAttributes = true;
+	private boolean dropDupeAnnotations = true;
 
 	/**
 	 * @param code
@@ -246,6 +247,22 @@ public class ClassFileReader {
 	 */
 	public void setDropEofAttributes(boolean dropEofAttributes) {
 		this.dropEofAttributes = dropEofAttributes;
+	}
+
+	/**
+	 * @return {@code true} to automatically remove duplicate annotations on an item.
+	 * There can only be at most one instance of an attribute of a given type targeting an item at a time.
+	 */
+	public boolean doDropDupeAnnotations() {
+		return dropDupeAnnotations;
+	}
+
+	/**
+	 * @param dropDupeAnnotations
+	 *        {@code true} to automatically remove duplicate annotations on an item.
+	 */
+	public void setDropDupeAnnotations(boolean dropDupeAnnotations) {
+		this.dropDupeAnnotations = dropDupeAnnotations;
 	}
 
 	/**

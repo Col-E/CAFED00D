@@ -37,9 +37,11 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Annotation reader for all annotation attributes.
@@ -48,6 +50,7 @@ import java.util.Map;
  */
 public class AnnotationReader {
 	private static final Logger logger = LoggerFactory.getLogger(AnnotationReader.class);
+	private final ClassFileReader reader;
 	private final ConstPool cp;
 	private final DataInputStream is;
 	private final AttributeContext context;
@@ -57,6 +60,8 @@ public class AnnotationReader {
 	/**
 	 * Create an annotation reader.
 	 *
+	 * @param reader
+	 * 		Parent class reader.
 	 * @param cp
 	 * 		The constant pool to use for reference.
 	 * @param is
@@ -72,8 +77,10 @@ public class AnnotationReader {
 	 * 		When the subsection of the given stream for annotation reading cannot be allocated,
 	 * 		possible due to out-of-bounds problems. This is an indicator of a malformed class.
 	 */
-	public AnnotationReader(ConstPool cp, DataInputStream is, int length, int nameIndex, AttributeContext context)
+	public AnnotationReader(ClassFileReader reader, ConstPool cp, DataInputStream is, int length,
+							int nameIndex, AttributeContext context)
 			throws IOException {
+		this.reader = reader;
 		this.cp = cp;
 		byte[] data = new byte[length];
 		is.readFully(data);
@@ -115,9 +122,22 @@ public class AnnotationReader {
 				return null;
 			}
 			// Read each annotation
+			Set<String> usedAnnotationTypes = new HashSet<>();
 			List<Annotation> annotations = new ArrayList<>();
-			for (int i = 0; i < numAnnotations; i++)
-				annotations.add(readAnnotation());
+			for (int i = 0; i < numAnnotations; i++) {
+				Annotation annotation = readAnnotation();
+				if (reader.doDropDupeAnnotations()) {
+					// Only add if the type hasn't been used before
+					String type = cp.getUtf(annotation.getTypeIndex());
+					if (!usedAnnotationTypes.contains(type)) {
+						annotations.add(annotation);
+						usedAnnotationTypes.add(type);
+					}
+				} else {
+					// Add unconditionally
+					annotations.add(annotation);
+				}
+			}
 			// Didn't throw exception, its valid
 			return new AnnotationsAttribute(nameIndex, annotations);
 		} catch (Throwable t) {
