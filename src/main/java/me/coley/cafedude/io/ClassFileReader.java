@@ -1,11 +1,13 @@
 package me.coley.cafedude.io;
 
 import me.coley.cafedude.ClassFile;
+import me.coley.cafedude.Constants;
 import me.coley.cafedude.Constants.ConstantPool;
 import me.coley.cafedude.Field;
 import me.coley.cafedude.InvalidClassException;
 import me.coley.cafedude.Method;
 import me.coley.cafedude.attribute.Attribute;
+import me.coley.cafedude.attribute.CodeAttribute;
 import me.coley.cafedude.constant.ConstPoolEntry;
 import me.coley.cafedude.constant.CpClass;
 import me.coley.cafedude.constant.CpDouble;
@@ -197,6 +199,11 @@ public class ClassFileReader {
 		List<Attribute> attributes = new ArrayList<>();
 		for (int i = 0; i < numAttributes; i++) {
 			Attribute attr = new AttributeReader(this, builder, is).readAttribute(AttributeContext.METHOD);
+			if (doDropIllegalCpRefs() && attr instanceof CodeAttribute && (access & Constants.ACC_ABSTRACT) > 0) {
+				String methodName = builder.getPool().getUtf(nameIndex);
+				logger.debug("Illegal code attribute on abstract method {}", methodName);
+				continue;
+			}
 			if (attr != null && (!doDropIllegalCpRefs() || isValid(builder.getPool(), attr)))
 				attributes.add(attr);
 		}

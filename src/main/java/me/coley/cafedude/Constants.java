@@ -29,6 +29,7 @@ public interface Constants {
 
 	// TODO: Move this to access flag utility
 	int ACC_ANNOTATION = 0x2000;
+	int ACC_ABSTRACT = 0x0400;
 
 
 	/**

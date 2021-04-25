@@ -16,17 +16,17 @@ import java.util.Objects;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test that asserts hotspot-specific attribute obfuscated classes are written back without the offending attributes.
+ * Test that asserts ASM-crashing obfuscated classes are written back without the offending attributes.
  */
-public class HotspotPatchingTest {
+public class CrasherPatchingTest {
 	@Test
 	//@Disabled
 	public void testPatchIllegalLengthAttributes() {
 		try {
-			File root = new File("src/test/resources/samples/hotspot-obf");
+			File root = new File("src/test/resources/samples/crasher");
 			for (File sub : Objects.requireNonNull(root.listFiles())) {
 				//if (!sub.getName().endsWith("16.class"))
-				//	continue;
+				// 	continue;
 				byte[] code = Files.readAllBytes(sub.toPath());
 				// Reading with ASM fails or produces incorrect representation...
 				assertThrows(Exception.class, () -> {
