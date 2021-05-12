@@ -217,7 +217,7 @@ public class AnnotationReader {
 		}
 		if (!cp.isIndexOfType(typeIndex, CpUtf8.class)) {
 			logger.warn("Illegally formatted Annotation item, type_index={} != CP_UTF8", typeIndex);
-			throw new IllegalArgumentException("Annotation type_index doesn ot point to CP_UTF8!");
+			throw new IllegalArgumentException("Annotation type_index does not point to CP_UTF8!");
 		}
 		Map<Integer, ElementValue> values = readElementPairs();
 		return new Annotation(typeIndex, values);
