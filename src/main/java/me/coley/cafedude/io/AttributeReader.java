@@ -186,6 +186,8 @@ public class AttributeReader {
 				return readSourceFile();
 			case Attributes.MODULE:
 				return readModule();
+			case STACK_MAP_TABLE:
+				return readStackMapTable();
 			case CHARACTER_RANGE_TABLE:
 			case COMPILATION_ID:
 			case LINE_NUMBER_TABLE:
@@ -200,7 +202,6 @@ public class AttributeReader {
 			case PERMITTED_SUBCLASSES:
 			case RECORD:
 			case SOURCE_ID:
-			case STACK_MAP_TABLE:
 			default:
 				break;
 		}
@@ -550,5 +551,9 @@ public class AttributeReader {
 	private ConstantValueAttribute readConstantValue() throws IOException {
 		int valueIndex = is.readUnsignedShort();
 		return new ConstantValueAttribute(nameIndex, valueIndex);
+	}
+	
+	private StackMapTableAttribute readStackMapTable() throws IOException {
+		
 	}
 }
