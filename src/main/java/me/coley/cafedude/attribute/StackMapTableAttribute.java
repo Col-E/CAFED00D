@@ -231,6 +231,11 @@ public class StackMapTableAttribute extends Attribute {
 			super(offsetDelta);
 			this.stack = stack;
 		}
+
+		@Override
+		protected int computeInternalLength() {
+			return stack.computeCompleteLength();
+		}
 	}
 
 	/**
@@ -249,6 +254,12 @@ public class StackMapTableAttribute extends Attribute {
 		public SameLocalsOneStackItemExtended(int offsetDelta, TypeInfo stack) {
 			super(offsetDelta);
 			this.stack = stack;
+		}
+
+		@Override
+		protected int computeInternalLength() {
+			// u2 offset_delta
+			return 2 + stack.computeCompleteLength();
 		}
 	}
 
@@ -272,6 +283,12 @@ public class StackMapTableAttribute extends Attribute {
 			super(offsetDelta);
 			this.absentVariables = absentVariables;
 		}
+
+		@Override
+		protected int computeInternalLength() {
+			// u2 offset_delta
+			return 2;
+		}
 	}
 
 	/**
@@ -284,6 +301,12 @@ public class StackMapTableAttribute extends Attribute {
 		 */
 		public SameFrameExtended(int offsetDelta) {
 			super(offsetDelta);
+		}
+
+		@Override
+		protected int computeInternalLength() {
+			// u2 offset_delta
+			return 2;
 		}
 	}
 
@@ -305,6 +328,16 @@ public class StackMapTableAttribute extends Attribute {
 		public AppendFrame(int offsetDelta, TypeInfo[] additionalLocals) {
 			super(offsetDelta);
 			this.additionalLocals = additionalLocals;
+		}
+
+		@Override
+		protected int computeInternalLength() {
+			// u2 offset_delta
+			int length = 2;
+			for (TypeInfo local : additionalLocals) {
+				length += local.computeCompleteLength();
+			}
+			return length;
 		}
 	}
 
@@ -330,6 +363,21 @@ public class StackMapTableAttribute extends Attribute {
 			super(offsetDelta);
 			this.locals = locals;
 			this.stack = stack;
+		}
+
+		@Override
+		protected int computeInternalLength() {
+			// u2 offset_delta
+			// u2 number_of_locals
+			// u2 number_of_stack_items
+			int length = 2 + 2 + 2;
+			for (TypeInfo local : locals) {
+				length += local.computeCompleteLength();
+			}
+			for (TypeInfo stackType : stack) {
+				length += stackType.computeCompleteLength();
+			}
+			return length;
 		}
 	}
 }
