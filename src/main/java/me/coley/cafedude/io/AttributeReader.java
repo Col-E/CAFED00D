@@ -30,6 +30,7 @@ import me.coley.cafedude.attribute.NestMembersAttribute;
 import me.coley.cafedude.attribute.ParameterAnnotationsAttribute;
 import me.coley.cafedude.attribute.SignatureAttribute;
 import me.coley.cafedude.attribute.SourceFileAttribute;
+import me.coley.cafedude.attribute.StackMapTableAttribute;
 import me.coley.cafedude.attribute.SyntheticAttribute;
 import me.coley.cafedude.constant.CpUtf8;
 import org.slf4j.Logger;
@@ -554,6 +555,6 @@ public class AttributeReader {
 	}
 	
 	private StackMapTableAttribute readStackMapTable() throws IOException {
-		
+		throw new RuntimeException();
 	}
 }
