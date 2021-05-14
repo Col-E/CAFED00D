@@ -21,7 +21,7 @@ package me.coley.cafedude.attribute;
  */
 public class StackMapTableAttribute extends Attribute {
 	public final StackMapFrame[] frames;
-	
+
 	/**
 	 * @param nameIndex Name index in constant pool.
 	 * @param frames An array of stack map frames.
@@ -30,7 +30,7 @@ public class StackMapTableAttribute extends Attribute {
 		super(nameIndex);
 		this.frames = frames;
 	}
-	
+
 	@Override
 	public int computeInternalLength() {
 		// u2 number_of_entries
@@ -40,7 +40,7 @@ public class StackMapTableAttribute extends Attribute {
 		}
 		return length;
 	}
-	
+
 	/**
 	 * A verification type specifies the type of either one or two locations,
 	 * where a location is either a single local variable or a single operand
@@ -53,7 +53,7 @@ public class StackMapTableAttribute extends Attribute {
 			// By default no contents
 			return 0;
 		}
-		
+
 		/**
 		 * @return Size in bytes of the serialized type info.
 		 */
@@ -62,37 +62,37 @@ public class StackMapTableAttribute extends Attribute {
 			return 1 + computeInternalLength();
 		}
 	}
-	
+
 	/**
 	 * Indicates that the local variable has the verification type top.
 	 */
 	public static class TopVariableInfo extends TypeInfo {
 	}
-	
+
 	/**
 	 * Indicates that the location has the verification type int.
 	 */
 	public static class IntegerVariableInfo extends TypeInfo {
 	}
-	
+
 	/**
 	 * Indicates that the location has the verification type float.
 	 */
 	public static class FloatVariableInfo extends TypeInfo {
 	}
-	
+
 	/**
 	 * Indicates that the location has the verification type null.
 	 */
 	public static class NullVariableInfo extends TypeInfo {
 	}
-	
+
 	/**
 	 * Indicates that the location has the verification type uninitializedThis.
 	 */
 	public static class UninitializedThisVariableInfo extends TypeInfo {
 	}
-	
+
 	/**
 	 * Indicates that the location has the verification type which is the class
 	 * represented by the CONSTANT_Class_info found at classIndex.
@@ -101,7 +101,7 @@ public class StackMapTableAttribute extends Attribute {
 		/**
 		 */
 		public int classIndex;
-		
+
 		/**
 		 * @param classIndex Index of the ClassConstant representing type of this
 		 * variable.
@@ -109,14 +109,14 @@ public class StackMapTableAttribute extends Attribute {
 		public ObjectVariableInfo(int classIndex) {
 			this.classIndex = classIndex;
 		}
-		
+
 		@Override
 		protected int computeInternalLength() {
 			// u2 cpool_index
 			return 2;
 		}
 	}
-	
+
 	/**
 	 * Indicates that the location has the verification type uninitialized.
 	 */
@@ -126,7 +126,7 @@ public class StackMapTableAttribute extends Attribute {
 		 * the object being stored in the location.
 		 */
 		public int offset;
-		
+
 		/**
 		 * @param offset The offset in the code of the new instruction that
 		 * created the object being stored in the location.
@@ -134,26 +134,26 @@ public class StackMapTableAttribute extends Attribute {
 		public UninitializedVariableInfo(int offset) {
 			this.offset = offset;
 		}
-		
+
 		@Override
 		protected int computeInternalLength() {
 			// u2 offset
 			return 2;
 		}
 	}
-	
+
 	/**
 	 * Indicates the verification type long.
 	 */
 	public static class LongVariableInfo extends TypeInfo {
 	}
-	
+
 	/**
 	 * Indicates the verification type double.
 	 */
 	public static class DoubleVariableInfo extends TypeInfo {
 	}
-	
+
 	/**
 	 * <p>
 	 * A stack map frame specifies (either explicitly or implicitly) the bytecode
@@ -175,19 +175,19 @@ public class StackMapTableAttribute extends Attribute {
 		 * The offset delta of this frame.
 		 */
 		public int offsetDelta;
-		
+
 		/**
 		 * @param offsetDelta The offset delta of this frame.
 		 */
 		public StackMapFrame(int offsetDelta) {
 			this.offsetDelta = offsetDelta;
 		}
-		
+
 		protected int computeInternalLength() {
 			// By default no contents
 			return 0;
 		}
-		
+
 		/**
 		 * @return Size in bytes of the serialized frame.
 		 */
@@ -196,7 +196,7 @@ public class StackMapTableAttribute extends Attribute {
 			return 1 + computeInternalLength();
 		}
 	}
-	
+
 	/**
 	 * This frame type indicates that the frame has exactly the same local
 	 * variables as the previous frame and that the operand stack is empty.
@@ -209,7 +209,7 @@ public class StackMapTableAttribute extends Attribute {
 			super(offsetDelta);
 		}
 	}
-	
+
 	/**
 	 * This frame type indicates that the frame has exactly the same local
 	 * variables as the previous frame and that the operand stack has one entry.
@@ -222,7 +222,7 @@ public class StackMapTableAttribute extends Attribute {
 		 * The singular stack item.
 		 */
 		public TypeInfo stack;
-		
+
 		/**
 		 * @param offsetDelta The offset delta of this frame.
 	 	 * @param stack The singular stack item.
@@ -232,7 +232,7 @@ public class StackMapTableAttribute extends Attribute {
 			this.stack = stack;
 		}
 	}
-	
+
 	/**
 	 * Same as {@link SameLocalsOneStackItem} except has an explicit offsetDelta.
 	 */
@@ -241,7 +241,7 @@ public class StackMapTableAttribute extends Attribute {
 		 * The singular stack item.
 		 */
 		public TypeInfo stack;
-		
+
 		/**
 		 * @param offsetDelta The offset delta of this frame.
 	 	 * @param stack The singular stack item.
@@ -251,7 +251,7 @@ public class StackMapTableAttribute extends Attribute {
 			this.stack = stack;
 		}
 	}
-	
+
 	/**
 	 * This frame type indicates that the frame has the same local variables as
 	 * the previous frame except that a given number of the last local variables
@@ -262,7 +262,7 @@ public class StackMapTableAttribute extends Attribute {
 		 * The number of the last local variables that are now absent.
 		 */
 		public int absentVariables;
-		
+
 		/**
 		 * @param offsetDelta The offset delta of this frame.
 		 * @param absentVariables The number of chopped local variables.
@@ -273,7 +273,7 @@ public class StackMapTableAttribute extends Attribute {
 			this.absentVariables = absentVariables;
 		}
 	}
-	
+
 	/**
 	 * This frame type indicates that the frame has exactly the same local
 	 * variables as the previous frame and that the operand stack is empty.
@@ -286,7 +286,7 @@ public class StackMapTableAttribute extends Attribute {
 			super(offsetDelta);
 		}
 	}
-	
+
 	/**
 	 * This frame type indicates that the frame has the same locals as the
 	 * previous frame except that a number of additional locals are defined, and
@@ -297,7 +297,7 @@ public class StackMapTableAttribute extends Attribute {
 		 * Additional locals defined in the current frame.
 		 */
 		public TypeInfo[] additionalLocals;
-		
+
 		/**
 		 * @param offsetDelta The offset delta of this frame.
 		 * @param additionalLocals The additional locals defined in the frame.
@@ -307,7 +307,7 @@ public class StackMapTableAttribute extends Attribute {
 			this.additionalLocals = additionalLocals;
 		}
 	}
-	
+
 	/**
 	 * Contains the full types of the current frame.
 	 */
@@ -320,7 +320,7 @@ public class StackMapTableAttribute extends Attribute {
 		 * The types of the current frame's stack.
 		 */
 		public TypeInfo[] stack;
-		
+
 		/**
 		 * @param offsetDelta The offset delta of this frame.
 		 * @param locals The local variable types of the current frame.
