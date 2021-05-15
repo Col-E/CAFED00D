@@ -308,7 +308,7 @@ public class AttributeWriter {
 		DataOutputStream out,
 		StackMapTableAttribute stackMapTable
 	) throws IOException {
-		out.writeShort(stackMapTable.frames.length);
+		out.writeShort(stackMapTable.frames.size());
 		for (StackMapFrame frame : stackMapTable.frames) {
 			if (frame instanceof StackMapTableAttribute.SameFrame) {
 				out.writeByte(frame.offsetDelta);
@@ -341,7 +341,7 @@ public class AttributeWriter {
 			} else if (frame instanceof StackMapTableAttribute.AppendFrame) {
 				StackMapTableAttribute.AppendFrame appendFrame =
 					(StackMapTableAttribute.AppendFrame) frame;
-				out.writeByte(appendFrame.additionalLocals.length + 251);
+				out.writeByte(appendFrame.additionalLocals.size() + 251);
 				out.writeShort(appendFrame.offsetDelta);
 				for (TypeInfo type : appendFrame.additionalLocals) {
 					writeVerificationType(out, type);
@@ -351,11 +351,11 @@ public class AttributeWriter {
 					(StackMapTableAttribute.FullFrame) frame;
 				out.writeByte(255);
 				out.writeShort(fullFrame.offsetDelta);
-				out.writeShort(fullFrame.locals.length);
+				out.writeShort(fullFrame.locals.size());
 				for (TypeInfo type : fullFrame.locals) {
 					writeVerificationType(out, type);
 				}
-				out.writeShort(fullFrame.stack.length);
+				out.writeShort(fullFrame.stack.size());
 				for (TypeInfo type : fullFrame.stack) {
 					writeVerificationType(out, type);
 				}

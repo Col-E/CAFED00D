@@ -1,32 +1,31 @@
 package me.coley.cafedude.attribute;
 
+import java.util.List;
+
 /**
- * <p>
  * Used during the process of verification by type checking.
- * </p>
- * 
- * <p>
+ * <br>
  * There may be at most one StackMapTable attribute in the attributes table of
  * a Code attribute.
- * </p>
- * 
- * <p>
+ * <br>
  * In a class file whose version number is 50.0 or above, if a method's Code
  * attribute does not have a StackMapTable attribute, it has an implicit stack
  * map attribute (§4.10.1). This implicit stack map attribute is equivalent to
  * a StackMapTable attribute with number_of_entries equal to zero.
- * </p>
  * 
  * @author x4e
  */
 public class StackMapTableAttribute extends Attribute {
-	public final StackMapFrame[] frames;
+	/**
+	 * A list of this table's stack map frames.
+ 	 */
+	public final List<StackMapFrame> frames;
 
 	/**
 	 * @param nameIndex Name index in constant pool.
-	 * @param frames An array of stack map frames.
+	 * @param frames A list of stack map frames.
 	 */
-	public StackMapTableAttribute(int nameIndex, StackMapFrame[] frames) {
+	public StackMapTableAttribute(int nameIndex, List<StackMapFrame> frames) {
 		super(nameIndex);
 		this.frames = frames;
 	}
@@ -36,7 +35,7 @@ public class StackMapTableAttribute extends Attribute {
 		// u2 number_of_entries
 		int length = 2;
 		for (StackMapFrame frame : frames) {
-			length += frame.computeCompleteLength();
+			length += frame.getLength();
 		}
 		return length;
 	}
@@ -49,17 +48,12 @@ public class StackMapTableAttribute extends Attribute {
 	 * information about the tag.
 	 */
 	public abstract static class TypeInfo {
-		protected int computeInternalLength() {
-			// By default no contents
-			return 0;
-		}
-
 		/**
 		 * @return Size in bytes of the serialized type info.
 		 */
-		public int computeCompleteLength() {
+		public int getLength() {
 			// u1 tag
-			return 1 + computeInternalLength();
+			return 1;
 		}
 	}
 
@@ -110,10 +104,14 @@ public class StackMapTableAttribute extends Attribute {
 			this.classIndex = classIndex;
 		}
 
+		/**
+		 * @return Size in bytes of the serialized type info.
+		 */
 		@Override
-		protected int computeInternalLength() {
+		public int getLength() {
+			// u1 tag
 			// u2 cpool_index
-			return 2;
+			return 1 + 2;
 		}
 	}
 
@@ -135,10 +133,14 @@ public class StackMapTableAttribute extends Attribute {
 			this.offset = offset;
 		}
 
+		/**
+		 * @return Size in bytes of the serialized type info.
+		 */
 		@Override
-		protected int computeInternalLength() {
+		public int getLength() {
+			// u1 tag
 			// u2 offset
-			return 2;
+			return 1 + 2;
 		}
 	}
 
@@ -155,20 +157,16 @@ public class StackMapTableAttribute extends Attribute {
 	}
 
 	/**
-	 * <p>
 	 * A stack map frame specifies (either explicitly or implicitly) the bytecode
 	 * offset at which it applies, and the verification types of local variables
 	 * and operand stack entries for that offset.
-	 * </p>
-	 * 
-	 * <p>
+	 * <br>
 	 * The bytecode offset at which a stack map frame applies is calculated by
 	 * taking the offset_delta of the frame, and adding offset_delta + 1 to the
 	 * bytecode offset of the previous frame, unless the previous frame is the
 	 * initial frame of the method. In that case, the bytecode offset at which
 	 * the stack map frame applies is the value offset_delta specified in the
 	 * frame.
-	 * </p>
 	 */
 	public abstract static class StackMapFrame {
 		/**
@@ -183,17 +181,12 @@ public class StackMapTableAttribute extends Attribute {
 			this.offsetDelta = offsetDelta;
 		}
 
-		protected int computeInternalLength() {
-			// By default no contents
-			return 0;
-		}
-
 		/**
 		 * @return Size in bytes of the serialized frame.
 		 */
-		public int computeCompleteLength() {
+		public int getLength() {
 			// u1 frame_type
-			return 1 + computeInternalLength();
+			return 1;
 		}
 	}
 
@@ -232,9 +225,14 @@ public class StackMapTableAttribute extends Attribute {
 			this.stack = stack;
 		}
 
+		/**
+		 * @return Size in bytes of the serialized frame.
+		 */
 		@Override
-		protected int computeInternalLength() {
-			return stack.computeCompleteLength();
+		public int getLength() {
+			// u1 frame_type
+			// verification_type_info stack
+			return 1 + stack.getLength();
 		}
 	}
 
@@ -256,10 +254,15 @@ public class StackMapTableAttribute extends Attribute {
 			this.stack = stack;
 		}
 
+		/**
+		 * @return Size in bytes of the serialized frame.
+		 */
 		@Override
-		protected int computeInternalLength() {
+		public int getLength() {
+			// u1 frame_type
 			// u2 offset_delta
-			return 2 + stack.computeCompleteLength();
+			// verification_type_info stack
+			return 1 + 2 + stack.getLength();
 		}
 	}
 
@@ -284,10 +287,14 @@ public class StackMapTableAttribute extends Attribute {
 			this.absentVariables = absentVariables;
 		}
 
+		/**
+		 * @return Size in bytes of the serialized frame.
+		 */
 		@Override
-		protected int computeInternalLength() {
+		public int getLength() {
+			// u1 frame_type
 			// u2 offset_delta
-			return 2;
+			return 1 + 2;
 		}
 	}
 
@@ -303,10 +310,14 @@ public class StackMapTableAttribute extends Attribute {
 			super(offsetDelta);
 		}
 
+		/**
+		 * @return Size in bytes of the serialized frame.
+		 */
 		@Override
-		protected int computeInternalLength() {
+		public int getLength() {
+			// u1 frame_type
 			// u2 offset_delta
-			return 2;
+			return 1 + 2;
 		}
 	}
 
@@ -319,23 +330,28 @@ public class StackMapTableAttribute extends Attribute {
 		/**
 		 * Additional locals defined in the current frame.
 		 */
-		public TypeInfo[] additionalLocals;
+		public List<TypeInfo> additionalLocals;
 
 		/**
 		 * @param offsetDelta The offset delta of this frame.
 		 * @param additionalLocals The additional locals defined in the frame.
 		 */
-		public AppendFrame(int offsetDelta, TypeInfo[] additionalLocals) {
+		public AppendFrame(int offsetDelta, List<TypeInfo> additionalLocals) {
 			super(offsetDelta);
 			this.additionalLocals = additionalLocals;
 		}
 
+		/**
+		 * @return Size in bytes of the serialized frame.
+		 */
 		@Override
-		protected int computeInternalLength() {
+		public int getLength() {
+			// u1 frame_type
 			// u2 offset_delta
-			int length = 2;
+			int length = 1 + 2;
+			// verification_type_info locals[frame_type - 251]
 			for (TypeInfo local : additionalLocals) {
-				length += local.computeCompleteLength();
+				length += local.getLength();
 			}
 			return length;
 		}
@@ -348,34 +364,46 @@ public class StackMapTableAttribute extends Attribute {
 		/**
 		 * The local variable types of the current frame.
 		 */
-		public TypeInfo[] locals;
+		public List<TypeInfo> locals;
 		/**
 		 * The types of the current frame's stack.
 		 */
-		public TypeInfo[] stack;
+		public List<TypeInfo> stack;
 
 		/**
 		 * @param offsetDelta The offset delta of this frame.
 		 * @param locals The local variable types of the current frame.
 		 * @param stack The types of the current frame's stack.
 		 */
-		public FullFrame(int offsetDelta, TypeInfo[] locals, TypeInfo[] stack) {
+		public FullFrame(
+			int offsetDelta,
+			List<TypeInfo> locals,
+			List<TypeInfo> stack
+		) {
 			super(offsetDelta);
 			this.locals = locals;
 			this.stack = stack;
 		}
 
+		/**
+		 * @return Size in bytes of the serialized frame.
+		 */
 		@Override
-		protected int computeInternalLength() {
+		public int getLength() {
+			// u1 frame_type
 			// u2 offset_delta
+			int length = 1 + 2;
 			// u2 number_of_locals
-			// u2 number_of_stack_items
-			int length = 2 + 2 + 2;
+			// verification_type_info locals[number_of_locals]
+			length += 2;
 			for (TypeInfo local : locals) {
-				length += local.computeCompleteLength();
+				length += local.getLength();
 			}
+			// u2 number_of_stack_items
+			// verification_type_info stack[number_of_stack_items]
+			length += 2;
 			for (TypeInfo stackType : stack) {
-				length += stackType.computeCompleteLength();
+				length += stackType.getLength();
 			}
 			return length;
 		}

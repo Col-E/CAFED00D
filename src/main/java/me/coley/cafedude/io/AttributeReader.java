@@ -609,23 +609,23 @@ public class AttributeReader {
 
 	private StackMapTableAttribute readStackMapTable() throws IOException {
 		int numEntries = is.readUnsignedShort();
-		StackMapFrame[] frames = new StackMapFrame[numEntries];
+		List<StackMapFrame> frames = new ArrayList<>(numEntries);
 		for (int i = 0; i < numEntries; i++) {
 			// u1 frame_type
 			int frameType = is.readUnsignedByte();
 			if (frameType < 64) {
 				// same_frame
 				// The offset_delta is the frame_type
-				frames[i] = new StackMapTableAttribute.SameFrame(frameType);
+				frames.add(new StackMapTableAttribute.SameFrame(frameType));
 			} else if (frameType < 128) {
 				// same_locals_1_stack_item_frame
 				// The offset_delta is frame_type - 64
 				// verification_type_info stack
 				TypeInfo stack = readVerificationTypeInfo();
-				frames[i] = new StackMapTableAttribute.SameLocalsOneStackItem(
+				frames.add(new StackMapTableAttribute.SameLocalsOneStackItem(
 					frameType - 64,
 					stack
-				);
+				));
 			} else if (frameType < 247) {
 				// Tags in the range [128-246] are reserved for future use.
 				throw new IllegalArgumentException(
@@ -637,11 +637,12 @@ public class AttributeReader {
 				int offsetDelta = is.readUnsignedShort();
 				// verification_type_info stack
 				TypeInfo stack = readVerificationTypeInfo();
-				frames[i] = 
+				frames.add(
 					new StackMapTableAttribute.SameLocalsOneStackItemExtended(
 						offsetDelta,
 						stack
-					);
+					)
+				);
 			} else if (frameType < 251) {
 				// chop_frame
 				// This frame type indicates that the frame has the same local
@@ -651,43 +652,46 @@ public class AttributeReader {
 				int k = 251 - frameType;
 				// u2 offset_delta
 				int offsetDelta = is.readUnsignedShort();
-				frames[i] = new StackMapTableAttribute.ChopFrame(offsetDelta, k);
+				frames.add(new StackMapTableAttribute.ChopFrame(offsetDelta, k));
 			} else if (frameType < 252) {
 				// same_frame_extended
 				// u2 offset_delta
 				int offsetDelta = is.readUnsignedShort();
-				frames[i] = new StackMapTableAttribute.SameFrameExtended(
+				frames.add(new StackMapTableAttribute.SameFrameExtended(
 					offsetDelta
-				);
+				));
 			} else if (frameType < 255) {
 				// append_frame
 				// u2 offset_delta
 				int offsetDelta = is.readUnsignedShort();
 				// verification_type_info locals[frame_type - 251]
-				TypeInfo[] locals = new TypeInfo[frameType - 251];
-				for (int j = 0; j < locals.length; j++) {
-					locals[j] = readVerificationTypeInfo();
+				int numLocals = frameType - 251;
+				List<TypeInfo> locals = new ArrayList<>(numLocals);
+				for (int j = 0; j < numLocals; j++) {
+					locals.add(readVerificationTypeInfo());
 				}
-				frames[i] = new StackMapTableAttribute.AppendFrame(
+				frames.add(new StackMapTableAttribute.AppendFrame(
 					offsetDelta, locals
-				);
+				));
 			} else if (frameType < 256) {
 				// full_frame
 				// u2 offset_delta
 				int offsetDelta = is.readUnsignedShort();
 				// verification_type_info locals[u2 number_of_locals]
-				TypeInfo[] locals = new TypeInfo[is.readUnsignedShort()];
-				for (int j = 0; j < locals.length; j++) {
-					locals[j] = readVerificationTypeInfo();
+				int numLocals = is.readUnsignedShort();
+				List<TypeInfo> locals = new ArrayList<>(numLocals);
+				for (int j = 0; j < numLocals; j++) {
+					locals.add(readVerificationTypeInfo());
 				}
 				// verification_type_info stack[u2 number_of_stack_items]
-				TypeInfo[] stack = new TypeInfo[is.readUnsignedShort()];
-				for (int j = 0; j < stack.length; j++) {
-					stack[j] = readVerificationTypeInfo();
+				int numStackItems = is.readUnsignedShort();
+				List<TypeInfo> stack = new ArrayList<>(numStackItems);
+				for (int j = 0; j < numStackItems; j++) {
+					stack.add(readVerificationTypeInfo());
 				}
-				frames[i] = new StackMapTableAttribute.FullFrame(
+				frames.add(new StackMapTableAttribute.FullFrame(
 					offsetDelta, locals, stack
-				);
+				));
 			} else {
 				throw new IllegalArgumentException(
 					"Unknown frame type " + frameType
