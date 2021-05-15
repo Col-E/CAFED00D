@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static me.coley.cafedude.Constants.Attributes.*;
+import static me.coley.cafedude.Constants.StackMapTable.*;
 
 /**
  * Attribute reader for all attributes.
@@ -560,50 +561,30 @@ public class AttributeReader {
 		// u1 tag
 		int tag = is.readUnsignedByte();
 		switch (tag) {
-			// Top_variable_info
-			case 0:
+			case ITEM_Top:
 				return new StackMapTableAttribute.TopVariableInfo();
-			
-			// Integer_variable_info
-			case 1:
+			case ITEM_Integer:
 				return new StackMapTableAttribute.IntegerVariableInfo();
-			
-			// Float_variable_info
-			case 2:
+			case ITEM_Float:
 				return new StackMapTableAttribute.FloatVariableInfo();
-			
-			// Double_variable_info
-			case 3:
+			case ITEM_Double:
 				return new StackMapTableAttribute.DoubleVariableInfo();
-			
-			// Long_variable_info
-			case 4:
+			case ITEM_Long:
 				return new StackMapTableAttribute.LongVariableInfo();
-			
-			// Null_variable_info
-			case 5:
+			case ITEM_Null:
 				return new StackMapTableAttribute.NullVariableInfo();
-			
-			// UninitializedThis_variable_info
-			case 6:
+			case ITEM_UninitializedThis:
 				return new StackMapTableAttribute.UninitializedThisVariableInfo();
-			
-			// Object_variable_info
-			case 7:
+			case ITEM_Object:
 				// u2 cpool_index
 				int cpoolIndex = is.readUnsignedShort();
 				return new StackMapTableAttribute.ObjectVariableInfo(cpoolIndex);
-			
-			// Uninitialized_variable_info
-			case 8:
+			case ITEM_Uninitialized:
 				// u2 offset
 				int offset = is.readUnsignedShort();
 				return new StackMapTableAttribute.UninitializedVariableInfo(offset);
-			
 			default:
-				throw new IllegalArgumentException(
-					"Unknown verification type tag " + tag
-				);
+				throw new IllegalArgumentException("Unknown verification type tag " + tag);
 		}
 	}
 
@@ -613,11 +594,11 @@ public class AttributeReader {
 		for (int i = 0; i < numEntries; i++) {
 			// u1 frame_type
 			int frameType = is.readUnsignedByte();
-			if (frameType < 64) {
+			if (frameType <= SameFrame_max) {
 				// same_frame
 				// The offset_delta is the frame_type
 				frames.add(new StackMapTableAttribute.SameFrame(frameType));
-			} else if (frameType < 128) {
+			} else if (frameType <= SameLocalsOneStackItem_max) {
 				// same_locals_1_stack_item_frame
 				// The offset_delta is frame_type - 64
 				// verification_type_info stack
@@ -626,12 +607,10 @@ public class AttributeReader {
 					frameType - 64,
 					stack
 				));
-			} else if (frameType < 247) {
+			} else if (frameType < SameLocalsOneStackItemExtended_min) {
 				// Tags in the range [128-246] are reserved for future use.
-				throw new IllegalArgumentException(
-					"Unknown stackframe tag " + frameType
-				);
-			} else if (frameType < 248) {
+				throw new IllegalArgumentException("Unknown stackframe tag " + frameType);
+			} else if (frameType <= SameLocalsOneStackItemExtended_max) {
 				// same_locals_1_stack_item_frame_extended
 				// u2 offset_delta
 				int offsetDelta = is.readUnsignedShort();
@@ -643,7 +622,7 @@ public class AttributeReader {
 						stack
 					)
 				);
-			} else if (frameType < 251) {
+			} else if (frameType <= ChopFrame_max) {
 				// chop_frame
 				// This frame type indicates that the frame has the same local
 				// variables as the previous frame except that the last k local
@@ -660,7 +639,7 @@ public class AttributeReader {
 				frames.add(new StackMapTableAttribute.SameFrameExtended(
 					offsetDelta
 				));
-			} else if (frameType < 255) {
+			} else if (frameType <= AppendFrame_max) {
 				// append_frame
 				// u2 offset_delta
 				int offsetDelta = is.readUnsignedShort();
@@ -673,7 +652,7 @@ public class AttributeReader {
 				frames.add(new StackMapTableAttribute.AppendFrame(
 					offsetDelta, locals
 				));
-			} else if (frameType < 256) {
+			} else if (frameType <= FullFrame_max) {
 				// full_frame
 				// u2 offset_delta
 				int offsetDelta = is.readUnsignedShort();
@@ -693,9 +672,7 @@ public class AttributeReader {
 					offsetDelta, locals, stack
 				));
 			} else {
-				throw new IllegalArgumentException(
-					"Unknown frame type " + frameType
-				);
+				throw new IllegalArgumentException("Unknown frame type " + frameType);
 			}
 		}
 		return new StackMapTableAttribute(nameIndex, frames);

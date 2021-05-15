@@ -270,37 +270,15 @@ public class AttributeWriter {
 		DataOutputStream out,
 		StackMapTableAttribute.TypeInfo type
 	) throws IOException {
-		if (type instanceof StackMapTableAttribute.TopVariableInfo) {
-			out.writeByte(0);
-		} else if (type instanceof StackMapTableAttribute.IntegerVariableInfo) {
-			out.writeByte(1);
-		} else if (type instanceof StackMapTableAttribute.FloatVariableInfo) {
-			out.writeByte(2);
-		} else if (type instanceof StackMapTableAttribute.NullVariableInfo) {
-			out.writeByte(5);
-		} else if (
-			type instanceof StackMapTableAttribute.UninitializedThisVariableInfo
-		) {
-			out.writeByte(6);
-		} else if (type instanceof StackMapTableAttribute.ObjectVariableInfo) {
+		out.writeByte(type.getTag());
+		if (type instanceof StackMapTableAttribute.ObjectVariableInfo) {
 			StackMapTableAttribute.ObjectVariableInfo objVar =
 				(StackMapTableAttribute.ObjectVariableInfo) type;
-			out.writeByte(7);
 			out.writeShort(objVar.classIndex);
-			
-		} else if (
-			type instanceof StackMapTableAttribute.UninitializedVariableInfo
-		) {
+		} else if (type instanceof StackMapTableAttribute.UninitializedVariableInfo) {
 			StackMapTableAttribute.UninitializedVariableInfo uninitVar =
 				(StackMapTableAttribute.UninitializedVariableInfo) type;
-			out.writeByte(8);
 			out.writeShort(uninitVar.offset);
-		} else if (type instanceof StackMapTableAttribute.LongVariableInfo) {
-			out.writeByte(4);
-		} else if (type instanceof StackMapTableAttribute.DoubleVariableInfo) {
-			out.writeByte(3);
-		} else {
-			throw new IllegalStateException("Unknown Type " + type.getClass());
 		}
 	}
 
@@ -310,38 +288,27 @@ public class AttributeWriter {
 	) throws IOException {
 		out.writeShort(stackMapTable.frames.size());
 		for (StackMapFrame frame : stackMapTable.frames) {
-			if (frame instanceof StackMapTableAttribute.SameFrame) {
-				out.writeByte(frame.offsetDelta);
-			} else if (
-				frame instanceof StackMapTableAttribute.SameLocalsOneStackItem
-			) {				
+			out.writeByte(frame.getFrameType());
+			if (frame instanceof StackMapTableAttribute.SameLocalsOneStackItem) {
 				StackMapTableAttribute.SameLocalsOneStackItem sameLocals =
 					(StackMapTableAttribute.SameLocalsOneStackItem) frame;
-				out.writeByte(sameLocals.offsetDelta + 64);
 				writeVerificationType(out, sameLocals.stack);
-			} else if (
-				frame instanceof
-					StackMapTableAttribute.SameLocalsOneStackItemExtended
-			) {				
+			} else if (frame instanceof StackMapTableAttribute.SameLocalsOneStackItemExtended) {
 				StackMapTableAttribute.SameLocalsOneStackItemExtended sameLocals =
 					(StackMapTableAttribute.SameLocalsOneStackItemExtended) frame;
-				out.writeByte(247);
 				out.writeShort(sameLocals.offsetDelta);
 				writeVerificationType(out, sameLocals.stack);
 			} else if (frame instanceof StackMapTableAttribute.ChopFrame) {
 				StackMapTableAttribute.ChopFrame chopFrame =
 					(StackMapTableAttribute.ChopFrame) frame;
-				out.writeByte(251 - chopFrame.absentVariables);
 				out.writeShort(chopFrame.offsetDelta);
 			} else if (frame instanceof StackMapTableAttribute.SameFrameExtended) {
 				StackMapTableAttribute.SameFrameExtended sameFrame =
 					(StackMapTableAttribute.SameFrameExtended) frame;
-				out.writeByte(251);
 				out.writeShort(sameFrame.offsetDelta);
 			} else if (frame instanceof StackMapTableAttribute.AppendFrame) {
 				StackMapTableAttribute.AppendFrame appendFrame =
 					(StackMapTableAttribute.AppendFrame) frame;
-				out.writeByte(appendFrame.additionalLocals.size() + 251);
 				out.writeShort(appendFrame.offsetDelta);
 				for (TypeInfo type : appendFrame.additionalLocals) {
 					writeVerificationType(out, type);
@@ -349,7 +316,6 @@ public class AttributeWriter {
 			} else if (frame instanceof StackMapTableAttribute.FullFrame) {
 				StackMapTableAttribute.FullFrame fullFrame =
 					(StackMapTableAttribute.FullFrame) frame;
-				out.writeByte(255);
 				out.writeShort(fullFrame.offsetDelta);
 				out.writeShort(fullFrame.locals.size());
 				for (TypeInfo type : fullFrame.locals) {
@@ -359,10 +325,6 @@ public class AttributeWriter {
 				for (TypeInfo type : fullFrame.stack) {
 					writeVerificationType(out, type);
 				}
-			} else {
-				throw new IllegalStateException(
-					"Unknown frame type " + frame.getClass()
-				);
 			}
 		}
 	}

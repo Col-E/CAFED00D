@@ -1,5 +1,7 @@
 package me.coley.cafedude.attribute;
 
+import me.coley.cafedude.Constants;
+
 import java.util.List;
 
 /**
@@ -15,7 +17,10 @@ import java.util.List;
  * 
  * @author x4e
  */
-public class StackMapTableAttribute extends Attribute {
+public class StackMapTableAttribute
+	extends Attribute
+	implements Constants.StackMapTable
+{
 	/**
 	 * A list of this table's stack map frames.
  	 */
@@ -49,6 +54,11 @@ public class StackMapTableAttribute extends Attribute {
 	 */
 	public abstract static class TypeInfo {
 		/**
+		 * @return The one byte tag representing this type.
+		 */
+		public abstract int getTag();
+		
+		/**
 		 * @return Size in bytes of the serialized type info.
 		 */
 		public int getLength() {
@@ -61,30 +71,65 @@ public class StackMapTableAttribute extends Attribute {
 	 * Indicates that the local variable has the verification type top.
 	 */
 	public static class TopVariableInfo extends TypeInfo {
+		/**
+		 * @return The one byte tag representing this type.
+		 */
+		@Override
+		public int getTag() {
+			return ITEM_Top;
+		}
 	}
 
 	/**
 	 * Indicates that the location has the verification type int.
 	 */
 	public static class IntegerVariableInfo extends TypeInfo {
+		/**
+		 * @return The one byte tag representing this type.
+		 */
+		@Override
+		public int getTag() {
+			return ITEM_Integer;
+		}
 	}
 
 	/**
 	 * Indicates that the location has the verification type float.
 	 */
 	public static class FloatVariableInfo extends TypeInfo {
+		/**
+		 * @return The one byte tag representing this type.
+		 */
+		@Override
+		public int getTag() {
+			return ITEM_Float;
+		}
 	}
 
 	/**
 	 * Indicates that the location has the verification type null.
 	 */
 	public static class NullVariableInfo extends TypeInfo {
+		/**
+		 * @return The one byte tag representing this type.
+		 */
+		@Override
+		public int getTag() {
+			return ITEM_Null;
+		}
 	}
 
 	/**
 	 * Indicates that the location has the verification type uninitializedThis.
 	 */
 	public static class UninitializedThisVariableInfo extends TypeInfo {
+		/**
+		 * @return The one byte tag representing this type.
+		 */
+		@Override
+		public int getTag() {
+			return ITEM_UninitializedThis;
+		}
 	}
 
 	/**
@@ -93,6 +138,15 @@ public class StackMapTableAttribute extends Attribute {
 	 */
 	public static class ObjectVariableInfo extends TypeInfo {
 		/**
+		 * @return The one byte tag representing this type.
+		 */
+		@Override
+		public int getTag() {
+			return ITEM_Object;
+		}
+
+		/**
+		 * The index of the ClassConstant denoting the type of this variable.
 		 */
 		public int classIndex;
 
@@ -119,6 +173,14 @@ public class StackMapTableAttribute extends Attribute {
 	 * Indicates that the location has the verification type uninitialized.
 	 */
 	public static class UninitializedVariableInfo extends TypeInfo {
+		/**
+		 * @return The one byte tag representing this type.
+		 */
+		@Override
+		public int getTag() {
+			return ITEM_Uninitialized;
+		}
+
 		/**
 		 * Indicates the offset in the code of the new instruction that created
 		 * the object being stored in the location.
@@ -148,12 +210,26 @@ public class StackMapTableAttribute extends Attribute {
 	 * Indicates the verification type long.
 	 */
 	public static class LongVariableInfo extends TypeInfo {
+		/**
+		 * @return The one byte tag representing this type.
+		 */
+		@Override
+		public int getTag() {
+			return ITEM_Long;
+		}
 	}
 
 	/**
 	 * Indicates the verification type double.
 	 */
 	public static class DoubleVariableInfo extends TypeInfo {
+		/**
+		 * @return The one byte tag representing this type.
+		 */
+		@Override
+		public int getTag() {
+			return ITEM_Double;
+		}
 	}
 
 	/**
@@ -182,6 +258,11 @@ public class StackMapTableAttribute extends Attribute {
 		}
 
 		/**
+		 * @return The one byte frame type representing this frame.
+		 */
+		public abstract int getFrameType();
+
+		/**
 		 * @return Size in bytes of the serialized frame.
 		 */
 		public int getLength() {
@@ -200,6 +281,13 @@ public class StackMapTableAttribute extends Attribute {
 		 */
 		public SameFrame(int offsetDelta) {
 			super(offsetDelta);
+		}
+
+		/**
+		 * @return The one byte frame type representing this frame.
+		 */
+		public int getFrameType() {
+			return SameFrame_min + offsetDelta;
 		}
 	}
 
@@ -234,6 +322,13 @@ public class StackMapTableAttribute extends Attribute {
 			// verification_type_info stack
 			return 1 + stack.getLength();
 		}
+
+		/**
+		 * @return The one byte frame type representing this frame.
+		 */
+		public int getFrameType() {
+			return SameLocalsOneStackItem_min + offsetDelta;
+		}
 	}
 
 	/**
@@ -263,6 +358,13 @@ public class StackMapTableAttribute extends Attribute {
 			// u2 offset_delta
 			// verification_type_info stack
 			return 1 + 2 + stack.getLength();
+		}
+
+		/**
+		 * @return The one byte frame type representing this frame.
+		 */
+		public int getFrameType() {
+			return SameLocalsOneStackItemExtended_min;
 		}
 	}
 
@@ -296,6 +398,15 @@ public class StackMapTableAttribute extends Attribute {
 			// u2 offset_delta
 			return 1 + 2;
 		}
+
+		/**
+		 * @return The one byte frame type representing this frame.
+		 */
+		public int getFrameType() {
+			// 1 needs to be added, format starts at 1 instead of 0 as having a
+			// chop frame that chops 0 locals would be redundant
+			return ChopFrame_max - absentVariables + 1;
+		}
 	}
 
 	/**
@@ -318,6 +429,13 @@ public class StackMapTableAttribute extends Attribute {
 			// u1 frame_type
 			// u2 offset_delta
 			return 1 + 2;
+		}
+
+		/**
+		 * @return The one byte frame type representing this frame.
+		 */
+		public int getFrameType() {
+			return SameFrameExtended_min;
 		}
 	}
 
@@ -354,6 +472,13 @@ public class StackMapTableAttribute extends Attribute {
 				length += local.getLength();
 			}
 			return length;
+		}
+
+		/**
+		 * @return The one byte frame type representing this frame.
+		 */
+		public int getFrameType() {
+			return additionalLocals.size() + AppendFrame_min - 1;
 		}
 	}
 
@@ -406,6 +531,13 @@ public class StackMapTableAttribute extends Attribute {
 				length += stackType.getLength();
 			}
 			return length;
+		}
+
+		/**
+		 * @return The one byte frame type representing this frame.
+		 */
+		public int getFrameType() {
+			return FullFrame_min;
 		}
 	}
 }
