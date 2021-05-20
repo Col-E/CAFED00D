@@ -110,7 +110,17 @@ public class ConstPool implements Iterable<ConstPoolEntry> {
 	}
 
 	/**
-	 * @return Number of constants in the constant pool. Includes empty entries after wide values <i>(long/double)</i>
+	 * The number of slots in the constant pool, including empty spaces for wide entry padding
+	 * <i>(A mistake even sun regrets)</i>.
+	 * <br>
+	 * Note that even if the pool has a size of {@code 1}
+	 * you should still use {@code 1} as the argument for {@link #get(int)} since the pool is not
+	 * 0-indexed. Instead indices start at 1.
+	 *
+	 * @return Number of constants in the constant pool.
+	 * Includes empty entries after wide values <i>(long/double)</i>
+	 * <br>
+	 * {@code 0} when there are no items.
 	 */
 	public int size() {
 		if (last == null)

@@ -68,7 +68,7 @@ public class AttributeCpAccessValidator {
 	private <T extends Attribute> boolean isValid(T attribute) {
 		// Check name index
 		int maxCpIndex = pool.size();
-		if (attribute.getNameIndex() >= maxCpIndex)
+		if (attribute.getNameIndex() > maxCpIndex)
 			return false;
 		// Check indices match certain types (key=cp_index, value=mask of allowed cp_tags)
 		String name = pool.getUtf(attribute.getNameIndex());
