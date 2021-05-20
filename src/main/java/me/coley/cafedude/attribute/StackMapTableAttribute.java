@@ -14,21 +14,22 @@ import java.util.List;
  * attribute does not have a StackMapTable attribute, it has an implicit stack
  * map attribute (§4.10.1). This implicit stack map attribute is equivalent to
  * a StackMapTable attribute with number_of_entries equal to zero.
- * 
+ *
  * @author x4e
  */
 public class StackMapTableAttribute
-	extends Attribute
-	implements Constants.StackMapTable
-{
+		extends Attribute
+		implements Constants.StackMapTable {
 	/**
 	 * A list of this table's stack map frames.
- 	 */
+	 */
 	public final List<StackMapFrame> frames;
 
 	/**
-	 * @param nameIndex Name index in constant pool.
-	 * @param frames A list of stack map frames.
+	 * @param nameIndex
+	 * 		Name index in constant pool.
+	 * @param frames
+	 * 		A list of stack map frames.
 	 */
 	public StackMapTableAttribute(int nameIndex, List<StackMapFrame> frames) {
 		super(nameIndex);
@@ -37,8 +38,9 @@ public class StackMapTableAttribute
 
 	@Override
 	public int computeInternalLength() {
-		// u2 number_of_entries
+		// u2: number_of_entries
 		int length = 2;
+		// ??: attribute_entries
 		for (StackMapFrame frame : frames) {
 			length += frame.getLength();
 		}
@@ -57,12 +59,12 @@ public class StackMapTableAttribute
 		 * @return The one byte tag representing this type.
 		 */
 		public abstract int getTag();
-		
+
 		/**
 		 * @return Size in bytes of the serialized type info.
 		 */
 		public int getLength() {
-			// u1 tag
+			// u1: tag
 			return 1;
 		}
 	}
@@ -76,7 +78,7 @@ public class StackMapTableAttribute
 		 */
 		@Override
 		public int getTag() {
-			return ITEM_Top;
+			return ITEM_TOP;
 		}
 	}
 
@@ -89,7 +91,7 @@ public class StackMapTableAttribute
 		 */
 		@Override
 		public int getTag() {
-			return ITEM_Integer;
+			return ITEM_INTEGER;
 		}
 	}
 
@@ -102,7 +104,7 @@ public class StackMapTableAttribute
 		 */
 		@Override
 		public int getTag() {
-			return ITEM_Float;
+			return ITEM_FLOAT;
 		}
 	}
 
@@ -115,7 +117,7 @@ public class StackMapTableAttribute
 		 */
 		@Override
 		public int getTag() {
-			return ITEM_Null;
+			return ITEM_NULL;
 		}
 	}
 
@@ -128,7 +130,7 @@ public class StackMapTableAttribute
 		 */
 		@Override
 		public int getTag() {
-			return ITEM_UninitializedThis;
+			return ITEM_UNINITIALIZED_THIS;
 		}
 	}
 
@@ -142,7 +144,7 @@ public class StackMapTableAttribute
 		 */
 		@Override
 		public int getTag() {
-			return ITEM_Object;
+			return ITEM_OBJECT;
 		}
 
 		/**
@@ -151,8 +153,8 @@ public class StackMapTableAttribute
 		public int classIndex;
 
 		/**
-		 * @param classIndex Index of the ClassConstant representing type of this
-		 * variable.
+		 * @param classIndex
+		 * 		Index of the ClassConstant representing type of this variable.
 		 */
 		public ObjectVariableInfo(int classIndex) {
 			this.classIndex = classIndex;
@@ -163,8 +165,8 @@ public class StackMapTableAttribute
 		 */
 		@Override
 		public int getLength() {
-			// u1 tag
-			// u2 cpool_index
+			// u1: tag
+			// u2: cpool_index
 			return 1 + 2;
 		}
 	}
@@ -178,7 +180,7 @@ public class StackMapTableAttribute
 		 */
 		@Override
 		public int getTag() {
-			return ITEM_Uninitialized;
+			return ITEM_UNINITIALIZED;
 		}
 
 		/**
@@ -188,8 +190,9 @@ public class StackMapTableAttribute
 		public int offset;
 
 		/**
-		 * @param offset The offset in the code of the new instruction that
-		 * created the object being stored in the location.
+		 * @param offset
+		 * 		The offset in the code of the new instruction that
+		 * 		created the object being stored in the location.
 		 */
 		public UninitializedVariableInfo(int offset) {
 			this.offset = offset;
@@ -215,7 +218,7 @@ public class StackMapTableAttribute
 		 */
 		@Override
 		public int getTag() {
-			return ITEM_Long;
+			return ITEM_LONG;
 		}
 	}
 
@@ -228,21 +231,20 @@ public class StackMapTableAttribute
 		 */
 		@Override
 		public int getTag() {
-			return ITEM_Double;
+			return ITEM_DOUBLE;
 		}
 	}
 
 	/**
-	 * A stack map frame specifies (either explicitly or implicitly) the bytecode
-	 * offset at which it applies, and the verification types of local variables
-	 * and operand stack entries for that offset.
+	 * A stack map frame specifies <i>(either explicitly or implicitly)</i> the
+	 * bytecode offset at which it applies, and the verification types of local
+	 * variables and operand stack entries for that offset.
 	 * <br>
-	 * The bytecode offset at which a stack map frame applies is calculated by
-	 * taking the offset_delta of the frame, and adding offset_delta + 1 to the
-	 * bytecode offset of the previous frame, unless the previous frame is the
-	 * initial frame of the method. In that case, the bytecode offset at which
-	 * the stack map frame applies is the value offset_delta specified in the
-	 * frame.
+	 * The bytecode offset at which a stack map frame applies is calculated by taking
+	 * the {@code offset_delta} of the frame, and {@code adding offset_delta + 1} to
+	 * the bytecode offset of the previous frame, unless the previous frame is the
+	 * initial frame of the method. In that case, the bytecode offset at which the
+	 * stack map frame applies is the value {@code offset_delta} specified in the frame.
 	 */
 	public abstract static class StackMapFrame {
 		/**
@@ -251,7 +253,8 @@ public class StackMapTableAttribute
 		public int offsetDelta;
 
 		/**
-		 * @param offsetDelta The offset delta of this frame.
+		 * @param offsetDelta
+		 * 		The offset delta of this frame.
 		 */
 		public StackMapFrame(int offsetDelta) {
 			this.offsetDelta = offsetDelta;
@@ -275,9 +278,10 @@ public class StackMapTableAttribute
 	 * This frame type indicates that the frame has exactly the same local
 	 * variables as the previous frame and that the operand stack is empty.
 	 */
-	public static class SameFrame extends StackMapFrame {		
+	public static class SameFrame extends StackMapFrame {
 		/**
-		 * @param offsetDelta The offset delta of this frame.
+		 * @param offsetDelta
+		 * 		The offset delta of this frame.
 		 */
 		public SameFrame(int offsetDelta) {
 			super(offsetDelta);
@@ -287,17 +291,18 @@ public class StackMapTableAttribute
 		 * @return The one byte frame type representing this frame.
 		 */
 		public int getFrameType() {
-			return SameFrame_min + offsetDelta;
+			return SAME_FRAME_MIN + offsetDelta;
 		}
 	}
 
 	/**
 	 * This frame type indicates that the frame has exactly the same local
 	 * variables as the previous frame and that the operand stack has one entry.
-	 * The offset_delta value for the frame is given by the formula frame_type -
-	 * 64. The verification type of the one stack entry appears after the frame
-	 * type.
-	*/
+	 * The {@code offset_delta} value for the frame is given by the formula:
+	 * {@code frame_type - 64}
+	 * <br>
+	 * The verification type of the one stack entry appears after the frame type.
+	 */
 	public static class SameLocalsOneStackItem extends StackMapFrame {
 		/**
 		 * The singular stack item.
@@ -305,8 +310,10 @@ public class StackMapTableAttribute
 		public TypeInfo stack;
 
 		/**
-		 * @param offsetDelta The offset delta of this frame.
-	 	 * @param stack The singular stack item.
+		 * @param offsetDelta
+		 * 		The offset delta of this frame.
+		 * @param stack
+		 * 		The singular stack item.
 		 */
 		public SameLocalsOneStackItem(int offsetDelta, TypeInfo stack) {
 			super(offsetDelta);
@@ -327,12 +334,12 @@ public class StackMapTableAttribute
 		 * @return The one byte frame type representing this frame.
 		 */
 		public int getFrameType() {
-			return SameLocalsOneStackItem_min + offsetDelta;
+			return SAME_LOCALS_ONE_STACK_ITEM_MIN + offsetDelta;
 		}
 	}
 
 	/**
-	 * Same as {@link SameLocalsOneStackItem} except has an explicit offsetDelta.
+	 * Same as {@link SameLocalsOneStackItem} except has an explicit {@code offsetDelta}.
 	 */
 	public static class SameLocalsOneStackItemExtended extends StackMapFrame {
 		/**
@@ -341,8 +348,10 @@ public class StackMapTableAttribute
 		public TypeInfo stack;
 
 		/**
-		 * @param offsetDelta The offset delta of this frame.
-	 	 * @param stack The singular stack item.
+		 * @param offsetDelta
+		 * 		The offset delta of this frame.
+		 * @param stack
+		 * 		The singular stack item.
 		 */
 		public SameLocalsOneStackItemExtended(int offsetDelta, TypeInfo stack) {
 			super(offsetDelta);
@@ -354,8 +363,8 @@ public class StackMapTableAttribute
 		 */
 		@Override
 		public int getLength() {
-			// u1 frame_type
-			// u2 offset_delta
+			// u1: frame_type
+			// u2: offset_delta
 			// verification_type_info stack
 			return 1 + 2 + stack.getLength();
 		}
@@ -364,7 +373,7 @@ public class StackMapTableAttribute
 		 * @return The one byte frame type representing this frame.
 		 */
 		public int getFrameType() {
-			return SameLocalsOneStackItemExtended_min;
+			return SAME_LOCALS_ONE_STACK_ITEM_EXTENDED_MIN;
 		}
 	}
 
@@ -380,9 +389,11 @@ public class StackMapTableAttribute
 		public int absentVariables;
 
 		/**
-		 * @param offsetDelta The offset delta of this frame.
-		 * @param absentVariables The number of chopped local variables.
-		 * absent.
+		 * @param offsetDelta
+		 * 		The offset delta of this frame.
+		 * @param absentVariables
+		 * 		The number of chopped local variables.
+		 * 		absent.
 		 */
 		public ChopFrame(int offsetDelta, int absentVariables) {
 			super(offsetDelta);
@@ -394,8 +405,8 @@ public class StackMapTableAttribute
 		 */
 		@Override
 		public int getLength() {
-			// u1 frame_type
-			// u2 offset_delta
+			// u1: frame_type
+			// u2: offset_delta
 			return 1 + 2;
 		}
 
@@ -405,7 +416,7 @@ public class StackMapTableAttribute
 		public int getFrameType() {
 			// 1 needs to be added, format starts at 1 instead of 0 as having a
 			// chop frame that chops 0 locals would be redundant
-			return ChopFrame_max - absentVariables + 1;
+			return CHOP_FRAME_MAX - absentVariables + 1;
 		}
 	}
 
@@ -415,7 +426,8 @@ public class StackMapTableAttribute
 	 */
 	public static class SameFrameExtended extends StackMapFrame {
 		/**
-		 * @param offsetDelta The offset delta of this frame.
+		 * @param offsetDelta
+		 * 		The offset delta of this frame.
 		 */
 		public SameFrameExtended(int offsetDelta) {
 			super(offsetDelta);
@@ -426,8 +438,8 @@ public class StackMapTableAttribute
 		 */
 		@Override
 		public int getLength() {
-			// u1 frame_type
-			// u2 offset_delta
+			// u1: frame_type
+			// u2: offset_delta
 			return 1 + 2;
 		}
 
@@ -435,7 +447,7 @@ public class StackMapTableAttribute
 		 * @return The one byte frame type representing this frame.
 		 */
 		public int getFrameType() {
-			return SameFrameExtended_min;
+			return SAME_FRAME_EXTENDED_MIN;
 		}
 	}
 
@@ -451,8 +463,10 @@ public class StackMapTableAttribute
 		public List<TypeInfo> additionalLocals;
 
 		/**
-		 * @param offsetDelta The offset delta of this frame.
-		 * @param additionalLocals The additional locals defined in the frame.
+		 * @param offsetDelta
+		 * 		The offset delta of this frame.
+		 * @param additionalLocals
+		 * 		The additional locals defined in the frame.
 		 */
 		public AppendFrame(int offsetDelta, List<TypeInfo> additionalLocals) {
 			super(offsetDelta);
@@ -464,8 +478,8 @@ public class StackMapTableAttribute
 		 */
 		@Override
 		public int getLength() {
-			// u1 frame_type
-			// u2 offset_delta
+			// u1: frame_type
+			// u2: offset_delta
 			int length = 1 + 2;
 			// verification_type_info locals[frame_type - 251]
 			for (TypeInfo local : additionalLocals) {
@@ -478,7 +492,7 @@ public class StackMapTableAttribute
 		 * @return The one byte frame type representing this frame.
 		 */
 		public int getFrameType() {
-			return additionalLocals.size() + AppendFrame_min - 1;
+			return additionalLocals.size() + APPEND_FRAME_MIN - 1;
 		}
 	}
 
@@ -496,15 +510,14 @@ public class StackMapTableAttribute
 		public List<TypeInfo> stack;
 
 		/**
-		 * @param offsetDelta The offset delta of this frame.
-		 * @param locals The local variable types of the current frame.
-		 * @param stack The types of the current frame's stack.
+		 * @param offsetDelta
+		 * 		The offset delta of this frame.
+		 * @param locals
+		 * 		The local variable types of the current frame.
+		 * @param stack
+		 * 		The types of the current frame's stack.
 		 */
-		public FullFrame(
-			int offsetDelta,
-			List<TypeInfo> locals,
-			List<TypeInfo> stack
-		) {
+		public FullFrame(int offsetDelta, List<TypeInfo> locals, List<TypeInfo> stack) {
 			super(offsetDelta);
 			this.locals = locals;
 			this.stack = stack;
@@ -515,8 +528,8 @@ public class StackMapTableAttribute
 		 */
 		@Override
 		public int getLength() {
-			// u1 frame_type
-			// u2 offset_delta
+			// u1: frame_type
+			// u2: offset_delta
 			int length = 1 + 2;
 			// u2 number_of_locals
 			// verification_type_info locals[number_of_locals]
@@ -537,7 +550,7 @@ public class StackMapTableAttribute
 		 * @return The one byte frame type representing this frame.
 		 */
 		public int getFrameType() {
-			return FullFrame_min;
+			return FULL_FRAME_MIN;
 		}
 	}
 }

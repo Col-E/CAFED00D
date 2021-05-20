@@ -291,105 +291,103 @@ public interface Constants {
 		 */
 		int TYPE_ARGUMENT_OF_GENERIC_METHOD_REF_EXPRESSION = 0x4B;
 	}
-	
+
 	/**
 	 * Constants for the stack map table.
 	 */
 	interface StackMapTable {
 		/**
-		 * Indicates the verification type top.
+		 * Indicates the verification type {@code top}.
 		 */
-		final int ITEM_Top = 0;
+		int ITEM_TOP = 0;
 		/**
-		 * Indicates the verification type int.
+		 * Indicates the verification type {@code int}.
 		 */
-		final int ITEM_Integer = 1;
+		int ITEM_INTEGER = 1;
 		/**
-		 * Indicates the verification type float.
+		 * Indicates the verification type {@code float}.
 		 */
-		final int ITEM_Float = 2;
+		int ITEM_FLOAT = 2;
 		/**
-		 * Indicates the verification type double.
+		 * Indicates the verification type {@code double}.
 		 */
-		final int ITEM_Double = 3;
+		int ITEM_DOUBLE = 3;
 		/**
-		 * Indicates the verification type long.
+		 * Indicates the verification type {@code long}.
 		 */
-		final int ITEM_Long = 4;
+		int ITEM_LONG = 4;
 		/**
-		 * Indicates the verification type null.
+		 * Indicates the verification type {@code null}.
 		 */
-		final int ITEM_Null = 5;
+		int ITEM_NULL = 5;
 		/**
-		 * Indicates the verification type uninitializedThis.
+		 * Indicates the verification type {@code uninitializedThis}.
 		 */
-		final int ITEM_UninitializedThis = 6;
+		int ITEM_UNINITIALIZED_THIS = 6;
 		/**
 		 * Indicates the verification type of a class reference.
 		 */
-		final int ITEM_Object = 7;
+		int ITEM_OBJECT = 7;
 		/**
-		 * Indicates the verification type uninitialized.
+		 * Indicates the verification type {@code uninitialized}.
 		 */
-		final int ITEM_Uninitialized = 8;
-		
+		int ITEM_UNINITIALIZED = 8;
+
 		/**
-		 * The lower bound of the same_frame's frame_type.
+		 * The lower bound of the {@code same_frame}'s {@code frame_type}.
 		 */
-		final int SameFrame_min = 0;
+		int SAME_FRAME_MIN = 0;
 		/**
-		 * The upper bound of the same_frame's frame_type.
+		 * The upper bound of the {@code same_frame}'s {@code frame_type}.
 		 */
-		final int SameFrame_max = 63;
+		int SAME_FRAME_MAX = 63;
 		/**
-		 * The lower bound of the same_locals_1_stack_item_frame's frame_type.
+		 * The lower bound of the {@code same_locals_1_stack_item_frame}'s {@code frame_type}.
 		 */
-		final int SameLocalsOneStackItem_min = 64;
+		int SAME_LOCALS_ONE_STACK_ITEM_MIN = 64;
 		/**
-		 * The upper bound of the same_locals_1_stack_item_frame's frame_type.
+		 * The upper bound of the {@code same_locals_1_stack_item_frame}'s {@code frame_type}.
 		 */
-		final int SameLocalsOneStackItem_max = 127;
+		int SAME_LOCALS_ONE_STACK_ITEM_MAX = 127;
 		/**
-		 * The lower bound of the same_locals_1_stack_item_frame_extended's
-		 * frame_type.
+		 * The lower bound of the {@code same_locals_1_stack_item_frame_extended}'s {@code frame_type}.
 		 */
-		final int SameLocalsOneStackItemExtended_min = 247;
+		int SAME_LOCALS_ONE_STACK_ITEM_EXTENDED_MIN = 247;
 		/**
-		 * The upper bound of the same_locals_1_stack_item_frame_extended's
-		 * frame_type.
+		 * The upper bound of the {@code same_locals_1_stack_item_frame_extended}'s {@code frame_type}.
 		 */
-		final int SameLocalsOneStackItemExtended_max = 247;
+		int SAME_LOCALS_ONE_STACK_ITEM_EXTENDED_MAX = 247;
 		/**
-		 * The lower bound of the chop_frame's frame_type.
+		 * The lower bound of the {@code chop_frame}'s {@code frame_type}.
 		 */
-		final int ChopFrame_min = 248;
+		int CHOP_FRAME_MIN = 248;
 		/**
-		 * The upper bound of the chop_frame's frame_type.
+		 * The upper bound of the {@code chop_frame}'s {@code frame_type}.
 		 */
-		final int ChopFrame_max = 250;
+		int CHOP_FRAME_MAX = 250;
 		/**
-		 * The lower bound of the same_frame_extended's frame_type.
+		 * The lower bound of the {@code same_frame_extended}'s {@code frame_type}.
 		 */
-		final int SameFrameExtended_min = 251;
+		int SAME_FRAME_EXTENDED_MIN = 251;
 		/**
-		 * The upper bound of the same_frame_extended's frame_type.
+		 * The upper bound of the {@code same_frame_extended}'s {@code frame_type}.
 		 */
-		final int SameFrameExtended_max = 251;
+		int SAME_FRAME_EXTENDED_MAX = 251;
 		/**
-		 * The lower bound of the append_frame's frame_type.
+		 * The lower bound of the {@code append_frame}'s {@code frame_type}.
 		 */
-		final int AppendFrame_min = 252;
+		int APPEND_FRAME_MIN = 252;
 		/**
-		 * The upper bound of the append_frame's frame_type.
+		 * The upper bound of the {@code append_frame}'s {@code frame_type}.
 		 */
-		final int AppendFrame_max = 254;
+		int APPEND_FRAME_MAX = 254;
 		/**
-		 * The lower bound of the full_frame's frame_type.
+		 * The lower bound of the {@code full_frame}'s {@code frame_type}.
 		 */
-		final int FullFrame_min = 255;
+		int FULL_FRAME_MIN = 255;
 		/**
-		 * The upper bound of the full_frame's frame_type.
+		 * The upper bound of the {@code full_frame}'s {@code frame_type}.
 		 */
-		final int FullFrame_max = 255;
+		int FULL_FRAME_MAX = 255;
 	}
 }
