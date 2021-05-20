@@ -24,6 +24,7 @@ public class EqualityIOTest {
 			visitRootDir("samples/annos");
 			visitRootDir("samples/modules");
 			visitRootDir("samples/javac");
+			visitRootDir("samples/misc");
 		} catch (IOException e) {
 			System.err.println(lastLoaded.getPath());
 			fail("Failed to read class, IO error", e);
@@ -34,7 +35,7 @@ public class EqualityIOTest {
 		System.out.println("Successes: " + successes);
 	}
 
-	private void assertReadWriteEquality(byte[] code) throws InvalidClassException, IOException {
+	private void assertReadWriteEquality(byte[] code) throws InvalidClassException {
 		ClassFile cf = new ClassFileReader().read(code);
 		byte[] out = new ClassFileWriter().write(cf);
 		assertEquals(code.length, out.length, "Class difference for: " + cf.getName());
