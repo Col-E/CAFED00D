@@ -9,6 +9,7 @@ import me.coley.cafedude.annotation.ElementValue;
 import me.coley.cafedude.annotation.EnumElementValue;
 import me.coley.cafedude.annotation.PrimitiveElementValue;
 import me.coley.cafedude.annotation.Utf8ElementValue;
+import me.coley.cafedude.attribute.BootstrapMethodsAttribute.BootstrapMethod;
 import me.coley.cafedude.attribute.CodeAttribute.ExceptionTableEntry;
 import me.coley.cafedude.attribute.InnerClassesAttribute.InnerClass;
 import me.coley.cafedude.attribute.ModuleAttribute.Exports;
@@ -150,7 +151,7 @@ public class AttributeCpAccessValidator {
 					}
 				}
 				for (ExceptionTableEntry entry : code.getExceptionTable()) {
-					expectedTypeMasks.put(entry.getCatchTypeIndex(), i -> i == 0 ||  i == ConstantPool.CLASS);
+					expectedTypeMasks.put(entry.getCatchTypeIndex(), i -> i == 0 || i == ConstantPool.CLASS);
 					if (entry.getCatchTypeIndex() == 0) {
 						allow0Case = true;
 					} else {
@@ -197,12 +198,23 @@ public class AttributeCpAccessValidator {
 					expectedTypeMasks.put(use, i -> i == ConstantPool.CLASS);
 				}
 				break;
+			case BOOTSTRAP_METHODS:
+				BootstrapMethodsAttribute bootstrapMethodsAttribute = (BootstrapMethodsAttribute) attribute;
+				for (BootstrapMethod bsm : bootstrapMethodsAttribute.getBootstrapMethods()) {
+					expectedTypeMasks.put(bsm.getBsmMethodref(), i -> i == ConstantPool.METHOD_HANDLE);
+					// Arguments must be loadable types
+					for (int arg : bsm.getArgs()) {
+						expectedTypeMasks.put(arg, i ->
+								(i >= ConstantPool.INTEGER && i <= ConstantPool.STRING) ||
+										(i >= ConstantPool.METHOD_HANDLE && i <= ConstantPool.DYNAMIC));
+					}
+				}
+				break;
 			case SOURCE_DEBUG_EXTENSION:
 			case DEPRECATED:
 			case SYNTHETIC:
 				// no-op
 				break;
-			case BOOTSTRAP_METHODS:
 			case CHARACTER_RANGE_TABLE:
 			case COMPILATION_ID:
 			case LINE_NUMBER_TABLE:
