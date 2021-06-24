@@ -244,8 +244,6 @@ public class AttributeWriter {
 					break;
 				case Constants.Attributes.SOURCE_DEBUG_EXTENSION:
 					DebugExtensionAttribute debugExtension = (DebugExtensionAttribute) attribute;
-					out.writeShort(debugExtension.getNameIndex());
-					out.writeInt(debugExtension.getDebugExtension().length);
 					out.write(debugExtension.getDebugExtension());
 					break;
 				case Constants.Attributes.SOURCE_FILE:
