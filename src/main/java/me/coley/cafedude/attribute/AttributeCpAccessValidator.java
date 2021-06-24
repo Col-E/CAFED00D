@@ -227,7 +227,7 @@ public class AttributeCpAccessValidator {
 			// Referenced pool entry must be in pool range
 			//  - Yes, the CP doesn't start at 0, but there are special cases where it is allowed.
 			int cpIndex = entry.getKey();
-			if (cpIndex < min || cpIndex >= maxCpIndex) {
+			if (cpIndex < min || cpIndex > maxCpIndex) {
 				logger.debug("Invalid '{}' attribute, contains CP reference to index out of CP bounds!", name);
 				return false;
 			}

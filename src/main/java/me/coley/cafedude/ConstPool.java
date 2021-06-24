@@ -211,8 +211,8 @@ public class ConstPool implements Iterable<ConstPoolEntry> {
 			// Max bounds check
 			if (node.next == null)
 				throw new IndexOutOfBoundsException("CP index out of range for class, max: " + i);
-			node = node.next;
 			i += node.getCpEntrySize();
+			node = node.next;
 		}
 		if (i != index)
 			throw new IndexOutOfBoundsException("CP index requested was reserved! Index: " + index);
