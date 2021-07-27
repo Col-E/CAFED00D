@@ -97,6 +97,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M4</version>
                 <configuration>
+                    <excludes>samples/**</excludes> <!-- Do not scan the samples in an attempt to find tests -->
                     <reuseForks>false</reuseForks>
                     <forkCount>1</forkCount>
                 </configuration>
