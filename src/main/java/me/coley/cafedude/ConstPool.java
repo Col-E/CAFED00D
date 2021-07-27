@@ -206,7 +206,7 @@ public class ConstPool implements Iterable<ConstPoolEntry> {
 		assertNotEmpty();
 		CpListNode node = first;
 		// It's more optimized to count externally than use the node index getter, which is dynamic
-		int i = node.getCpEntrySize();
+		int i = 1;
 		while (i < index) {
 			// Max bounds check
 			if (node.next == null)
@@ -301,12 +301,12 @@ public class ConstPool implements Iterable<ConstPoolEntry> {
 		 * @return Index of this wrapped cp-entry in the constant pool.
 		 */
 		public int getCpIndex() {
-			int sum = 0;
-			CpListNode tmp = this;
-			do {
+			int sum = 1;
+			CpListNode tmp = prev;
+			while (tmp != null) {
 				sum += tmp.getCpEntrySize();
 				tmp = tmp.prev;
-			} while (tmp != null);
+			}
 			return sum;
 		}
 
