@@ -521,8 +521,8 @@ public class AttributeReader {
 		// Read attributes
 		int numAttributes = is.readUnsignedShort();
 		for (int i = 0; i < numAttributes; i++) {
-			// The reason for this null check is because illegal attributes return null and are dropped.
-			// The second validation check asserts that all CP refs in the attribute point to valid
+			// The reason for this check is because illegal attributes return null and are dropped.
+			// It also asserts that all CP refs in the attribute point to valid
 			// indices and are of the expected types.
 			Attribute attr = new AttributeReader(reader, builder, is).readAttribute(AttributeContext.ATTRIBUTE);
 			if (shouldAddAttribute(attr))
@@ -555,37 +555,6 @@ public class AttributeReader {
 	private ConstantValueAttribute readConstantValue() throws IOException {
 		int valueIndex = is.readUnsignedShort();
 		return new ConstantValueAttribute(nameIndex, valueIndex);
-	}
-
-	private TypeInfo readVerificationTypeInfo() throws IOException {
-		// u1 tag
-		int tag = is.readUnsignedByte();
-		switch (tag) {
-			case ITEM_TOP:
-				return new StackMapTableAttribute.TopVariableInfo();
-			case ITEM_INTEGER:
-				return new StackMapTableAttribute.IntegerVariableInfo();
-			case ITEM_FLOAT:
-				return new StackMapTableAttribute.FloatVariableInfo();
-			case ITEM_DOUBLE:
-				return new StackMapTableAttribute.DoubleVariableInfo();
-			case ITEM_LONG:
-				return new StackMapTableAttribute.LongVariableInfo();
-			case ITEM_NULL:
-				return new StackMapTableAttribute.NullVariableInfo();
-			case ITEM_UNINITIALIZED_THIS:
-				return new StackMapTableAttribute.UninitializedThisVariableInfo();
-			case ITEM_OBJECT:
-				// u2 cpool_index
-				int cpoolIndex = is.readUnsignedShort();
-				return new StackMapTableAttribute.ObjectVariableInfo(cpoolIndex);
-			case ITEM_UNINITIALIZED:
-				// u2 offset
-				int offset = is.readUnsignedShort();
-				return new StackMapTableAttribute.UninitializedVariableInfo(offset);
-			default:
-				throw new IllegalArgumentException("Unknown verification type tag " + tag);
-		}
 	}
 
 	private StackMapTableAttribute readStackMapTable() throws IOException {
@@ -676,5 +645,36 @@ public class AttributeReader {
 			}
 		}
 		return new StackMapTableAttribute(nameIndex, frames);
+	}
+
+	private TypeInfo readVerificationTypeInfo() throws IOException {
+		// u1 tag
+		int tag = is.readUnsignedByte();
+		switch (tag) {
+			case ITEM_TOP:
+				return new StackMapTableAttribute.TopVariableInfo();
+			case ITEM_INTEGER:
+				return new StackMapTableAttribute.IntegerVariableInfo();
+			case ITEM_FLOAT:
+				return new StackMapTableAttribute.FloatVariableInfo();
+			case ITEM_DOUBLE:
+				return new StackMapTableAttribute.DoubleVariableInfo();
+			case ITEM_LONG:
+				return new StackMapTableAttribute.LongVariableInfo();
+			case ITEM_NULL:
+				return new StackMapTableAttribute.NullVariableInfo();
+			case ITEM_UNINITIALIZED_THIS:
+				return new StackMapTableAttribute.UninitializedThisVariableInfo();
+			case ITEM_OBJECT:
+				// u2 cpool_index
+				int cpoolIndex = is.readUnsignedShort();
+				return new StackMapTableAttribute.ObjectVariableInfo(cpoolIndex);
+			case ITEM_UNINITIALIZED:
+				// u2 offset
+				int offset = is.readUnsignedShort();
+				return new StackMapTableAttribute.UninitializedVariableInfo(offset);
+			default:
+				throw new IllegalArgumentException("Unknown verification type tag " + tag);
+		}
 	}
 }
