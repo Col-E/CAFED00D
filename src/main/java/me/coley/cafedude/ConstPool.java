@@ -209,6 +209,19 @@ public class ConstPool implements List<ConstPoolEntry> {
 		return backing.add(constPoolEntry);
 	}
 
+	@Override
+	public void add(int index, ConstPoolEntry element) {
+		onAdd(element, index);
+		backing.add(cpToInternal(index), element);
+	}
+
+	@Override
+	public ConstPoolEntry remove(int index) {
+		ConstPoolEntry ret = backing.remove(cpToInternal(index));
+		if (ret != null)
+			onRemove(ret, index);
+		return ret;
+	}
 
 	@Override
 	public boolean remove(Object o) {
@@ -271,20 +284,6 @@ public class ConstPool implements List<ConstPoolEntry> {
 	public ConstPoolEntry set(int index, ConstPoolEntry element) {
 		ConstPoolEntry ret = remove(index);
 		add(index, element);
-		return ret;
-	}
-
-	@Override
-	public void add(int index, ConstPoolEntry element) {
-		onAdd(element, index);
-		backing.add(cpToInternal(index), element);
-	}
-
-	@Override
-	public ConstPoolEntry remove(int index) {
-		ConstPoolEntry ret = backing.remove(cpToInternal(index));
-		if (ret != null)
-			onRemove(ret, index);
 		return ret;
 	}
 

@@ -12,10 +12,13 @@ import me.coley.cafedude.annotation.Utf8ElementValue;
 import me.coley.cafedude.attribute.BootstrapMethodsAttribute.BootstrapMethod;
 import me.coley.cafedude.attribute.CodeAttribute.ExceptionTableEntry;
 import me.coley.cafedude.attribute.InnerClassesAttribute.InnerClass;
+import me.coley.cafedude.attribute.LocalVariableTableAttribute.VarEntry;
+import me.coley.cafedude.attribute.LocalVariableTypeTableAttribute.VarTypeEntry;
 import me.coley.cafedude.attribute.ModuleAttribute.Exports;
 import me.coley.cafedude.attribute.ModuleAttribute.Opens;
 import me.coley.cafedude.attribute.ModuleAttribute.Provides;
 import me.coley.cafedude.attribute.ModuleAttribute.Requires;
+import me.coley.cafedude.attribute.RecordAttribute.RecordComponent;
 import me.coley.cafedude.constant.ConstPoolEntry;
 import me.coley.cafedude.constant.CpClass;
 import me.coley.cafedude.constant.CpUtf8;
@@ -71,6 +74,9 @@ public class AttributeCpAccessValidator {
 		int maxCpIndex = pool.size();
 		if (attribute.getNameIndex() > maxCpIndex)
 			return false;
+		// Cannot investigate directly unsupported attributes.
+		if (attribute instanceof DefaultAttribute)
+			return true;
 		// Check indices match certain types (key=cp_index, value=mask of allowed cp_tags)
 		String name = pool.getUtf(attribute.getNameIndex());
 		boolean allow0Case = false;
@@ -162,12 +168,12 @@ public class AttributeCpAccessValidator {
 			case SIGNATURE:
 				SignatureAttribute signatureAttribute = (SignatureAttribute) attribute;
 				expectedTypeMasks.put(signatureAttribute.getSignatureIndex(), i -> i == ConstantPool.UTF8);
-				cpEntryValidators.put(signatureAttribute.getSignatureIndex(), isNonEmptyUtf8());
+				cpEntryValidators.put(signatureAttribute.getSignatureIndex(), matchNonEmptyUtf8());
 				break;
 			case SOURCE_FILE:
 				SourceFileAttribute sourceFileAttribute = (SourceFileAttribute) attribute;
 				expectedTypeMasks.put(sourceFileAttribute.getSourceFileNameIndex(), i -> i == ConstantPool.UTF8);
-				cpEntryValidators.put(sourceFileAttribute.getSourceFileNameIndex(), isNonEmptyUtf8());
+				cpEntryValidators.put(sourceFileAttribute.getSourceFileNameIndex(), matchNonEmptyUtf8());
 				break;
 			case Attributes.MODULE:
 				ModuleAttribute moduleAttribute = (ModuleAttribute) attribute;
@@ -210,6 +216,41 @@ public class AttributeCpAccessValidator {
 					}
 				}
 				break;
+			case LOCAL_VARIABLE_TABLE:
+				LocalVariableTableAttribute varTable = (LocalVariableTableAttribute) attribute;
+				for (VarEntry entry : varTable.getEntries()) {
+					expectedTypeMasks.put(entry.getNameIndex(), i -> i == ConstantPool.UTF8);
+					expectedTypeMasks.put(entry.getDescIndex(), i -> i == ConstantPool.UTF8);
+					cpEntryValidators.put(entry.getNameIndex(), matchNonEmptyUtf8().and(matchWordUtf8()));
+					cpEntryValidators.put(entry.getDescIndex(), matchNonEmptyUtf8());
+				}
+				break;
+			case LOCAL_VARIABLE_TYPE_TABLE:
+				LocalVariableTypeTableAttribute typeTable = (LocalVariableTypeTableAttribute) attribute;
+				for (VarTypeEntry entry : typeTable.getEntries()) {
+					expectedTypeMasks.put(entry.getNameIndex(), i -> i == ConstantPool.UTF8);
+					expectedTypeMasks.put(entry.getSignatureIndex(), i -> i == ConstantPool.UTF8);
+					cpEntryValidators.put(entry.getNameIndex(), matchNonEmptyUtf8().and(matchWordUtf8()));
+					cpEntryValidators.put(entry.getSignatureIndex(), matchNonEmptyUtf8());
+				}
+				break;
+			case PERMITTED_SUBCLASSES:
+				PermittedClassesAttribute permittedClassesAttribute = (PermittedClassesAttribute) attribute;
+				for (int index : permittedClassesAttribute.getClasses()) {
+					expectedTypeMasks.put(index, i -> i == ConstantPool.CLASS);
+					cpEntryValidators.put(index, matchClassType());
+				}
+				break;
+			case RECORD:
+				RecordAttribute recordAttribute = (RecordAttribute) attribute;
+				for (RecordComponent component : recordAttribute.getComponents()) {
+					expectedTypeMasks.put(component.getNameIndex(), i -> i == ConstantPool.UTF8);
+					cpEntryValidators.put(component.getNameIndex(), matchWordUtf8());
+					expectedTypeMasks.put(component.getDescIndex(), i -> i == ConstantPool.UTF8);
+					cpEntryValidators.put(component.getDescIndex(), matchNonEmptyUtf8());
+				}
+				break;
+			case LINE_NUMBER_TABLE:
 			case SOURCE_DEBUG_EXTENSION:
 			case DEPRECATED:
 			case SYNTHETIC:
@@ -217,17 +258,12 @@ public class AttributeCpAccessValidator {
 				break;
 			case CHARACTER_RANGE_TABLE:
 			case COMPILATION_ID:
-			case LINE_NUMBER_TABLE:
-			case LOCAL_VARIABLE_TABLE:
-			case LOCAL_VARIABLE_TYPE_TABLE:
 			case METHOD_PARAMETERS:
 			case MODULE_HASHES:
 			case MODULE_MAIN_CLASS:
 			case MODULE_PACKAGES:
 			case MODULE_RESOLUTION:
 			case MODULE_TARGET:
-			case PERMITTED_SUBCLASSES:
-			case RECORD:
 			case SOURCE_ID:
 			case STACK_MAP_TABLE:
 			default:
@@ -301,10 +337,14 @@ public class AttributeCpAccessValidator {
 	}
 
 	private Predicate<ConstPoolEntry> matchUtf8ClassType() {
-		return isNonEmptyUtf8();
+		return matchNonEmptyUtf8();
 	}
 
-	private Predicate<ConstPoolEntry> isNonEmptyUtf8() {
+	private Predicate<ConstPoolEntry> matchNonEmptyUtf8() {
 		return e -> e instanceof CpUtf8 && ((CpUtf8) e).getText().length() > 0;
+	}
+
+	private Predicate<ConstPoolEntry> matchWordUtf8() {
+		return e -> e instanceof CpUtf8 && ((CpUtf8) e).getText().matches("\\w+");
 	}
 }

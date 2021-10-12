@@ -7,13 +7,13 @@
     <groupId>me.coley</groupId>
     <artifactId>cafedude</artifactId>
     <url>https://github.com/Col-E/CAFED00D/</url>
-    <version>1.7.4</version>
+    <version>1.8.0</version>
     <name>CAFED00D</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <junit.version>5.6.2</junit.version>
-        <asm.version>9.1</asm.version>
+        <junit.version>5.8.1</junit.version>
+        <asm.version>9.2</asm.version>
     </properties>
 
     <dependencies>

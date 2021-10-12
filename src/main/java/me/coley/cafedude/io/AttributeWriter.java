@@ -16,6 +16,12 @@ import me.coley.cafedude.attribute.EnclosingMethodAttribute;
 import me.coley.cafedude.attribute.ExceptionsAttribute;
 import me.coley.cafedude.attribute.InnerClassesAttribute;
 import me.coley.cafedude.attribute.InnerClassesAttribute.InnerClass;
+import me.coley.cafedude.attribute.LineNumberTableAttribute;
+import me.coley.cafedude.attribute.LineNumberTableAttribute.LineEntry;
+import me.coley.cafedude.attribute.LocalVariableTableAttribute;
+import me.coley.cafedude.attribute.LocalVariableTableAttribute.VarEntry;
+import me.coley.cafedude.attribute.LocalVariableTypeTableAttribute;
+import me.coley.cafedude.attribute.LocalVariableTypeTableAttribute.VarTypeEntry;
 import me.coley.cafedude.attribute.ModuleAttribute;
 import me.coley.cafedude.attribute.ModuleAttribute.Exports;
 import me.coley.cafedude.attribute.ModuleAttribute.Opens;
@@ -24,6 +30,9 @@ import me.coley.cafedude.attribute.ModuleAttribute.Requires;
 import me.coley.cafedude.attribute.NestHostAttribute;
 import me.coley.cafedude.attribute.NestMembersAttribute;
 import me.coley.cafedude.attribute.ParameterAnnotationsAttribute;
+import me.coley.cafedude.attribute.PermittedClassesAttribute;
+import me.coley.cafedude.attribute.RecordAttribute;
+import me.coley.cafedude.attribute.RecordAttribute.RecordComponent;
 import me.coley.cafedude.attribute.SignatureAttribute;
 import me.coley.cafedude.attribute.SourceFileAttribute;
 import me.coley.cafedude.attribute.StackMapTableAttribute;
@@ -148,10 +157,34 @@ public class AttributeWriter {
 					}
 					break;
 				case Constants.Attributes.LINE_NUMBER_TABLE:
+					LineNumberTableAttribute lineNumbers = (LineNumberTableAttribute) attribute;
+					out.writeShort(lineNumbers.getEntries().size());
+					for (LineEntry entry : lineNumbers.getEntries()) {
+						out.writeShort(entry.getStartPc());
+						out.writeShort(entry.getLine());
+					}
 					break;
 				case Constants.Attributes.LOCAL_VARIABLE_TABLE:
+					LocalVariableTableAttribute varTable = (LocalVariableTableAttribute) attribute;
+					out.writeShort(varTable.getEntries().size());
+					for (VarEntry entry : varTable.getEntries()) {
+						out.writeShort(entry.getStartPc());
+						out.writeShort(entry.getLength());
+						out.writeShort(entry.getNameIndex());
+						out.writeShort(entry.getDescIndex());
+						out.writeShort(entry.getIndex());
+					}
 					break;
 				case Constants.Attributes.LOCAL_VARIABLE_TYPE_TABLE:
+					LocalVariableTypeTableAttribute typeTable = (LocalVariableTypeTableAttribute) attribute;
+					out.writeShort(typeTable.getEntries().size());
+					for (VarTypeEntry entry : typeTable.getEntries()) {
+						out.writeShort(entry.getStartPc());
+						out.writeShort(entry.getLength());
+						out.writeShort(entry.getNameIndex());
+						out.writeShort(entry.getSignatureIndex());
+						out.writeShort(entry.getIndex());
+					}
 					break;
 				case Constants.Attributes.METHOD_PARAMETERS:
 					break;
@@ -220,6 +253,15 @@ public class AttributeWriter {
 					}
 					break;
 				case Constants.Attributes.RECORD:
+					RecordAttribute recordAttribute = (RecordAttribute) attribute;
+					out.writeShort(recordAttribute.getComponents().size());
+					for (RecordComponent component : recordAttribute.getComponents()) {
+						out.writeShort(component.getNameIndex());
+						out.writeShort(component.getDescIndex());
+						out.writeShort(component.getAttributes().size());
+						for (Attribute subAttribute : component.getAttributes())
+							out.write(writeAttribute(subAttribute));
+					}
 					break;
 				case Constants.Attributes.RUNTIME_VISIBLE_ANNOTATIONS:
 				case Constants.Attributes.RUNTIME_INVISIBLE_ANNOTATIONS:
@@ -237,6 +279,10 @@ public class AttributeWriter {
 					new AnnotationWriter(out).writeAnnotationDefault((AnnotationDefaultAttribute) attribute);
 					break;
 				case Constants.Attributes.PERMITTED_SUBCLASSES:
+					PermittedClassesAttribute permittedClasses = (PermittedClassesAttribute) attribute;
+					out.writeShort(permittedClasses.getClasses().size());
+					for (int classIndex : permittedClasses.getClasses())
+						out.writeShort(classIndex);
 					break;
 				case Constants.Attributes.SIGNATURE:
 					SignatureAttribute signatureAttribute = (SignatureAttribute) attribute;

@@ -20,6 +20,12 @@ import me.coley.cafedude.attribute.EnclosingMethodAttribute;
 import me.coley.cafedude.attribute.ExceptionsAttribute;
 import me.coley.cafedude.attribute.InnerClassesAttribute;
 import me.coley.cafedude.attribute.InnerClassesAttribute.InnerClass;
+import me.coley.cafedude.attribute.LineNumberTableAttribute;
+import me.coley.cafedude.attribute.LineNumberTableAttribute.LineEntry;
+import me.coley.cafedude.attribute.LocalVariableTableAttribute;
+import me.coley.cafedude.attribute.LocalVariableTableAttribute.VarEntry;
+import me.coley.cafedude.attribute.LocalVariableTypeTableAttribute;
+import me.coley.cafedude.attribute.LocalVariableTypeTableAttribute.VarTypeEntry;
 import me.coley.cafedude.attribute.ModuleAttribute;
 import me.coley.cafedude.attribute.ModuleAttribute.Exports;
 import me.coley.cafedude.attribute.ModuleAttribute.Opens;
@@ -28,6 +34,9 @@ import me.coley.cafedude.attribute.ModuleAttribute.Requires;
 import me.coley.cafedude.attribute.NestHostAttribute;
 import me.coley.cafedude.attribute.NestMembersAttribute;
 import me.coley.cafedude.attribute.ParameterAnnotationsAttribute;
+import me.coley.cafedude.attribute.PermittedClassesAttribute;
+import me.coley.cafedude.attribute.RecordAttribute;
+import me.coley.cafedude.attribute.RecordAttribute.RecordComponent;
 import me.coley.cafedude.attribute.SignatureAttribute;
 import me.coley.cafedude.attribute.SourceFileAttribute;
 import me.coley.cafedude.attribute.StackMapTableAttribute;
@@ -88,6 +97,9 @@ public class AttributeReader {
 	}
 
 	/**
+	 * The reason for this check is because illegal attributes should return {@code null} and get dropped.
+	 * This also asserts that all CP refs in the attribute point to valid indices and are of the expected types.
+	 *
 	 * @param attribute
 	 * 		Attribute to check.
 	 *
@@ -192,19 +204,24 @@ public class AttributeReader {
 				return readModule();
 			case STACK_MAP_TABLE:
 				return readStackMapTable();
+			case LINE_NUMBER_TABLE:
+				return readLineNumbers();
+			case LOCAL_VARIABLE_TABLE:
+				return readLocalVariables();
+			case LOCAL_VARIABLE_TYPE_TABLE:
+				return readLocalVariableTypess();
+			case PERMITTED_SUBCLASSES:
+				return readPermittedClasses();
+			case RECORD:
+				return readRecord();
 			case CHARACTER_RANGE_TABLE:
 			case COMPILATION_ID:
-			case LINE_NUMBER_TABLE:
-			case LOCAL_VARIABLE_TABLE:
-			case LOCAL_VARIABLE_TYPE_TABLE:
 			case METHOD_PARAMETERS:
 			case MODULE_HASHES:
 			case MODULE_MAIN_CLASS:
 			case MODULE_PACKAGES:
 			case MODULE_RESOLUTION:
 			case MODULE_TARGET:
-			case PERMITTED_SUBCLASSES:
-			case RECORD:
 			case SOURCE_ID:
 			default:
 				break;
@@ -219,6 +236,103 @@ public class AttributeReader {
 		// Default handling, skip remaining bytes
 		is.skipBytes(expectedContentLength);
 		return new DefaultAttribute(nameIndex, is.getBuffer());
+	}
+
+	/**
+	 * @return Record attribute indicating the current class is a record, and details components of the record.
+	 *
+	 * @throws IOException
+	 * 		When the stream is unexpectedly closed or ends.
+	 */
+	private RecordAttribute readRecord() throws IOException {
+		List<RecordComponent> components = new ArrayList<>();
+		int count = is.readUnsignedShort();
+		for (int i = 0; i < count; i++) {
+			int nameIndex = is.readUnsignedShort();
+			int descIndex = is.readUnsignedShort();
+			int numAttributes = is.readUnsignedShort();
+			List<Attribute> attributes = new ArrayList<>();
+			for (int x = 0; x < numAttributes; x++) {
+				Attribute attr = new AttributeReader(reader, builder, is).readAttribute(AttributeContext.ATTRIBUTE);
+				if (shouldAddAttribute(attr))
+					attributes.add(attr);
+			}
+			components.add(new RecordComponent(nameIndex, descIndex, attributes));
+		}
+		return new RecordAttribute(nameIndex, components);
+	}
+
+	/**
+	 * @return Permitted classes authorized to extend/implement the current class.
+	 *
+	 * @throws IOException
+	 * 		When the stream is unexpectedly closed or ends.
+	 */
+	private PermittedClassesAttribute readPermittedClasses() throws IOException {
+		List<Integer> entries = new ArrayList<>();
+		int count = is.readUnsignedShort();
+		for (int i = 0; i < count; i++) {
+			int index = is.readUnsignedShort();
+			entries.add(index);
+		}
+		return new PermittedClassesAttribute(nameIndex, entries);
+	}
+
+	/**
+	 * @return Variable type table.
+	 *
+	 * @throws IOException
+	 * 		When the stream is unexpectedly closed or ends.
+	 */
+	private LocalVariableTypeTableAttribute readLocalVariableTypess() throws IOException {
+		List<VarTypeEntry> entries = new ArrayList<>();
+		int count = is.readUnsignedShort();
+		for (int i = 0; i < count; i++) {
+			int startPc = is.readUnsignedShort();
+			int length = is.readUnsignedShort();
+			int name = is.readUnsignedShort();
+			int sig = is.readUnsignedShort();
+			int index = is.readUnsignedShort();
+			entries.add(new VarTypeEntry(startPc, length, name, sig, index));
+		}
+		return new LocalVariableTypeTableAttribute(nameIndex, entries);
+	}
+
+	/**
+	 * @return Variable table.
+	 *
+	 * @throws IOException
+	 * 		When the stream is unexpectedly closed or ends.
+	 */
+	private LocalVariableTableAttribute readLocalVariables() throws IOException {
+		List<VarEntry> entries = new ArrayList<>();
+		int count = is.readUnsignedShort();
+		for (int i = 0; i < count; i++) {
+			int startPc = is.readUnsignedShort();
+			int length = is.readUnsignedShort();
+			int name = is.readUnsignedShort();
+			int desc = is.readUnsignedShort();
+			int index = is.readUnsignedShort();
+			entries.add(new VarEntry(startPc, length, name, desc, index));
+		}
+		return new LocalVariableTableAttribute(nameIndex, entries);
+	}
+
+	/**
+	 * @return Line number table.
+	 *
+	 * @throws IOException
+	 * 		When the stream is unexpectedly closed or ends.
+	 */
+	private LineNumberTableAttribute readLineNumbers() throws IOException {
+		List<LineEntry> entries = new ArrayList<>();
+		int count = is.readUnsignedShort();
+		for (int i = 0; i < count; i++) {
+			int offset = is.readUnsignedShort();
+			int line = is.readUnsignedShort();
+			entries.add(new LineEntry(offset, line));
+		}
+		return new LineNumberTableAttribute(nameIndex, entries);
 	}
 
 	/**
@@ -521,9 +635,6 @@ public class AttributeReader {
 		// Read attributes
 		int numAttributes = is.readUnsignedShort();
 		for (int i = 0; i < numAttributes; i++) {
-			// The reason for this check is because illegal attributes return null and are dropped.
-			// It also asserts that all CP refs in the attribute point to valid
-			// indices and are of the expected types.
 			Attribute attr = new AttributeReader(reader, builder, is).readAttribute(AttributeContext.ATTRIBUTE);
 			if (shouldAddAttribute(attr))
 				attributes.add(attr);
