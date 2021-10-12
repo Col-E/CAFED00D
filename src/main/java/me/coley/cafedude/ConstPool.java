@@ -3,34 +3,22 @@ package me.coley.cafedude;
 import me.coley.cafedude.constant.ConstPoolEntry;
 import me.coley.cafedude.constant.CpUtf8;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Constant pool wrapper.
  *
  * @author Matt Coley
  */
-public class ConstPool implements Iterable<ConstPoolEntry> {
-	private CpListNode first;
-	private CpListNode last;
-
-	/**
-	 * Append an entry to the end of the pool.
-	 *
-	 * @param entry
-	 * 		Inserted pool entry value.
-	 */
-	public void add(ConstPoolEntry entry) {
-		if (first == null) {
-			first = new CpListNode(entry);
-			last = first;
-		} else {
-			last.insertAfter(entry);
-			last = last.next;
-		}
-	}
+public class ConstPool implements List<ConstPoolEntry> {
+	private final List<ConstPoolEntry> backing = new ArrayList<>();
+	private final SortedSet<Integer> wideIndices = new TreeSet<>();
 
 	/**
 	 * Insert an entry after the given index in the pool.
@@ -41,7 +29,7 @@ public class ConstPool implements Iterable<ConstPoolEntry> {
 	 * 		Inserted pool entry value.
 	 */
 	public void insertAfter(int index, ConstPoolEntry entry) {
-		getNode(index).insertAfter(entry);
+		add(index, entry);
 	}
 
 	/**
@@ -53,27 +41,7 @@ public class ConstPool implements Iterable<ConstPoolEntry> {
 	 * 		Inserted pool entry value.
 	 */
 	public void insertBefore(int index, ConstPoolEntry entry) {
-		getNode(index).insertBefore(entry);
-	}
-
-	/**
-	 * @param index
-	 * 		CP index.
-	 * @param entry
-	 * 		New pool entry value.
-	 */
-	public void set(int index, ConstPoolEntry entry) {
-		getNode(index).set(entry);
-	}
-
-	/**
-	 * @param index
-	 * 		CP index.
-	 *
-	 * @return Constant at index.
-	 */
-	public ConstPoolEntry get(int index) {
-		return getNode(index).entry;
+		add(index - 1, entry);
 	}
 
 	/**
@@ -110,275 +78,238 @@ public class ConstPool implements Iterable<ConstPoolEntry> {
 	}
 
 	/**
-	 * The number of slots in the constant pool, including empty spaces for wide entry padding
-	 * <i>(A mistake even sun regrets)</i>.
+	 * CP indices are 1-indexed, so the indices must start at 1.
+	 * In addition, wide constants <i>(long/double)</i> take two indices in the CP.
 	 * <br>
-	 * Note that even if the pool has a size of {@code 1}
-	 * you should still use {@code 1} as the argument for {@link #get(int)} since the pool is not
-	 * 0-indexed. Instead indices start at 1.
+	 * In order to count wide indices, we use {@link SortedSet#headSet(Object)} which is a sub-set of items
+	 * that are {@code < index}.
 	 *
-	 * @return Number of constants in the constant pool.
-	 * Includes empty entries after wide values <i>(long/double)</i>
-	 * <br>
-	 * {@code 0} when there are no items.
+	 * @param index
+	 * 		Internal index of {@link #backing}.
+	 *
+	 * @return Converted CP index.
 	 */
+	private int internalToCp(int index) {
+		// 0: Double --> 1
+		// 1: String --> 3 --
+		// 2: String --> 4
+		// 3: Double --> 5
+		// 4: String --> 7 --
+		// 5: String --> 8
+		int wideCount = wideIndices.headSet(index).size();
+		return 1 + index + wideCount;
+	}
+
+	/**
+	 * CP indices are 1-indexed, so the indices must start at 1.
+	 * In addition, wide constants <i>(long/double)</i> take two indices in the CP.
+	 * <br>
+	 *
+	 * @param index
+	 * 		CP index.
+	 *
+	 * @return Converted internal index for {@link #backing}.
+	 */
+	private int cpToInternal(int index) {
+		// Edge case
+		if (index == 0)
+			return index;
+		// Convert index back to 0-index
+		int internal = index - 1;
+		// Just subtract until a match. Will be at worst O(N) where N is the # of wide entries.
+		while (internalToCp(internal - 1) >= index) {
+			internal--;
+		}
+		return internal;
+	}
+
+	/**
+	 * Clear wide entries.
+	 */
+	private void onClear() {
+		wideIndices.clear();
+	}
+
+	/**
+	 * Update wide index tracking.
+	 *
+	 * @param constPoolEntry
+	 * 		Entry added.
+	 * @param location
+	 * 		Location added.
+	 */
+	private void onAdd(ConstPoolEntry constPoolEntry, int location) {
+		int entrySize = constPoolEntry.isWide() ? 2 : 1;
+		// Need to push things over since something is being inserted.
+		// Shift everything >= location by +entrySize
+		SortedSet<Integer> larger = wideIndices.tailSet(location);
+		wideIndices.removeAll(larger);
+		larger.forEach(i -> wideIndices.add(i + entrySize));
+		// Add wide
+		if (constPoolEntry.isWide())
+			wideIndices.add(location);
+	}
+
+	/**
+	 * Update wide index tracking.
+	 *
+	 * @param constPoolEntry
+	 * 		Entry removed.
+	 * @param location
+	 * 		Location removed from.
+	 */
+	private void onRemove(ConstPoolEntry constPoolEntry, int location) {
+		int entrySize = constPoolEntry.isWide() ? 2 : 1;
+		// Remove wide
+		if (constPoolEntry.isWide())
+			wideIndices.add(location);
+		// Need to move everything down to fill the gap.
+		// Shift everything >= location by -entrySize
+		SortedSet<Integer> larger = wideIndices.tailSet(location + 1);
+		wideIndices.removeAll(larger);
+		larger.forEach(i -> wideIndices.add(i - entrySize));
+	}
+
+	@Override
 	public int size() {
-		if (last == null)
+		if (backing.isEmpty())
 			return 0;
-		return last.getCpIndex();
+		return internalToCp(backing.size() - 1);
 	}
 
-	/**
-	 * @param entry
-	 * 		Entry to fetch index of. Must not be {@code null}.
-	 *
-	 * @return Index in pool. {@code -1} if not in pool.
-	 */
-	public int indexOf(ConstPoolEntry entry) {
-		CpIter it = (CpIter) iterator();
-		ConstPoolEntry itEntry = null;
-		while (it.hasNext() && (itEntry = it.next()) != null) {
-			if (entry.equals(itEntry))
-				return it.currentIndex();
-		}
-		return -1;
+	@Override
+	public boolean isEmpty() {
+		return backing.isEmpty();
 	}
 
-
-	/**
-	 * Removes all entries in the pool that matches the given filter.
-	 *
-	 * @param filter
-	 * 		Filter for constant matching.
-	 */
-	public void removeIf(Predicate<ConstPoolEntry> filter) {
-		CpIter it = (CpIter) iterator();
-		ConstPoolEntry entry = null;
-		while (it.hasNext() && (entry = it.next()) != null) {
-			if (filter.test(entry))
-				it.remove();
-		}
-	}
-
-	/**
-	 * Replace all entries in the pool that matches the given filter.
-	 *
-	 * @param filter
-	 * 		Filter for constant matching.
-	 * @param replacer
-	 * 		Function of old constant to replacement constant.
-	 */
-	public void replaceIf(Predicate<ConstPoolEntry> filter, Function<ConstPoolEntry, ConstPoolEntry> replacer) {
-		CpIter it = (CpIter) iterator();
-		ConstPoolEntry entry = null;
-		while (it.hasNext() && (entry = it.next()) != null) {
-			if (filter.test(entry))
-				it.replace(replacer.apply(entry));
-		}
+	@Override
+	public boolean contains(Object o) {
+		return backing.contains(o);
 	}
 
 	@Override
 	public Iterator<ConstPoolEntry> iterator() {
-		assertNotEmpty();
-		return new CpIter(first, true);
+		return backing.iterator();
 	}
 
-	/**
-	 * Iterates over the constant pool from the last to the first.
-	 *
-	 * @return Backwards iterator.
-	 */
-	public Iterator<ConstPoolEntry> backwardsIterator() {
-		assertNotEmpty();
-		return new CpIter(last, false);
+	@Override
+	public Object[] toArray() {
+		return backing.toArray(new ConstPoolEntry[0]);
 	}
 
-	/**
-	 * @param index
-	 * 		CP index.
-	 *
-	 * @return Linked list entry wrapper for constant at index.
-	 */
-	protected CpListNode getNode(int index) {
-		// Min bounds check
-		if (index <= 0)
-			throw new IndexOutOfBoundsException("CP indices must be >= 1");
-		assertNotEmpty();
-		CpListNode node = first;
-		// It's more optimized to count externally than use the node index getter, which is dynamic
-		int i = 1;
-		while (i < index) {
-			// Max bounds check
-			if (node.next == null)
-				throw new IndexOutOfBoundsException("CP index out of range for class, max: " + i);
-			i += node.getCpEntrySize();
-			node = node.next;
-		}
-		if (i != index)
-			throw new IndexOutOfBoundsException("CP index requested was reserved! Index: " + index);
-		return node;
+	@Override
+	@SuppressWarnings("unchecked")
+	public <T> T[] toArray(T[] a) {
+		return (T[]) backing.toArray();
 	}
 
-	/**
-	 * Throws {@link IndexOutOfBoundsException} if pool is empty.
-	 */
-	private void assertNotEmpty() {
-		if (first == null)
-			throw new IndexOutOfBoundsException("CP is empty!");
+	@Override
+	public boolean add(ConstPoolEntry constPoolEntry) {
+		onAdd(constPoolEntry, backing.size());
+		return backing.add(constPoolEntry);
 	}
 
-	/**
-	 * Linked list entry wrapper.
-	 *
-	 * @author Matt Coley
-	 */
-	public static class CpListNode {
-		private ConstPoolEntry entry;
-		private CpListNode next;
-		private CpListNode prev;
 
-		/**
-		 * @param entry
-		 * 		Wrapped pool entry.
-		 */
-		private CpListNode(ConstPoolEntry entry) {
-			this.entry = entry;
+	@Override
+	public boolean remove(Object o) {
+		if (o instanceof ConstPoolEntry) {
+			ConstPoolEntry constPoolEntry = (ConstPoolEntry) o;
+			onRemove(constPoolEntry, indexOf(constPoolEntry));
+			return backing.remove(constPoolEntry);
 		}
-
-		/**
-		 * Insert a pool entry after the current wrapped entry.
-		 *
-		 * @param entry
-		 * 		Inserted pool entry value.
-		 */
-		public void insertAfter(ConstPoolEntry entry) {
-			CpListNode oldNext = next;
-			CpListNode node = new CpListNode(entry);
-			node.next = oldNext;
-			node.prev = this;
-			// update adjacent nodes
-			if (oldNext != null)
-				oldNext.prev = node;
-			// update self
-			next = node;
-		}
-
-		/**
-		 * Insert a pool entry before the current wrapped entry.
-		 *
-		 * @param entry
-		 * 		Inserted pool entry value.
-		 */
-		public void insertBefore(ConstPoolEntry entry) {
-			CpListNode oldPrev = prev;
-			CpListNode node = new CpListNode(entry);
-			node.next = this;
-			node.prev = oldPrev;
-			// update adjacent nodes
-			oldPrev.next = node;
-			// update self
-			prev = node;
-		}
-
-		/**
-		 * Update node's wrapped value.
-		 *
-		 * @param entry
-		 * 		New pool entry value.
-		 */
-		public void set(ConstPoolEntry entry) {
-			this.entry = entry;
-		}
-
-		/**
-		 * @return Number of slots in the constant pool the wrapped entry occupies.
-		 */
-		public int getCpEntrySize() {
-			return entry.isWide() ? 2 : 1;
-		}
-
-		/**
-		 * @return Index of this wrapped cp-entry in the constant pool.
-		 */
-		public int getCpIndex() {
-			int sum = 1;
-			CpListNode tmp = prev;
-			while (tmp != null) {
-				sum += tmp.getCpEntrySize();
-				tmp = tmp.prev;
-			}
-			return sum;
-		}
-
-		/**
-		 * Remove self from the constant pool.
-		 */
-		public void delete() {
-			// update adjacent nodes
-			prev.next = next;
-			next.prev = prev;
-			// remove refs
-			prev = null;
-			next = null;
-		}
+		return false;
 	}
 
-	/**
-	 * Linked list iterator.
-	 *
-	 * @author Matt Coley
-	 */
-	public static class CpIter implements Iterator<ConstPoolEntry> {
-		private final boolean forward;
-		private CpListNode current;
+	@Override
+	public boolean containsAll(Collection<?> c) {
+		return backing.containsAll(c);
+	}
 
-		private CpIter(CpListNode initial, boolean forward) {
-			current = initial;
-			this.forward = forward;
-		}
+	@Override
+	public boolean addAll(Collection<? extends ConstPoolEntry> c) {
+		for (ConstPoolEntry constPoolEntry : c)
+			add(constPoolEntry);
+		return true;
+	}
 
-		/**
-		 * @return Current index.
-		 */
-		public int currentIndex() {
-			return current.getCpIndex();
-		}
+	@Override
+	public boolean addAll(int index, Collection<? extends ConstPoolEntry> c) {
+		for (ConstPoolEntry constPoolEntry : c)
+			add(index, constPoolEntry);
+		return true;
+	}
 
-		/**
-		 * Replace the current constant pool entry.
-		 *
-		 * @param entry
-		 * 		New constant pool entry.
-		 */
-		public void replace(ConstPoolEntry entry) {
-			if (forward) {
-				current.prev.set(entry);
-			} else {
-				current.next.set(entry);
-			}
-		}
+	@Override
+	public boolean removeAll(Collection<?> c) {
+		boolean ret = false;
+		for (Object o : c)
+			ret |= remove(o);
+		return ret;
+	}
 
-		@Override
-		public boolean hasNext() {
-			return current != null;
-		}
+	@Override
+	public boolean retainAll(Collection<?> c) {
+		boolean ret = false;
+		for (ConstPoolEntry o : this)
+			if (!c.contains(o))
+				ret |= remove(o);
+		return ret;
+	}
 
-		@Override
-		public ConstPoolEntry next() {
-			ConstPoolEntry value = current.entry;
-			current = forward ? current.next : current.prev;
-			return value;
+	@Override
+	public void clear() {
+		onClear();
+		backing.clear();
+	}
 
-		}
+	@Override
+	public ConstPoolEntry get(int index) {
+		return backing.get(cpToInternal(index));
+	}
 
-		@Override
-		public void remove() {
-			// This is valid because to get the "current" value the user will have to call "next"
-			if (forward) {
-				current.prev.delete();
-			} else {
-				current.next.delete();
-			}
-		}
+	@Override
+	public ConstPoolEntry set(int index, ConstPoolEntry element) {
+		ConstPoolEntry ret = remove(index);
+		add(index, element);
+		return ret;
+	}
+
+	@Override
+	public void add(int index, ConstPoolEntry element) {
+		onAdd(element, index);
+		backing.add(cpToInternal(index), element);
+	}
+
+	@Override
+	public ConstPoolEntry remove(int index) {
+		ConstPoolEntry ret = backing.remove(cpToInternal(index));
+		if (ret != null)
+			onRemove(ret, index);
+		return ret;
+	}
+
+	@Override
+	public int indexOf(Object o) {
+		return internalToCp(backing.indexOf(o));
+	}
+
+	@Override
+	public int lastIndexOf(Object o) {
+		return internalToCp(backing.lastIndexOf(o));
+	}
+
+	@Override
+	public ListIterator<ConstPoolEntry> listIterator() {
+		return backing.listIterator();
+	}
+
+	@Override
+	public ListIterator<ConstPoolEntry> listIterator(int index) {
+		return backing.listIterator(cpToInternal(index));
+	}
+
+	@Override
+	public List<ConstPoolEntry> subList(int fromIndex, int toIndex) {
+		return backing.subList(cpToInternal(fromIndex), cpToInternal(toIndex));
 	}
 }
