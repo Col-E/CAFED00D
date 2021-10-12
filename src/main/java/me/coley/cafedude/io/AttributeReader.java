@@ -133,7 +133,7 @@ public class AttributeReader {
 
 	private Attribute read(AttributeContext context) throws IOException {
 		ConstPool pool = builder.getPool();
-		String name = ((CpUtf8) pool.get(nameIndex)).getText();
+		String name = pool.getUtf(nameIndex);
 		// Check for illegally inserted attributes from future versions
 		if (reader.doDropForwardVersioned()) {
 			int introducedAt = AttributeVersions.getIntroducedVersion(name);
