@@ -1,10 +1,6 @@
 package me.coley.cafedude.io;
 
-import me.coley.cafedude.ConstPool;
-import me.coley.cafedude.Constants;
-import me.coley.cafedude.attribute.BootstrapMethodsAttribute;
 import me.coley.cafedude.attribute.CodeAttribute;
-import me.coley.cafedude.constant.*;
 import me.coley.cafedude.instruction.*;
 
 import java.nio.ByteBuffer;
@@ -22,17 +18,13 @@ import static me.coley.cafedude.instruction.Opcodes.*;
 public class InstructionReader {
 
 	/**
-	 * @param cp
-	 * 		Class constant pool.
-	 * @param bootstrapAttribute
-	 * 		Bootstrap methods attribute.
 	 * @param attribute
 	 * 		Code attribute.
 	 *
 	 * @return a list of instructions.
 	 */
 	@SuppressWarnings("DuplicateBranchesInSwitch")
-	public List<Instruction> read(ConstPool cp, BootstrapMethodsAttribute bootstrapAttribute, CodeAttribute attribute) {
+	public List<Instruction> read(CodeAttribute attribute) {
 		List<Instruction> instructions = new ArrayList<>();
 		ByteBuffer buffer = ByteBuffer.wrap(attribute.getCode());
 		while (buffer.hasRemaining()) {
@@ -63,18 +55,18 @@ public class InstructionReader {
 					instructions.add(new IntOperandInstruction(opcode, buffer.getShort()));
 					break;
 				case LDC:
-					instructions.add(new LdcInstruction(LDC, cp.get(buffer.get() & 0xff)));
+					instructions.add(new IntOperandInstruction(LDC, buffer.get() & 0xff));
 					break;
 				case LDC_W:
 				case LDC2_W:
-					instructions.add(new LdcInstruction(opcode, cp.get(buffer.getShort() & 0xff)));
+					instructions.add(new IntOperandInstruction(opcode, buffer.getShort() & 0xff));
 					break;
 				case ILOAD:
 				case LLOAD:
 				case FLOAD:
 				case DLOAD:
 				case ALOAD:
-					instructions.add(new IntOperandInstruction(opcode, buffer.get()));
+					instructions.add(new IntOperandInstruction(opcode, buffer.get() & 0xff));
 					break;
 				case ILOAD_0:
 				case ILOAD_1:
@@ -257,9 +249,10 @@ public class InstructionReader {
 					int dflt = buffer.getInt();
 					int low = buffer.getInt();
 					int high = buffer.getInt();
-					int[] offsets = new int[high - low];
-					for (int i = 0, j = offsets.length; i < j; i++) {
-						offsets[i] = buffer.getInt();
+					int count = high - low + 1;
+					List<Integer> offsets = new ArrayList<>(count);
+					for (int i = 0; i < count; i++) {
+						offsets.add(buffer.getInt());
 					}
 					instructions.add(new TableSwitchInstruction(dflt, low, high, offsets));
 					break;
@@ -270,11 +263,11 @@ public class InstructionReader {
 					buffer.position(pos + (4 - pos & 3));
 					int dflt = buffer.getInt();
 					int keyCount = buffer.getInt();
-					int[] keys = new int[keyCount];
-					int[] offsets = new int[keyCount];
+					List<Integer> keys = new ArrayList<>(keyCount);
+					List<Integer> offsets = new ArrayList<>(keyCount);
 					for (int i = 0; i < keyCount; i++) {
-						keys[i] = buffer.getInt();
-						offsets[i] = buffer.getInt();
+						keys.add(buffer.getInt());
+						offsets.add(buffer.getInt());
 					}
 					instructions.add(new LookupSwitchInstruction(dflt, keys, offsets));
 					break;
@@ -290,75 +283,33 @@ public class InstructionReader {
 				case GETSTATIC:
 				case PUTSTATIC:
 				case GETFIELD:
-				case PUTFIELD: {
-					CpFieldRef fieldRef = (CpFieldRef) cp.get(buffer.getShort() & 0xff);
-					String className = cp.getUtf(((CpClass) cp.get(fieldRef.getClassIndex())).getIndex());
-					CpNameType nameType = (CpNameType) cp.get(fieldRef.getNameTypeIndex());
-					String name = cp.getUtf(nameType.getNameIndex());
-					String type = cp.getUtf(nameType.getTypeIndex());
-					instructions.add(new FieldInstruction(opcode, className, name, type));
+				case PUTFIELD:
+					instructions.add(new IntOperandInstruction(opcode, buffer.getShort() & 0xff));
 					break;
-				}
 				case INVOKEVIRTUAL:
 				case INVOKESPECIAL:
 				case INVOKESTATIC:
-				case INVOKEINTERFACE: {
-					ConstRef methodRef = (ConstRef) cp.get(buffer.getShort() & 0xff);
-					String className = cp.getUtf(((CpClass) cp.get(methodRef.getClassIndex())).getIndex());
-					CpNameType nameType = (CpNameType) cp.get(methodRef.getNameTypeIndex());
-					String name = cp.getUtf(nameType.getNameIndex());
-					String type = cp.getUtf(nameType.getTypeIndex());
-					instructions.add(new MethodInstruction(opcode, className, name, type, methodRef.getTag() == Constants.ConstantPool.INTERFACE_METHOD_REF));
+				case INVOKEINTERFACE:
+					instructions.add(new IntOperandInstruction(opcode, buffer.getShort() & 0xff));
 					break;
-				}
 				case INVOKEDYNAMIC: {
-					CpInvokeDynamic invokeDynamic = (CpInvokeDynamic) cp.get(buffer.getShort() & 0xff);
+					int index = buffer.getShort() & 0xff;
 					if ((buffer.get() | buffer.get()) != 0) {
 						// TODO: should we silently ignore, or throw?
 						throw new IllegalStateException("InvokeDynamic padding bytes are non-zero");
 					}
-					CpNameType nameType = (CpNameType) cp.get(invokeDynamic.getNameTypeIndex());
-					String name = cp.getUtf(nameType.getNameIndex());
-					String desc = cp.getUtf(nameType.getTypeIndex());
-					BootstrapMethodsAttribute.BootstrapMethod bootstrapMethod = bootstrapAttribute.getBootstrapMethods().get(invokeDynamic.getBsmIndex());
-					CpMethodHandle bootstrapHandle = (CpMethodHandle) cp.get(bootstrapMethod.getBsmMethodref());
-					ConstRef bootstrapRef = (ConstRef) cp.get(bootstrapHandle.getReferenceIndex());
-					CpNameType bootstrapNameType = (CpNameType) cp.get(bootstrapRef.getNameTypeIndex());
-					MethodHandle methodHandle = new MethodHandle(
-							bootstrapHandle.getKind(),
-							cp.getUtf(((CpClass) cp.get(bootstrapRef.getClassIndex())).getIndex()),
-							cp.getUtf(bootstrapNameType.getNameIndex()),
-							cp.getUtf(bootstrapNameType.getTypeIndex()),
-							bootstrapRef.getTag() == Constants.ConstantPool.INTERFACE_METHOD_REF
-					);
-					List<Integer> argsIndices = bootstrapMethod.getArgs();
-					ConstPoolEntry[] args = new ConstPoolEntry[argsIndices.size()];
-					for (int i = 0; i < argsIndices.size(); i++) {
-						args[i] = cp.get(argsIndices.get(i));
-					}
-					instructions.add(new InvokeDynamicInstruction(
-							name,
-							desc,
-							methodHandle,
-							args
-					));
+					instructions.add(new IntOperandInstruction(INVOKEDYNAMIC, index));
 					break;
 				}
-				case NEW: {
-					CpClass cpClass = (CpClass) cp.get(buffer.getShort() & 0xff);
-					String name = cp.getUtf(cpClass.getIndex());
-					instructions.add(new StringOperandInstruction(NEW, name));
+				case NEW:
+					instructions.add(new IntOperandInstruction(NEW, buffer.getShort() & 0xff));
 					break;
-				}
 				case NEWARRAY:
 					instructions.add(new IntOperandInstruction(NEWARRAY, buffer.get() & 0xff));
 					break;
-				case ANEWARRAY: {
-					CpClass cpClass = (CpClass) cp.get(buffer.getShort() & 0xff);
-					String name = cp.getUtf(cpClass.getIndex());
-					instructions.add(new StringOperandInstruction(ANEWARRAY, name));
+				case ANEWARRAY:
+					instructions.add(new IntOperandInstruction(ANEWARRAY, buffer.getShort() & 0xff));
 					break;
-				}
 				case ARRAYLENGTH:
 					instructions.add(new BasicInstruction(ARRAYLENGTH));
 					break;
@@ -366,12 +317,9 @@ public class InstructionReader {
 					instructions.add(new BasicInstruction(ATHROW));
 					break;
 				case CHECKCAST:
-				case INSTANCEOF: {
-					CpClass cpClass = (CpClass) cp.get(buffer.getShort() & 0xff);
-					String name = cp.getUtf(cpClass.getIndex());
-					instructions.add(new StringOperandInstruction(opcode, name));
+				case INSTANCEOF:
+					instructions.add(new IntOperandInstruction(opcode, buffer.getShort() & 0xff));
 					break;
-				}
 				case MONITORENTER:
 				case MONITOREXIT:
 					instructions.add(new BasicInstruction(opcode));
@@ -391,19 +339,17 @@ public class InstructionReader {
 							instructions.add(new IntOperandInstruction(opcode, buffer.getShort() & 0xff));
 							break;
 						case IINC:
-							instructions.add(new BiIntOperandInstruction(IINC, buffer.getShort() & 0xff, buffer.getShort()));
+							instructions.add(new BiIntOperandInstruction(IINC,
+									buffer.getShort() & 0xff, buffer.getShort()));
 							break;
 						default:
 							throw new IllegalStateException("Illegal wide instruction type: " + type);
 					}
 					break;
-				case MULTIANEWARRAY: {
-					CpClass cpClass = (CpClass) cp.get(buffer.getShort() & 0xff);
-					String name = cp.getUtf(cpClass.getIndex());
-					int dimensions = buffer.get() & 0xff;
-					instructions.add(new MultiNewArrayInstruction(name, dimensions));
+				case MULTIANEWARRAY:
+					instructions.add(new BiIntOperandInstruction(MULTIANEWARRAY,
+							buffer.getShort() & 0xff, buffer.get() & 0xff));
 					break;
-				}
 				case IFNULL:
 				case IFNONNULL:
 					instructions.add(new IntOperandInstruction(opcode, buffer.getShort()));

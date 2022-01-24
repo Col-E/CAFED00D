@@ -1,6 +1,6 @@
 package me.coley.cafedude.instruction;
 
-import java.util.Arrays;
+import java.util.List;
 
 /**
  * Lookup Switch instruction.
@@ -10,8 +10,8 @@ import java.util.Arrays;
 public class LookupSwitchInstruction extends BasicInstruction {
 
 	private int dflt;
-	private int[] keys;
-	private int[] offsets;
+	private List<Integer> keys;
+	private List<Integer> offsets;
 
 	/**
 	 * @param dflt
@@ -21,7 +21,7 @@ public class LookupSwitchInstruction extends BasicInstruction {
 	 * @param offsets
 	 * 		Branch offsets.
 	 */
-	public LookupSwitchInstruction(int dflt, int[] keys, int[] offsets) {
+	public LookupSwitchInstruction(int dflt, List<Integer> keys, List<Integer>offsets) {
 		super(Opcodes.LOOKUPSWITCH);
 		this.dflt = dflt;
 		this.keys = keys;
@@ -48,7 +48,7 @@ public class LookupSwitchInstruction extends BasicInstruction {
 	/**
 	 * @return lookup keys.
 	 */
-	public int[] getKeys() {
+	public List<Integer> getKeys() {
 		return keys;
 	}
 
@@ -58,14 +58,14 @@ public class LookupSwitchInstruction extends BasicInstruction {
 	 * @param keys
 	 * 		New keys.
 	 */
-	public void setKeys(int[] keys) {
+	public void setKeys(List<Integer> keys) {
 		this.keys = keys;
 	}
 
 	/**
 	 * @return branch offsets.
 	 */
-	public int[] getOffsets() {
+	public List<Integer> getOffsets() {
 		return offsets;
 	}
 
@@ -75,7 +75,7 @@ public class LookupSwitchInstruction extends BasicInstruction {
 	 * @param offsets
 	 * 		New offsets.
 	 */
-	public void setOffsets(int[] offsets) {
+	public void setOffsets(List<Integer> offsets) {
 		this.offsets = offsets;
 	}
 
@@ -88,16 +88,16 @@ public class LookupSwitchInstruction extends BasicInstruction {
 		LookupSwitchInstruction that = (LookupSwitchInstruction) o;
 
 		if (dflt != that.dflt) return false;
-		if (!Arrays.equals(keys, that.keys)) return false;
-		return Arrays.equals(offsets, that.offsets);
+		if (!keys.equals(that.keys)) return false;
+		return offsets.equals(that.offsets);
 	}
 
 	@Override
 	public int hashCode() {
 		int result = super.hashCode();
 		result = 31 * result + dflt;
-		result = 31 * result + Arrays.hashCode(keys);
-		result = 31 * result + Arrays.hashCode(offsets);
+		result = 31 * result + keys.hashCode();
+		result = 31 * result + offsets.hashCode();
 		return result;
 	}
 }

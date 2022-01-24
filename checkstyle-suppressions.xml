@@ -77,4 +77,8 @@
 	<suppress checks="ClassFanOutComplexity"
 			  files="AttributeWriter.java"
 			  lines="0-9999"/>
+
+	<suppress checks="CyclomaticComplexity"
+			  files="InstructionReader.java"
+			  lines="0-9999"/>
 </suppressions>

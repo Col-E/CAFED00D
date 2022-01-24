@@ -1,7 +1,6 @@
 package me.coley.cafedude.instruction;
 
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.List;
 
 /**
  * Table Switch instruction.
@@ -13,7 +12,7 @@ public class TableSwitchInstruction extends BasicInstruction {
 	private int dflt;
 	private int low;
 	private int high;
-	private int[] offsets;
+	private List<Integer> offsets;
 
 	/**
 	 * @param dflt
@@ -25,7 +24,7 @@ public class TableSwitchInstruction extends BasicInstruction {
 	 * @param offsets
 	 * 		Branch offsets.
 	 */
-	public TableSwitchInstruction(int dflt, int low, int high, int[] offsets) {
+	public TableSwitchInstruction(int dflt, int low, int high, List<Integer> offsets) {
 		super(Opcodes.TABLESWITCH);
 		this.dflt = dflt;
 		this.low = low;
@@ -87,7 +86,7 @@ public class TableSwitchInstruction extends BasicInstruction {
 	/**
 	 * @return branch offsets.
 	 */
-	public int[] getOffsets() {
+	public List<Integer> getOffsets() {
 		return offsets;
 	}
 
@@ -97,7 +96,7 @@ public class TableSwitchInstruction extends BasicInstruction {
 	 * @param offsets
 	 * 		New offsets.
 	 */
-	public void setOffsets(int[] offsets) {
+	public void setOffsets(List<Integer> offsets) {
 		this.offsets = offsets;
 	}
 
@@ -112,7 +111,7 @@ public class TableSwitchInstruction extends BasicInstruction {
 		if (dflt != that.dflt) return false;
 		if (low != that.low) return false;
 		if (high != that.high) return false;
-		return Arrays.equals(offsets, that.offsets);
+		return offsets.equals(that.offsets);
 	}
 
 	@Override
@@ -121,7 +120,7 @@ public class TableSwitchInstruction extends BasicInstruction {
 		result = 31 * result + dflt;
 		result = 31 * result + low;
 		result = 31 * result + high;
-		result = 31 * result + Arrays.hashCode(offsets);
+		result = 31 * result + offsets.hashCode();
 		return result;
 	}
 }
