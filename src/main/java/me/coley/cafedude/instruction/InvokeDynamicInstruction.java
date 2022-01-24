@@ -25,7 +25,8 @@ public class InvokeDynamicInstruction extends BasicInstruction {
 	 * @param bootstrapArguments
 	 * 		Bootstrap arguments.
 	 */
-	public InvokeDynamicInstruction(String name, String desc, MethodHandle methodHandle, ConstPoolEntry[] bootstrapArguments) {
+	public InvokeDynamicInstruction(String name, String desc,
+								MethodHandle methodHandle, ConstPoolEntry[] bootstrapArguments) {
 		super(Opcodes.INVOKEDYNAMIC);
 		this.name = name;
 		this.desc = desc;

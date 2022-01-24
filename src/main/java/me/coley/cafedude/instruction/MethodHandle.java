@@ -11,6 +11,7 @@ public class MethodHandle {
 	private String owner;
 	private String name;
 	private String desc;
+	private boolean isInterface;
 
 	/**
 	 * @param type
@@ -21,12 +22,16 @@ public class MethodHandle {
 	 * 		Method name.
 	 * @param desc
 	 * 		Method desc.
+	 * @param isInterface
+	 * 		Whether the call references virtual
+	 * 		or an interface method.
 	 */
-	public MethodHandle(int type, String owner, String name, String desc) {
+	public MethodHandle(int type, String owner, String name, String desc, boolean isInterface) {
 		this.type = type;
 		this.owner = owner;
 		this.name = name;
 		this.desc = desc;
+		this.isInterface = isInterface;
 	}
 
 	/**
@@ -97,6 +102,25 @@ public class MethodHandle {
 		this.desc = desc;
 	}
 
+	/**
+	 * @return {@code true} if this is an interface
+	 * call.
+	 */
+	public boolean isInterface() {
+		return isInterface;
+	}
+
+	/**
+	 * Sets whether this is an interface
+	 * call.
+	 *
+	 * @param isInterface
+	 * 		New value.
+	 */
+	public void setInterface(boolean isInterface) {
+		this.isInterface = isInterface;
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -104,6 +128,7 @@ public class MethodHandle {
 
 		MethodHandle that = (MethodHandle) o;
 
+		if (isInterface != that.isInterface) return false;
 		if (type != that.type) return false;
 		if (!owner.equals(that.owner)) return false;
 		if (!name.equals(that.name)) return false;
@@ -116,11 +141,12 @@ public class MethodHandle {
 		result = 31 * result + owner.hashCode();
 		result = 31 * result + name.hashCode();
 		result = 31 * result + desc.hashCode();
+		result = 31 * result + Boolean.hashCode(isInterface);
 		return result;
 	}
 
 	@Override
 	public String toString() {
-		return "handle(" + type + ", " + owner + ", " + name + ", " + desc + ')';
+		return "handle(" + type + ", " + owner + ", " + name + ", " + desc + ", " + isInterface + ')';
 	}
 }

@@ -1,6 +1,7 @@
 package me.coley.cafedude.io;
 
 import me.coley.cafedude.ConstPool;
+import me.coley.cafedude.Constants;
 import me.coley.cafedude.attribute.BootstrapMethodsAttribute;
 import me.coley.cafedude.attribute.CodeAttribute;
 import me.coley.cafedude.constant.*;
@@ -307,7 +308,7 @@ public class InstructionReader {
 					CpNameType nameType = (CpNameType) cp.get(methodRef.getNameTypeIndex());
 					String name = cp.getUtf(nameType.getNameIndex());
 					String type = cp.getUtf(nameType.getTypeIndex());
-					instructions.add(new MethodInstruction(opcode, className, name, type));
+					instructions.add(new MethodInstruction(opcode, className, name, type, methodRef.getTag() == Constants.ConstantPool.INTERFACE_METHOD_REF));
 					break;
 				}
 				case INVOKEDYNAMIC: {
@@ -319,15 +320,16 @@ public class InstructionReader {
 					CpNameType nameType = (CpNameType) cp.get(invokeDynamic.getNameTypeIndex());
 					String name = cp.getUtf(nameType.getNameIndex());
 					String desc = cp.getUtf(nameType.getTypeIndex());
-					BootstrapMethodsAttribute.BootstrapMethod bootstrapMethod =  bootstrapAttribute.getBootstrapMethods().get(invokeDynamic.getBsmIndex());
+					BootstrapMethodsAttribute.BootstrapMethod bootstrapMethod = bootstrapAttribute.getBootstrapMethods().get(invokeDynamic.getBsmIndex());
 					CpMethodHandle bootstrapHandle = (CpMethodHandle) cp.get(bootstrapMethod.getBsmMethodref());
 					ConstRef bootstrapRef = (ConstRef) cp.get(bootstrapHandle.getReferenceIndex());
 					CpNameType bootstrapNameType = (CpNameType) cp.get(bootstrapRef.getNameTypeIndex());
 					MethodHandle methodHandle = new MethodHandle(
 							bootstrapHandle.getKind(),
-							cp.getUtf(((CpClass)cp.get(bootstrapRef.getClassIndex())).getIndex()),
+							cp.getUtf(((CpClass) cp.get(bootstrapRef.getClassIndex())).getIndex()),
 							cp.getUtf(bootstrapNameType.getNameIndex()),
-							cp.getUtf(bootstrapNameType.getTypeIndex())
+							cp.getUtf(bootstrapNameType.getTypeIndex()),
+							bootstrapRef.getTag() == Constants.ConstantPool.INTERFACE_METHOD_REF
 					);
 					List<Integer> argsIndices = bootstrapMethod.getArgs();
 					ConstPoolEntry[] args = new ConstPoolEntry[argsIndices.size()];
