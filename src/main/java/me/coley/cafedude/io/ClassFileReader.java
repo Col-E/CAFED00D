@@ -73,9 +73,14 @@ public class ClassFileReader {
 				builder.setVersionMinor(is.readUnsignedShort());
 				builder.setVersionMajor(is.readUnsignedShort());
 				// Constant pool
-				int numConstants = is.readUnsignedShort() - 1;
-				while (builder.getPool().size() < numConstants)
-					builder.getPool().add(readPoolEntry());
+				int numConstants = is.readUnsignedShort();
+				for (int i = 1; i < numConstants; i++) {
+					ConstPoolEntry entry = readPoolEntry();
+					builder.getPool().add(entry);
+					if (entry.isWide()) {
+						i++;
+					}
+				}
 				// Flags
 				builder.setAccess(is.readUnsignedShort());
 				// This/super classes

@@ -96,7 +96,7 @@ public class ConstPool implements List<ConstPoolEntry> {
 		// 3: Double --> 5
 		// 4: String --> 7 --
 		// 5: String --> 8
-		int wideCount = wideIndices.headSet(index).size();
+		int wideCount = wideIndices.headSet(index + 1).size();
 		return 1 + index + wideCount;
 	}
 
@@ -143,8 +143,11 @@ public class ConstPool implements List<ConstPoolEntry> {
 		// Need to push things over since something is being inserted.
 		// Shift everything >= location by +entrySize
 		SortedSet<Integer> larger = wideIndices.tailSet(location);
-		wideIndices.removeAll(larger);
-		larger.forEach(i -> wideIndices.add(i + entrySize));
+		if (!larger.isEmpty()) {
+			List<Integer> tmp = new ArrayList<>(larger);
+			larger.clear();
+			tmp.forEach(i -> wideIndices.add(i + entrySize));
+		}
 		// Add wide
 		if (constPoolEntry.isWide())
 			wideIndices.add(location);
@@ -162,12 +165,15 @@ public class ConstPool implements List<ConstPoolEntry> {
 		int entrySize = constPoolEntry.isWide() ? 2 : 1;
 		// Remove wide
 		if (constPoolEntry.isWide())
-			wideIndices.add(location);
+			wideIndices.remove(location);
 		// Need to move everything down to fill the gap.
 		// Shift everything >= location by -entrySize
 		SortedSet<Integer> larger = wideIndices.tailSet(location + 1);
-		wideIndices.removeAll(larger);
-		larger.forEach(i -> wideIndices.add(i - entrySize));
+		if (!larger.isEmpty()) {
+			List<Integer> tmp = new ArrayList<>(larger);
+			larger.clear();
+			tmp.forEach(i -> wideIndices.add(i - entrySize));
+		}
 	}
 
 	@Override
