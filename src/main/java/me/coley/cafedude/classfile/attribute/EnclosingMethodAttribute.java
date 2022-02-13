@@ -1,15 +1,16 @@
 package me.coley.cafedude.classfile.attribute;
 
+import java.util.Set;
+
 /**
  * Enclosing method attribute
- * 
- * @author JCWasmx86
  *
+ * @author JCWasmx86
  */
-public class EnclosingMethodAttribute extends Attribute{
+public class EnclosingMethodAttribute extends Attribute {
 	private int classIndex;
 	private int methodIndex;
-	
+
 	/**
 	 * @param nameIndex
 	 * 		Name index in constant pool.
@@ -47,13 +48,21 @@ public class EnclosingMethodAttribute extends Attribute{
 	public void setClassIndex(int classIndex) {
 		this.classIndex = classIndex;
 	}
-	
+
 	/**
 	 * @param methodIndex
 	 * 		Set the enclosing method index.
 	 */
 	public void setMethodIndex(int methodIndex) {
 		this.methodIndex = methodIndex;
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = super.cpAccesses();
+		set.add(getClassIndex());
+		set.add(getMethodIndex());
+		return set;
 	}
 
 	@Override

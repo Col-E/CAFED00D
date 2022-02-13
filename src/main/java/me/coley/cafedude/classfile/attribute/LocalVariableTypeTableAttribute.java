@@ -1,6 +1,10 @@
 package me.coley.cafedude.classfile.attribute;
 
+import me.coley.cafedude.classfile.behavior.CpAccessor;
+
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Variable generic/type table attribute.
@@ -19,6 +23,14 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 	public LocalVariableTypeTableAttribute(int nameIndex, List<VarTypeEntry> entries) {
 		super(nameIndex);
 		this.entries = entries;
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = super.cpAccesses();
+		for (VarTypeEntry entry : getEntries())
+			set.addAll(entry.cpAccesses());
+		return set;
 	}
 
 	@Override
@@ -52,7 +64,7 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 	/**
 	 * Variable table entry.
 	 */
-	public static class VarTypeEntry {
+	public static class VarTypeEntry implements CpAccessor {
 		private final int startPc;
 		private final int length;
 		private final int nameIndex;
@@ -112,6 +124,14 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 		 */
 		public int getIndex() {
 			return index;
+		}
+
+		@Override
+		public Set<Integer> cpAccesses() {
+			Set<Integer> set = new TreeSet<>();
+			set.add(getNameIndex());
+			set.add(getSignatureIndex());
+			return set;
 		}
 	}
 }

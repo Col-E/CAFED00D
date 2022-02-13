@@ -1,11 +1,16 @@
 package me.coley.cafedude.classfile.attribute;
 
+import me.coley.cafedude.classfile.behavior.CpAccessor;
+
+import java.util.Set;
+import java.util.TreeSet;
+
 /**
  * Base attribute.
  *
  * @author Matt Coley
  */
-public abstract class Attribute {
+public abstract class Attribute implements CpAccessor {
 	private final int nameIndex;
 
 	/**
@@ -40,5 +45,12 @@ public abstract class Attribute {
 		// u4: Attribute length
 		// ??: Internal length
 		return 6 + computeInternalLength();
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = new TreeSet<>();
+		set.add(getNameIndex());
+		return set;
 	}
 }

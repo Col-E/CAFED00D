@@ -1,11 +1,14 @@
 package me.coley.cafedude.classfile.attribute;
 
+import me.coley.cafedude.classfile.behavior.CpAccessor;
 import me.coley.cafedude.classfile.constant.CpClass;
 import me.coley.cafedude.classfile.constant.CpModule;
 import me.coley.cafedude.classfile.constant.CpPackage;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Module attribute.
@@ -185,6 +188,23 @@ public class ModuleAttribute extends Attribute {
 	}
 
 	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = super.cpAccesses();
+		set.add(getModuleIndex());
+		set.add(getVersionIndex());
+		set.addAll(getUses());
+		for (Requires requires : getRequires())
+			set.addAll(requires.cpAccesses());
+		for (Exports exports : getExports())
+			set.addAll(exports.cpAccesses());
+		for (Opens opens : getOpens())
+			set.addAll(opens.cpAccesses());
+		for (Provides provides : getProvides())
+			set.addAll(provides.cpAccesses());
+		return set;
+	}
+
+	@Override
 	public int computeInternalLength() {
 		// 6 = module_name_index + module_flags + module_version_index
 		int len = 6;
@@ -206,7 +226,7 @@ public class ModuleAttribute extends Attribute {
 	 *
 	 * @author Matt Coley
 	 */
-	public static class Requires {
+	public static class Requires implements CpAccessor {
 		private int index;
 		private int flags;
 		private int versionIndex;
@@ -279,6 +299,14 @@ public class ModuleAttribute extends Attribute {
 		public void setVersionIndex(int versionIndex) {
 			this.versionIndex = versionIndex;
 		}
+
+		@Override
+		public Set<Integer> cpAccesses() {
+			Set<Integer> set = new TreeSet<>();
+			set.add(getVersionIndex());
+			set.add(getIndex());
+			return set;
+		}
 	}
 
 	/**
@@ -286,7 +314,7 @@ public class ModuleAttribute extends Attribute {
 	 *
 	 * @author Matt Coley
 	 */
-	public static class Exports {
+	public static class Exports implements CpAccessor {
 		private int index;
 		private int flags;
 		private List<Integer> toIndices;
@@ -361,6 +389,14 @@ public class ModuleAttribute extends Attribute {
 			// 6 = index + flags + list.size()
 			return 6 + 2 * toIndices.size();
 		}
+
+		@Override
+		public Set<Integer> cpAccesses() {
+			Set<Integer> set = new TreeSet<>();
+			set.add(getIndex());
+			set.addAll(getToIndices());
+			return set;
+		}
 	}
 
 	/**
@@ -368,7 +404,7 @@ public class ModuleAttribute extends Attribute {
 	 *
 	 * @author Matt Coley
 	 */
-	public static class Opens {
+	public static class Opens implements CpAccessor {
 		private int index;
 		private int flags;
 		private List<Integer> toIndices;
@@ -443,6 +479,14 @@ public class ModuleAttribute extends Attribute {
 			// 6 = index + flags + list.size()
 			return 6 + 2 * toIndices.size();
 		}
+
+		@Override
+		public Set<Integer> cpAccesses() {
+			Set<Integer> set = new TreeSet<>();
+			set.add(getIndex());
+			set.addAll(getToIndices());
+			return set;
+		}
 	}
 
 	/**
@@ -450,7 +494,7 @@ public class ModuleAttribute extends Attribute {
 	 *
 	 * @author Matt Coley
 	 */
-	public static class Provides {
+	public static class Provides implements CpAccessor {
 		private int index;
 		private List<Integer> withIndex;
 
@@ -503,6 +547,14 @@ public class ModuleAttribute extends Attribute {
 		public int length() {
 			// 4 = index + list.size()
 			return 4 + 2 * withIndex.size();
+		}
+
+		@Override
+		public Set<Integer> cpAccesses() {
+			Set<Integer> set = new TreeSet<>();
+			set.add(getIndex());
+			set.addAll(getWithIndices());
+			return set;
 		}
 	}
 }

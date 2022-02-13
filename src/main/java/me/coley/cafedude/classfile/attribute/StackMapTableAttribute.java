@@ -1,8 +1,12 @@
 package me.coley.cafedude.classfile.attribute;
 
 import me.coley.cafedude.Constants;
+import me.coley.cafedude.classfile.behavior.CpAccessor;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Used during the process of verification by type checking.
@@ -29,11 +33,19 @@ public class StackMapTableAttribute
 	 * @param nameIndex
 	 * 		Name index in constant pool.
 	 * @param frames
-	 * 		A list of stack map frames.
+	 * 		Stack map frames of a method.
 	 */
 	public StackMapTableAttribute(int nameIndex, List<StackMapFrame> frames) {
 		super(nameIndex);
 		this.frames = frames;
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = super.cpAccesses();
+		for (StackMapFrame frame : frames)
+			set.addAll(frame.cpAccesses());
+		return set;
 	}
 
 	@Override
@@ -54,7 +66,7 @@ public class StackMapTableAttribute
 	 * which type is in use, followed by zero or more bytes, giving more
 	 * information about the tag.
 	 */
-	public abstract static class TypeInfo {
+	public abstract static class TypeInfo implements CpAccessor {
 		/**
 		 * @return The one byte tag representing this type.
 		 */
@@ -66,6 +78,11 @@ public class StackMapTableAttribute
 		public int getLength() {
 			// u1: tag
 			return 1;
+		}
+
+		@Override
+		public Set<Integer> cpAccesses() {
+			return Collections.emptySet();
 		}
 	}
 
@@ -160,6 +177,11 @@ public class StackMapTableAttribute
 			this.classIndex = classIndex;
 		}
 
+		@Override
+		public Set<Integer> cpAccesses() {
+			return Collections.singleton(classIndex);
+		}
+
 		/**
 		 * @return Size in bytes of the serialized type info.
 		 */
@@ -246,7 +268,7 @@ public class StackMapTableAttribute
 	 * initial frame of the method. In that case, the bytecode offset at which the
 	 * stack map frame applies is the value {@code offset_delta} specified in the frame.
 	 */
-	public abstract static class StackMapFrame {
+	public abstract static class StackMapFrame implements CpAccessor {
 		/**
 		 * The offset delta of this frame.
 		 */
@@ -271,6 +293,11 @@ public class StackMapTableAttribute
 		public int getLength() {
 			// u1 frame_type
 			return 1;
+		}
+
+		@Override
+		public Set<Integer> cpAccesses() {
+			return Collections.emptySet();
 		}
 	}
 
@@ -320,6 +347,11 @@ public class StackMapTableAttribute
 			this.stack = stack;
 		}
 
+		@Override
+		public Set<Integer> cpAccesses() {
+			return stack.cpAccesses();
+		}
+
 		/**
 		 * @return Size in bytes of the serialized frame.
 		 */
@@ -356,6 +388,11 @@ public class StackMapTableAttribute
 		public SameLocalsOneStackItemExtended(int offsetDelta, TypeInfo stack) {
 			super(offsetDelta);
 			this.stack = stack;
+		}
+
+		@Override
+		public Set<Integer> cpAccesses() {
+			return stack.cpAccesses();
 		}
 
 		/**
@@ -473,6 +510,14 @@ public class StackMapTableAttribute
 			this.additionalLocals = additionalLocals;
 		}
 
+		@Override
+		public Set<Integer> cpAccesses() {
+			Set<Integer> set = new TreeSet<>();
+			for (TypeInfo info : additionalLocals)
+				set.addAll(info.cpAccesses());
+			return set;
+		}
+
 		/**
 		 * @return Size in bytes of the serialized frame.
 		 */
@@ -521,6 +566,16 @@ public class StackMapTableAttribute
 			super(offsetDelta);
 			this.locals = locals;
 			this.stack = stack;
+		}
+
+		@Override
+		public Set<Integer> cpAccesses() {
+			Set<Integer> set = new TreeSet<>();
+			for (TypeInfo info : locals)
+				set.addAll(info.cpAccesses());
+			for (TypeInfo info : stack)
+				set.addAll(info.cpAccesses());
+			return set;
 		}
 
 		/**

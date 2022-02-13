@@ -1,5 +1,7 @@
 package me.coley.cafedude.classfile.attribute;
 
+import java.util.Set;
+
 /**
  * Nest host attribute, points to host class.
  *
@@ -32,6 +34,13 @@ public class NestHostAttribute extends Attribute {
 	 */
 	public void setHostClassIndex(int hostClassIndex) {
 		this.hostClassIndex = hostClassIndex;
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = super.cpAccesses();
+		set.add(getHostClassIndex());
+		return set;
 	}
 
 	@Override

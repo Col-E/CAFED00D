@@ -2,15 +2,18 @@ package me.coley.cafedude.classfile;
 
 import me.coley.cafedude.classfile.attribute.Attribute;
 import me.coley.cafedude.classfile.behavior.AttributeHolder;
+import me.coley.cafedude.classfile.behavior.CpAccessor;
 
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Base class member.
  *
  * @author Matt Coley
  */
-public abstract class ClassMember implements AttributeHolder {
+public abstract class ClassMember implements AttributeHolder, CpAccessor {
 	private List<Attribute> attributes;
 	private int access;
 	private int nameIndex;
@@ -86,5 +89,15 @@ public abstract class ClassMember implements AttributeHolder {
 	@Override
 	public void setAttributes(List<Attribute> attributes) {
 		this.attributes = attributes;
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = new TreeSet<>();
+		set.add(getNameIndex());
+		set.add(getTypeIndex());
+		for (Attribute attribute : getAttributes())
+			set.addAll(attribute.cpAccesses());
+		return set;
 	}
 }

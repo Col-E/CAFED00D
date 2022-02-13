@@ -1,5 +1,7 @@
 package me.coley.cafedude.classfile.attribute;
 
+import java.util.Set;
+
 /**
  * Source file attribute.
  *
@@ -32,6 +34,13 @@ public class SourceFileAttribute extends Attribute {
 	 */
 	public void setSourceFileNameIndex(int sourceFileNameIndex) {
 		this.sourceFileNameIndex = sourceFileNameIndex;
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = super.cpAccesses();
+		set.add(getSourceFileNameIndex());
+		return set;
 	}
 
 	@Override

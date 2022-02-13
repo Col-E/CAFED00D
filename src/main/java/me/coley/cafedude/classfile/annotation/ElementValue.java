@@ -1,11 +1,13 @@
 package me.coley.cafedude.classfile.annotation;
 
+import me.coley.cafedude.classfile.behavior.CpAccessor;
+
 /**
  * Base attribute element value.
  *
  * @author Matt Coley
  */
-public abstract class ElementValue {
+public abstract class ElementValue implements CpAccessor {
 	private final char tag;
 
 	/**

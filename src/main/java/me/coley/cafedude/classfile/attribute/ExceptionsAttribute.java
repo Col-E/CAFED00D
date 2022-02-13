@@ -1,12 +1,12 @@
 package me.coley.cafedude.classfile.attribute;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Checked exceptions attribute.
- * 
- * @author JCWasmx86
  *
+ * @author JCWasmx86
  */
 public class ExceptionsAttribute extends Attribute {
 	private List<Integer> exceptionIndexTable;
@@ -37,6 +37,13 @@ public class ExceptionsAttribute extends Attribute {
 	 */
 	public void setExceptionIndexTable(List<Integer> exceptionIndexTable) {
 		this.exceptionIndexTable = exceptionIndexTable;
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = super.cpAccesses();
+		set.addAll(getExceptionIndexTable());
+		return set;
 	}
 
 	@Override

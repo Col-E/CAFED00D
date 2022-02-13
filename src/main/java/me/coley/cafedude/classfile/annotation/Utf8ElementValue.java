@@ -1,5 +1,8 @@
 package me.coley.cafedude.classfile.annotation;
 
+import java.util.Set;
+import java.util.TreeSet;
+
 /**
  * UTF8 string element value.
  *
@@ -42,6 +45,13 @@ public class Utf8ElementValue extends ElementValue {
 	@Override
 	public char getTag() {
 		return super.getTag();
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = new TreeSet<>();
+		set.add(getUtfIndex());
+		return set;
 	}
 
 	@Override

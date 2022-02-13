@@ -1,5 +1,8 @@
 package me.coley.cafedude.classfile.annotation;
 
+import java.util.Set;
+import java.util.TreeSet;
+
 /**
  * Enum element value.
  *
@@ -61,6 +64,14 @@ public class EnumElementValue extends ElementValue {
 	@Override
 	public char getTag() {
 		return super.getTag();
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = new TreeSet<>();
+		set.add(getNameIndex());
+		set.add(getTypeIndex());
+		return set;
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package me.coley.cafedude.classfile.attribute;
 
+import java.util.Set;
+
 /**
  * Signature attribute, for generic types.
  *
@@ -32,6 +34,13 @@ public class SignatureAttribute extends Attribute {
 	 */
 	public void setSignatureIndex(int signatureIndex) {
 		this.signatureIndex = signatureIndex;
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = super.cpAccesses();
+		set.add(getSignatureIndex());
+		return set;
 	}
 
 	@Override

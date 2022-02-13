@@ -3,6 +3,7 @@ package me.coley.cafedude.classfile.attribute;
 import me.coley.cafedude.classfile.annotation.Annotation;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Annotation collection attribute. Represents either:
@@ -40,6 +41,14 @@ public class AnnotationsAttribute extends Attribute {
 	 */
 	public void setAnnotations(List<Annotation> annotations) {
 		this.annotations = annotations;
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = super.cpAccesses();
+		for (Annotation annotation : getAnnotations())
+			set.addAll(annotation.cpAccesses());
+		return set;
 	}
 
 	@Override

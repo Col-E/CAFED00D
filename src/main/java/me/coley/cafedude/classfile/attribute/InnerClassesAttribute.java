@@ -1,6 +1,10 @@
 package me.coley.cafedude.classfile.attribute;
 
+import me.coley.cafedude.classfile.behavior.CpAccessor;
+
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Attribute describing the inner classes of a class.
@@ -37,6 +41,14 @@ public class InnerClassesAttribute extends Attribute {
 	}
 
 	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = super.cpAccesses();
+		for (InnerClass inner : getInnerClasses())
+			set.addAll(inner.cpAccesses());
+		return set;
+	}
+
+	@Override
 	public int computeInternalLength() {
 		return 2 + this.innerClasses.size() * 8;
 	}
@@ -46,7 +58,7 @@ public class InnerClassesAttribute extends Attribute {
 	 *
 	 * @author JCWasmx86
 	 */
-	public static class InnerClass {
+	public static class InnerClass implements CpAccessor {
 		private int innerClassInfoIndex;
 		private int outerClassInfoIndex;
 		private int innerNameIndex;
@@ -134,6 +146,15 @@ public class InnerClassesAttribute extends Attribute {
 		 */
 		public void setInnerClassAccessFlags(int innerClassAccessFlags) {
 			this.innerClassAccessFlags = innerClassAccessFlags;
+		}
+
+		@Override
+		public Set<Integer> cpAccesses() {
+			Set<Integer> set = new TreeSet<>();
+			set.add(getOuterClassInfoIndex());
+			set.add(getInnerClassInfoIndex());
+			set.add(getInnerNameIndex());
+			return set;
 		}
 	}
 }

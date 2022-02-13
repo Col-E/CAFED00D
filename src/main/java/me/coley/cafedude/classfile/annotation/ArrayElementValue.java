@@ -1,6 +1,8 @@
 package me.coley.cafedude.classfile.annotation;
 
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Array element value.
@@ -44,6 +46,14 @@ public class ArrayElementValue extends ElementValue {
 	@Override
 	public char getTag() {
 		return super.getTag();
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = new TreeSet<>();
+		for (ElementValue value : getArray())
+			set.addAll(value.cpAccesses());
+		return set;
 	}
 
 	@Override

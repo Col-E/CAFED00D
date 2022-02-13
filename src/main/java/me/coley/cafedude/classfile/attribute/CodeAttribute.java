@@ -1,9 +1,12 @@
 package me.coley.cafedude.classfile.attribute;
 
 import me.coley.cafedude.classfile.behavior.AttributeHolder;
+import me.coley.cafedude.classfile.behavior.CpAccessor;
 import me.coley.cafedude.io.AttributeContext;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Method code attribute.
@@ -118,6 +121,17 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 	}
 
 	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = super.cpAccesses();
+		for (Attribute attribute : getAttributes())
+			set.addAll(attribute.cpAccesses());
+		for (ExceptionTableEntry ex : getExceptionTable())
+			set.addAll(ex.cpAccesses());
+		// TODO: Instructions
+		return set;
+	}
+
+	@Override
 	public int computeInternalLength() {
 		// u2: max_stack
 		// u2: max_locals
@@ -143,7 +157,7 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 	 *
 	 * @author Matt Coley
 	 */
-	public static class ExceptionTableEntry {
+	public static class ExceptionTableEntry implements CpAccessor {
 		private int startPc;
 		private int endPc;
 		private int handlerPc;
@@ -224,6 +238,11 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 		 */
 		public void setCatchTypeIndex(int catchTypeIndex) {
 			this.catchTypeIndex = catchTypeIndex;
+		}
+
+		@Override
+		public Set<Integer> cpAccesses() {
+			return Collections.singleton(getCatchTypeIndex());
 		}
 	}
 }

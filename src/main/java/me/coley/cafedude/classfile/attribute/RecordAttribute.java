@@ -1,6 +1,10 @@
 package me.coley.cafedude.classfile.attribute;
 
+import me.coley.cafedude.classfile.behavior.CpAccessor;
+
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Permitted classes attribute.
@@ -22,6 +26,14 @@ public class RecordAttribute extends Attribute {
 	}
 
 	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = super.cpAccesses();
+		for (RecordComponent component : getComponents())
+			set.addAll(component.cpAccesses());
+		return set;
+	}
+
+	@Override
 	public int computeInternalLength() {
 		// u2: count
 		// u2: class_index * count
@@ -36,7 +48,8 @@ public class RecordAttribute extends Attribute {
 	}
 
 	/**
-	 * @param components New record components <i>(fields)</i>.
+	 * @param components
+	 * 		New record components <i>(fields)</i>.
 	 */
 	public void setComponents(List<RecordComponent> components) {
 		this.components = components;
@@ -45,7 +58,7 @@ public class RecordAttribute extends Attribute {
 	/**
 	 * Component entry.
 	 */
-	public static class RecordComponent {
+	public static class RecordComponent implements CpAccessor {
 		private int nameIndex;
 		private int descIndex;
 		private List<Attribute> attributes;
@@ -109,6 +122,14 @@ public class RecordAttribute extends Attribute {
 			this.attributes = attributes;
 		}
 
+		@Override
+		public Set<Integer> cpAccesses() {
+			Set<Integer> set = new TreeSet<>();
+			set.add(getNameIndex());
+			set.add(getDescIndex());
+			return set;
+		}
+
 		/**
 		 * @return Component bytecode size.
 		 */
@@ -122,5 +143,7 @@ public class RecordAttribute extends Attribute {
 				len += attribute.computeCompleteLength();
 			return len;
 		}
+
+
 	}
 }

@@ -1,6 +1,7 @@
 package me.coley.cafedude.classfile.attribute;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Permitted classes attribute.
@@ -34,6 +35,13 @@ public class PermittedClassesAttribute extends Attribute {
 	 */
 	public void setClasses(List<Integer> classes) {
 		this.classes = classes;
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = super.cpAccesses();
+		set.addAll(getClasses());
+		return set;
 	}
 
 	@Override

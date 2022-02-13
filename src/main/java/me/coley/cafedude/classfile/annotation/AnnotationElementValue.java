@@ -1,5 +1,8 @@
 package me.coley.cafedude.classfile.annotation;
 
+import java.util.Set;
+import java.util.TreeSet;
+
 /**
  * Nested annotation element value.
  *
@@ -42,6 +45,13 @@ public class AnnotationElementValue extends ElementValue {
 	@Override
 	public char getTag() {
 		return super.getTag();
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = new TreeSet<>();
+		set.addAll(annotation.cpAccesses());
+		return set;
 	}
 
 	@Override

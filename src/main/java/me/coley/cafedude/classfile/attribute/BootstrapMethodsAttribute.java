@@ -1,8 +1,11 @@
 package me.coley.cafedude.classfile.attribute;
 
+import me.coley.cafedude.classfile.behavior.CpAccessor;
 import me.coley.cafedude.classfile.constant.CpMethodHandle;
 
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Bootstrap methods attribute.
@@ -21,6 +24,14 @@ public class BootstrapMethodsAttribute extends Attribute {
 	public BootstrapMethodsAttribute(int nameIndex, List<BootstrapMethod> bootstrapMethods) {
 		super(nameIndex);
 		this.bootstrapMethods = bootstrapMethods;
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = super.cpAccesses();
+		for (BootstrapMethod bsm : bootstrapMethods)
+			set.addAll(bsm.cpAccesses());
+		return set;
 	}
 
 	@Override
@@ -48,7 +59,7 @@ public class BootstrapMethodsAttribute extends Attribute {
 	 *
 	 * @author Matt Coley
 	 */
-	public static class BootstrapMethod {
+	public static class BootstrapMethod implements CpAccessor {
 		private int bsmMethodref;
 		private List<Integer> args;
 
@@ -61,6 +72,14 @@ public class BootstrapMethodsAttribute extends Attribute {
 		public BootstrapMethod(int bsmMethodref, List<Integer> args) {
 			this.bsmMethodref = bsmMethodref;
 			this.args = args;
+		}
+
+		@Override
+		public Set<Integer> cpAccesses() {
+			Set<Integer> set = new TreeSet<>();
+			set.add(getBsmMethodref());
+			set.addAll(getArgs());
+			return set;
 		}
 
 		/**

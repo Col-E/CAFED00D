@@ -1,5 +1,8 @@
 package me.coley.cafedude.classfile.annotation;
 
+import java.util.Set;
+import java.util.TreeSet;
+
 /**
  * Class element value.
  *
@@ -42,6 +45,13 @@ public class ClassElementValue extends ElementValue {
 	@Override
 	public char getTag() {
 		return super.getTag();
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = new TreeSet<>();
+		set.add(getClassIndex());
+		return set;
 	}
 
 	@Override

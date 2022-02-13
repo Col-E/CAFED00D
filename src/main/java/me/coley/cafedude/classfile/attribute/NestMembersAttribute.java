@@ -1,6 +1,7 @@
 package me.coley.cafedude.classfile.attribute;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Nest members attribute, lists classes allowed to declare membership of the nest hosted by current class.
@@ -37,6 +38,13 @@ public class NestMembersAttribute extends Attribute {
 	 */
 	public void setMemberClassIndices(List<Integer> memberClassIndices) {
 		this.memberClassIndices = memberClassIndices;
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = super.cpAccesses();
+		set.addAll(getMemberClassIndices());
+		return set;
 	}
 
 	@Override

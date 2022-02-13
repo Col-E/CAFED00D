@@ -47,6 +47,7 @@ import me.coley.cafedude.classfile.attribute.SourceFileAttribute;
 import me.coley.cafedude.classfile.behavior.AttributeHolder;
 import me.coley.cafedude.classfile.constant.ConstPoolEntry;
 import me.coley.cafedude.classfile.constant.CpClass;
+import me.coley.cafedude.classfile.constant.CpInt;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.io.AttributeContext;
 import org.slf4j.Logger;
@@ -56,6 +57,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import static me.coley.cafedude.Constants.Attributes.*;
@@ -67,8 +69,6 @@ import static me.coley.cafedude.Constants.Attributes.*;
  */
 public class IllegalStrippingTransformer extends Transformer {
 	private static final Logger logger = LoggerFactory.getLogger(IllegalStrippingTransformer.class);
-	private final Map<Integer, Predicate<Integer>> expectedTypeMasks = new HashMap<>();
-	private final Map<Integer, Predicate<ConstPoolEntry>> cpEntryValidators = new HashMap<>();
 
 	/**
 	 * @param clazz
@@ -80,11 +80,34 @@ public class IllegalStrippingTransformer extends Transformer {
 
 	@Override
 	public void transform() {
+		// Record existing CP refs
+		Set<Integer> cpAccesses = clazz.cpAccesses();
+		// Strip attributes that are not valid
 		clazz.getAttributes().removeIf(attribute -> !isValidWrapped(clazz, attribute));
 		for (Field field : clazz.getFields())
 			field.getAttributes().removeIf(attribute -> !isValidWrapped(field, attribute));
 		for (Method method : clazz.getMethods())
 			method.getAttributes().removeIf(attribute -> !isValidWrapped(method, attribute));
+		// Record filtered CP refs, the difference of the sets are the indices that were referenced
+		// by removed attributes/data.
+		Set<Integer> filteredCpAccesses = clazz.cpAccesses();
+		cpAccesses.removeAll(filteredCpAccesses);
+		// Replace with dummy entries (Removing and re-indexing things would be computationally expensive)
+		int max = pool.size();
+		for (int index : cpAccesses) {
+			if (index == 0 || index >= max - 1)
+				continue;
+			ConstPoolEntry cpe = pool.get(index);
+			switch (cpe.getTag()) {
+				case ConstantPool.DYNAMIC:
+				case ConstantPool.INVOKE_DYNAMIC:
+					logger.debug("Removing now unused CP entry: {}={}", index, cpe.getClass().getSimpleName());
+					pool.set(index, new CpInt(0));
+					break;
+				default:
+					break;
+			}
+		}
 	}
 
 	private boolean isValidWrapped(AttributeHolder holder, Attribute attribute) {
@@ -99,6 +122,8 @@ public class IllegalStrippingTransformer extends Transformer {
 	}
 
 	private boolean isValid(AttributeHolder holder, Attribute attribute) {
+		Map<Integer, Predicate<Integer>> expectedTypeMasks = new HashMap<>();
+		Map<Integer, Predicate<ConstPoolEntry>> cpEntryValidators = new HashMap<>();
 		// Check name index
 		int maxCpIndex = pool.size();
 		if (attribute.getNameIndex() > maxCpIndex)
@@ -129,7 +154,7 @@ public class IllegalStrippingTransformer extends Transformer {
 			case RUNTIME_VISIBLE_TYPE_ANNOTATIONS:
 				AnnotationsAttribute annotations = (AnnotationsAttribute) attribute;
 				for (Annotation anno : annotations.getAnnotations())
-					addAnnotationValidation(anno);
+					addAnnotationValidation(expectedTypeMasks, cpEntryValidators, anno);
 				break;
 			case RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
 			case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS: {
@@ -151,13 +176,13 @@ public class IllegalStrippingTransformer extends Transformer {
 				Collection<List<Annotation>> parameterAnnos = paramAnnotations.getParameterAnnotations().values();
 				for (List<Annotation> annotationList : parameterAnnos)
 					for (Annotation anno : annotationList)
-						addAnnotationValidation(anno);
+						addAnnotationValidation(expectedTypeMasks, cpEntryValidators, anno);
 				break;
 			}
 			case ANNOTATION_DEFAULT:
 				AnnotationDefaultAttribute annotationDefault = (AnnotationDefaultAttribute) attribute;
 				ElementValue elementValue = annotationDefault.getElementValue();
-				addElementValueValidation(elementValue);
+				addElementValueValidation(expectedTypeMasks, cpEntryValidators, elementValue);
 				break;
 			case NEST_HOST:
 				NestHostAttribute nestHost = (NestHostAttribute) attribute;
@@ -215,7 +240,8 @@ public class IllegalStrippingTransformer extends Transformer {
 				CodeAttribute code = (CodeAttribute) attribute;
 				for (Attribute subAttr : code.getAttributes()) {
 					if (!isValid(code, subAttr)) {
-						logger.info("Attribute '{}' will be removed since a sub-attribute is not legal!", name);
+						logger.info("Attribute '{}' on {} will be removed since a sub-attribute is not legal!",
+								name, "CODE-ATTRIBUTE");
 						return false;
 					}
 				}
@@ -340,7 +366,8 @@ public class IllegalStrippingTransformer extends Transformer {
 			//  - Yes, the CP doesn't start at 0, but there are special cases where it is allowed.
 			int cpIndex = entry.getKey();
 			if (cpIndex < min || cpIndex > maxCpIndex) {
-				logger.debug("Invalid '{}' attribute, contains CP reference to index out of CP bounds!", name);
+				logger.debug("Invalid '{}' attribute on {}, contains CP reference to index out of CP bounds!",
+						name, context.name());
 				return false;
 			}
 			// Referenced entry must match type
@@ -349,12 +376,13 @@ public class IllegalStrippingTransformer extends Transformer {
 			// cpEntryValidators
 			ConstPoolEntry cpEntry = pool.get(cpIndex);
 			if (cpEntry == null) {
-				logger.debug("No CP entry at index '{}' in Attribute '{}'", cpIndex, name);
+				logger.debug("No CP entry at index '{}' in Attribute '{}' on {}", cpIndex, name, context.name());
 				return false;
 			}
 			int tag = cpEntry.getTag();
 			if (!entry.getValue().test(tag)) {
-				logger.debug("Invalid '{}' attribute, contains CP reference to index with wrong type!", name);
+				logger.debug("Invalid '{}' attribute on {}, contains CP reference to index with wrong type!",
+						name, context.name());
 				return false;
 			}
 			if (cpEntryValidators.containsKey(cpIndex) && !cpEntryValidators.get(cpIndex).test(cpEntry)) {
@@ -366,18 +394,22 @@ public class IllegalStrippingTransformer extends Transformer {
 		return true;
 	}
 
-	private void addAnnotationValidation(Annotation anno) {
+	private void addAnnotationValidation(Map<Integer, Predicate<Integer>> expectedTypeMasks,
+										 Map<Integer, Predicate<ConstPoolEntry>> cpEntryValidators,
+										 Annotation anno) {
 		expectedTypeMasks.put(anno.getTypeIndex(), i -> i == ConstantPool.UTF8);
 		cpEntryValidators.put(anno.getTypeIndex(), matchUtf8ClassType());
 		for (Map.Entry<Integer, ElementValue> entry : anno.getValues().entrySet()) {
 			int elementTypeIndex = entry.getKey();
 			expectedTypeMasks.put(elementTypeIndex, i -> i == ConstantPool.UTF8);
 			cpEntryValidators.put(elementTypeIndex, matchUtf8ClassType());
-			addElementValueValidation(entry.getValue());
+			addElementValueValidation(expectedTypeMasks, cpEntryValidators, entry.getValue());
 		}
 	}
 
-	private void addElementValueValidation(ElementValue elementValue) {
+	private void addElementValueValidation(Map<Integer, Predicate<Integer>> expectedTypeMasks,
+										   Map<Integer, Predicate<ConstPoolEntry>> cpEntryValidators,
+										   ElementValue elementValue) {
 		if (elementValue instanceof ClassElementValue) {
 			int classIndex = ((ClassElementValue) elementValue).getClassIndex();
 			expectedTypeMasks.put(classIndex, i -> i == ConstantPool.CLASS);

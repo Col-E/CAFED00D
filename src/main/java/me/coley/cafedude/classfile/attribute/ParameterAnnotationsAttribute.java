@@ -4,6 +4,7 @@ import me.coley.cafedude.classfile.annotation.Annotation;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Annotation collection attribute on method parameters. Represents either:
@@ -41,6 +42,15 @@ public class ParameterAnnotationsAttribute extends Attribute {
 	 */
 	public void setParameterAnnotations(Map<Integer, List<Annotation>> parameterAnnotations) {
 		this.parameterAnnotations = parameterAnnotations;
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = super.cpAccesses();
+		for (List<Annotation> list : getParameterAnnotations().values())
+			for (Annotation annotation : list)
+				set.addAll(annotation.cpAccesses());
+		return set;
 	}
 
 	@Override

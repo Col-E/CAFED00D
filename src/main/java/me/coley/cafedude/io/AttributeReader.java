@@ -110,15 +110,16 @@ public class AttributeReader {
 			int read = is.getIndex();
 			if (read != expectedContentLength) {
 				String name = ((CpUtf8) builder.getPool().get(nameIndex)).getText();
-				logger.debug("Invalid '{}', claimed to be {} bytes, but was {}", name, expectedContentLength, read);
+				logger.debug("Invalid '{}' on {}, claimed to be {} bytes, but was {}",
+						name, context.name(), expectedContentLength, read);
 				return null;
 			}
 			return attribute;
 		} catch (IOException ex) {
 			if (reader.doDropEofAttributes()) {
 				String name = ((CpUtf8) builder.getPool().get(nameIndex)).getText();
-				logger.debug("Invalid '{}', EOF thrown when parsing attribute, expected {} bytes",
-						name, expectedContentLength);
+				logger.debug("Invalid '{}' on {}, EOF thrown when parsing attribute, expected {} bytes",
+						name, context.name(), expectedContentLength);
 				return null;
 			} else
 				throw ex;
@@ -132,8 +133,8 @@ public class AttributeReader {
 		if (reader.doDropForwardVersioned()) {
 			int introducedAt = AttributeVersions.getIntroducedVersion(name);
 			if (introducedAt > builder.getVersionMajor()) {
-				logger.debug("Found '{}' in class version {}, min supported is {}",
-						name, builder.getVersionMajor(), introducedAt);
+				logger.debug("Found '{}' on {} in class version {}, min supported is {}",
+						name, context.name(), builder.getVersionMajor(), introducedAt);
 				return null;
 			}
 		}
@@ -229,7 +230,8 @@ public class AttributeReader {
 			List<Attribute> attributes = new ArrayList<>();
 			for (int x = 0; x < numAttributes; x++) {
 				Attribute attr = new AttributeReader(reader, builder, is).readAttribute(AttributeContext.ATTRIBUTE);
-				attributes.add(attr);
+				if (attr != null)
+					attributes.add(attr);
 			}
 			components.add(new RecordComponent(nameIndex, descIndex, attributes));
 		}
@@ -610,7 +612,8 @@ public class AttributeReader {
 		int numAttributes = is.readUnsignedShort();
 		for (int i = 0; i < numAttributes; i++) {
 			Attribute attr = new AttributeReader(reader, builder, is).readAttribute(AttributeContext.ATTRIBUTE);
-			attributes.add(attr);
+			if (attr != null)
+				attributes.add(attr);
 		}
 		return new CodeAttribute(nameIndex, maxStack, maxLocals, code, exceptions, attributes);
 	}

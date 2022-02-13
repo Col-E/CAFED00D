@@ -2,8 +2,11 @@ package me.coley.cafedude.classfile.annotation;
 
 import me.coley.cafedude.classfile.attribute.AnnotationsAttribute;
 import me.coley.cafedude.classfile.attribute.ParameterAnnotationsAttribute;
+import me.coley.cafedude.classfile.behavior.CpAccessor;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Annotation outline. Represents an annotation item to be contained in an annotation collection attribute such as:
@@ -18,7 +21,7 @@ import java.util.Map;
  * @see AnnotationsAttribute
  * @see ParameterAnnotationsAttribute
  */
-public class Annotation {
+public class Annotation implements CpAccessor {
 	private final Map<Integer, ElementValue> values;
 	private final int typeIndex;
 
@@ -49,6 +52,15 @@ public class Annotation {
 	 */
 	public Map<Integer, ElementValue> getValues() {
 		return values;
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = new TreeSet<>();
+		set.add(getTypeIndex());
+		for (ElementValue value : values.values())
+			set.addAll(value.cpAccesses());
+		return set;
 	}
 
 	/**

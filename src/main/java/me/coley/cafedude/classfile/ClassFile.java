@@ -2,19 +2,22 @@ package me.coley.cafedude.classfile;
 
 import me.coley.cafedude.classfile.attribute.Attribute;
 import me.coley.cafedude.classfile.behavior.AttributeHolder;
+import me.coley.cafedude.classfile.behavior.CpAccessor;
 import me.coley.cafedude.classfile.constant.ConstPoolEntry;
 import me.coley.cafedude.classfile.constant.CpClass;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.io.AttributeContext;
 
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Class file format.
  *
  * @author Matt Coley
  */
-public class ClassFile implements AttributeHolder {
+public class ClassFile implements AttributeHolder, CpAccessor {
 	private final ConstPool pool;
 	private List<Integer> interfaceIndices;
 	private List<Field> fields;
@@ -250,5 +253,20 @@ public class ClassFile implements AttributeHolder {
 	@Override
 	public AttributeContext getHolderType() {
 		return AttributeContext.CLASS;
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = new TreeSet<>();
+		set.add(getClassIndex());
+		set.add(getSuperIndex());
+		set.addAll(getInterfaceIndices());
+		for (Attribute attribute : getAttributes())
+			set.addAll(attribute.cpAccesses());
+		for (ClassMember field : getFields())
+			set.addAll(field.cpAccesses());
+		for (ClassMember method : getMethods())
+			set.addAll(method.cpAccesses());
+		return set;
 	}
 }

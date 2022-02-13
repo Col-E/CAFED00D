@@ -1,5 +1,8 @@
 package me.coley.cafedude.classfile.annotation;
 
+import java.util.Set;
+import java.util.TreeSet;
+
 /**
  * Primitive value element value.
  *
@@ -40,6 +43,13 @@ public class PrimitiveElementValue extends ElementValue {
 	@Override
 	public char getTag() {
 		return super.getTag();
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		Set<Integer> set = new TreeSet<>();
+		set.add(getValueIndex());
+		return set;
 	}
 
 	@Override
