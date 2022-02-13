@@ -1,31 +1,29 @@
 package me.coley.cafedude.io;
 
-import me.coley.cafedude.ClassFile;
-import me.coley.cafedude.Constants;
+import me.coley.cafedude.classfile.ClassFile;
 import me.coley.cafedude.Constants.ConstantPool;
-import me.coley.cafedude.Field;
+import me.coley.cafedude.classfile.Field;
 import me.coley.cafedude.InvalidClassException;
-import me.coley.cafedude.Method;
-import me.coley.cafedude.attribute.Attribute;
-import me.coley.cafedude.attribute.CodeAttribute;
-import me.coley.cafedude.constant.ConstPoolEntry;
-import me.coley.cafedude.constant.CpClass;
-import me.coley.cafedude.constant.CpDouble;
-import me.coley.cafedude.constant.CpDynamic;
-import me.coley.cafedude.constant.CpFieldRef;
-import me.coley.cafedude.constant.CpFloat;
-import me.coley.cafedude.constant.CpInt;
-import me.coley.cafedude.constant.CpInterfaceMethodRef;
-import me.coley.cafedude.constant.CpInvokeDynamic;
-import me.coley.cafedude.constant.CpLong;
-import me.coley.cafedude.constant.CpMethodHandle;
-import me.coley.cafedude.constant.CpMethodRef;
-import me.coley.cafedude.constant.CpMethodType;
-import me.coley.cafedude.constant.CpModule;
-import me.coley.cafedude.constant.CpNameType;
-import me.coley.cafedude.constant.CpPackage;
-import me.coley.cafedude.constant.CpString;
-import me.coley.cafedude.constant.CpUtf8;
+import me.coley.cafedude.classfile.Method;
+import me.coley.cafedude.classfile.attribute.Attribute;
+import me.coley.cafedude.classfile.constant.ConstPoolEntry;
+import me.coley.cafedude.classfile.constant.CpClass;
+import me.coley.cafedude.classfile.constant.CpDouble;
+import me.coley.cafedude.classfile.constant.CpDynamic;
+import me.coley.cafedude.classfile.constant.CpFieldRef;
+import me.coley.cafedude.classfile.constant.CpFloat;
+import me.coley.cafedude.classfile.constant.CpInt;
+import me.coley.cafedude.classfile.constant.CpInterfaceMethodRef;
+import me.coley.cafedude.classfile.constant.CpInvokeDynamic;
+import me.coley.cafedude.classfile.constant.CpLong;
+import me.coley.cafedude.classfile.constant.CpMethodHandle;
+import me.coley.cafedude.classfile.constant.CpMethodRef;
+import me.coley.cafedude.classfile.constant.CpMethodType;
+import me.coley.cafedude.classfile.constant.CpModule;
+import me.coley.cafedude.classfile.constant.CpNameType;
+import me.coley.cafedude.classfile.constant.CpPackage;
+import me.coley.cafedude.classfile.constant.CpString;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +32,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static me.coley.cafedude.Constants.ConstantPool.*;
-import static me.coley.cafedude.attribute.AttributeCpAccessValidator.isValid;
 
 /**
  * Class file format parser.
@@ -48,7 +45,6 @@ public class ClassFileReader {
 	private IndexableByteStream is;
 	// config
 	private boolean dropForwardVersioned = true;
-	private boolean dropIllegalCpRefs = true;
 	private boolean dropEofAttributes = true;
 	private boolean dropDupeAnnotations = true;
 
@@ -102,7 +98,7 @@ public class ClassFileReader {
 				int numAttributes = is.readUnsignedShort();
 				for (int i = 0; i < numAttributes; i++) {
 					Attribute attr = new AttributeReader(this, builder, is).readAttribute(AttributeContext.CLASS);
-					if (attr != null && (!doDropIllegalCpRefs() || isValid(builder.getPool(), attr)))
+					if (attr != null)
 						builder.addAttribute(attr);
 				}
 				return builder.build();
@@ -183,7 +179,7 @@ public class ClassFileReader {
 		List<Attribute> attributes = new ArrayList<>();
 		for (int i = 0; i < numAttributes; i++) {
 			Attribute attr = new AttributeReader(this, builder, is).readAttribute(AttributeContext.FIELD);
-			if (attr != null && (!doDropIllegalCpRefs() || isValid(builder.getPool(), attr)))
+			if (attr != null)
 				attributes.add(attr);
 		}
 		return new Field(attributes, access, nameIndex, typeIndex);
@@ -206,12 +202,7 @@ public class ClassFileReader {
 		List<Attribute> attributes = new ArrayList<>();
 		for (int i = 0; i < numAttributes; i++) {
 			Attribute attr = new AttributeReader(this, builder, is).readAttribute(AttributeContext.METHOD);
-			if (doDropIllegalCpRefs() && attr instanceof CodeAttribute && (access & Constants.ACC_ABSTRACT) > 0) {
-				String methodName = builder.getPool().getUtf(nameIndex);
-				logger.debug("Illegal code attribute on abstract method {}", methodName);
-				continue;
-			}
-			if (attr != null && (!doDropIllegalCpRefs() || isValid(builder.getPool(), attr)))
+			if (attr != null)
 				attributes.add(attr);
 		}
 		return new Method(attributes, access, nameIndex, typeIndex);
@@ -230,13 +221,6 @@ public class ClassFileReader {
 	 */
 	public void setDropForwardVersioned(boolean dropForwardVersioned) {
 		this.dropForwardVersioned = dropForwardVersioned;
-	}
-
-	/**
-	 * @return {@code true} if attributes with CP refs to illegal positions should be removed.
-	 */
-	public boolean doDropIllegalCpRefs() {
-		return dropIllegalCpRefs;
 	}
 
 	/**
@@ -268,14 +252,5 @@ public class ClassFileReader {
 	 */
 	public void setDropDupeAnnotations(boolean dropDupeAnnotations) {
 		this.dropDupeAnnotations = dropDupeAnnotations;
-	}
-
-	/**
-	 * @param dropIllegalCpRefs
-	 *        {@code true} if attributes with CP refs to illegal positions should be removed.
-	 *        {@code false} to ignore and keep illegal positions.
-	 */
-	public void setDropIllegalCpRefs(boolean dropIllegalCpRefs) {
-		this.dropIllegalCpRefs = dropIllegalCpRefs;
 	}
 }

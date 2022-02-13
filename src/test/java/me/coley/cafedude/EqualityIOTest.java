@@ -1,5 +1,6 @@
 package me.coley.cafedude;
 
+import me.coley.cafedude.classfile.ClassFile;
 import me.coley.cafedude.io.ClassFileReader;
 import me.coley.cafedude.io.ClassFileWriter;
 import org.junit.jupiter.api.Test;

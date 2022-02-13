@@ -1,6 +1,6 @@
 # CAFEDOOD [![Build Status](https://cloud.drone.io/api/badges/Col-E/CAFED00D/status.svg)](https://cloud.drone.io/Col-E/CAFED00D) [![](https://jitpack.io/v/Col-E/CAFED00D.svg)](https://jitpack.io/#Col-E/CAFED00D)
 
-Another class library.
+Another class library with a focus on obfuscation support.
 
 ## Features
 
@@ -41,14 +41,22 @@ implementation 'com.github.Col-E:cafedude:VERSION'
 ```
 
 ### Reading and writing classes
+
 The default settings have anti-obfuscation measures enabled.
 ```java
 // Reading
 byte[] code = ...
 ClassFileReader cr = new ClassFileReader();
 // cr.setDropForwardVersioned(false) - enabled by default
-// cr.setDropIllegalCpRefs(false) - enabled by default
+// cr.setDropEofAttributes(false) - enabled by default
 ClassFile cf = cr.read(code);
+cf.stripIllegalData();
 // Writing
 code = new ClassFileWriter().write(cf);
+```
+
+### Stripping malformed attributes and data from classes
+
+```java
+new IllegalStrippingTransformer(cf).transform();
 ```

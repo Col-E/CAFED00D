@@ -1,11 +1,11 @@
 package me.coley.cafedude.io;
 
-import me.coley.cafedude.ClassFile;
-import me.coley.cafedude.ConstPool;
+import me.coley.cafedude.classfile.ClassFile;
+import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.Constants;
-import me.coley.cafedude.Field;
-import me.coley.cafedude.Method;
-import me.coley.cafedude.attribute.Attribute;
+import me.coley.cafedude.classfile.Field;
+import me.coley.cafedude.classfile.Method;
+import me.coley.cafedude.classfile.attribute.Attribute;
 
 import java.util.ArrayList;
 import java.util.List;

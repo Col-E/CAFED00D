@@ -1,49 +1,48 @@
 package me.coley.cafedude.io;
 
-import me.coley.cafedude.ConstPool;
+import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.Constants.Attributes;
-import me.coley.cafedude.attribute.AnnotationDefaultAttribute;
-import me.coley.cafedude.attribute.AnnotationsAttribute;
-import me.coley.cafedude.attribute.Attribute;
-import me.coley.cafedude.attribute.AttributeContexts;
-import me.coley.cafedude.attribute.AttributeCpAccessValidator;
-import me.coley.cafedude.attribute.AttributeVersions;
-import me.coley.cafedude.attribute.BootstrapMethodsAttribute;
-import me.coley.cafedude.attribute.BootstrapMethodsAttribute.BootstrapMethod;
-import me.coley.cafedude.attribute.CodeAttribute;
-import me.coley.cafedude.attribute.CodeAttribute.ExceptionTableEntry;
-import me.coley.cafedude.attribute.ConstantValueAttribute;
-import me.coley.cafedude.attribute.DebugExtensionAttribute;
-import me.coley.cafedude.attribute.DefaultAttribute;
-import me.coley.cafedude.attribute.DeprecatedAttribute;
-import me.coley.cafedude.attribute.EnclosingMethodAttribute;
-import me.coley.cafedude.attribute.ExceptionsAttribute;
-import me.coley.cafedude.attribute.InnerClassesAttribute;
-import me.coley.cafedude.attribute.InnerClassesAttribute.InnerClass;
-import me.coley.cafedude.attribute.LineNumberTableAttribute;
-import me.coley.cafedude.attribute.LineNumberTableAttribute.LineEntry;
-import me.coley.cafedude.attribute.LocalVariableTableAttribute;
-import me.coley.cafedude.attribute.LocalVariableTableAttribute.VarEntry;
-import me.coley.cafedude.attribute.LocalVariableTypeTableAttribute;
-import me.coley.cafedude.attribute.LocalVariableTypeTableAttribute.VarTypeEntry;
-import me.coley.cafedude.attribute.ModuleAttribute;
-import me.coley.cafedude.attribute.ModuleAttribute.Exports;
-import me.coley.cafedude.attribute.ModuleAttribute.Opens;
-import me.coley.cafedude.attribute.ModuleAttribute.Provides;
-import me.coley.cafedude.attribute.ModuleAttribute.Requires;
-import me.coley.cafedude.attribute.NestHostAttribute;
-import me.coley.cafedude.attribute.NestMembersAttribute;
-import me.coley.cafedude.attribute.ParameterAnnotationsAttribute;
-import me.coley.cafedude.attribute.PermittedClassesAttribute;
-import me.coley.cafedude.attribute.RecordAttribute;
-import me.coley.cafedude.attribute.RecordAttribute.RecordComponent;
-import me.coley.cafedude.attribute.SignatureAttribute;
-import me.coley.cafedude.attribute.SourceFileAttribute;
-import me.coley.cafedude.attribute.StackMapTableAttribute;
-import me.coley.cafedude.attribute.StackMapTableAttribute.StackMapFrame;
-import me.coley.cafedude.attribute.StackMapTableAttribute.TypeInfo;
-import me.coley.cafedude.attribute.SyntheticAttribute;
-import me.coley.cafedude.constant.CpUtf8;
+import me.coley.cafedude.classfile.attribute.AnnotationDefaultAttribute;
+import me.coley.cafedude.classfile.attribute.AnnotationsAttribute;
+import me.coley.cafedude.classfile.attribute.Attribute;
+import me.coley.cafedude.classfile.attribute.AttributeContexts;
+import me.coley.cafedude.classfile.attribute.AttributeVersions;
+import me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute;
+import me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.BootstrapMethod;
+import me.coley.cafedude.classfile.attribute.CodeAttribute;
+import me.coley.cafedude.classfile.attribute.CodeAttribute.ExceptionTableEntry;
+import me.coley.cafedude.classfile.attribute.ConstantValueAttribute;
+import me.coley.cafedude.classfile.attribute.DebugExtensionAttribute;
+import me.coley.cafedude.classfile.attribute.DefaultAttribute;
+import me.coley.cafedude.classfile.attribute.DeprecatedAttribute;
+import me.coley.cafedude.classfile.attribute.EnclosingMethodAttribute;
+import me.coley.cafedude.classfile.attribute.ExceptionsAttribute;
+import me.coley.cafedude.classfile.attribute.InnerClassesAttribute;
+import me.coley.cafedude.classfile.attribute.InnerClassesAttribute.InnerClass;
+import me.coley.cafedude.classfile.attribute.LineNumberTableAttribute;
+import me.coley.cafedude.classfile.attribute.LineNumberTableAttribute.LineEntry;
+import me.coley.cafedude.classfile.attribute.LocalVariableTableAttribute;
+import me.coley.cafedude.classfile.attribute.LocalVariableTableAttribute.VarEntry;
+import me.coley.cafedude.classfile.attribute.LocalVariableTypeTableAttribute;
+import me.coley.cafedude.classfile.attribute.LocalVariableTypeTableAttribute.VarTypeEntry;
+import me.coley.cafedude.classfile.attribute.ModuleAttribute;
+import me.coley.cafedude.classfile.attribute.ModuleAttribute.Exports;
+import me.coley.cafedude.classfile.attribute.ModuleAttribute.Opens;
+import me.coley.cafedude.classfile.attribute.ModuleAttribute.Provides;
+import me.coley.cafedude.classfile.attribute.ModuleAttribute.Requires;
+import me.coley.cafedude.classfile.attribute.NestHostAttribute;
+import me.coley.cafedude.classfile.attribute.NestMembersAttribute;
+import me.coley.cafedude.classfile.attribute.ParameterAnnotationsAttribute;
+import me.coley.cafedude.classfile.attribute.PermittedClassesAttribute;
+import me.coley.cafedude.classfile.attribute.RecordAttribute;
+import me.coley.cafedude.classfile.attribute.RecordAttribute.RecordComponent;
+import me.coley.cafedude.classfile.attribute.SignatureAttribute;
+import me.coley.cafedude.classfile.attribute.SourceFileAttribute;
+import me.coley.cafedude.classfile.attribute.StackMapTableAttribute;
+import me.coley.cafedude.classfile.attribute.StackMapTableAttribute.StackMapFrame;
+import me.coley.cafedude.classfile.attribute.StackMapTableAttribute.TypeInfo;
+import me.coley.cafedude.classfile.attribute.SyntheticAttribute;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,21 +96,6 @@ public class AttributeReader {
 	}
 
 	/**
-	 * The reason for this check is because illegal attributes should return {@code null} and get dropped.
-	 * This also asserts that all CP refs in the attribute point to valid indices and are of the expected types.
-	 *
-	 * @param attribute
-	 * 		Attribute to check.
-	 *
-	 * @return {@code true} when the attribute is valid, containing no illegal CP index references.
-	 */
-	private boolean shouldAddAttribute(Attribute attribute) {
-		if (attribute == null)
-			return false;
-		return !reader.doDropIllegalCpRefs() || AttributeCpAccessValidator.isValid(builder.getPool(), attribute);
-	}
-
-	/**
 	 * @param context
 	 * 		Where the attribute is applied to.
 	 *
@@ -154,13 +138,6 @@ public class AttributeReader {
 						name, builder.getVersionMajor(), introducedAt);
 				return null;
 			}
-		}
-		// Check for illegal usage contexts
-		Collection<AttributeContext> allowedContexts = AttributeContexts.getAllowedContexts(name);
-		if (!allowedContexts.contains(context)) {
-			logger.debug("Found '{}' declared in illegal context {}, allowed contexts: {}",
-					name, context.name(), allowedContexts);
-			return null;
 		}
 		switch (name) {
 			case CODE:
@@ -254,8 +231,7 @@ public class AttributeReader {
 			List<Attribute> attributes = new ArrayList<>();
 			for (int x = 0; x < numAttributes; x++) {
 				Attribute attr = new AttributeReader(reader, builder, is).readAttribute(AttributeContext.ATTRIBUTE);
-				if (shouldAddAttribute(attr))
-					attributes.add(attr);
+				attributes.add(attr);
 			}
 			components.add(new RecordComponent(nameIndex, descIndex, attributes));
 		}
@@ -636,8 +612,7 @@ public class AttributeReader {
 		int numAttributes = is.readUnsignedShort();
 		for (int i = 0; i < numAttributes; i++) {
 			Attribute attr = new AttributeReader(reader, builder, is).readAttribute(AttributeContext.ATTRIBUTE);
-			if (shouldAddAttribute(attr))
-				attributes.add(attr);
+			attributes.add(attr);
 		}
 		return new CodeAttribute(nameIndex, maxStack, maxLocals, code, exceptions, attributes);
 	}

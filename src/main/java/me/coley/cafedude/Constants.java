@@ -1,6 +1,6 @@
 package me.coley.cafedude;
 
-import me.coley.cafedude.annotation.TargetInfoType;
+import me.coley.cafedude.classfile.annotation.TargetInfoType;
 
 /**
  * Class file constants.
