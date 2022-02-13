@@ -50,7 +50,6 @@ ClassFileReader cr = new ClassFileReader();
 // cr.setDropForwardVersioned(false) - enabled by default
 // cr.setDropEofAttributes(false) - enabled by default
 ClassFile cf = cr.read(code);
-cf.stripIllegalData();
 // Writing
 code = new ClassFileWriter().write(cf);
 ```
@@ -58,5 +57,6 @@ code = new ClassFileWriter().write(cf);
 ### Stripping malformed attributes and data from classes
 
 ```java
+// Modifies the 'cf' instance
 new IllegalStrippingTransformer(cf).transform();
 ```
