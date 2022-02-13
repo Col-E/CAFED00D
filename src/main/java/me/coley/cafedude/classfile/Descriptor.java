@@ -90,6 +90,9 @@ public class Descriptor {
 		return Collections.singletonList(this);
 	}
 
+	/**
+	 * @return Number of parameters the descriptor as, assuming it is a {@link Kind#METHOD}.
+	 */
 	@SuppressWarnings("StatementWithEmptyBody")
 	public int getParameterCount() {
 		if (kind == Kind.METHOD) {

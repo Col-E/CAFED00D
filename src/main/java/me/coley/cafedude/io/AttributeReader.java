@@ -1,11 +1,10 @@
 package me.coley.cafedude.io;
 
-import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.Constants.Attributes;
+import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.classfile.attribute.AnnotationDefaultAttribute;
 import me.coley.cafedude.classfile.attribute.AnnotationsAttribute;
 import me.coley.cafedude.classfile.attribute.Attribute;
-import me.coley.cafedude.classfile.attribute.AttributeContexts;
 import me.coley.cafedude.classfile.attribute.AttributeVersions;
 import me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute;
 import me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.BootstrapMethod;
@@ -50,7 +49,6 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import static me.coley.cafedude.Constants.Attributes.*;

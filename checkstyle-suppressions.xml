@@ -51,10 +51,14 @@
 			  lines="0-9999"/>
 
 	<suppress checks="CyclomaticComplexity"
-			  files="AttributeCpAccessValidator.java"
+			  files="IllegalStrippingTransformer.java"
 			  lines="0-9999"/>
 	<suppress checks="ClassFanOutComplexity"
-			  files="AttributeCpAccessValidator.java"
+			  files="IllegalStrippingTransformer.java"
+			  lines="0-9999"/>
+
+	<suppress checks="CyclomaticComplexity"
+			  files="Descriptor.java"
 			  lines="0-9999"/>
 
 	<suppress checks="CyclomaticComplexity"
