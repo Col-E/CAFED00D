@@ -32,12 +32,12 @@ Add CafeDude dependency _(where `VERSION` is the latest version)_
 ```xml
 <dependency>
     <groupId>com.github.Col-E</groupId>
-    <artifactId>cafedude</artifactId>
+    <artifactId>CAFED00D</artifactId>
     <version>VERSION</version>
 </dependency>
 ```
 ```groovy
-implementation 'com.github.Col-E:cafedude:VERSION'
+implementation 'com.github.Col-E:CAFED00D:VERSION'
 ```
 
 ### Reading and writing classes
@@ -57,6 +57,7 @@ code = new ClassFileWriter().write(cf);
 
 ### Stripping malformed attributes and data from classes
 
+Additional items can be removed via:
 ```java
 // Modifies the 'cf' instance
 new IllegalStrippingTransformer(cf).transform();
