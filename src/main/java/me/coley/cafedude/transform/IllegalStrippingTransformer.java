@@ -12,6 +12,7 @@ import me.coley.cafedude.classfile.annotation.ClassElementValue;
 import me.coley.cafedude.classfile.annotation.ElementValue;
 import me.coley.cafedude.classfile.annotation.EnumElementValue;
 import me.coley.cafedude.classfile.annotation.PrimitiveElementValue;
+import me.coley.cafedude.classfile.annotation.TypeAnnotation;
 import me.coley.cafedude.classfile.annotation.Utf8ElementValue;
 import me.coley.cafedude.classfile.attribute.AnnotationDefaultAttribute;
 import me.coley.cafedude.classfile.attribute.AnnotationsAttribute;
@@ -80,6 +81,7 @@ public class IllegalStrippingTransformer extends Transformer {
 
 	@Override
 	public void transform() {
+		logger.info("Transforming '{}'", clazz.getName());
 		// Record existing CP refs
 		Set<Integer> cpAccesses = clazz.cpAccesses();
 		// Strip attributes that are not valid
@@ -98,15 +100,8 @@ public class IllegalStrippingTransformer extends Transformer {
 			if (index == 0 || index >= max - 1)
 				continue;
 			ConstPoolEntry cpe = pool.get(index);
-			switch (cpe.getTag()) {
-				case ConstantPool.DYNAMIC:
-				case ConstantPool.INVOKE_DYNAMIC:
-					logger.debug("Removing now unused CP entry: {}={}", index, cpe.getClass().getSimpleName());
-					pool.set(index, new CpInt(0));
-					break;
-				default:
-					break;
-			}
+			logger.info("Removing now unused CP entry: {}={}", index, cpe.getClass().getSimpleName());
+			pool.set(index, new CpInt(0));
 		}
 	}
 
@@ -114,7 +109,7 @@ public class IllegalStrippingTransformer extends Transformer {
 		try {
 			return isValid(holder, attribute);
 		} catch (Exception ex) {
-			logger.debug("Encountered exception when parsing attribute '{}' in context '{}', dropping it",
+			logger.warn("Encountered exception when parsing attribute '{}' in context '{}', dropping it",
 					attribute.getClass().getName(),
 					holder.getHolderType().name());
 			return false;
@@ -154,7 +149,7 @@ public class IllegalStrippingTransformer extends Transformer {
 			case RUNTIME_VISIBLE_TYPE_ANNOTATIONS:
 				AnnotationsAttribute annotations = (AnnotationsAttribute) attribute;
 				for (Annotation anno : annotations.getAnnotations())
-					addAnnotationValidation(expectedTypeMasks, cpEntryValidators, anno);
+					addAnnotationValidation(holder, expectedTypeMasks, cpEntryValidators, anno);
 				break;
 			case RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
 			case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS: {
@@ -168,21 +163,21 @@ public class IllegalStrippingTransformer extends Transformer {
 				int parameterCount = Descriptor.from(desc).getParameterCount();
 				if (paramAnnotations.getParameterAnnotations().keySet().stream()
 						.anyMatch(key -> key >= parameterCount)) {
-					logger.debug("Illegal parameter annotation indices used on method {}",
-							pool.getUtf(method.getNameIndex()));
+					String methodName = pool.getUtf(method.getNameIndex());
+					logger.debug("Out of bounds parameter-annotation indices used on method {}", methodName);
 					return false;
 				}
 				// Filter annotations
 				Collection<List<Annotation>> parameterAnnos = paramAnnotations.getParameterAnnotations().values();
 				for (List<Annotation> annotationList : parameterAnnos)
 					for (Annotation anno : annotationList)
-						addAnnotationValidation(expectedTypeMasks, cpEntryValidators, anno);
+						addAnnotationValidation(holder, expectedTypeMasks, cpEntryValidators, anno);
 				break;
 			}
 			case ANNOTATION_DEFAULT:
 				AnnotationDefaultAttribute annotationDefault = (AnnotationDefaultAttribute) attribute;
 				ElementValue elementValue = annotationDefault.getElementValue();
-				addElementValueValidation(expectedTypeMasks, cpEntryValidators, elementValue);
+				addElementValueValidation(holder, expectedTypeMasks, cpEntryValidators, elementValue);
 				break;
 			case NEST_HOST:
 				NestHostAttribute nestHost = (NestHostAttribute) attribute;
@@ -233,18 +228,13 @@ public class IllegalStrippingTransformer extends Transformer {
 				// Method cannot be abstract
 				Method method = (Method) holder;
 				if ((method.getAccess() & Constants.ACC_ABSTRACT) > 0) {
-					logger.debug("Illegal code attribute on abstract method {}", pool.getUtf(method.getNameIndex()));
+					logger.debug("Illegal 'Code' attribute on abstract method {}", pool.getUtf(method.getNameIndex()));
 					return false;
 				}
-				// Check code sub-attributes
 				CodeAttribute code = (CodeAttribute) attribute;
-				for (Attribute subAttr : code.getAttributes()) {
-					if (!isValid(code, subAttr)) {
-						logger.info("Attribute '{}' on {} will be removed since a sub-attribute is not legal!",
-								name, "CODE-ATTRIBUTE");
-						return false;
-					}
-				}
+				// Prune bad code sub-attributes
+				code.getAttributes().removeIf(sub -> !isValid(code, sub));
+				// Ensure exception indices are valid
 				for (ExceptionTableEntry entry : code.getExceptionTable()) {
 					expectedTypeMasks.put(entry.getCatchTypeIndex(), i -> i == 0 || i == ConstantPool.CLASS);
 					if (entry.getCatchTypeIndex() == 0) {
@@ -394,7 +384,8 @@ public class IllegalStrippingTransformer extends Transformer {
 		return true;
 	}
 
-	private void addAnnotationValidation(Map<Integer, Predicate<Integer>> expectedTypeMasks,
+	private void addAnnotationValidation(AttributeHolder holder,
+										 Map<Integer, Predicate<Integer>> expectedTypeMasks,
 										 Map<Integer, Predicate<ConstPoolEntry>> cpEntryValidators,
 										 Annotation anno) {
 		expectedTypeMasks.put(anno.getTypeIndex(), i -> i == ConstantPool.UTF8);
@@ -403,11 +394,13 @@ public class IllegalStrippingTransformer extends Transformer {
 			int elementTypeIndex = entry.getKey();
 			expectedTypeMasks.put(elementTypeIndex, i -> i == ConstantPool.UTF8);
 			cpEntryValidators.put(elementTypeIndex, matchUtf8ClassType());
-			addElementValueValidation(expectedTypeMasks, cpEntryValidators, entry.getValue());
+			addElementValueValidation(holder, expectedTypeMasks, cpEntryValidators, entry.getValue());
 		}
+		// TODO: Intra-reference checks
 	}
 
-	private void addElementValueValidation(Map<Integer, Predicate<Integer>> expectedTypeMasks,
+	private void addElementValueValidation(AttributeHolder holder,
+										   Map<Integer, Predicate<Integer>> expectedTypeMasks,
 										   Map<Integer, Predicate<ConstPoolEntry>> cpEntryValidators,
 										   ElementValue elementValue) {
 		if (elementValue instanceof ClassElementValue) {
@@ -441,6 +434,6 @@ public class IllegalStrippingTransformer extends Transformer {
 	}
 
 	private Predicate<ConstPoolEntry> matchWordUtf8() {
-		return e -> e instanceof CpUtf8 && ((CpUtf8) e).getText().matches("\\w+");
+		return e -> e instanceof CpUtf8 && ((CpUtf8) e).getText().matches("[<>;/$\\w]+");
 	}
 }

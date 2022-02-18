@@ -1,13 +1,17 @@
 package me.coley.cafedude.classfile.annotation;
 
+import me.coley.cafedude.classfile.behavior.CpAccessor;
+
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Indicates which type in a declaration or expression is annotated.
  *
  * @author Matt Coley
  */
-public abstract class TargetInfo {
+public abstract class TargetInfo implements CpAccessor {
 	private final TargetInfoType targetTypeKind;
 	private final int targetType;
 
@@ -34,6 +38,11 @@ public abstract class TargetInfo {
 	 */
 	public int getTargetType() {
 		return targetType;
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		return Collections.emptySet();
 	}
 
 	/**
@@ -98,6 +107,11 @@ public abstract class TargetInfo {
 		 */
 		public int getSuperTypeIndex() {
 			return superTypeIndex;
+		}
+
+		@Override
+		public Set<Integer> cpAccesses() {
+			return Collections.singleton(superTypeIndex);
 		}
 
 		@Override
