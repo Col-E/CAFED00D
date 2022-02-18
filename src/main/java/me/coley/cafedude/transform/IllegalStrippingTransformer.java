@@ -104,8 +104,18 @@ public class IllegalStrippingTransformer extends Transformer {
 			if (index == 0 || index >= max - 1)
 				continue;
 			ConstPoolEntry cpe = pool.get(index);
-			logger.info("Removing now unused CP entry: {}={}", index, cpe.getClass().getSimpleName());
-			pool.set(index, new CpInt(0));
+			switch (cpe.getTag()) {
+				case ConstantPool.DYNAMIC:
+				case ConstantPool.INVOKE_DYNAMIC:
+					logger.debug("Removing now unused CP entry: {}={}", index, cpe.getClass().getSimpleName());
+					pool.set(index, new CpInt(0));
+					break;
+				default:
+					// TODO: When the full class file specification is complete we can aggressively prune other types.
+					//  - for now we only remove specific X_DYNAMIC types since we can be sure removing them is safe
+					//    in the context of references to it being removed due to an invalid BootstrapMethodsAttribute
+					break;
+			}
 		}
 	}
 
