@@ -12,6 +12,10 @@ import me.coley.cafedude.classfile.annotation.ClassElementValue;
 import me.coley.cafedude.classfile.annotation.ElementValue;
 import me.coley.cafedude.classfile.annotation.EnumElementValue;
 import me.coley.cafedude.classfile.annotation.PrimitiveElementValue;
+import me.coley.cafedude.classfile.annotation.TargetInfo;
+import me.coley.cafedude.classfile.annotation.TargetInfo.CatchTargetInfo;
+import me.coley.cafedude.classfile.annotation.TargetInfo.SuperTypeTargetInfo;
+import me.coley.cafedude.classfile.annotation.TypeAnnotation;
 import me.coley.cafedude.classfile.annotation.Utf8ElementValue;
 import me.coley.cafedude.classfile.attribute.AnnotationDefaultAttribute;
 import me.coley.cafedude.classfile.attribute.AnnotationsAttribute;
@@ -68,6 +72,7 @@ import static me.coley.cafedude.Constants.Attributes.*;
  * @author Matt Coley
  */
 public class IllegalStrippingTransformer extends Transformer {
+	private static final int FORCE_FAIL = -1;
 	private static final Logger logger = LoggerFactory.getLogger(IllegalStrippingTransformer.class);
 
 	/**
@@ -217,7 +222,9 @@ public class IllegalStrippingTransformer extends Transformer {
 					expectedTypeMasks.put(innerClass.getOuterClassInfoIndex(), i -> i == 0 || i == ConstantPool.CLASS);
 					// 0 if anonymous, otherwise name index
 					expectedTypeMasks.put(innerClass.getInnerNameIndex(), i -> i == 0 || i == ConstantPool.UTF8);
-					allow0Case |= innerClass.getInnerClassInfoIndex() == 0 || innerClass.getOuterClassInfoIndex() == 0;
+					allow0Case |= innerClass.getInnerClassInfoIndex() == 0
+							|| innerClass.getOuterClassInfoIndex() == 0
+							|| innerClass.getInnerNameIndex() == 0;
 				}
 				break;
 			case CODE: {
@@ -395,7 +402,62 @@ public class IllegalStrippingTransformer extends Transformer {
 			cpEntryValidators.put(elementTypeIndex, matchUtf8ClassType());
 			addElementValueValidation(holder, expectedTypeMasks, cpEntryValidators, entry.getValue());
 		}
-		// TODO: Intra-reference checks
+		if (anno instanceof TypeAnnotation) {
+			TypeAnnotation typeAnnotation = (TypeAnnotation) anno;
+			TargetInfo targetInfo = typeAnnotation.getTargetInfo();
+			switch (targetInfo.getTargetTypeKind()) {
+				case TYPE_PARAMETER_BOUND_TARGET:
+					break;
+				case TYPE_PARAMETER_TARGET:
+					break;
+				case FORMAL_PARAMETER_TARGET:
+					break;
+				case TYPE_ARGUMENT_TARGET:
+					break;
+				case LOCALVAR_TARGET:
+					// TODO: Ensure variables outline matches what is in code's variables attribute
+					break;
+				case THROWS_TARGET:
+					// TODO: Verify with a sample what the target holder type should be
+					break;
+				case OFFSET_TARGET:
+					// TODO: relies on instructions being parsed
+					break;
+				case SUPERTYPE_TARGET:
+					if (holder instanceof ClassFile) {
+						SuperTypeTargetInfo superTypeTargetInfo = (SuperTypeTargetInfo) targetInfo;
+						if (!superTypeTargetInfo.isExtends()) {
+							ClassFile classFile = (ClassFile) holder;
+							// Enforce interfaces range
+							if (superTypeTargetInfo.getSuperTypeIndex() >= classFile.getInterfaceIndices().size()) {
+								expectedTypeMasks.put(FORCE_FAIL, i -> false);
+							}
+						}
+					} else {
+						// Illegal target kind for situation
+						expectedTypeMasks.put(FORCE_FAIL, i -> false);
+					}
+					break;
+
+				case CATCH_TARGET:
+					if (holder instanceof CodeAttribute) {
+						CodeAttribute code = (CodeAttribute) holder;
+						CatchTargetInfo catchTargetInfo = (CatchTargetInfo) targetInfo;
+						// Enforce table range
+						if (catchTargetInfo.getExceptionTableIndex() >= code.getExceptionTable().size()) {
+							expectedTypeMasks.put(FORCE_FAIL, i -> false);
+						}
+					} else {
+						// Illegal target kind for situation
+						expectedTypeMasks.put(FORCE_FAIL, i -> false);
+					}
+					break;
+				case EMPTY_TARGET:
+				default:
+					// no-op
+					break;
+			}
+		}
 	}
 
 	private void addElementValueValidation(AttributeHolder holder,

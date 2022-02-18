@@ -1,5 +1,7 @@
 package me.coley.cafedude.classfile.annotation;
 
+import me.coley.cafedude.classfile.attribute.ExceptionsAttribute;
+import me.coley.cafedude.classfile.attribute.LocalVariableTableAttribute;
 import me.coley.cafedude.classfile.behavior.CpAccessor;
 
 import java.util.Collections;
@@ -86,6 +88,7 @@ public abstract class TargetInfo implements CpAccessor {
 	 * of a class or interface declaration.
 	 */
 	public static class SuperTypeTargetInfo extends TargetInfo {
+		public static final int EXTENDS = 65535;
 		private final int superTypeIndex;
 
 		/**
@@ -99,6 +102,13 @@ public abstract class TargetInfo implements CpAccessor {
 		public SuperTypeTargetInfo(int targetType, int superTypeIndex) {
 			super(TargetInfoType.SUPERTYPE_TARGET, targetType);
 			this.superTypeIndex = superTypeIndex;
+		}
+
+		/**
+		 * @return {@code} true when {@link #getSuperTypeIndex()} is 65535.
+		 */
+		public boolean isExtends() {
+			return superTypeIndex == EXTENDS;
 		}
 
 		/**
@@ -231,9 +241,8 @@ public abstract class TargetInfo implements CpAccessor {
 		 * 		indicating the purpose of the {@code target_info}.
 		 * @param throwsTypeIndex
 		 * 		Index of the thrown type in the associated {@code exception_index_table}
-		 * 		of the {@code Exceptions} attribute.
+		 * 		of the {@link ExceptionsAttribute}.
 		 */
-		// TODO: When done parsing Exceptions update javadocs to link to the type here
 		public ThrowsTargetInfo(int targetType, int throwsTypeIndex) {
 			super(TargetInfoType.THROWS_TARGET, targetType);
 			this.throwsTypeIndex = throwsTypeIndex;
@@ -258,9 +267,8 @@ public abstract class TargetInfo implements CpAccessor {
 	 * Indicates that an annotation appears on the type of a local variable.
 	 * <br>
 	 * Marked variables types are annotated but are not listed directly.
-	 * The information provided should be matched with what appears in the local variable attribute.
+	 * The information provided should be matched with what appears in the {@link LocalVariableTableAttribute}.
 	 */
-	// TODO: When LocalVariableAttribute is creates update the javadoc to link to it
 	public static class LocalVarTargetInfo extends TargetInfo {
 		private final List<Variable> variableTable;
 

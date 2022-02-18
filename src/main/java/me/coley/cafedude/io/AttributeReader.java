@@ -115,11 +115,16 @@ public class AttributeReader {
 				return null;
 			}
 			return attribute;
-		} catch (IOException ex) {
+		} catch (Exception ex) {
 			if (reader.doDropEofAttributes()) {
-				String name = ((CpUtf8) builder.getPool().get(nameIndex)).getText();
-				logger.debug("Invalid '{}' on {}, EOF thrown when parsing attribute, expected {} bytes",
-						name, context.name(), expectedContentLength);
+				if (nameIndex < builder.getPool().size()) {
+					String name = ((CpUtf8) builder.getPool().get(nameIndex)).getText();
+					logger.debug("Invalid '{}' on {}, EOF thrown when parsing attribute, expected {} bytes",
+							name, context.name(), expectedContentLength);
+				} else {
+					logger.debug("Invalid attribute on {}, invalid attribute name index", context.name());
+				}
+
 				return null;
 			} else
 				throw ex;
