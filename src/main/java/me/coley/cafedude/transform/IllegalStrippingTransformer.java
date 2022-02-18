@@ -12,7 +12,6 @@ import me.coley.cafedude.classfile.annotation.ClassElementValue;
 import me.coley.cafedude.classfile.annotation.ElementValue;
 import me.coley.cafedude.classfile.annotation.EnumElementValue;
 import me.coley.cafedude.classfile.annotation.PrimitiveElementValue;
-import me.coley.cafedude.classfile.annotation.TypeAnnotation;
 import me.coley.cafedude.classfile.annotation.Utf8ElementValue;
 import me.coley.cafedude.classfile.attribute.AnnotationDefaultAttribute;
 import me.coley.cafedude.classfile.attribute.AnnotationsAttribute;
