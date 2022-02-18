@@ -49,6 +49,7 @@ byte[] code = ...
 ClassFileReader cr = new ClassFileReader();
 // cr.setDropForwardVersioned(false) - enabled by default
 // cr.setDropEofAttributes(false) - enabled by default
+// cr.setDropDupeAnnotations(false) - enabled by default
 ClassFile cf = cr.read(code);
 // Writing
 code = new ClassFileWriter().write(cf);
