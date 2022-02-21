@@ -83,6 +83,8 @@ public class IllegalStrippingTransformer extends Transformer {
 		super(clazz);
 	}
 
+	// TODO: Make it possible to track if calling transform did remove anything
+
 	@Override
 	public void transform() {
 		logger.info("Transforming '{}'", clazz.getName());
@@ -476,8 +478,8 @@ public class IllegalStrippingTransformer extends Transformer {
 										   ElementValue elementValue) {
 		if (elementValue instanceof ClassElementValue) {
 			int classIndex = ((ClassElementValue) elementValue).getClassIndex();
-			expectedTypeMasks.put(classIndex, i -> i == ConstantPool.CLASS);
-			cpEntryValidators.put(classIndex, matchClassType());
+			expectedTypeMasks.put(classIndex, i -> i == ConstantPool.UTF8);
+			cpEntryValidators.put(classIndex, matchUtf8ClassType());
 		} else if (elementValue instanceof EnumElementValue) {
 			EnumElementValue enumElementValue = (EnumElementValue) elementValue;
 			expectedTypeMasks.put(enumElementValue.getNameIndex(), i -> i == ConstantPool.UTF8);

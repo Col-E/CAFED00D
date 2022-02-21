@@ -25,7 +25,7 @@ public class ClassElementValue extends ElementValue {
 	}
 
 	/**
-	 * @return Index of class constant.
+	 * @return Index of a class's descriptor.
 	 */
 	public int getClassIndex() {
 		return classIndex;
@@ -33,7 +33,7 @@ public class ClassElementValue extends ElementValue {
 
 	/**
 	 * @param classIndex
-	 * 		Index of class constant.
+	 * 		Index of a class's descriptor.
 	 */
 	public void setClassIndex(int classIndex) {
 		this.classIndex = classIndex;
