@@ -61,7 +61,7 @@ public class CrasherPatchingTest {
 	 */
 	public static List<File> supply() {
 		List<File> files = new ArrayList<>();
-		File root = new File("src/test/resources/samples/crasher");
+		File root = new File("src/test/resources/samples/obfuscated/crasher");
 		for (File sub : Objects.requireNonNull(root.listFiles())) {
 			if (sub.getName().endsWith(".class"))
 				files.add(sub);
