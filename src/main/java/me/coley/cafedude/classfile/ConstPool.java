@@ -5,9 +5,11 @@ import me.coley.cafedude.classfile.constant.CpUtf8;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -19,6 +21,7 @@ import java.util.TreeSet;
 public class ConstPool implements List<ConstPoolEntry> {
 	private final List<ConstPoolEntry> backing = new ArrayList<>();
 	private final SortedSet<Integer> wideIndices = new TreeSet<>();
+	private final Map<Integer, Integer> indexToWides = new HashMap<>();
 
 	/**
 	 * Insert an entry after the given index in the pool.
@@ -96,7 +99,7 @@ public class ConstPool implements List<ConstPoolEntry> {
 		// 3: Double --> 5
 		// 4: String --> 7 --
 		// 5: String --> 8
-		int wideCount = wideIndices.headSet(index + 1).size();
+		int wideCount = indexToWides.computeIfAbsent(index, i -> wideIndices.headSet(i + 1).size());
 		return 1 + index + wideCount;
 	}
 
@@ -146,11 +149,11 @@ public class ConstPool implements List<ConstPoolEntry> {
 		if (!larger.isEmpty()) {
 			List<Integer> tmp = new ArrayList<>(larger);
 			larger.clear();
-			tmp.forEach(i -> wideIndices.add(i + entrySize));
+			tmp.forEach(i -> addWideIndex(i + entrySize));
 		}
 		// Add wide
 		if (constPoolEntry.isWide())
-			wideIndices.add(location);
+			addWideIndex(location);
 	}
 
 	/**
@@ -172,8 +175,13 @@ public class ConstPool implements List<ConstPoolEntry> {
 		if (!larger.isEmpty()) {
 			List<Integer> tmp = new ArrayList<>(larger);
 			larger.clear();
-			tmp.forEach(i -> wideIndices.add(i - entrySize));
+			tmp.forEach(i -> addWideIndex(i - entrySize));
 		}
+	}
+
+	private void addWideIndex(int i) {
+		wideIndices.add(i);
+		indexToWides.clear();
 	}
 
 	@Override
