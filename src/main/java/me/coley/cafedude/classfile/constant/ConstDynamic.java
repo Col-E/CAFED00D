@@ -12,6 +12,8 @@ public abstract class ConstDynamic extends ConstPoolEntry {
     private int nameTypeIndex;
 
     /**
+     * @param type
+     *      Dynamic pool entry type.
      * @param bsmIndex
      * 		Index in the class's bootstrap method attribute-table.
      * @param nameTypeIndex
