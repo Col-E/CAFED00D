@@ -1,6 +1,6 @@
 package me.coley.cafedude.io;
 
-import me.coley.cafedude.attribute.CodeAttribute;
+import me.coley.cafedude.classfile.attribute.CodeAttribute;
 import me.coley.cafedude.instruction.*;
 
 import java.nio.ByteBuffer;
@@ -17,6 +17,24 @@ import static me.coley.cafedude.instruction.Opcodes.*;
  */
 public class InstructionReader {
 
+	private final FallbackInstructionReader fallbackReader;
+
+	/**
+	 * @param fallbackReader
+	 * 		Fallback instruction reader.
+	 */
+	public InstructionReader(FallbackInstructionReader fallbackReader) {
+		this.fallbackReader = fallbackReader;
+	}
+
+	/**
+	 * Instruction reader that will use
+	 * fail-fast fallback reader.
+	 */
+	public InstructionReader() {
+		this(FallbackInstructionReader.fail());
+	}
+
 	/**
 	 * @param attribute
 	 * 		Code attribute.
@@ -27,6 +45,7 @@ public class InstructionReader {
 	public List<Instruction> read(CodeAttribute attribute) {
 		List<Instruction> instructions = new ArrayList<>();
 		ByteBuffer buffer = ByteBuffer.wrap(attribute.getCode());
+		FallbackInstructionReader fallbackReader = this.fallbackReader;
 		while (buffer.hasRemaining()) {
 			int opcode = buffer.get() & 0xff;
 			switch (opcode) {
@@ -105,7 +124,7 @@ public class InstructionReader {
 				case FSTORE:
 				case DSTORE:
 				case ASTORE:
-					instructions.add(new IntOperandInstruction(opcode, buffer.get()));
+					instructions.add(new IntOperandInstruction(opcode, buffer.get() & 0xff));
 					break;
 				case ISTORE_0:
 				case ISTORE_1:
@@ -336,11 +355,11 @@ public class InstructionReader {
 						case FSTORE:
 						case DSTORE:
 						case RET:
-							instructions.add(new IntOperandInstruction(opcode, buffer.getShort() & 0xff));
+							instructions.add(new WideInstruction(new IntOperandInstruction(type, buffer.getShort() & 0xff)));
 							break;
 						case IINC:
-							instructions.add(new BiIntOperandInstruction(IINC,
-									buffer.getShort() & 0xff, buffer.getShort()));
+							instructions.add(new WideInstruction(new BiIntOperandInstruction(IINC,
+									buffer.getShort() & 0xff, buffer.getShort())));
 							break;
 						default:
 							throw new IllegalStateException("Illegal wide instruction type: " + type);
@@ -359,7 +378,7 @@ public class InstructionReader {
 					instructions.add(new IntOperandInstruction(opcode, buffer.getInt()));
 					break;
 				default:
-					throw new IllegalStateException("Unknown instruction: " + opcode);
+					instructions.add(fallbackReader.read(opcode, buffer));
 			}
 		}
 		return instructions;
