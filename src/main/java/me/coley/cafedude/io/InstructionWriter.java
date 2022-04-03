@@ -310,7 +310,7 @@ public class InstructionWriter {
 							buffer.putShort(iinc.getSecondOperand());
 							break;
 						default:
-							fallbackWriter.write(instruction, buffer);
+							throw new IllegalStateException("Illegal wide instruction type: " + type);
 					}
 					break;
 				case MULTIANEWARRAY:

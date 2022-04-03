@@ -53,15 +53,14 @@ import me.coley.cafedude.classfile.constant.ConstPoolEntry;
 import me.coley.cafedude.classfile.constant.CpClass;
 import me.coley.cafedude.classfile.constant.CpInt;
 import me.coley.cafedude.classfile.constant.CpUtf8;
+import me.coley.cafedude.instruction.Instruction;
 import me.coley.cafedude.io.AttributeContext;
+import me.coley.cafedude.io.InstructionReader;
+import me.coley.cafedude.io.InstructionWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 import static me.coley.cafedude.Constants.Attributes.*;
@@ -117,6 +116,23 @@ public class IllegalStrippingTransformer extends Transformer {
 					//  - for now we only remove specific X_DYNAMIC types since we can be sure removing them is safe
 					//    in the context of references to it being removed due to an invalid BootstrapMethodsAttribute
 					break;
+			}
+		}
+		// Patch illegal instructions.
+		IllegalStrippingInstructionsReader fallbackReader = new IllegalStrippingInstructionsReader(clazz.getPool());
+		InstructionReader reader = new InstructionReader(fallbackReader);
+		InstructionWriter writer = new InstructionWriter();
+		for (Method method : clazz.getMethods()) {
+			Optional<Attribute> attribute = method.getAttributes().stream()
+					.filter(x -> x instanceof CodeAttribute)
+					.findFirst();
+			if (attribute.isPresent()) {
+				CodeAttribute code = (CodeAttribute) attribute.get();
+				fallbackReader.rewritten = false;
+				List<Instruction> instructions = reader.read(code);
+				if (fallbackReader.rewritten) {
+					code.setCode(writer.writeCode(instructions));
+				}
 			}
 		}
 	}

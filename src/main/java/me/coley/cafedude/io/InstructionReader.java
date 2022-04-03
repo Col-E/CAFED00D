@@ -379,7 +379,7 @@ public class InstructionReader {
 					instructions.add(new IntOperandInstruction(opcode, buffer.getInt()));
 					break;
 				default:
-					instructions.add(fallbackReader.read(opcode, buffer));
+					instructions.addAll(fallbackReader.read(opcode, buffer));
 			}
 		}
 		return instructions;

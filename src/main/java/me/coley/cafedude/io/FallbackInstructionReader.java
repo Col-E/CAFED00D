@@ -3,6 +3,7 @@ package me.coley.cafedude.io;
 import me.coley.cafedude.instruction.Instruction;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 
 /**
  * Fallback reader that handles unknown instructions.
@@ -19,7 +20,7 @@ public interface FallbackInstructionReader {
 	 *
 	 * @return Read instruction.
 	 */
-	Instruction read(int opcode, ByteBuffer buffer);
+	List<Instruction> read(int opcode, ByteBuffer buffer);
 
 	/**
 	 * @return Default fail-fast fallback reader.
