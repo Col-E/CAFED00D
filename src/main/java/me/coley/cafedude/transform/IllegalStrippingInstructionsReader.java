@@ -48,7 +48,7 @@ final class IllegalStrippingInstructionsReader implements FallbackInstructionRea
 			case fast_aldc_w:
 				rewritten = true;
 				return Collections.singletonList(new IntOperandInstruction(LDC_W, 
-						rewriteIndex(buffer.getShort() & 0xff)));
+						rewriteIndex(buffer.getShort() & 0xffff)));
 			case return_register_finalizer:
 				rewritten = true;
 				return Collections.singletonList(RETURN_INSN);

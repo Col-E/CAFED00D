@@ -251,7 +251,7 @@ public class InstructionWriter {
 				case ANEWARRAY:
 				case CHECKCAST:
 				case INSTANCEOF:
-					buffer.putShort(((IntOperandInstruction) instruction).getOperand() & 0xff);
+					buffer.putShort(((IntOperandInstruction) instruction).getOperand() & 0xffff);
 					break;
 				case IINC: {
 					BiIntOperandInstruction iinc = (BiIntOperandInstruction) instruction;
@@ -285,7 +285,7 @@ public class InstructionWriter {
 					}
 					break;
 				case INVOKEDYNAMIC:
-					buffer.putShort(((IntOperandInstruction) instruction).getOperand() & 0xff);
+					buffer.putShort(((IntOperandInstruction) instruction).getOperand() & 0xffff);
 					buffer.putShort(0);
 					break;
 				case WIDE:
@@ -302,11 +302,11 @@ public class InstructionWriter {
 						case FSTORE:
 						case DSTORE:
 						case RET:
-							buffer.putShort(((IntOperandInstruction) backing).getOperand() & 0xff);
+							buffer.putShort(((IntOperandInstruction) backing).getOperand() & 0xffff);
 							break;
 						case IINC:
 							BiIntOperandInstruction iinc = (BiIntOperandInstruction) backing;
-							buffer.putShort(iinc.getFirstOperand() & 0xff);
+							buffer.putShort(iinc.getFirstOperand() & 0xffff);
 							buffer.putShort(iinc.getSecondOperand());
 							break;
 						default:
@@ -315,7 +315,7 @@ public class InstructionWriter {
 					break;
 				case MULTIANEWARRAY:
 					BiIntOperandInstruction multiNewArray = (BiIntOperandInstruction) instruction;
-					buffer.putShort(multiNewArray.getFirstOperand() & 0xff);
+					buffer.putShort(multiNewArray.getFirstOperand() & 0xffff);
 					buffer.put(multiNewArray.getSecondOperand() & 0xff);
 					break;
 				case GOTO_W:

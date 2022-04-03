@@ -119,7 +119,7 @@ public class IllegalStrippingTransformer extends Transformer {
 			}
 		}
 		// Patch illegal instructions.
-		IllegalStrippingInstructionsReader fallbackReader = new IllegalStrippingInstructionsReader(clazz.getPool());
+		IllegalStrippingInstructionsReader fallbackReader = new IllegalStrippingInstructionsReader(pool);
 		InstructionReader reader = new InstructionReader(fallbackReader);
 		InstructionWriter writer = new InstructionWriter();
 		for (Method method : clazz.getMethods()) {

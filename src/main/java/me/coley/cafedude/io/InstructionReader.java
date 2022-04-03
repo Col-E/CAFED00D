@@ -78,7 +78,7 @@ public class InstructionReader {
 					break;
 				case LDC_W:
 				case LDC2_W:
-					instructions.add(new IntOperandInstruction(opcode, buffer.getShort() & 0xff));
+					instructions.add(new IntOperandInstruction(opcode, buffer.getShort() & 0xffff));
 					break;
 				case ILOAD:
 				case LLOAD:
@@ -303,16 +303,16 @@ public class InstructionReader {
 				case PUTSTATIC:
 				case GETFIELD:
 				case PUTFIELD:
-					instructions.add(new IntOperandInstruction(opcode, buffer.getShort() & 0xff));
+					instructions.add(new IntOperandInstruction(opcode, buffer.getShort() & 0xffff));
 					break;
 				case INVOKEVIRTUAL:
 				case INVOKESPECIAL:
 				case INVOKESTATIC:
 				case INVOKEINTERFACE:
-					instructions.add(new IntOperandInstruction(opcode, buffer.getShort() & 0xff));
+					instructions.add(new IntOperandInstruction(opcode, buffer.getShort() & 0xffff));
 					break;
 				case INVOKEDYNAMIC: {
-					int index = buffer.getShort() & 0xff;
+					int index = buffer.getShort() & 0xffff;
 					if ((buffer.get() | buffer.get()) != 0) {
 						// TODO: should we silently ignore, or throw?
 						throw new IllegalStateException("InvokeDynamic padding bytes are non-zero");
@@ -321,7 +321,7 @@ public class InstructionReader {
 					break;
 				}
 				case NEW:
-					instructions.add(new IntOperandInstruction(NEW, buffer.getShort() & 0xff));
+					instructions.add(new IntOperandInstruction(NEW, buffer.getShort() & 0xffff));
 					break;
 				case NEWARRAY:
 					instructions.add(new IntOperandInstruction(NEWARRAY, buffer.get() & 0xff));
@@ -337,7 +337,7 @@ public class InstructionReader {
 					break;
 				case CHECKCAST:
 				case INSTANCEOF:
-					instructions.add(new IntOperandInstruction(opcode, buffer.getShort() & 0xff));
+					instructions.add(new IntOperandInstruction(opcode, buffer.getShort() & 0xffff));
 					break;
 				case MONITORENTER:
 				case MONITOREXIT:
@@ -356,11 +356,11 @@ public class InstructionReader {
 						case DSTORE:
 						case RET:
 							instructions.add(new WideInstruction(new IntOperandInstruction(type,
-									buffer.getShort() & 0xff)));
+									buffer.getShort() & 0xffff)));
 							break;
 						case IINC:
 							instructions.add(new WideInstruction(new BiIntOperandInstruction(IINC,
-									buffer.getShort() & 0xff, buffer.getShort())));
+									buffer.getShort() & 0xffff, buffer.getShort())));
 							break;
 						default:
 							throw new IllegalStateException("Illegal wide instruction type: " + type);
@@ -368,7 +368,7 @@ public class InstructionReader {
 					break;
 				case MULTIANEWARRAY:
 					instructions.add(new BiIntOperandInstruction(MULTIANEWARRAY,
-							buffer.getShort() & 0xff, buffer.get() & 0xff));
+							buffer.getShort() & 0xffff, buffer.get() & 0xff));
 					break;
 				case IFNULL:
 				case IFNONNULL:
