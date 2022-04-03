@@ -355,7 +355,8 @@ public class InstructionReader {
 						case FSTORE:
 						case DSTORE:
 						case RET:
-							instructions.add(new WideInstruction(new IntOperandInstruction(type, buffer.getShort() & 0xff)));
+							instructions.add(new WideInstruction(new IntOperandInstruction(type,
+									buffer.getShort() & 0xff)));
 							break;
 						case IINC:
 							instructions.add(new WideInstruction(new BiIntOperandInstruction(IINC,
