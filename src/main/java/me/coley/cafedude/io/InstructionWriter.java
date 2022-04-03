@@ -48,7 +48,7 @@ public class InstructionWriter {
 		FallbackInstructionWriter fallbackWriter = this.fallbackWriter;
 		for (Instruction instruction : list) {
 			int opcode = instruction.getOpcode();
-			buffer.put(opcode);
+			buffer.put(opcode & 0Xff);
 			switch (opcode) {
 				case NOP:
 				case ACONST_NULL:
@@ -261,7 +261,7 @@ public class InstructionWriter {
 				}
 				case TABLESWITCH: {
 					int pos = buffer.position();
-					buffer.skip(pos + (4 - pos & 3));
+					buffer.skip(4 - pos & 3);
 					TableSwitchInstruction tsw = (TableSwitchInstruction) instruction;
 					buffer.putInt(tsw.getDefault());
 					buffer.putInt(tsw.getLow());
@@ -274,12 +274,14 @@ public class InstructionWriter {
 				}
 				case LOOKUPSWITCH:
 					int pos = buffer.position();
-					buffer.skip(pos + (4 - pos & 3));
+					buffer.skip(4 - pos & 3);
 					LookupSwitchInstruction lsw = (LookupSwitchInstruction) instruction;
 					buffer.putInt(lsw.getDefault());
 					List<Integer> keys = lsw.getKeys();
 					List<Integer> offsets = lsw.getOffsets();
-					for (int i = 0, j = keys.size(); i < j; i++) {
+					int count = keys.size();
+					buffer.putInt(count);
+					for (int i = 0; i < count; i++) {
 						buffer.putInt(keys.get(i));
 						buffer.putInt(offsets.get(i));
 					}

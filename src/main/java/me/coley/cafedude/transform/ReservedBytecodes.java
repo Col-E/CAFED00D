@@ -38,4 +38,6 @@ public interface ReservedBytecodes {
 	int fast_aldc = 230;
 	int fast_aldc_w = 231;
 	int return_register_finalizer = 232;
+	int invokehandle = 233;
+	int shouldnotreachhere = 234;
 }

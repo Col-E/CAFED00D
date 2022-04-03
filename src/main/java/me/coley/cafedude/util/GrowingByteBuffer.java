@@ -26,6 +26,7 @@ public class GrowingByteBuffer {
 		int newLength = buffer.position() + size;
 		if (capacity < newLength) {
 			ByteBuffer copy = ByteBuffer.allocate((newLength + 16) >> 1 << 1);
+			buffer.flip();
 			copy.put(buffer);
 			this.buffer = copy;
 		}

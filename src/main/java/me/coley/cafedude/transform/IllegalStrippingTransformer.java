@@ -87,6 +87,25 @@ public class IllegalStrippingTransformer extends Transformer {
 	@Override
 	public void transform() {
 		logger.info("Transforming '{}'", clazz.getName());
+		// Patch illegal instructions.
+		// This must be done first because we are rewriting constant pool
+		// below.
+		IllegalRewritingInstructionsReader fallbackReader = new IllegalRewritingInstructionsReader(pool);
+		InstructionReader reader = new InstructionReader(fallbackReader);
+		InstructionWriter writer = new InstructionWriter();
+		for (Method method : clazz.getMethods()) {
+			Optional<Attribute> attribute = method.getAttributes().stream()
+					.filter(x -> x instanceof CodeAttribute)
+					.findFirst();
+			if (attribute.isPresent()) {
+				CodeAttribute code = (CodeAttribute) attribute.get();
+				fallbackReader.rewritten = false;
+				List<Instruction> instructions = reader.read(code);
+				if (fallbackReader.rewritten) {
+					code.setCode(writer.writeCode(instructions));
+				}
+			}
+		}
 		// Record existing CP refs
 		Set<Integer> cpAccesses = clazz.cpAccesses();
 		// Strip attributes that are not valid
@@ -116,23 +135,6 @@ public class IllegalStrippingTransformer extends Transformer {
 					//  - for now we only remove specific X_DYNAMIC types since we can be sure removing them is safe
 					//    in the context of references to it being removed due to an invalid BootstrapMethodsAttribute
 					break;
-			}
-		}
-		// Patch illegal instructions.
-		IllegalStrippingInstructionsReader fallbackReader = new IllegalStrippingInstructionsReader(pool);
-		InstructionReader reader = new InstructionReader(fallbackReader);
-		InstructionWriter writer = new InstructionWriter();
-		for (Method method : clazz.getMethods()) {
-			Optional<Attribute> attribute = method.getAttributes().stream()
-					.filter(x -> x instanceof CodeAttribute)
-					.findFirst();
-			if (attribute.isPresent()) {
-				CodeAttribute code = (CodeAttribute) attribute.get();
-				fallbackReader.rewritten = false;
-				List<Instruction> instructions = reader.read(code);
-				if (fallbackReader.rewritten) {
-					code.setCode(writer.writeCode(instructions));
-				}
 			}
 		}
 	}

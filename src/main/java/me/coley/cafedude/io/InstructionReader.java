@@ -327,7 +327,7 @@ public class InstructionReader {
 					instructions.add(new IntOperandInstruction(NEWARRAY, buffer.get() & 0xff));
 					break;
 				case ANEWARRAY:
-					instructions.add(new IntOperandInstruction(ANEWARRAY, buffer.getShort() & 0xff));
+					instructions.add(new IntOperandInstruction(ANEWARRAY, buffer.getShort() & 0xffff));
 					break;
 				case ARRAYLENGTH:
 					instructions.add(new BasicInstruction(ARRAYLENGTH));

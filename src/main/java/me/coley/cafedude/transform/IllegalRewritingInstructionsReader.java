@@ -10,15 +10,15 @@ import me.coley.cafedude.io.FallbackInstructionReader;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import static me.coley.cafedude.transform.ReservedBytecodes.*;
 import static me.coley.cafedude.instruction.Opcodes.*;
+import static me.coley.cafedude.transform.ReservedBytecodes.*;
 
 /**
- * Illegal instructions stripper.
+ * Illegal instruction rewriter.
  * 
  * @author xDark
  */
-final class IllegalStrippingInstructionsReader implements FallbackInstructionReader {
+final class IllegalRewritingInstructionsReader implements FallbackInstructionReader {
 
 	private static final Instruction NOP_INSN = new BasicInstruction(NOP);
 	private static final Instruction ALOAD_0_INSN = new BasicInstruction(ALOAD_0);
@@ -28,7 +28,7 @@ final class IllegalStrippingInstructionsReader implements FallbackInstructionRea
 	private Map<Integer, Integer> cpMap;
 	boolean rewritten;
 
-	IllegalStrippingInstructionsReader(ConstPool cp) {
+	IllegalRewritingInstructionsReader(ConstPool cp) {
 		this.cp = cp;
 	}
 
@@ -37,6 +37,7 @@ final class IllegalStrippingInstructionsReader implements FallbackInstructionRea
 		switch (opcode) {
 			case breakpoint:
 				rewritten = true;
+				buffer.get(); // Breakpoint occupies two bytes.
 				return Arrays.asList(NOP_INSN, NOP_INSN); // Emit two nops
 			case fast_aload_0:
 				rewritten = true;
@@ -47,11 +48,21 @@ final class IllegalStrippingInstructionsReader implements FallbackInstructionRea
 						rewriteIndex(buffer.get() & 0xff)));
 			case fast_aldc_w:
 				rewritten = true;
-				return Collections.singletonList(new IntOperandInstruction(LDC_W, 
-						rewriteIndex(buffer.getShort() & 0xffff)));
+				short idx = buffer.getShort();
+				int newIndex = rewriteIndex(idx & 0xffff);
+				if (newIndex == -1) {
+					newIndex = rewriteIndex(swap(idx) & 0xffff);
+				}
+				if (newIndex == -1) {
+					throw new IllegalStateException("Failed to rewrite fast_aldc_w: " + idx);
+				}
+				return Collections.singletonList(new IntOperandInstruction(LDC_W, newIndex));
 			case return_register_finalizer:
 				rewritten = true;
 				return Collections.singletonList(RETURN_INSN);
+			case shouldnotreachhere:
+				rewritten = true;
+				return Collections.singletonList(NOP_INSN);
 			default:
 				throw new IllegalStateException("Don't know how to rewrite " + opcode);
 		}
@@ -64,7 +75,8 @@ final class IllegalStrippingInstructionsReader implements FallbackInstructionRea
 			int index = 0;
 			int cpIndex = 1;
 			for (ConstPoolEntry item : cp) {
-				if (item instanceof CpString || item instanceof CpMethodHandle || item instanceof CpMethodType) {
+				if (item instanceof CpString || item instanceof CpMethodHandle 
+						|| item instanceof CpMethodType || item instanceof CpDynamic) {
 					cpMap.put(index++, cpIndex);
 				}
 				cpIndex++;
@@ -74,6 +86,11 @@ final class IllegalStrippingInstructionsReader implements FallbackInstructionRea
 			}
 			this.cpMap = cpMap;
 		}
-		return cpMap.get(idx);
+		Integer v = cpMap.get(idx);
+		return v == null ? -1 : v;
+	}
+	
+	private static short swap(short x) {
+		return (short) (((x >> 8) & 0xff) | (x << 8));
 	}
 }
