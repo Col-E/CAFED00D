@@ -150,7 +150,7 @@ public class GrowingByteBuffer {
 	 * @param bytes
 	 * 		Amount of bytes to skip.
 	 *
-	 * @return This bufer.
+	 * @return This buffer.
 	 */
 	public GrowingByteBuffer skip(int bytes) {
 		ByteBuffer buffer = ensureWriteable(bytes).buffer;
