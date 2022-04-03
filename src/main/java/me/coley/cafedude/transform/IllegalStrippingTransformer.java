@@ -94,6 +94,9 @@ public class IllegalStrippingTransformer extends Transformer {
 		InstructionReader reader = new InstructionReader(fallbackReader);
 		InstructionWriter writer = new InstructionWriter();
 		for (Method method : clazz.getMethods()) {
+			if ((method.getAccess() & Constants.ACC_ABSTRACT) > 0) {
+				continue;
+			}
 			Optional<Attribute> attribute = method.getAttributes().stream()
 					.filter(x -> x instanceof CodeAttribute)
 					.findFirst();

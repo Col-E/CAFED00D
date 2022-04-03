@@ -53,6 +53,8 @@ public class CrasherPatchingTest {
 			fail("Failed to read class, IO error", e);
 		} catch (InvalidClassException e) {
 			fail("Failed to read obfuscated class, invalid class", e);
+		} catch (Exception ex) {
+			fail("Unexpected error while testing class " + sub.getName(), ex);
 		}
 	}
 
