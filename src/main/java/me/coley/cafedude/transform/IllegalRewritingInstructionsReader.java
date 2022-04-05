@@ -2,15 +2,15 @@ package me.coley.cafedude.transform;
 
 import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.classfile.constant.*;
-import me.coley.cafedude.instruction.BasicInstruction;
-import me.coley.cafedude.instruction.Instruction;
-import me.coley.cafedude.instruction.IntOperandInstruction;
+import me.coley.cafedude.classfile.instruction.BasicInstruction;
+import me.coley.cafedude.classfile.instruction.Instruction;
+import me.coley.cafedude.classfile.instruction.IntOperandInstruction;
 import me.coley.cafedude.io.FallbackInstructionReader;
 
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import static me.coley.cafedude.instruction.Opcodes.*;
+import static me.coley.cafedude.classfile.instruction.Opcodes.*;
 import static me.coley.cafedude.transform.ReservedBytecodes.*;
 
 /**

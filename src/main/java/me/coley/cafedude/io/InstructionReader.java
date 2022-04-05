@@ -1,13 +1,13 @@
 package me.coley.cafedude.io;
 
 import me.coley.cafedude.classfile.attribute.CodeAttribute;
-import me.coley.cafedude.instruction.*;
+import me.coley.cafedude.classfile.instruction.*;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import static me.coley.cafedude.instruction.Opcodes.*;
+import static me.coley.cafedude.classfile.instruction.Opcodes.*;
 
 /**
  * Reads code attribute into meaningful

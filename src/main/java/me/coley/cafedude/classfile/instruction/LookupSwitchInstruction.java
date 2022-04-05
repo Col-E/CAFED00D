@@ -1,34 +1,30 @@
-package me.coley.cafedude.instruction;
+package me.coley.cafedude.classfile.instruction;
 
 import java.util.List;
 
 /**
- * Table Switch instruction.
+ * Lookup Switch instruction.
  *
  * @author xDark
  */
-public class TableSwitchInstruction extends BasicInstruction {
+public class LookupSwitchInstruction extends BasicInstruction {
 
 	private int dflt;
-	private int low;
-	private int high;
+	private List<Integer> keys;
 	private List<Integer> offsets;
 
 	/**
 	 * @param dflt
 	 * 		Default branch offset.
-	 * @param low
-	 * 		Minimmum value.
-	 * @param high
-	 * 		Maximum value.
+	 * @param keys
+	 * 		Lookup keys in a sorted order.
 	 * @param offsets
 	 * 		Branch offsets.
 	 */
-	public TableSwitchInstruction(int dflt, int low, int high, List<Integer> offsets) {
-		super(Opcodes.TABLESWITCH);
+	public LookupSwitchInstruction(int dflt, List<Integer> keys, List<Integer>offsets) {
+		super(Opcodes.LOOKUPSWITCH);
 		this.dflt = dflt;
-		this.low = low;
-		this.high = high;
+		this.keys = keys;
 		this.offsets = offsets;
 	}
 
@@ -50,37 +46,20 @@ public class TableSwitchInstruction extends BasicInstruction {
 	}
 
 	/**
-	 * @return minimum value.
+	 * @return lookup keys.
 	 */
-	public int getLow() {
-		return low;
+	public List<Integer> getKeys() {
+		return keys;
 	}
 
 	/**
-	 * Sets minimum value.
+	 * Sets lookup keys.
 	 *
-	 * @param low
-	 * 		New value.
+	 * @param keys
+	 * 		New keys.
 	 */
-	public void setLow(int low) {
-		this.low = low;
-	}
-
-	/**
-	 * @return maximum value.
-	 */
-	public int getHigh() {
-		return high;
-	}
-
-	/**
-	 * Sets maximum value.
-	 *
-	 * @param high
-	 * 		New value.
-	 */
-	public void setHigh(int high) {
-		this.high = high;
+	public void setKeys(List<Integer> keys) {
+		this.keys = keys;
 	}
 
 	/**
@@ -103,14 +82,13 @@ public class TableSwitchInstruction extends BasicInstruction {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof TableSwitchInstruction)) return false;
+		if (!(o instanceof LookupSwitchInstruction)) return false;
 		if (!super.equals(o)) return false;
 
-		TableSwitchInstruction that = (TableSwitchInstruction) o;
+		LookupSwitchInstruction that = (LookupSwitchInstruction) o;
 
 		if (dflt != that.dflt) return false;
-		if (low != that.low) return false;
-		if (high != that.high) return false;
+		if (!keys.equals(that.keys)) return false;
 		return offsets.equals(that.offsets);
 	}
 
@@ -118,8 +96,7 @@ public class TableSwitchInstruction extends BasicInstruction {
 	public int hashCode() {
 		int result = super.hashCode();
 		result = 31 * result + dflt;
-		result = 31 * result + low;
-		result = 31 * result + high;
+		result = 31 * result + keys.hashCode();
 		result = 31 * result + offsets.hashCode();
 		return result;
 	}

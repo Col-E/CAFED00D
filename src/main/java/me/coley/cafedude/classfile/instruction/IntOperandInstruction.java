@@ -1,4 +1,4 @@
-package me.coley.cafedude.instruction;
+package me.coley.cafedude.classfile.instruction;
 
 /**
  * Instruction with a single int operand.

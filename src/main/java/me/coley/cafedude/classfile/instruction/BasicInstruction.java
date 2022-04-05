@@ -1,4 +1,4 @@
-package me.coley.cafedude.instruction;
+package me.coley.cafedude.classfile.instruction;
 
 /**
  * Instruction that does not have any operands.

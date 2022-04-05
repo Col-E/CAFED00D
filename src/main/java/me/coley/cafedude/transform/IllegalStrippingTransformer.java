@@ -53,7 +53,7 @@ import me.coley.cafedude.classfile.constant.ConstPoolEntry;
 import me.coley.cafedude.classfile.constant.CpClass;
 import me.coley.cafedude.classfile.constant.CpInt;
 import me.coley.cafedude.classfile.constant.CpUtf8;
-import me.coley.cafedude.instruction.Instruction;
+import me.coley.cafedude.classfile.instruction.Instruction;
 import me.coley.cafedude.io.AttributeContext;
 import me.coley.cafedude.io.InstructionReader;
 import me.coley.cafedude.io.InstructionWriter;

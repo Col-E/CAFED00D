@@ -1,6 +1,6 @@
 package me.coley.cafedude.io;
 
-import me.coley.cafedude.instruction.Instruction;
+import me.coley.cafedude.classfile.instruction.Instruction;
 
 import java.nio.ByteBuffer;
 import java.util.List;
