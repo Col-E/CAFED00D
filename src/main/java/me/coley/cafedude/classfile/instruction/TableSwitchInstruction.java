@@ -8,7 +8,6 @@ import java.util.List;
  * @author xDark
  */
 public class TableSwitchInstruction extends BasicInstruction {
-
 	private int dflt;
 	private int low;
 	private int high;

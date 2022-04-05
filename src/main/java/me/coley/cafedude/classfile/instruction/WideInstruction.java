@@ -2,9 +2,10 @@ package me.coley.cafedude.classfile.instruction;
 
 /**
  * Wide instruction
+ *
+ * @author xDark
  */
 public class WideInstruction extends BasicInstruction {
-
 	private final Instruction backing;
 
 	/**

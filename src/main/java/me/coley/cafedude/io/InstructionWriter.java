@@ -1,6 +1,11 @@
 package me.coley.cafedude.io;
 
-import me.coley.cafedude.classfile.instruction.*;
+import me.coley.cafedude.classfile.instruction.BiIntOperandInstruction;
+import me.coley.cafedude.classfile.instruction.Instruction;
+import me.coley.cafedude.classfile.instruction.IntOperandInstruction;
+import me.coley.cafedude.classfile.instruction.LookupSwitchInstruction;
+import me.coley.cafedude.classfile.instruction.TableSwitchInstruction;
+import me.coley.cafedude.classfile.instruction.WideInstruction;
 import me.coley.cafedude.util.GrowingByteBuffer;
 
 import java.nio.ByteBuffer;
@@ -16,7 +21,6 @@ import static me.coley.cafedude.classfile.instruction.Opcodes.*;
  * @author xDark
  */
 public class InstructionWriter {
-
 	private final FallbackInstructionWriter fallbackWriter;
 
 	/**
@@ -48,7 +52,7 @@ public class InstructionWriter {
 		FallbackInstructionWriter fallbackWriter = this.fallbackWriter;
 		for (Instruction instruction : list) {
 			int opcode = instruction.getOpcode();
-			buffer.put(opcode & 0Xff);
+			buffer.put(opcode & 0xFF);
 			switch (opcode) {
 				case NOP:
 				case ACONST_NULL:
@@ -235,7 +239,7 @@ public class InstructionWriter {
 				case ASTORE:
 				case RET:
 				case NEWARRAY:
-					buffer.put(((IntOperandInstruction) instruction).getOperand() & 0xff);
+					buffer.put(((IntOperandInstruction) instruction).getOperand() & 0xFF);
 					break;
 				case LDC_W:
 				case LDC2_W:
@@ -251,11 +255,11 @@ public class InstructionWriter {
 				case ANEWARRAY:
 				case CHECKCAST:
 				case INSTANCEOF:
-					buffer.putShort(((IntOperandInstruction) instruction).getOperand() & 0xffff);
+					buffer.putShort(((IntOperandInstruction) instruction).getOperand() & 0xFFFF);
 					break;
 				case IINC: {
 					BiIntOperandInstruction iinc = (BiIntOperandInstruction) instruction;
-					buffer.put(iinc.getFirstOperand() & 0xff);
+					buffer.put(iinc.getFirstOperand() & 0xFF);
 					buffer.put(iinc.getSecondOperand());
 					break;
 				}
@@ -287,13 +291,13 @@ public class InstructionWriter {
 					}
 					break;
 				case INVOKEDYNAMIC:
-					buffer.putShort(((IntOperandInstruction) instruction).getOperand() & 0xffff);
+					buffer.putShort(((IntOperandInstruction) instruction).getOperand() & 0xFFFF);
 					buffer.putShort(0);
 					break;
 				case WIDE:
 					Instruction backing = ((WideInstruction) instruction).getBacking();
 					int type = backing.getOpcode();
-					buffer.put(type & 0xff);
+					buffer.put(type & 0xFF);
 					switch (type) {
 						case ILOAD:
 						case FLOAD:
@@ -304,11 +308,11 @@ public class InstructionWriter {
 						case FSTORE:
 						case DSTORE:
 						case RET:
-							buffer.putShort(((IntOperandInstruction) backing).getOperand() & 0xffff);
+							buffer.putShort(((IntOperandInstruction) backing).getOperand() & 0xFFFF);
 							break;
 						case IINC:
 							BiIntOperandInstruction iinc = (BiIntOperandInstruction) backing;
-							buffer.putShort(iinc.getFirstOperand() & 0xffff);
+							buffer.putShort(iinc.getFirstOperand() & 0xFFFF);
 							buffer.putShort(iinc.getSecondOperand());
 							break;
 						default:
@@ -317,8 +321,8 @@ public class InstructionWriter {
 					break;
 				case MULTIANEWARRAY:
 					BiIntOperandInstruction multiNewArray = (BiIntOperandInstruction) instruction;
-					buffer.putShort(multiNewArray.getFirstOperand() & 0xffff);
-					buffer.put(multiNewArray.getSecondOperand() & 0xff);
+					buffer.putShort(multiNewArray.getFirstOperand() & 0xFFFF);
+					buffer.put(multiNewArray.getSecondOperand() & 0xFF);
 					break;
 				case GOTO_W:
 				case JSR_W:

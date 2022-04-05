@@ -6,7 +6,6 @@ package me.coley.cafedude.classfile.instruction;
  * @author xDark
  */
 public abstract class Instruction {
-
 	private int opcode;
 
 	/**

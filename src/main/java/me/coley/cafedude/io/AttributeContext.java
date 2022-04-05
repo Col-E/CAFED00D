@@ -1,10 +1,10 @@
 package me.coley.cafedude.io;
 
-import me.coley.cafedude.Constants;
+import me.coley.cafedude.classfile.AnnotationConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static me.coley.cafedude.Constants.Annotations.*;
+import static me.coley.cafedude.classfile.AnnotationConstants.*;
 
 /**
  * Indicates where attribute is applied to.
@@ -35,7 +35,7 @@ public enum AttributeContext {
 			case METHOD_PARAMETER:
 			case METHOD_THROWS:
 				return AttributeContext.METHOD;
-			case Constants.Annotations.FIELD:
+			case AnnotationConstants.FIELD:
 				return AttributeContext.FIELD;
 			case LOCAL_VARIABLE_DECLARATION:
 			case RESOURCE_VARIABLE_DECLARATION:

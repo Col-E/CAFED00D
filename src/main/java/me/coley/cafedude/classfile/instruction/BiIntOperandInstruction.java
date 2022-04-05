@@ -6,7 +6,6 @@ package me.coley.cafedude.classfile.instruction;
  * @author xDark
  */
 public class BiIntOperandInstruction extends BasicInstruction {
-
 	private int firstOperand;
 	private int secondOperand;
 

@@ -5,7 +5,7 @@ package me.coley.cafedude.classfile.attribute;
  *
  * @author Matt Coley
  */
-public class DebugExtensionAttribute extends Attribute {
+public class SourceDebugExtensionAttribute extends Attribute {
 	private byte[] debugExtension;
 
 	/**
@@ -14,7 +14,7 @@ public class DebugExtensionAttribute extends Attribute {
 	 * @param debugExtension
 	 * 		Extension data stored in attribute.
 	 */
-	public DebugExtensionAttribute(int nameIndex, byte[] debugExtension) {
+	public SourceDebugExtensionAttribute(int nameIndex, byte[] debugExtension) {
 		super(nameIndex);
 		this.debugExtension = debugExtension;
 	}

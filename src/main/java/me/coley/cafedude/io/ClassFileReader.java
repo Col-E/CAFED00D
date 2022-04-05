@@ -1,7 +1,7 @@
 package me.coley.cafedude.io;
 
 import me.coley.cafedude.classfile.ClassFile;
-import me.coley.cafedude.Constants.ConstantPool;
+import me.coley.cafedude.classfile.ConstantPoolConstants;
 import me.coley.cafedude.classfile.Field;
 import me.coley.cafedude.InvalidClassException;
 import me.coley.cafedude.classfile.Method;
@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static me.coley.cafedude.Constants.ConstantPool.*;
+import static me.coley.cafedude.classfile.ConstantPoolConstants.*;
 
 /**
  * Class file format parser.
@@ -153,7 +153,7 @@ public class ClassFileReader {
 				return new CpMethodType(is.readUnsignedShort());
 			case INVOKE_DYNAMIC:
 				return new CpInvokeDynamic(is.readUnsignedShort(), is.readUnsignedShort());
-			case ConstantPool.MODULE:
+			case ConstantPoolConstants.MODULE:
 				return new CpModule(is.readUnsignedShort());
 			case PACKAGE:
 				return new CpPackage(is.readUnsignedShort());

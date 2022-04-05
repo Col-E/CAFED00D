@@ -11,7 +11,6 @@ import java.util.List;
  * @author xDark
  */
 public interface FallbackInstructionReader {
-
 	/**
 	 * @param opcode
 	 * 		Instruction opcode.

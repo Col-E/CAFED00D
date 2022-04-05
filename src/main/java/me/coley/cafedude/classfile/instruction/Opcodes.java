@@ -1,12 +1,12 @@
 package me.coley.cafedude.classfile.instruction;
 
 /**
- * Class containing all JVM opcodes.
+ * Set of all JVM opcodes.
  *
  * @author xDark
+ * @see ReservedOpcodes Additional reserved set of opcodes.
  */
 public interface Opcodes {
-
 	int NOP = 0;
 	int ACONST_NULL = 1;
 	int ICONST_M1 = 2;

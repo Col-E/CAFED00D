@@ -8,7 +8,6 @@ import java.util.List;
  * @author xDark
  */
 public class LookupSwitchInstruction extends BasicInstruction {
-
 	private int dflt;
 	private List<Integer> keys;
 	private List<Integer> offsets;
@@ -21,7 +20,7 @@ public class LookupSwitchInstruction extends BasicInstruction {
 	 * @param offsets
 	 * 		Branch offsets.
 	 */
-	public LookupSwitchInstruction(int dflt, List<Integer> keys, List<Integer>offsets) {
+	public LookupSwitchInstruction(int dflt, List<Integer> keys, List<Integer> offsets) {
 		super(Opcodes.LOOKUPSWITCH);
 		this.dflt = dflt;
 		this.keys = keys;

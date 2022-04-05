@@ -1,7 +1,7 @@
 package me.coley.cafedude.io;
 
+import me.coley.cafedude.classfile.ConstantPoolConstants;
 import me.coley.cafedude.classfile.ClassFile;
-import me.coley.cafedude.Constants;
 import me.coley.cafedude.classfile.Field;
 import me.coley.cafedude.InvalidClassException;
 import me.coley.cafedude.classfile.Method;
@@ -101,56 +101,56 @@ public class ClassFileWriter {
 		int tag = entry.getTag();
 		out.writeByte(tag);
 		switch (tag) {
-			case Constants.ConstantPool.UTF8:
+			case ConstantPoolConstants.UTF8:
 				out.writeUTF(((CpUtf8) entry).getText());
 				break;
-			case Constants.ConstantPool.INTEGER:
+			case ConstantPoolConstants.INTEGER:
 				out.writeInt(((CpInt) entry).getValue());
 				break;
-			case Constants.ConstantPool.FLOAT:
+			case ConstantPoolConstants.FLOAT:
 				out.writeFloat(((CpFloat) entry).getValue());
 				break;
-			case Constants.ConstantPool.LONG:
+			case ConstantPoolConstants.LONG:
 				out.writeLong(((CpLong) entry).getValue());
 				break;
-			case Constants.ConstantPool.DOUBLE:
+			case ConstantPoolConstants.DOUBLE:
 				out.writeDouble(((CpDouble) entry).getValue());
 				break;
-			case Constants.ConstantPool.STRING:
+			case ConstantPoolConstants.STRING:
 				out.writeShort(((CpString) entry).getIndex());
 				break;
-			case Constants.ConstantPool.CLASS:
+			case ConstantPoolConstants.CLASS:
 				out.writeShort(((CpClass) entry).getIndex());
 				break;
-			case Constants.ConstantPool.FIELD_REF:
-			case Constants.ConstantPool.METHOD_REF:
-			case Constants.ConstantPool.INTERFACE_METHOD_REF:
+			case ConstantPoolConstants.FIELD_REF:
+			case ConstantPoolConstants.METHOD_REF:
+			case ConstantPoolConstants.INTERFACE_METHOD_REF:
 				out.writeShort(((ConstRef) entry).getClassIndex());
 				out.writeShort(((ConstRef) entry).getNameTypeIndex());
 				break;
-			case Constants.ConstantPool.NAME_TYPE:
+			case ConstantPoolConstants.NAME_TYPE:
 				out.writeShort(((CpNameType) entry).getNameIndex());
 				out.writeShort(((CpNameType) entry).getTypeIndex());
 				break;
-			case Constants.ConstantPool.DYNAMIC:
+			case ConstantPoolConstants.DYNAMIC:
 				out.writeShort(((CpDynamic) entry).getBsmIndex());
 				out.writeShort(((CpDynamic) entry).getNameTypeIndex());
 				break;
-			case Constants.ConstantPool.METHOD_HANDLE:
+			case ConstantPoolConstants.METHOD_HANDLE:
 				out.writeByte(((CpMethodHandle) entry).getKind());
 				out.writeShort(((CpMethodHandle) entry).getReferenceIndex());
 				break;
-			case Constants.ConstantPool.METHOD_TYPE:
+			case ConstantPoolConstants.METHOD_TYPE:
 				out.writeShort(((CpMethodType) entry).getIndex());
 				break;
-			case Constants.ConstantPool.INVOKE_DYNAMIC:
+			case ConstantPoolConstants.INVOKE_DYNAMIC:
 				out.writeShort(((CpInvokeDynamic) entry).getBsmIndex());
 				out.writeShort(((CpInvokeDynamic) entry).getNameTypeIndex());
 				break;
-			case Constants.ConstantPool.MODULE:
+			case ConstantPoolConstants.MODULE:
 				out.writeShort(((CpModule) entry).getIndex());
 				break;
-			case Constants.ConstantPool.PACKAGE:
+			case ConstantPoolConstants.PACKAGE:
 				out.writeShort(((CpPackage) entry).getIndex());
 				break;
 			default:

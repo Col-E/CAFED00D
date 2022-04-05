@@ -9,7 +9,6 @@ import me.coley.cafedude.util.GrowingByteBuffer;
  * @author xDark
  */
 public interface FallbackInstructionWriter {
-
 	/**
 	 * @param instruction
 	 * 		Instruction to write.

@@ -1,12 +1,12 @@
 package me.coley.cafedude.transform;
 
-import me.coley.cafedude.Constants;
-import me.coley.cafedude.Constants.Attributes;
-import me.coley.cafedude.Constants.ConstantPool;
+import me.coley.cafedude.classfile.AttributeConstants;
 import me.coley.cafedude.classfile.ClassFile;
+import me.coley.cafedude.classfile.ConstantPoolConstants;
 import me.coley.cafedude.classfile.Descriptor;
 import me.coley.cafedude.classfile.Field;
 import me.coley.cafedude.classfile.Method;
+import me.coley.cafedude.classfile.Modifiers;
 import me.coley.cafedude.classfile.annotation.Annotation;
 import me.coley.cafedude.classfile.annotation.ClassElementValue;
 import me.coley.cafedude.classfile.annotation.ElementValue;
@@ -60,17 +60,22 @@ import me.coley.cafedude.io.InstructionWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 
-import static me.coley.cafedude.Constants.Attributes.*;
+import static me.coley.cafedude.classfile.AttributeConstants.*;
 
 /**
  * A transformer to remove illegal attributes and data from a class.
  *
  * @author Matt Coley
  */
-public class IllegalStrippingTransformer extends Transformer {
+public class IllegalStrippingTransformer extends Transformer implements ConstantPoolConstants {
 	private static final int FORCE_FAIL = -1;
 	private static final Logger logger = LoggerFactory.getLogger(IllegalStrippingTransformer.class);
 
@@ -88,30 +93,32 @@ public class IllegalStrippingTransformer extends Transformer {
 	public void transform() {
 		logger.info("Transforming '{}'", clazz.getName());
 		// Patch illegal instructions.
-		// This must be done first because we are rewriting constant pool
-		// below.
+		// This must be done first because we are rewriting constant pool below.
 		IllegalRewritingInstructionsReader fallbackReader = new IllegalRewritingInstructionsReader(pool);
 		InstructionReader reader = new InstructionReader(fallbackReader);
 		InstructionWriter writer = new InstructionWriter();
 		for (Method method : clazz.getMethods()) {
-			if ((method.getAccess() & Constants.ACC_ABSTRACT) > 0) {
+			if (Modifiers.has(method.getAccess(), Modifiers.ACC_ABSTRACT))
 				continue;
-			}
-			Optional<Attribute> attribute = method.getAttributes().stream()
-					.filter(x -> x instanceof CodeAttribute)
+			Optional<Attribute> codeAttribute = method.getAttributes().stream()
+					.filter(attribute -> attribute instanceof CodeAttribute)
 					.findFirst();
-			if (attribute.isPresent()) {
-				CodeAttribute code = (CodeAttribute) attribute.get();
+			// Code found, check if we rewrite anything.
+			if (codeAttribute.isPresent()) {
+				// Reset flag
 				fallbackReader.rewritten = false;
+				// Read the code attribute and see if we found any illegal instructions.
+				CodeAttribute code = (CodeAttribute) codeAttribute.get();
 				List<Instruction> instructions = reader.read(code);
 				if (fallbackReader.rewritten) {
+					// Update code with rewritten instructions.
 					code.setCode(writer.writeCode(instructions));
 				}
 			}
 		}
-		// Record existing CP refs
+		// Record existing CP refs.
 		Set<Integer> cpAccesses = clazz.cpAccesses();
-		// Strip attributes that are not valid
+		// Strip attributes that are not valid.
 		clazz.getAttributes().removeIf(attribute -> !isValidWrapped(clazz, attribute));
 		for (Field field : clazz.getFields())
 			field.getAttributes().removeIf(attribute -> !isValidWrapped(field, attribute));
@@ -128,8 +135,8 @@ public class IllegalStrippingTransformer extends Transformer {
 				continue;
 			ConstPoolEntry cpe = pool.get(index);
 			switch (cpe.getTag()) {
-				case ConstantPool.DYNAMIC:
-				case ConstantPool.INVOKE_DYNAMIC:
+				case DYNAMIC:
+				case INVOKE_DYNAMIC:
 					logger.debug("Removing now unused CP entry: {}={}", index, cpe.getClass().getSimpleName());
 					pool.set(index, new CpInt(0));
 					break;
@@ -178,7 +185,7 @@ public class IllegalStrippingTransformer extends Transformer {
 		switch (name) {
 			case CONSTANT_VALUE:
 				int valueIndex = ((ConstantValueAttribute) attribute).getConstantValueIndex();
-				expectedTypeMasks.put(valueIndex, i -> (i >= ConstantPool.INTEGER && i <= ConstantPool.STRING));
+				expectedTypeMasks.put(valueIndex, i -> (i >= INTEGER && i <= STRING));
 				break;
 			case RUNTIME_INVISIBLE_ANNOTATIONS:
 			case RUNTIME_VISIBLE_ANNOTATIONS:
@@ -218,43 +225,43 @@ public class IllegalStrippingTransformer extends Transformer {
 				break;
 			case NEST_HOST:
 				NestHostAttribute nestHost = (NestHostAttribute) attribute;
-				expectedTypeMasks.put(nestHost.getHostClassIndex(), i -> i == ConstantPool.CLASS);
+				expectedTypeMasks.put(nestHost.getHostClassIndex(), i -> i == CLASS);
 				cpEntryValidators.put(nestHost.getHostClassIndex(), matchClassType());
 				break;
 			case NEST_MEMBERS:
 				NestMembersAttribute nestMembers = (NestMembersAttribute) attribute;
 				for (int memberIndex : nestMembers.getMemberClassIndices()) {
-					expectedTypeMasks.put(memberIndex, i -> i == ConstantPool.CLASS);
+					expectedTypeMasks.put(memberIndex, i -> i == CLASS);
 					cpEntryValidators.put(memberIndex, matchClassType());
 				}
 				break;
 			case ENCLOSING_METHOD:
 				EnclosingMethodAttribute enclosingMethod = (EnclosingMethodAttribute) attribute;
-				expectedTypeMasks.put(enclosingMethod.getClassIndex(), i -> i == ConstantPool.CLASS);
+				expectedTypeMasks.put(enclosingMethod.getClassIndex(), i -> i == CLASS);
 				cpEntryValidators.put(enclosingMethod.getClassIndex(), matchClassType());
 				// method_index must be zero if the current class was immediately enclosed in source code by an
 				//   instance initializer, static initializer, instance variable initializer,
 				//   or class variable initializer
 				// Otherwise it points to the method name_type value
-				expectedTypeMasks.put(enclosingMethod.getMethodIndex(), i -> i == 0 || i == ConstantPool.NAME_TYPE);
+				expectedTypeMasks.put(enclosingMethod.getMethodIndex(), i -> i == 0 || i == NAME_TYPE);
 				allow0Case = (enclosingMethod.getMethodIndex() == 0);
 				break;
 			case EXCEPTIONS:
 				ExceptionsAttribute exceptions = (ExceptionsAttribute) attribute;
 				for (int exceptionTypeIndex : exceptions.getExceptionIndexTable()) {
-					expectedTypeMasks.put(exceptionTypeIndex, i -> i == ConstantPool.CLASS);
+					expectedTypeMasks.put(exceptionTypeIndex, i -> i == CLASS);
 					cpEntryValidators.put(exceptionTypeIndex, matchClassType());
 				}
 				break;
 			case INNER_CLASSES:
 				InnerClassesAttribute innerClasses = (InnerClassesAttribute) attribute;
 				for (InnerClass innerClass : innerClasses.getInnerClasses()) {
-					expectedTypeMasks.put(innerClass.getInnerClassInfoIndex(), i -> i == 0 || i == ConstantPool.CLASS);
+					expectedTypeMasks.put(innerClass.getInnerClassInfoIndex(), i -> i == 0 || i == CLASS);
 					cpEntryValidators.put(innerClass.getInnerClassInfoIndex(), matchClassType());
 					// 0 if the defining class is the top-level class
-					expectedTypeMasks.put(innerClass.getOuterClassInfoIndex(), i -> i == 0 || i == ConstantPool.CLASS);
+					expectedTypeMasks.put(innerClass.getOuterClassInfoIndex(), i -> i == 0 || i == CLASS);
 					// 0 if anonymous, otherwise name index
-					expectedTypeMasks.put(innerClass.getInnerNameIndex(), i -> i == 0 || i == ConstantPool.UTF8);
+					expectedTypeMasks.put(innerClass.getInnerNameIndex(), i -> i == 0 || i == UTF8);
 					allow0Case |= innerClass.getInnerClassInfoIndex() == 0
 							|| innerClass.getOuterClassInfoIndex() == 0
 							|| innerClass.getInnerNameIndex() == 0;
@@ -266,7 +273,7 @@ public class IllegalStrippingTransformer extends Transformer {
 					return false;
 				// Method cannot be abstract
 				Method method = (Method) holder;
-				if ((method.getAccess() & Constants.ACC_ABSTRACT) > 0) {
+				if ((method.getAccess() & Modifiers.ACC_ABSTRACT) > 0) {
 					logger.debug("Illegal 'Code' attribute on abstract method {}", pool.getUtf(method.getNameIndex()));
 					return false;
 				}
@@ -275,7 +282,7 @@ public class IllegalStrippingTransformer extends Transformer {
 				code.getAttributes().removeIf(sub -> !isValid(code, sub));
 				// Ensure exception indices are valid
 				for (ExceptionTableEntry entry : code.getExceptionTable()) {
-					expectedTypeMasks.put(entry.getCatchTypeIndex(), i -> i == 0 || i == ConstantPool.CLASS);
+					expectedTypeMasks.put(entry.getCatchTypeIndex(), i -> i == 0 || i == CLASS);
 					if (entry.getCatchTypeIndex() == 0) {
 						allow0Case = true;
 					} else {
@@ -286,60 +293,60 @@ public class IllegalStrippingTransformer extends Transformer {
 			}
 			case SIGNATURE:
 				SignatureAttribute signatureAttribute = (SignatureAttribute) attribute;
-				expectedTypeMasks.put(signatureAttribute.getSignatureIndex(), i -> i == ConstantPool.UTF8);
+				expectedTypeMasks.put(signatureAttribute.getSignatureIndex(), i -> i == UTF8);
 				cpEntryValidators.put(signatureAttribute.getSignatureIndex(), matchNonEmptyUtf8());
 				break;
 			case SOURCE_FILE:
 				SourceFileAttribute sourceFileAttribute = (SourceFileAttribute) attribute;
-				expectedTypeMasks.put(sourceFileAttribute.getSourceFileNameIndex(), i -> i == ConstantPool.UTF8);
+				expectedTypeMasks.put(sourceFileAttribute.getSourceFileNameIndex(), i -> i == UTF8);
 				cpEntryValidators.put(sourceFileAttribute.getSourceFileNameIndex(), matchNonEmptyUtf8());
 				break;
-			case Attributes.MODULE:
+			case AttributeConstants.MODULE:
 				ModuleAttribute moduleAttribute = (ModuleAttribute) attribute;
-				expectedTypeMasks.put(moduleAttribute.getModuleIndex(), i -> i == ConstantPool.MODULE);
-				expectedTypeMasks.put(moduleAttribute.getVersionIndex(), i -> i == 0 || i == ConstantPool.UTF8);
+				expectedTypeMasks.put(moduleAttribute.getModuleIndex(), i -> i == MODULE);
+				expectedTypeMasks.put(moduleAttribute.getVersionIndex(), i -> i == 0 || i == UTF8);
 				if (moduleAttribute.getVersionIndex() == 0)
 					allow0Case = true;
 				for (Requires requires : moduleAttribute.getRequires()) {
-					expectedTypeMasks.put(requires.getIndex(), i -> i == ConstantPool.MODULE);
-					expectedTypeMasks.put(requires.getVersionIndex(), i -> i == 0 || i == ConstantPool.UTF8);
+					expectedTypeMasks.put(requires.getIndex(), i -> i == MODULE);
+					expectedTypeMasks.put(requires.getVersionIndex(), i -> i == 0 || i == UTF8);
 				}
 				for (Exports exports : moduleAttribute.getExports()) {
-					expectedTypeMasks.put(exports.getIndex(), i -> i == ConstantPool.PACKAGE);
+					expectedTypeMasks.put(exports.getIndex(), i -> i == PACKAGE);
 					for (int moduleIndex : exports.getToIndices())
-						expectedTypeMasks.put(moduleIndex, i -> i == ConstantPool.MODULE);
+						expectedTypeMasks.put(moduleIndex, i -> i == MODULE);
 				}
 				for (Opens opens : moduleAttribute.getOpens()) {
-					expectedTypeMasks.put(opens.getIndex(), i -> i == ConstantPool.PACKAGE);
+					expectedTypeMasks.put(opens.getIndex(), i -> i == PACKAGE);
 					for (int moduleIndex : opens.getToIndices())
-						expectedTypeMasks.put(moduleIndex, i -> i == ConstantPool.MODULE);
+						expectedTypeMasks.put(moduleIndex, i -> i == MODULE);
 				}
 				for (Provides provides : moduleAttribute.getProvides()) {
-					expectedTypeMasks.put(provides.getIndex(), i -> i == ConstantPool.CLASS);
+					expectedTypeMasks.put(provides.getIndex(), i -> i == CLASS);
 					for (int implIndex : provides.getWithIndices())
-						expectedTypeMasks.put(implIndex, i -> i == ConstantPool.CLASS);
+						expectedTypeMasks.put(implIndex, i -> i == CLASS);
 				}
 				for (int use : moduleAttribute.getUses()) {
-					expectedTypeMasks.put(use, i -> i == ConstantPool.CLASS);
+					expectedTypeMasks.put(use, i -> i == CLASS);
 				}
 				break;
 			case BOOTSTRAP_METHODS:
 				BootstrapMethodsAttribute bootstrapMethodsAttribute = (BootstrapMethodsAttribute) attribute;
 				for (BootstrapMethod bsm : bootstrapMethodsAttribute.getBootstrapMethods()) {
-					expectedTypeMasks.put(bsm.getBsmMethodref(), i -> i == ConstantPool.METHOD_HANDLE);
+					expectedTypeMasks.put(bsm.getBsmMethodref(), i -> i == METHOD_HANDLE);
 					// Arguments must be loadable types
 					for (int arg : bsm.getArgs()) {
 						expectedTypeMasks.put(arg, i ->
-								(i >= ConstantPool.INTEGER && i <= ConstantPool.STRING) ||
-										(i >= ConstantPool.METHOD_HANDLE && i <= ConstantPool.DYNAMIC));
+								(i >= INTEGER && i <= STRING) ||
+										(i >= METHOD_HANDLE && i <= DYNAMIC));
 					}
 				}
 				break;
 			case LOCAL_VARIABLE_TABLE:
 				LocalVariableTableAttribute varTable = (LocalVariableTableAttribute) attribute;
 				for (VarEntry entry : varTable.getEntries()) {
-					expectedTypeMasks.put(entry.getNameIndex(), i -> i == ConstantPool.UTF8);
-					expectedTypeMasks.put(entry.getDescIndex(), i -> i == ConstantPool.UTF8);
+					expectedTypeMasks.put(entry.getNameIndex(), i -> i == UTF8);
+					expectedTypeMasks.put(entry.getDescIndex(), i -> i == UTF8);
 					cpEntryValidators.put(entry.getNameIndex(), matchNonEmptyUtf8().and(matchWordUtf8()));
 					cpEntryValidators.put(entry.getDescIndex(), matchNonEmptyUtf8());
 				}
@@ -347,8 +354,8 @@ public class IllegalStrippingTransformer extends Transformer {
 			case LOCAL_VARIABLE_TYPE_TABLE:
 				LocalVariableTypeTableAttribute typeTable = (LocalVariableTypeTableAttribute) attribute;
 				for (VarTypeEntry entry : typeTable.getEntries()) {
-					expectedTypeMasks.put(entry.getNameIndex(), i -> i == ConstantPool.UTF8);
-					expectedTypeMasks.put(entry.getSignatureIndex(), i -> i == ConstantPool.UTF8);
+					expectedTypeMasks.put(entry.getNameIndex(), i -> i == UTF8);
+					expectedTypeMasks.put(entry.getSignatureIndex(), i -> i == UTF8);
 					cpEntryValidators.put(entry.getNameIndex(), matchNonEmptyUtf8().and(matchWordUtf8()));
 					cpEntryValidators.put(entry.getSignatureIndex(), matchNonEmptyUtf8());
 				}
@@ -356,16 +363,16 @@ public class IllegalStrippingTransformer extends Transformer {
 			case PERMITTED_SUBCLASSES:
 				PermittedClassesAttribute permittedClassesAttribute = (PermittedClassesAttribute) attribute;
 				for (int index : permittedClassesAttribute.getClasses()) {
-					expectedTypeMasks.put(index, i -> i == ConstantPool.CLASS);
+					expectedTypeMasks.put(index, i -> i == CLASS);
 					cpEntryValidators.put(index, matchClassType());
 				}
 				break;
 			case RECORD:
 				RecordAttribute recordAttribute = (RecordAttribute) attribute;
 				for (RecordComponent component : recordAttribute.getComponents()) {
-					expectedTypeMasks.put(component.getNameIndex(), i -> i == ConstantPool.UTF8);
+					expectedTypeMasks.put(component.getNameIndex(), i -> i == UTF8);
 					cpEntryValidators.put(component.getNameIndex(), matchWordUtf8());
-					expectedTypeMasks.put(component.getDescIndex(), i -> i == ConstantPool.UTF8);
+					expectedTypeMasks.put(component.getDescIndex(), i -> i == UTF8);
 					cpEntryValidators.put(component.getDescIndex(), matchNonEmptyUtf8());
 				}
 				break;
@@ -427,11 +434,11 @@ public class IllegalStrippingTransformer extends Transformer {
 										 Map<Integer, Predicate<Integer>> expectedTypeMasks,
 										 Map<Integer, Predicate<ConstPoolEntry>> cpEntryValidators,
 										 Annotation anno) {
-		expectedTypeMasks.put(anno.getTypeIndex(), i -> i == ConstantPool.UTF8);
+		expectedTypeMasks.put(anno.getTypeIndex(), i -> i == UTF8);
 		cpEntryValidators.put(anno.getTypeIndex(), matchUtf8ClassType());
 		for (Map.Entry<Integer, ElementValue> entry : anno.getValues().entrySet()) {
 			int elementTypeIndex = entry.getKey();
-			expectedTypeMasks.put(elementTypeIndex, i -> i == ConstantPool.UTF8);
+			expectedTypeMasks.put(elementTypeIndex, i -> i == UTF8);
 			cpEntryValidators.put(elementTypeIndex, matchUtf8ClassType());
 			addElementValueValidation(holder, expectedTypeMasks, cpEntryValidators, entry.getValue());
 		}
@@ -454,7 +461,7 @@ public class IllegalStrippingTransformer extends Transformer {
 					// TODO: Verify with a sample what the target holder type should be
 					break;
 				case OFFSET_TARGET:
-					// TODO: relies on instructions being parsed
+					// TODO: Compare to code instructions / length
 					break;
 				case SUPERTYPE_TARGET:
 					if (holder instanceof ClassFile) {
@@ -499,19 +506,19 @@ public class IllegalStrippingTransformer extends Transformer {
 										   ElementValue elementValue) {
 		if (elementValue instanceof ClassElementValue) {
 			int classIndex = ((ClassElementValue) elementValue).getClassIndex();
-			expectedTypeMasks.put(classIndex, i -> i == ConstantPool.UTF8);
+			expectedTypeMasks.put(classIndex, i -> i == UTF8);
 			cpEntryValidators.put(classIndex, matchUtf8ClassType());
 		} else if (elementValue instanceof EnumElementValue) {
 			EnumElementValue enumElementValue = (EnumElementValue) elementValue;
-			expectedTypeMasks.put(enumElementValue.getNameIndex(), i -> i == ConstantPool.UTF8);
-			expectedTypeMasks.put(enumElementValue.getTypeIndex(), i -> i == ConstantPool.UTF8);
+			expectedTypeMasks.put(enumElementValue.getNameIndex(), i -> i == UTF8);
+			expectedTypeMasks.put(enumElementValue.getTypeIndex(), i -> i == UTF8);
 			cpEntryValidators.put(enumElementValue.getTypeIndex(), matchUtf8ClassType());
 		} else if (elementValue instanceof Utf8ElementValue) {
 			int utfIndex = ((Utf8ElementValue) elementValue).getUtfIndex();
-			expectedTypeMasks.put(utfIndex, i -> i == ConstantPool.UTF8);
+			expectedTypeMasks.put(utfIndex, i -> i == UTF8);
 		} else if (elementValue instanceof PrimitiveElementValue) {
 			int primValueIndex = ((PrimitiveElementValue) elementValue).getValueIndex();
-			expectedTypeMasks.put(primValueIndex, i -> (i >= ConstantPool.INTEGER && i <= ConstantPool.DOUBLE));
+			expectedTypeMasks.put(primValueIndex, i -> (i >= INTEGER && i <= DOUBLE));
 		}
 	}
 

@@ -8,7 +8,6 @@ import java.nio.ByteBuffer;
  * @author xDark
  */
 public class GrowingByteBuffer {
-
 	private ByteBuffer buffer = ByteBuffer.allocate(1024);
 
 	/**

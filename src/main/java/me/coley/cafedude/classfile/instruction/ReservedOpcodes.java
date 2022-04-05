@@ -1,12 +1,18 @@
-package me.coley.cafedude.transform;
+package me.coley.cafedude.classfile.instruction;
+
+import me.coley.cafedude.classfile.instruction.Opcodes;
 
 /**
  * Set of JVM reserved opcodes.
+ * <ul>
+ *    <li><a href="https://github.com/openjdk/jdk/blob/9561b5e041c4cc70319e60953819c521c1e68d6c/src/jdk.hotspot.agent/share/classes/sun/jvm/hotspot/interpreter/Bytecodes.java#L248">Bytecodes.java</a></li>
+ *    <li><a href="https://github.com/openjdk/jdk/blob/9561b5e041c4cc70319e60953819c521c1e68d6c/src/hotspot/share/interpreter/bytecodes.cpp#L491">bytecodes.cpp</a></li>
+ * </ul>
  *
  * @author xDark
+ * @see Opcodes Base set of opcodes.
  */
-public interface ReservedBytecodes {
-
+public interface ReservedOpcodes {
 	int breakpoint = 202;
 	int fast_agetfield = 203;
 	int fast_bgetfield = 204;

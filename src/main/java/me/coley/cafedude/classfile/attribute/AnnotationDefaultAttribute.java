@@ -5,7 +5,7 @@ import me.coley.cafedude.classfile.annotation.ElementValue;
 import java.util.Set;
 
 /**
- * Represents the default value of a annotation field <i>(Which are technically methods, but I digress)</i>.
+ * Represents the default value of an annotation field <i>(Which are technically methods, but I digress)</i>.
  *
  * @author Matt Coley
  */

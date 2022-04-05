@@ -1,13 +1,13 @@
 package me.coley.cafedude.classfile.annotation;
 
-import me.coley.cafedude.Constants;
+import me.coley.cafedude.classfile.AnnotationConstants;
 
 /**
  * Target information denoting which type in a declaration or expression is annotated.
  *
  * @author Matt Coley
  */
-public enum TargetInfoType implements Constants.Annotations {
+public enum TargetInfoType implements AnnotationConstants {
 	TYPE_PARAMETER_TARGET,
 	SUPERTYPE_TARGET,
 	TYPE_PARAMETER_BOUND_TARGET,

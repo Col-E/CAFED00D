@@ -1,13 +1,13 @@
 package me.coley.cafedude.classfile.constant;
 
-import me.coley.cafedude.Constants;
+import me.coley.cafedude.classfile.ConstantPoolConstants;
 
 /**
  * Base constant pool entry.
  *
  * @author Matt Coley
  */
-public abstract class ConstPoolEntry implements Constants.ConstantPool {
+public abstract class ConstPoolEntry implements ConstantPoolConstants {
 	private final int tag;
 
 	/**

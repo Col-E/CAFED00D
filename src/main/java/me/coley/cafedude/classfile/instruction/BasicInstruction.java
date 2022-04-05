@@ -6,7 +6,6 @@ package me.coley.cafedude.classfile.instruction;
  * @author xDark
  */
 public class BasicInstruction extends Instruction {
-
 	/**
 	 * @param opcode
 	 * 		Instruction opcode.

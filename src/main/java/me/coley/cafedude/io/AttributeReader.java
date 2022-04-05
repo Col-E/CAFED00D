@@ -1,6 +1,6 @@
 package me.coley.cafedude.io;
 
-import me.coley.cafedude.Constants.Attributes;
+import me.coley.cafedude.classfile.AttributeConstants;
 import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.classfile.attribute.AnnotationDefaultAttribute;
 import me.coley.cafedude.classfile.attribute.AnnotationsAttribute;
@@ -11,7 +11,7 @@ import me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.Bootstrap
 import me.coley.cafedude.classfile.attribute.CodeAttribute;
 import me.coley.cafedude.classfile.attribute.CodeAttribute.ExceptionTableEntry;
 import me.coley.cafedude.classfile.attribute.ConstantValueAttribute;
-import me.coley.cafedude.classfile.attribute.DebugExtensionAttribute;
+import me.coley.cafedude.classfile.attribute.SourceDebugExtensionAttribute;
 import me.coley.cafedude.classfile.attribute.DefaultAttribute;
 import me.coley.cafedude.classfile.attribute.DeprecatedAttribute;
 import me.coley.cafedude.classfile.attribute.EnclosingMethodAttribute;
@@ -51,8 +51,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static me.coley.cafedude.Constants.Attributes.*;
-import static me.coley.cafedude.Constants.StackMapTable.*;
+import static me.coley.cafedude.classfile.AttributeConstants.*;
+import static me.coley.cafedude.classfile.StackMapTableConstants.*;
 
 /**
  * Attribute reader for all attributes.
@@ -181,7 +181,7 @@ public class AttributeReader {
 				return readSignature();
 			case SOURCE_FILE:
 				return readSourceFile();
-			case Attributes.MODULE:
+			case AttributeConstants.MODULE:
 				return readModule();
 			case STACK_MAP_TABLE:
 				return readStackMapTable();
@@ -484,7 +484,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
-	private DebugExtensionAttribute readSourceDebugExtension() throws IOException {
+	private SourceDebugExtensionAttribute readSourceDebugExtension() throws IOException {
 		byte[] debugExtension = new byte[expectedContentLength];
 		is.readFully(debugExtension);
 		// Validate data represents UTF text
@@ -494,7 +494,7 @@ public class AttributeReader {
 			logger.debug("Invalid SourceDebugExtension, not a valid UTF");
 			return null;
 		}
-		return new DebugExtensionAttribute(nameIndex, debugExtension);
+		return new SourceDebugExtensionAttribute(nameIndex, debugExtension);
 	}
 
 	/**

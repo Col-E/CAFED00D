@@ -1,6 +1,6 @@
 package me.coley.cafedude.classfile.attribute;
 
-import me.coley.cafedude.Constants;
+import me.coley.cafedude.classfile.StackMapTableConstants;
 import me.coley.cafedude.classfile.behavior.CpAccessor;
 
 import java.util.Collections;
@@ -23,7 +23,7 @@ import java.util.TreeSet;
  */
 public class StackMapTableAttribute
 		extends Attribute
-		implements Constants.StackMapTable {
+		implements StackMapTableConstants {
 	/**
 	 * A list of this table's stack map frames.
 	 */

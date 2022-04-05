@@ -2,15 +2,15 @@ package me.coley.cafedude.io;
 
 import me.coley.cafedude.classfile.ClassFile;
 import me.coley.cafedude.classfile.ConstPool;
-import me.coley.cafedude.Constants;
 import me.coley.cafedude.classfile.Field;
 import me.coley.cafedude.classfile.Method;
+import me.coley.cafedude.classfile.Modifiers;
 import me.coley.cafedude.classfile.attribute.Attribute;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static me.coley.cafedude.Constants.JAVA1;
+import static me.coley.cafedude.classfile.VersionConstants.JAVA1;
 
 /**
  * Builder for a {@link ClassFile}.
@@ -40,7 +40,7 @@ public class ClassBuilder {
 	 * @return {@code true} when the access flags indicate the class is an annotation.
 	 */
 	public boolean isAnnotation() {
-		return (access & Constants.ACC_ANNOTATION) != 0;
+		return Modifiers.has(access, Modifiers.ACC_ANNOTATION);
 	}
 
 	/**

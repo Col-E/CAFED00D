@@ -6,7 +6,6 @@ package me.coley.cafedude.classfile.instruction;
  * @author xDark
  */
 public class IntOperandInstruction extends BasicInstruction {
-
 	private int operand;
 
 	/**

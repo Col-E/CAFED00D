@@ -1,7 +1,13 @@
 package me.coley.cafedude.io;
 
 import me.coley.cafedude.classfile.attribute.CodeAttribute;
-import me.coley.cafedude.classfile.instruction.*;
+import me.coley.cafedude.classfile.instruction.BasicInstruction;
+import me.coley.cafedude.classfile.instruction.BiIntOperandInstruction;
+import me.coley.cafedude.classfile.instruction.Instruction;
+import me.coley.cafedude.classfile.instruction.IntOperandInstruction;
+import me.coley.cafedude.classfile.instruction.LookupSwitchInstruction;
+import me.coley.cafedude.classfile.instruction.TableSwitchInstruction;
+import me.coley.cafedude.classfile.instruction.WideInstruction;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -16,7 +22,6 @@ import static me.coley.cafedude.classfile.instruction.Opcodes.*;
  * @author xDark
  */
 public class InstructionReader {
-
 	private final FallbackInstructionReader fallbackReader;
 
 	/**
@@ -47,7 +52,7 @@ public class InstructionReader {
 		ByteBuffer buffer = ByteBuffer.wrap(attribute.getCode());
 		FallbackInstructionReader fallbackReader = this.fallbackReader;
 		while (buffer.hasRemaining()) {
-			int opcode = buffer.get() & 0xff;
+			int opcode = buffer.get() & 0xFF;
 			switch (opcode) {
 				case NOP:
 				case ACONST_NULL:
@@ -74,18 +79,18 @@ public class InstructionReader {
 					instructions.add(new IntOperandInstruction(opcode, buffer.getShort()));
 					break;
 				case LDC:
-					instructions.add(new IntOperandInstruction(LDC, buffer.get() & 0xff));
+					instructions.add(new IntOperandInstruction(LDC, buffer.get() & 0xFF));
 					break;
 				case LDC_W:
 				case LDC2_W:
-					instructions.add(new IntOperandInstruction(opcode, buffer.getShort() & 0xffff));
+					instructions.add(new IntOperandInstruction(opcode, buffer.getShort() & 0xFFFF));
 					break;
 				case ILOAD:
 				case LLOAD:
 				case FLOAD:
 				case DLOAD:
 				case ALOAD:
-					instructions.add(new IntOperandInstruction(opcode, buffer.get() & 0xff));
+					instructions.add(new IntOperandInstruction(opcode, buffer.get() & 0xFF));
 					break;
 				case ILOAD_0:
 				case ILOAD_1:
@@ -124,7 +129,7 @@ public class InstructionReader {
 				case FSTORE:
 				case DSTORE:
 				case ASTORE:
-					instructions.add(new IntOperandInstruction(opcode, buffer.get() & 0xff));
+					instructions.add(new IntOperandInstruction(opcode, buffer.get() & 0xFF));
 					break;
 				case ISTORE_0:
 				case ISTORE_1:
@@ -208,7 +213,7 @@ public class InstructionReader {
 					instructions.add(new BasicInstruction(opcode));
 					break;
 				case IINC:
-					instructions.add(new BiIntOperandInstruction(IINC, buffer.get() & 0xff, buffer.get()));
+					instructions.add(new BiIntOperandInstruction(IINC, buffer.get() & 0xFF, buffer.get()));
 					break;
 				case I2L:
 				case I2F:
@@ -259,7 +264,7 @@ public class InstructionReader {
 					instructions.add(new IntOperandInstruction(JSR, buffer.getShort()));
 					break;
 				case RET:
-					instructions.add(new IntOperandInstruction(RET, buffer.get() & 0xff));
+					instructions.add(new IntOperandInstruction(RET, buffer.get() & 0xFF));
 					break;
 				case TABLESWITCH: {
 					int pos = buffer.position();
@@ -303,16 +308,16 @@ public class InstructionReader {
 				case PUTSTATIC:
 				case GETFIELD:
 				case PUTFIELD:
-					instructions.add(new IntOperandInstruction(opcode, buffer.getShort() & 0xffff));
+					instructions.add(new IntOperandInstruction(opcode, buffer.getShort() & 0xFFFF));
 					break;
 				case INVOKEVIRTUAL:
 				case INVOKESPECIAL:
 				case INVOKESTATIC:
 				case INVOKEINTERFACE:
-					instructions.add(new IntOperandInstruction(opcode, buffer.getShort() & 0xffff));
+					instructions.add(new IntOperandInstruction(opcode, buffer.getShort() & 0xFFFF));
 					break;
 				case INVOKEDYNAMIC: {
-					int index = buffer.getShort() & 0xffff;
+					int index = buffer.getShort() & 0xFFFF;
 					if ((buffer.get() | buffer.get()) != 0) {
 						// TODO: should we silently ignore, or throw?
 						throw new IllegalStateException("InvokeDynamic padding bytes are non-zero");
@@ -321,13 +326,13 @@ public class InstructionReader {
 					break;
 				}
 				case NEW:
-					instructions.add(new IntOperandInstruction(NEW, buffer.getShort() & 0xffff));
+					instructions.add(new IntOperandInstruction(NEW, buffer.getShort() & 0xFFFF));
 					break;
 				case NEWARRAY:
-					instructions.add(new IntOperandInstruction(NEWARRAY, buffer.get() & 0xff));
+					instructions.add(new IntOperandInstruction(NEWARRAY, buffer.get() & 0xFF));
 					break;
 				case ANEWARRAY:
-					instructions.add(new IntOperandInstruction(ANEWARRAY, buffer.getShort() & 0xffff));
+					instructions.add(new IntOperandInstruction(ANEWARRAY, buffer.getShort() & 0xFFFF));
 					break;
 				case ARRAYLENGTH:
 					instructions.add(new BasicInstruction(ARRAYLENGTH));
@@ -337,14 +342,14 @@ public class InstructionReader {
 					break;
 				case CHECKCAST:
 				case INSTANCEOF:
-					instructions.add(new IntOperandInstruction(opcode, buffer.getShort() & 0xffff));
+					instructions.add(new IntOperandInstruction(opcode, buffer.getShort() & 0xFFFF));
 					break;
 				case MONITORENTER:
 				case MONITOREXIT:
 					instructions.add(new BasicInstruction(opcode));
 					break;
 				case WIDE:
-					int type = buffer.get() & 0xff;
+					int type = buffer.get() & 0xFF;
 					switch (type) {
 						case ILOAD:
 						case FLOAD:
@@ -356,11 +361,11 @@ public class InstructionReader {
 						case DSTORE:
 						case RET:
 							instructions.add(new WideInstruction(new IntOperandInstruction(type,
-									buffer.getShort() & 0xffff)));
+									buffer.getShort() & 0xFFFF)));
 							break;
 						case IINC:
 							instructions.add(new WideInstruction(new BiIntOperandInstruction(IINC,
-									buffer.getShort() & 0xffff, buffer.getShort())));
+									buffer.getShort() & 0xFFFF, buffer.getShort())));
 							break;
 						default:
 							throw new IllegalStateException("Illegal wide instruction type: " + type);
@@ -368,7 +373,7 @@ public class InstructionReader {
 					break;
 				case MULTIANEWARRAY:
 					instructions.add(new BiIntOperandInstruction(MULTIANEWARRAY,
-							buffer.getShort() & 0xffff, buffer.get() & 0xff));
+							buffer.getShort() & 0xFFFF, buffer.get() & 0xFF));
 					break;
 				case IFNULL:
 				case IFNONNULL:

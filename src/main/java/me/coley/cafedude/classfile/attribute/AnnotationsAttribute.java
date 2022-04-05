@@ -8,8 +8,8 @@ import java.util.Set;
 /**
  * Annotation collection attribute. Represents either:
  * <ul>
- *     <li>{@code RuntimeInvisibleAnnotations}</li>>
- *     <li>{@code RuntimeVisibleAnnotations}</li>>
+ *     <li>Standard annotations: {@code RuntimeInvisibleAnnotations} &amp; {@code RuntimeVisibleAnnotations}</li>
+ *     <li>Type annotations: {@code RuntimeInvisibleTypeAnnotations} &amp; {@code RuntimeVisibleTypeAnnotations}</li>
  * </ul>
  *
  * @author Matt Coley

@@ -1,7 +1,7 @@
 package me.coley.cafedude.io;
 
+import me.coley.cafedude.classfile.AttributeConstants;
 import me.coley.cafedude.classfile.ClassFile;
-import me.coley.cafedude.Constants;
 import me.coley.cafedude.InvalidClassException;
 import me.coley.cafedude.classfile.attribute.AnnotationDefaultAttribute;
 import me.coley.cafedude.classfile.attribute.AnnotationsAttribute;
@@ -10,7 +10,7 @@ import me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute;
 import me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.BootstrapMethod;
 import me.coley.cafedude.classfile.attribute.CodeAttribute;
 import me.coley.cafedude.classfile.attribute.ConstantValueAttribute;
-import me.coley.cafedude.classfile.attribute.DebugExtensionAttribute;
+import me.coley.cafedude.classfile.attribute.SourceDebugExtensionAttribute;
 import me.coley.cafedude.classfile.attribute.DefaultAttribute;
 import me.coley.cafedude.classfile.attribute.EnclosingMethodAttribute;
 import me.coley.cafedude.classfile.attribute.ExceptionsAttribute;
@@ -96,7 +96,7 @@ public class AttributeWriter {
 			//   so I don't think its super necessary to break these into separate methods.
 			String attrName = ((CpUtf8) cpName).getText();
 			switch (attrName) {
-				case Constants.Attributes.BOOTSTRAP_METHODS:
+				case AttributeConstants.BOOTSTRAP_METHODS:
 					BootstrapMethodsAttribute bsms = (BootstrapMethodsAttribute) attribute;
 					out.writeShort(bsms.getBootstrapMethods().size());
 					for (BootstrapMethod bsm : bsms.getBootstrapMethods()) {
@@ -107,9 +107,9 @@ public class AttributeWriter {
 						}
 					}
 					break;
-				case Constants.Attributes.CHARACTER_RANGE_TABLE:
+				case AttributeConstants.CHARACTER_RANGE_TABLE:
 					break;
-				case Constants.Attributes.CODE:
+				case AttributeConstants.CODE:
 					CodeAttribute code = (CodeAttribute) attribute;
 					out.writeShort(code.getMaxStack());
 					out.writeShort(code.getMaxLocals());
@@ -126,27 +126,27 @@ public class AttributeWriter {
 					for (Attribute subAttribute : code.getAttributes())
 						out.write(writeAttribute(subAttribute));
 					break;
-				case Constants.Attributes.CONSTANT_VALUE:
+				case AttributeConstants.CONSTANT_VALUE:
 					out.writeShort(((ConstantValueAttribute) attribute).getConstantValueIndex());
 					break;
-				case Constants.Attributes.COMPILATION_ID:
+				case AttributeConstants.COMPILATION_ID:
 					break;
-				case Constants.Attributes.DEPRECATED:
-				case Constants.Attributes.SYNTHETIC:
+				case AttributeConstants.DEPRECATED:
+				case AttributeConstants.SYNTHETIC:
 					break;
-				case Constants.Attributes.ENCLOSING_METHOD:
+				case AttributeConstants.ENCLOSING_METHOD:
 					EnclosingMethodAttribute enclosingMethodAttribute = (EnclosingMethodAttribute) attribute;
 					out.writeShort(enclosingMethodAttribute.getClassIndex());
 					out.writeShort(enclosingMethodAttribute.getMethodIndex());
 					break;
-				case Constants.Attributes.EXCEPTIONS:
+				case AttributeConstants.EXCEPTIONS:
 					ExceptionsAttribute exceptionsAttribute = (ExceptionsAttribute) attribute;
 					out.writeShort(exceptionsAttribute.getExceptionIndexTable().size());
 					for (int index : exceptionsAttribute.getExceptionIndexTable()) {
 						out.writeShort(index);
 					}
 					break;
-				case Constants.Attributes.INNER_CLASSES:
+				case AttributeConstants.INNER_CLASSES:
 					InnerClassesAttribute innerClassesAttribute = (InnerClassesAttribute) attribute;
 					out.writeShort(innerClassesAttribute.getInnerClasses().size());
 					for (InnerClass ic : innerClassesAttribute.getInnerClasses()) {
@@ -156,7 +156,7 @@ public class AttributeWriter {
 						out.writeShort(ic.getInnerClassAccessFlags());
 					}
 					break;
-				case Constants.Attributes.LINE_NUMBER_TABLE:
+				case AttributeConstants.LINE_NUMBER_TABLE:
 					LineNumberTableAttribute lineNumbers = (LineNumberTableAttribute) attribute;
 					out.writeShort(lineNumbers.getEntries().size());
 					for (LineEntry entry : lineNumbers.getEntries()) {
@@ -164,7 +164,7 @@ public class AttributeWriter {
 						out.writeShort(entry.getLine());
 					}
 					break;
-				case Constants.Attributes.LOCAL_VARIABLE_TABLE:
+				case AttributeConstants.LOCAL_VARIABLE_TABLE:
 					LocalVariableTableAttribute varTable = (LocalVariableTableAttribute) attribute;
 					out.writeShort(varTable.getEntries().size());
 					for (VarEntry entry : varTable.getEntries()) {
@@ -175,7 +175,7 @@ public class AttributeWriter {
 						out.writeShort(entry.getIndex());
 					}
 					break;
-				case Constants.Attributes.LOCAL_VARIABLE_TYPE_TABLE:
+				case AttributeConstants.LOCAL_VARIABLE_TYPE_TABLE:
 					LocalVariableTypeTableAttribute typeTable = (LocalVariableTypeTableAttribute) attribute;
 					out.writeShort(typeTable.getEntries().size());
 					for (VarTypeEntry entry : typeTable.getEntries()) {
@@ -186,9 +186,9 @@ public class AttributeWriter {
 						out.writeShort(entry.getIndex());
 					}
 					break;
-				case Constants.Attributes.METHOD_PARAMETERS:
+				case AttributeConstants.METHOD_PARAMETERS:
 					break;
-				case Constants.Attributes.MODULE:
+				case AttributeConstants.MODULE:
 					ModuleAttribute moduleAttribute = (ModuleAttribute) attribute;
 					out.writeShort(moduleAttribute.getModuleIndex());
 					out.writeShort(moduleAttribute.getFlags());
@@ -231,28 +231,28 @@ public class AttributeWriter {
 							out.writeShort(i);
 					}
 					break;
-				case Constants.Attributes.MODULE_HASHES:
+				case AttributeConstants.MODULE_HASHES:
 					break;
-				case Constants.Attributes.MODULE_MAIN_CLASS:
+				case AttributeConstants.MODULE_MAIN_CLASS:
 					break;
-				case Constants.Attributes.MODULE_PACKAGES:
+				case AttributeConstants.MODULE_PACKAGES:
 					break;
-				case Constants.Attributes.MODULE_RESOLUTION:
+				case AttributeConstants.MODULE_RESOLUTION:
 					break;
-				case Constants.Attributes.MODULE_TARGET:
+				case AttributeConstants.MODULE_TARGET:
 					break;
-				case Constants.Attributes.NEST_HOST:
+				case AttributeConstants.NEST_HOST:
 					NestHostAttribute nestHost = (NestHostAttribute) attribute;
 					out.writeShort(nestHost.getHostClassIndex());
 					break;
-				case Constants.Attributes.NEST_MEMBERS:
+				case AttributeConstants.NEST_MEMBERS:
 					NestMembersAttribute nestMembers = (NestMembersAttribute) attribute;
 					out.writeShort(nestMembers.getMemberClassIndices().size());
 					for (int classIndex : nestMembers.getMemberClassIndices()) {
 						out.writeShort(classIndex);
 					}
 					break;
-				case Constants.Attributes.RECORD:
+				case AttributeConstants.RECORD:
 					RecordAttribute recordAttribute = (RecordAttribute) attribute;
 					out.writeShort(recordAttribute.getComponents().size());
 					for (RecordComponent component : recordAttribute.getComponents()) {
@@ -263,42 +263,42 @@ public class AttributeWriter {
 							out.write(writeAttribute(subAttribute));
 					}
 					break;
-				case Constants.Attributes.RUNTIME_VISIBLE_ANNOTATIONS:
-				case Constants.Attributes.RUNTIME_INVISIBLE_ANNOTATIONS:
+				case AttributeConstants.RUNTIME_VISIBLE_ANNOTATIONS:
+				case AttributeConstants.RUNTIME_INVISIBLE_ANNOTATIONS:
 					new AnnotationWriter(out).writeAnnotations((AnnotationsAttribute) attribute);
 					break;
-				case Constants.Attributes.RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
-				case Constants.Attributes.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
+				case AttributeConstants.RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
+				case AttributeConstants.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
 					new AnnotationWriter(out).writeParameterAnnotations((ParameterAnnotationsAttribute) attribute);
 					break;
-				case Constants.Attributes.RUNTIME_VISIBLE_TYPE_ANNOTATIONS:
-				case Constants.Attributes.RUNTIME_INVISIBLE_TYPE_ANNOTATIONS:
+				case AttributeConstants.RUNTIME_VISIBLE_TYPE_ANNOTATIONS:
+				case AttributeConstants.RUNTIME_INVISIBLE_TYPE_ANNOTATIONS:
 					new AnnotationWriter(out).writeTypeAnnotations((AnnotationsAttribute) attribute);
 					break;
-				case Constants.Attributes.ANNOTATION_DEFAULT:
+				case AttributeConstants.ANNOTATION_DEFAULT:
 					new AnnotationWriter(out).writeAnnotationDefault((AnnotationDefaultAttribute) attribute);
 					break;
-				case Constants.Attributes.PERMITTED_SUBCLASSES:
+				case AttributeConstants.PERMITTED_SUBCLASSES:
 					PermittedClassesAttribute permittedClasses = (PermittedClassesAttribute) attribute;
 					out.writeShort(permittedClasses.getClasses().size());
 					for (int classIndex : permittedClasses.getClasses())
 						out.writeShort(classIndex);
 					break;
-				case Constants.Attributes.SIGNATURE:
+				case AttributeConstants.SIGNATURE:
 					SignatureAttribute signatureAttribute = (SignatureAttribute) attribute;
 					out.writeShort(signatureAttribute.getSignatureIndex());
 					break;
-				case Constants.Attributes.SOURCE_DEBUG_EXTENSION:
-					DebugExtensionAttribute debugExtension = (DebugExtensionAttribute) attribute;
+				case AttributeConstants.SOURCE_DEBUG_EXTENSION:
+					SourceDebugExtensionAttribute debugExtension = (SourceDebugExtensionAttribute) attribute;
 					out.write(debugExtension.getDebugExtension());
 					break;
-				case Constants.Attributes.SOURCE_FILE:
+				case AttributeConstants.SOURCE_FILE:
 					SourceFileAttribute sourceFileAttribute = (SourceFileAttribute) attribute;
 					out.writeShort(sourceFileAttribute.getSourceFileNameIndex());
 					break;
-				case Constants.Attributes.SOURCE_ID:
+				case AttributeConstants.SOURCE_ID:
 					break;
-				case Constants.Attributes.STACK_MAP_TABLE:
+				case AttributeConstants.STACK_MAP_TABLE:
 					StackMapTableAttribute stackMapTable =
 							(StackMapTableAttribute) attribute;
 					writeStackMapTable(out, stackMapTable);

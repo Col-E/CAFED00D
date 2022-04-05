@@ -1,6 +1,6 @@
 package me.coley.cafedude.classfile.attribute;
 
-import me.coley.cafedude.Constants.Attributes;
+import me.coley.cafedude.classfile.AttributeConstants;
 import me.coley.cafedude.io.AttributeContext;
 
 import java.util.Collection;
@@ -11,54 +11,54 @@ import java.util.EnumSet;
  *
  * @author Matt Coley
  */
-public class AttributeContexts {
+public class AttributeContexts implements AttributeConstants {
 	/**
 	 * For more information on location see:
 	 * <a href="https://docs.oracle.com/javase/specs/jvms/se15/html/jvms-4.html#jvms-4.7-320">jvms-4.7 Table 4.7-C</a>
 	 *
 	 * @param attributeName
-	 * 		Name of attribute, see {@link Attributes}.
+	 * 		Name of attribute, see {@link AttributeConstants}.
 	 *
 	 * @return Allowed locations for attribute.
 	 * If the attribute's allowed locations are unknown, then {@code -1}.
 	 */
 	public static Collection<AttributeContext> getAllowedContexts(String attributeName) {
 		switch (attributeName) {
-			case Attributes.BOOTSTRAP_METHODS:
-			case Attributes.ENCLOSING_METHOD:
-			case Attributes.INNER_CLASSES:
-			case Attributes.MODULE:
-			case Attributes.MODULE_MAIN_CLASS:
-			case Attributes.MODULE_PACKAGES:
-			case Attributes.NEST_HOST:
-			case Attributes.NEST_MEMBERS:
-			case Attributes.PERMITTED_SUBCLASSES:
-			case Attributes.RECORD:
-			case Attributes.SOURCE_DEBUG_EXTENSION:
-			case Attributes.SOURCE_FILE:
+			case BOOTSTRAP_METHODS:
+			case ENCLOSING_METHOD:
+			case INNER_CLASSES:
+			case MODULE:
+			case MODULE_MAIN_CLASS:
+			case MODULE_PACKAGES:
+			case NEST_HOST:
+			case NEST_MEMBERS:
+			case PERMITTED_SUBCLASSES:
+			case RECORD:
+			case SOURCE_DEBUG_EXTENSION:
+			case SOURCE_FILE:
 				return EnumSet.of(AttributeContext.CLASS);
-			case Attributes.CONSTANT_VALUE:
+			case CONSTANT_VALUE:
 				return EnumSet.of(AttributeContext.FIELD);
-			case Attributes.ANNOTATION_DEFAULT:
-			case Attributes.CODE:
-			case Attributes.EXCEPTIONS:
-			case Attributes.METHOD_PARAMETERS:
-			case Attributes.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
-			case Attributes.RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
+			case ANNOTATION_DEFAULT:
+			case CODE:
+			case EXCEPTIONS:
+			case METHOD_PARAMETERS:
+			case RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
+			case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
 				return EnumSet.of(AttributeContext.METHOD);
-			case Attributes.DEPRECATED:
-			case Attributes.SYNTHETIC:
+			case DEPRECATED:
+			case SYNTHETIC:
 				return EnumSet.of(AttributeContext.CLASS, AttributeContext.FIELD, AttributeContext.METHOD);
-			case Attributes.LINE_NUMBER_TABLE:
-			case Attributes.LOCAL_VARIABLE_TABLE:
-			case Attributes.LOCAL_VARIABLE_TYPE_TABLE:
-			case Attributes.STACK_MAP_TABLE:
+			case LINE_NUMBER_TABLE:
+			case LOCAL_VARIABLE_TABLE:
+			case LOCAL_VARIABLE_TYPE_TABLE:
+			case STACK_MAP_TABLE:
 				return EnumSet.of(AttributeContext.ATTRIBUTE);
-			case Attributes.RUNTIME_VISIBLE_ANNOTATIONS:
-			case Attributes.RUNTIME_VISIBLE_TYPE_ANNOTATIONS:
-			case Attributes.RUNTIME_INVISIBLE_ANNOTATIONS:
-			case Attributes.RUNTIME_INVISIBLE_TYPE_ANNOTATIONS:
-			case Attributes.SIGNATURE:
+			case RUNTIME_VISIBLE_ANNOTATIONS:
+			case RUNTIME_VISIBLE_TYPE_ANNOTATIONS:
+			case RUNTIME_INVISIBLE_ANNOTATIONS:
+			case RUNTIME_INVISIBLE_TYPE_ANNOTATIONS:
+			case SIGNATURE:
 				return EnumSet.allOf(AttributeContext.class);
 			default:
 				break;
