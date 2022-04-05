@@ -4,8 +4,9 @@ Another class library with a focus on obfuscation support.
 
 ## Features
 
-* Supports Oak classes
+* Supports [Oak](https://en.wikipedia.org/wiki/Oak_(programming_language)) classes
 * Drop malformed attributes from classes added by obfuscators
+* Rewrite [internal jvm instructions](https://github.com/openjdk/jdk/blob/769f14db847813f5a3601e9ec21e6cadbd99ee96/src/hotspot/share/interpreter/bytecodes.cpp#L491)
 
 ## Usage
 
