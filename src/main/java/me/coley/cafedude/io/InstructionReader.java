@@ -358,6 +358,8 @@ public class InstructionReader {
 						case DLOAD:
 						case ISTORE:
 						case FSTORE:
+						case ASTORE:
+						case LSTORE:
 						case DSTORE:
 						case RET:
 							instructions.add(new WideInstruction(new IntOperandInstruction(type,
