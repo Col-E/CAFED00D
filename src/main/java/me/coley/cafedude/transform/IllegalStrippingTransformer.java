@@ -556,6 +556,8 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 						case 'D':
 							// no case for void, it shouldn't be used as a 'field descriptor'
 							return true;
+						default:
+							return false;
 					}
 				}
 				// Empty string or failing the cases of the above.
