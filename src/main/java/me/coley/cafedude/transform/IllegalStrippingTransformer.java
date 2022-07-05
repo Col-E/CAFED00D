@@ -226,19 +226,19 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			case NEST_HOST:
 				NestHostAttribute nestHost = (NestHostAttribute) attribute;
 				expectedTypeMasks.put(nestHost.getHostClassIndex(), i -> i == CLASS);
-				cpEntryValidators.put(nestHost.getHostClassIndex(), matchClassType());
+				cpEntryValidators.put(nestHost.getHostClassIndex(), matchClass());
 				break;
 			case NEST_MEMBERS:
 				NestMembersAttribute nestMembers = (NestMembersAttribute) attribute;
 				for (int memberIndex : nestMembers.getMemberClassIndices()) {
 					expectedTypeMasks.put(memberIndex, i -> i == CLASS);
-					cpEntryValidators.put(memberIndex, matchClassType());
+					cpEntryValidators.put(memberIndex, matchClass());
 				}
 				break;
 			case ENCLOSING_METHOD:
 				EnclosingMethodAttribute enclosingMethod = (EnclosingMethodAttribute) attribute;
 				expectedTypeMasks.put(enclosingMethod.getClassIndex(), i -> i == CLASS);
-				cpEntryValidators.put(enclosingMethod.getClassIndex(), matchClassType());
+				cpEntryValidators.put(enclosingMethod.getClassIndex(), matchClass());
 				// method_index must be zero if the current class was immediately enclosed in source code by an
 				//   instance initializer, static initializer, instance variable initializer,
 				//   or class variable initializer
@@ -250,14 +250,14 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				ExceptionsAttribute exceptions = (ExceptionsAttribute) attribute;
 				for (int exceptionTypeIndex : exceptions.getExceptionIndexTable()) {
 					expectedTypeMasks.put(exceptionTypeIndex, i -> i == CLASS);
-					cpEntryValidators.put(exceptionTypeIndex, matchClassType());
+					cpEntryValidators.put(exceptionTypeIndex, matchClass());
 				}
 				break;
 			case INNER_CLASSES:
 				InnerClassesAttribute innerClasses = (InnerClassesAttribute) attribute;
 				for (InnerClass innerClass : innerClasses.getInnerClasses()) {
 					expectedTypeMasks.put(innerClass.getInnerClassInfoIndex(), i -> i == 0 || i == CLASS);
-					cpEntryValidators.put(innerClass.getInnerClassInfoIndex(), matchClassType());
+					cpEntryValidators.put(innerClass.getInnerClassInfoIndex(), matchClass());
 					// 0 if the defining class is the top-level class
 					expectedTypeMasks.put(innerClass.getOuterClassInfoIndex(), i -> i == 0 || i == CLASS);
 					// 0 if anonymous, otherwise name index
@@ -286,7 +286,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 					if (entry.getCatchTypeIndex() == 0) {
 						allow0Case = true;
 					} else {
-						cpEntryValidators.put(entry.getCatchTypeIndex(), matchClassType());
+						cpEntryValidators.put(entry.getCatchTypeIndex(), matchClass());
 					}
 				}
 				break;
@@ -294,12 +294,12 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			case SIGNATURE:
 				SignatureAttribute signatureAttribute = (SignatureAttribute) attribute;
 				expectedTypeMasks.put(signatureAttribute.getSignatureIndex(), i -> i == UTF8);
-				cpEntryValidators.put(signatureAttribute.getSignatureIndex(), matchNonEmptyUtf8());
+				cpEntryValidators.put(signatureAttribute.getSignatureIndex(), matchUtf8NonEmpty());
 				break;
 			case SOURCE_FILE:
 				SourceFileAttribute sourceFileAttribute = (SourceFileAttribute) attribute;
 				expectedTypeMasks.put(sourceFileAttribute.getSourceFileNameIndex(), i -> i == UTF8);
-				cpEntryValidators.put(sourceFileAttribute.getSourceFileNameIndex(), matchNonEmptyUtf8());
+				cpEntryValidators.put(sourceFileAttribute.getSourceFileNameIndex(), matchUtf8NonEmpty());
 				break;
 			case AttributeConstants.MODULE:
 				ModuleAttribute moduleAttribute = (ModuleAttribute) attribute;
@@ -347,8 +347,8 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				for (VarEntry entry : varTable.getEntries()) {
 					expectedTypeMasks.put(entry.getNameIndex(), i -> i == UTF8);
 					expectedTypeMasks.put(entry.getDescIndex(), i -> i == UTF8);
-					cpEntryValidators.put(entry.getNameIndex(), matchNonEmptyUtf8().and(matchWordUtf8()));
-					cpEntryValidators.put(entry.getDescIndex(), matchNonEmptyUtf8());
+					cpEntryValidators.put(entry.getNameIndex(), matchUtf8ValidQualifiedName().and(matchUtf8Word()));
+					cpEntryValidators.put(entry.getDescIndex(), matchUtf8FieldDescriptor());
 				}
 				break;
 			case LOCAL_VARIABLE_TYPE_TABLE:
@@ -356,24 +356,24 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				for (VarTypeEntry entry : typeTable.getEntries()) {
 					expectedTypeMasks.put(entry.getNameIndex(), i -> i == UTF8);
 					expectedTypeMasks.put(entry.getSignatureIndex(), i -> i == UTF8);
-					cpEntryValidators.put(entry.getNameIndex(), matchNonEmptyUtf8().and(matchWordUtf8()));
-					cpEntryValidators.put(entry.getSignatureIndex(), matchNonEmptyUtf8());
+					cpEntryValidators.put(entry.getNameIndex(), matchUtf8ValidQualifiedName().and(matchUtf8Word()));
+					cpEntryValidators.put(entry.getSignatureIndex(), matchUtf8NonEmpty());
 				}
 				break;
 			case PERMITTED_SUBCLASSES:
 				PermittedClassesAttribute permittedClassesAttribute = (PermittedClassesAttribute) attribute;
 				for (int index : permittedClassesAttribute.getClasses()) {
 					expectedTypeMasks.put(index, i -> i == CLASS);
-					cpEntryValidators.put(index, matchClassType());
+					cpEntryValidators.put(index, matchClass());
 				}
 				break;
 			case RECORD:
 				RecordAttribute recordAttribute = (RecordAttribute) attribute;
 				for (RecordComponent component : recordAttribute.getComponents()) {
 					expectedTypeMasks.put(component.getNameIndex(), i -> i == UTF8);
-					cpEntryValidators.put(component.getNameIndex(), matchWordUtf8());
+					cpEntryValidators.put(component.getNameIndex(), matchUtf8Word());
 					expectedTypeMasks.put(component.getDescIndex(), i -> i == UTF8);
-					cpEntryValidators.put(component.getDescIndex(), matchNonEmptyUtf8());
+					cpEntryValidators.put(component.getDescIndex(), matchUtf8FieldDescriptor());
 				}
 				break;
 			case LINE_NUMBER_TABLE:
@@ -435,11 +435,11 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 										 Map<Integer, Predicate<ConstPoolEntry>> cpEntryValidators,
 										 Annotation anno) {
 		expectedTypeMasks.put(anno.getTypeIndex(), i -> i == UTF8);
-		cpEntryValidators.put(anno.getTypeIndex(), matchUtf8ClassType());
+		cpEntryValidators.put(anno.getTypeIndex(), matchUtf8FieldDescriptor());
 		for (Map.Entry<Integer, ElementValue> entry : anno.getValues().entrySet()) {
 			int elementTypeIndex = entry.getKey();
 			expectedTypeMasks.put(elementTypeIndex, i -> i == UTF8);
-			cpEntryValidators.put(elementTypeIndex, matchUtf8ClassType());
+			cpEntryValidators.put(elementTypeIndex, matchUtf8InternalName());
 			addElementValueValidation(holder, expectedTypeMasks, cpEntryValidators, entry.getValue());
 		}
 		if (anno instanceof TypeAnnotation) {
@@ -507,12 +507,12 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		if (elementValue instanceof ClassElementValue) {
 			int classIndex = ((ClassElementValue) elementValue).getClassIndex();
 			expectedTypeMasks.put(classIndex, i -> i == UTF8);
-			cpEntryValidators.put(classIndex, matchUtf8ClassType());
+			cpEntryValidators.put(classIndex, matchUtf8InternalName());
 		} else if (elementValue instanceof EnumElementValue) {
 			EnumElementValue enumElementValue = (EnumElementValue) elementValue;
 			expectedTypeMasks.put(enumElementValue.getNameIndex(), i -> i == UTF8);
 			expectedTypeMasks.put(enumElementValue.getTypeIndex(), i -> i == UTF8);
-			cpEntryValidators.put(enumElementValue.getTypeIndex(), matchUtf8ClassType());
+			cpEntryValidators.put(enumElementValue.getTypeIndex(), matchUtf8FieldDescriptor());
 		} else if (elementValue instanceof Utf8ElementValue) {
 			int utfIndex = ((Utf8ElementValue) elementValue).getUtfIndex();
 			expectedTypeMasks.put(utfIndex, i -> i == UTF8);
@@ -522,19 +522,75 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		}
 	}
 
-	private Predicate<ConstPoolEntry> matchClassType() {
-		return e -> e instanceof CpClass && matchUtf8ClassType().test(pool.get(((CpClass) e).getIndex()));
+	private Predicate<ConstPoolEntry> matchClass() {
+		return e -> e instanceof CpClass && matchUtf8InternalName().test(pool.get(((CpClass) e).getIndex()));
 	}
 
-	private Predicate<ConstPoolEntry> matchUtf8ClassType() {
-		return matchNonEmptyUtf8();
+	private Predicate<ConstPoolEntry> matchUtf8InternalName() {
+		return matchUtf8NonEmpty();
 	}
 
-	private Predicate<ConstPoolEntry> matchNonEmptyUtf8() {
+	private Predicate<ConstPoolEntry> matchUtf8FieldDescriptor() {
+		return e -> {
+			if (e instanceof CpUtf8) {
+				// Trim out preceding array indicators of the descriptor.
+				String text = ((CpUtf8) e).getText();
+				while (text.startsWith("["))
+					text = text.substring(1);
+				// More than one char means it must be an object type.
+				// Otherwise, it must be a primitive.
+				if (text.length() > 1) {
+					char first = text.charAt(0);
+					if (first == 'L')
+						return text.charAt(text.length() - 1) == ';';
+				} else if (text.length() == 1) {
+					char desc = text.charAt(0);
+					switch (desc) {
+						case 'Z':
+						case 'C':
+						case 'B':
+						case 'S':
+						case 'I':
+						case 'F':
+						case 'J':
+						case 'D':
+							// no case for void, it shouldn't be used as a 'field descriptor'
+							return true;
+					}
+				}
+				// Empty string or failing the cases of the above.
+				return false;
+			}
+			return false;
+		};
+	}
+
+	private Predicate<ConstPoolEntry> matchUtf8ValidQualifiedName() {
+		return e -> {
+			if (e instanceof CpUtf8) {
+				// Trim out preceding array indicators of the descriptor.
+				String text = ((CpUtf8) e).getText();
+				if (text.indexOf('.') >= 0)
+					return false;
+				else if (text.indexOf(';') >= 0)
+					return false;
+				else if (text.indexOf('[') >= 0)
+					return false;
+				else if (text.indexOf('/') >= 0)
+					return false;
+				// No illegal chars
+				return true;
+			}
+			// Not a UTF8 constant
+			return false;
+		};
+	}
+
+	private Predicate<ConstPoolEntry> matchUtf8NonEmpty() {
 		return e -> e instanceof CpUtf8 && ((CpUtf8) e).getText().length() > 0;
 	}
 
-	private Predicate<ConstPoolEntry> matchWordUtf8() {
+	private Predicate<ConstPoolEntry> matchUtf8Word() {
 		return e -> e instanceof CpUtf8 && ((CpUtf8) e).getText().matches("[<>;/$\\w]+");
 	}
 }
