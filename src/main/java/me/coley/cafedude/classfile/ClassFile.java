@@ -9,6 +9,7 @@ import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.io.AttributeContext;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -253,6 +254,10 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	@Override
 	public AttributeContext getHolderType() {
 		return AttributeContext.CLASS;
+	}
+
+	public <T extends Attribute> Optional<T> getAttribute(Class<T> type) {
+		return attributes.stream().filter(type::isInstance).map(a -> (T) a).findFirst();
 	}
 
 	@Override

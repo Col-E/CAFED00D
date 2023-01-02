@@ -5,6 +5,7 @@ import me.coley.cafedude.classfile.behavior.AttributeHolder;
 import me.coley.cafedude.classfile.behavior.CpAccessor;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -91,6 +92,10 @@ public abstract class ClassMember implements AttributeHolder, CpAccessor {
 		this.attributes = attributes;
 	}
 
+	public <T extends Attribute> Optional<T> getAttribute(Class<T> type) {
+		return attributes.stream().filter(type::isInstance).map(type::cast).findFirst();
+	}
+
 	@Override
 	public Set<Integer> cpAccesses() {
 		Set<Integer> set = new TreeSet<>();
@@ -99,5 +104,14 @@ public abstract class ClassMember implements AttributeHolder, CpAccessor {
 		for (Attribute attribute : getAttributes())
 			set.addAll(attribute.cpAccesses());
 		return set;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = 1;
+		result = 31 * result + access;
+		result = 31 * result + nameIndex;
+		result = 31 * result + typeIndex;
+		return result;
 	}
 }
