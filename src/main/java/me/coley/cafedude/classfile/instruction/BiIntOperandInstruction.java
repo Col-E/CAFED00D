@@ -1,11 +1,16 @@
 package me.coley.cafedude.classfile.instruction;
 
+import me.coley.cafedude.classfile.behavior.CpAccessor;
+
+import java.util.Collections;
+import java.util.Set;
+
 /**
  * Instruction with two int operands.
  *
  * @author xDark
  */
-public class BiIntOperandInstruction extends BasicInstruction {
+public class BiIntOperandInstruction extends BasicInstruction implements CpAccessor {
 	private int firstOperand;
 	private int secondOperand;
 
@@ -78,7 +83,26 @@ public class BiIntOperandInstruction extends BasicInstruction {
 	}
 
 	@Override
+	public int computeSize() {
+		if(getOpcode() == Opcodes.MULTIANEWARRAY) {
+			return 1 + 2 + 1; // opcode + index (short) + dimensions (byte)
+		} else if(getOpcode() == Opcodes.IINC) {
+			return 1 + 1 + 1; // opcode + index (byte) + constant (byte)
+		} else {
+			return -1;
+		}
+	}
+
+	@Override
 	public String toString() {
 		return "insn(" + getOpcode() + ": " + firstOperand + ", " + secondOperand + ")";
+	}
+
+	@Override
+	public Set<Integer> cpAccesses() {
+		if(getOpcode() == Opcodes.MULTIANEWARRAY) {
+			return Collections.singleton(firstOperand);
+		}
+		return Collections.emptySet();
 	}
 }

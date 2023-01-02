@@ -99,4 +99,9 @@ public class LookupSwitchInstruction extends BasicInstruction {
 		result = 31 * result + offsets.hashCode();
 		return result;
 	}
+
+	@Override
+	public int computeSize() {
+		return 1 + 3 + 4 + 4 + 4 * keys.size() + 4 * offsets.size(); // padding + default + npairs + pairs
+	}
 }

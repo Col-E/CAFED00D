@@ -33,6 +33,10 @@ public abstract class Instruction {
 		this.opcode = opcode;
 	}
 
+	public int computeSize() {
+		return 1; // opcode
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;

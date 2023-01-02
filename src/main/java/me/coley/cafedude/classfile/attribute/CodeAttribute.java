@@ -2,7 +2,9 @@ package me.coley.cafedude.classfile.attribute;
 
 import me.coley.cafedude.classfile.behavior.AttributeHolder;
 import me.coley.cafedude.classfile.behavior.CpAccessor;
+import me.coley.cafedude.classfile.instruction.Instruction;
 import me.coley.cafedude.io.AttributeContext;
+import me.coley.cafedude.io.InstructionReader;
 
 import java.util.Collections;
 import java.util.List;
@@ -58,7 +60,6 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 	public void setCode(byte[] code) {
 		this.code = code;
 	}
-
 
 	/**
 	 * @return Maximum number of values on the stack in the method.
@@ -127,7 +128,10 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 			set.addAll(attribute.cpAccesses());
 		for (ExceptionTableEntry ex : getExceptionTable())
 			set.addAll(ex.cpAccesses());
-		// TODO: Instructions
+		InstructionReader reader = new InstructionReader();
+		for (Instruction instruction : reader.read(getCode()))
+			if(instruction instanceof CpAccessor)
+				set.addAll(((CpAccessor) instruction).cpAccesses());
 		return set;
 	}
 
