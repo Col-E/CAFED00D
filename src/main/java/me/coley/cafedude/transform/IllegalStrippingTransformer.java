@@ -109,7 +109,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				fallbackReader.rewritten = false;
 				// Read the code attribute and see if we found any illegal instructions.
 				CodeAttribute code = (CodeAttribute) codeAttribute.get();
-				List<Instruction> instructions = reader.read(code);
+				List<Instruction> instructions = reader.read(code.getCode());
 				if (fallbackReader.rewritten) {
 					// Update code with rewritten instructions.
 					code.setCode(writer.writeCode(instructions));

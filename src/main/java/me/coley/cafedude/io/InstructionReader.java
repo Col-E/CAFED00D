@@ -1,6 +1,5 @@
 package me.coley.cafedude.io;
 
-import me.coley.cafedude.classfile.attribute.CodeAttribute;
 import me.coley.cafedude.classfile.instruction.BasicInstruction;
 import me.coley.cafedude.classfile.instruction.BiIntOperandInstruction;
 import me.coley.cafedude.classfile.instruction.Instruction;
@@ -41,15 +40,15 @@ public class InstructionReader {
 	}
 
 	/**
-	 * @param attribute
-	 * 		Code attribute.
+	 * @param code
+	 * 		Code data.
 	 *
 	 * @return a list of instructions.
 	 */
 	@SuppressWarnings("DuplicateBranchesInSwitch")
-	public List<Instruction> read(CodeAttribute attribute) {
+	public List<Instruction> read(byte[] code) {
 		List<Instruction> instructions = new ArrayList<>();
-		ByteBuffer buffer = ByteBuffer.wrap(attribute.getCode());
+		ByteBuffer buffer = ByteBuffer.wrap(code);
 		FallbackInstructionReader fallbackReader = this.fallbackReader;
 		while (buffer.hasRemaining()) {
 			int opcode = buffer.get() & 0xFF;
