@@ -2,6 +2,10 @@ package me.coley.cafedude.util;
 
 import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.classfile.Descriptor;
+import me.coley.cafedude.classfile.annotation.ClassElementValue;
+import me.coley.cafedude.classfile.annotation.ElementValue;
+import me.coley.cafedude.classfile.annotation.PrimitiveElementValue;
+import me.coley.cafedude.classfile.annotation.Utf8ElementValue;
 import me.coley.cafedude.classfile.constant.*;
 import me.coley.cafedude.tree.Constant;
 
@@ -17,10 +21,10 @@ public class ConstantUtil {
 	 * 			Constant pool to use for resolving references.
 	 * @return Constant or {@code null} if the entry is not convertible.
 	 */
-	public static Constant toConstant(ConstPoolEntry entry, ConstPool pool) {
+	public static Constant from(ConstPoolEntry entry, ConstPool pool) {
 		switch (entry.getTag()) {
 			case UTF8: return new Constant(Constant.Type.STRING, ((CpUtf8) entry).getText());
-			case STRING: return toConstant(pool.get(((CpString) entry).getIndex()), pool);
+			case STRING: return from(pool.get(((CpString) entry).getIndex()), pool);
 			case INTEGER: return new Constant(Constant.Type.INT, ((CpInt) entry).getValue());
 			case FLOAT: return new Constant(Constant.Type.FLOAT, ((CpFloat) entry).getValue());
 			case LONG: return new Constant(Constant.Type.LONG, ((CpLong) entry).getValue());
@@ -32,6 +36,33 @@ public class ConstantUtil {
 			}
 			default: return null;
 		}
+	}
+
+	/**
+	 * Convert a {@link ElementValue} to a {@link Constant}.
+	 *
+	 * @param value
+	 * 			Element value. {@link PrimitiveElementValue}, {@link Utf8ElementValue} or {@link ClassElementValue}.
+	 * @param pool
+	 * 			Constant pool to use for resolving references.
+	 * @return Constant or {@code null} if the value is not convertible.
+	 * @throws IllegalArgumentException If a invalid element value is encountered.
+	 */
+	public static Constant from(ElementValue value, ConstPool pool) {
+		ConstPoolEntry cp;
+		if(value instanceof PrimitiveElementValue) {
+			PrimitiveElementValue primitive = (PrimitiveElementValue) value;
+			cp = pool.get(primitive.getValueIndex());
+		} else if(value instanceof Utf8ElementValue) {
+			Utf8ElementValue utf8 = (Utf8ElementValue) value;
+			cp = pool.get(utf8.getUtfIndex());
+		} else if(value instanceof ClassElementValue) {
+			ClassElementValue clazz = (ClassElementValue) value;
+			cp = pool.get(clazz.getClassIndex());
+		} else {
+			throw new IllegalStateException("Unknown element value: " + value);
+		}
+		return ConstantUtil.from(cp, pool);
 	}
 
 }

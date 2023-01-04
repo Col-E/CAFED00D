@@ -1,16 +1,15 @@
 package me.coley.cafedude.tree.visitor;
 
 import me.coley.cafedude.InvalidClassException;
-import me.coley.cafedude.classfile.*;
-import me.coley.cafedude.classfile.attribute.Attribute;
-import me.coley.cafedude.classfile.attribute.CodeAttribute;
+import me.coley.cafedude.classfile.ClassFile;
+import me.coley.cafedude.classfile.Field;
+import me.coley.cafedude.classfile.Method;
 import me.coley.cafedude.classfile.constant.CpClass;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.io.ClassFileReader;
 import me.coley.cafedude.transform.LabelTransformer;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Class to read a {@link ClassFile} into a {@link ClassVisitor}.
@@ -19,7 +18,6 @@ import java.util.Optional;
 public class ClassReader {
 
 	private final ClassFile classFile;
-	private LabelTransformer transformer;
 
 	/**
 	 * Construct a class reader using a byte array which will be read.
@@ -50,9 +48,8 @@ public class ClassReader {
 	 * 			Visitor to accept.
 	 */
 	public void accept(ClassVisitor visitor) {
-		transformer = new LabelTransformer(classFile);
+		LabelTransformer transformer = new LabelTransformer(classFile);
 		transformer.transform();
-		ConstPool pool = classFile.getPool();
 		List<Integer> interfaces = classFile.getInterfaceIndices();
 		String[] interfaceNames = new String[interfaces.size()];
 		for (int i = 0; i < interfaces.size(); i++) {
@@ -60,32 +57,12 @@ public class ClassReader {
 		}
 		visitor.visitClass(classFile.getName(), classFile.getAccess(), classFile.getSuperName(), interfaceNames);
 		for (Method method : classFile.getMethods()) {
-			String name = pool.getUtf(method.getNameIndex());
-			String descriptor = pool.getUtf(method.getTypeIndex());
-			Descriptor desc = Descriptor.from(descriptor);
-			MethodVisitor mv = visitor.visitMethod(name, method.getAccess(), desc);
-			if(mv == null) continue; // method skipped
-			accept(mv.visitCode(), method);
-			mv.visitMethodEnd();
+			new MemberReader(method, classFile, visitor, transformer).visitMethod();
 		}
 		for (Field field : classFile.getFields()) {
-			String name = pool.getUtf(field.getNameIndex());
-			String descriptor = pool.getUtf(field.getTypeIndex());
-			Descriptor desc = Descriptor.from(descriptor);
-			FieldVisitor fv = visitor.visitField(name, field.getAccess(), desc);
-			if(fv == null) continue; // field skipped
-			fv.visitFieldEnd();
+			new MemberReader(field, classFile, visitor, transformer).visitField();
 		}
 		visitor.visitClassEnd();
-	}
-
-	private void accept(CodeVisitor cv, Method method) {
-		if(cv == null) return; // skip code
-		CodeAttribute code = method.getAttribute(CodeAttribute.class).orElse(null);
-		if(code == null) return; // skip code
-		InstructionVisitor ir = new InstructionVisitor(classFile, code, cv, method,
-				transformer.getLabels(method), transformer.getInstructions(method));
-		ir. accept();
 	}
 
 	private String getClassName(int classIndex) {

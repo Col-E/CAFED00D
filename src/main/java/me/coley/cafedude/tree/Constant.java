@@ -1,5 +1,7 @@
 package me.coley.cafedude.tree;
 
+import me.coley.cafedude.classfile.Descriptor;
+
 /**
  * Constant object with type and value.
  */
@@ -18,6 +20,30 @@ public class Constant {
 	public Constant(Type type, Object value) {
 		this.type = type;
 		this.value = value;
+	}
+
+	public static Constant of(float value) {
+		return new Constant(Type.FLOAT, value);
+	}
+
+	public static Constant of(double value) {
+		return new Constant(Type.DOUBLE, value);
+	}
+
+	public static Constant of(long value) {
+		return new Constant(Type.LONG, value);
+	}
+
+	public static Constant of(int value) {
+		return new Constant(Type.INT, value);
+	}
+
+	public static Constant of(String value) {
+		return new Constant(Type.STRING, value);
+	}
+
+	public static Constant of(Descriptor value) {
+		return new Constant(Type.DESCRIPTOR, value);
 	}
 
 	/**
@@ -56,7 +82,7 @@ public class Constant {
 		 */
 		DOUBLE,
 		/**
-		 * {@link String}
+		 * {@link Descriptor}
 		 */
 		DESCRIPTOR,
 

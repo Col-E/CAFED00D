@@ -155,7 +155,7 @@ public class InstructionVisitor {
 		if (opcode == BIPUSH || opcode == SIPUSH || opcode == NEWARRAY || opcode == RET) {
 			cv.visitIntInsn(opcode, operand);
 		} else if (opcode == LDC || opcode == LDC_W || opcode == LDC2_W) {
-			Constant cst = ConstantUtil.toConstant(pool.get(operand), pool);
+			Constant cst = ConstantUtil.from(pool.get(operand), pool);
 			cv.visitLdcInsn(cst);
 		} else if ((opcode >= ILOAD && opcode <= ALOAD) || (opcode >= ISTORE && opcode <= ASTORE)) {
 			cv.visitVarInsn(opcode, operand);
@@ -201,7 +201,7 @@ public class InstructionVisitor {
 			Handle bsmHandle = new Handle(Handle.Tag.fromKind(mh.getKind()), bsmOwner, bsmName, Descriptor.from(bsmType));
 			Constant[] args = new Constant[bsm.getArgs().size()];
 			for (int i = 0; i < args.length; i++) {
-				args[i] = ConstantUtil.toConstant(pool.get(bsm.getArgs().get(i)), pool);
+				args[i] = ConstantUtil.from(pool.get(bsm.getArgs().get(i)), pool);
 			}
 			cv.visitInvokeDynamicInsn(name, Descriptor.from(type), bsmHandle, args);
 		} else {
