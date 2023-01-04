@@ -16,16 +16,20 @@ import java.util.Set;
  */
 public class AnnotationsAttribute extends Attribute {
 	private List<Annotation> annotations;
+	private boolean visible;
 
 	/**
 	 * @param nameIndex
 	 * 		Name index in constant pool.
 	 * @param annotations
 	 * 		List of annotations.
+	 * @param visible
+	 * 		Whether the annotations are visible at runtime.
 	 */
-	public AnnotationsAttribute(int nameIndex, List<Annotation> annotations) {
+	public AnnotationsAttribute(int nameIndex, List<Annotation> annotations, boolean visible) {
 		super(nameIndex);
 		this.annotations = annotations;
+		this.visible = visible;
 	}
 
 	/**
@@ -41,6 +45,21 @@ public class AnnotationsAttribute extends Attribute {
 	 */
 	public void setAnnotations(List<Annotation> annotations) {
 		this.annotations = annotations;
+	}
+
+	/**
+	 * @return Whether the annotations are visible at runtime.
+	 */
+	public boolean isVisible() {
+		return visible;
+	}
+
+	/**
+	 * @param visible
+	 * 		Whether the annotations are visible at runtime.
+	 */
+	public void setVisible(boolean visible) {
+		this.visible = visible;
 	}
 
 	@Override

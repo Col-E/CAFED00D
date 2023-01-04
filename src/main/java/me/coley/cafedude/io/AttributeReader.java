@@ -163,14 +163,17 @@ public class AttributeReader {
 			case SOURCE_DEBUG_EXTENSION:
 				return readSourceDebugExtension();
 			case RUNTIME_INVISIBLE_ANNOTATIONS:
+				return readAnnotations(context, false);
 			case RUNTIME_VISIBLE_ANNOTATIONS:
-				return readAnnotations(context);
+				return readAnnotations(context, true);
 			case RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
+				return readParameterAnnotations(context, false);
 			case RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS:
-				return readParameterAnnotations(context);
+				return readParameterAnnotations(context, true);
 			case RUNTIME_INVISIBLE_TYPE_ANNOTATIONS:
+				return readTypeAnnotations(context, false);
 			case RUNTIME_VISIBLE_TYPE_ANNOTATIONS:
-				return readTypeAnnotations(context);
+				return readTypeAnnotations(context, true);
 			case ANNOTATION_DEFAULT:
 				return readAnnotationDefault(context);
 			case SYNTHETIC:
@@ -506,8 +509,8 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
-	private AnnotationsAttribute readAnnotations(AttributeContext context) throws IOException {
-		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, nameIndex, context)
+	private AnnotationsAttribute readAnnotations(AttributeContext context, boolean visible) throws IOException {
+		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, nameIndex, context, visible)
 				.readAnnotations();
 	}
 
@@ -520,8 +523,9 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
-	private ParameterAnnotationsAttribute readParameterAnnotations(AttributeContext context) throws IOException {
-		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, nameIndex, context)
+	private ParameterAnnotationsAttribute readParameterAnnotations(AttributeContext context, boolean visible)
+			throws IOException {
+		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, nameIndex, context, visible)
 				.readParameterAnnotations();
 	}
 
@@ -534,8 +538,8 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
-	private AnnotationsAttribute readTypeAnnotations(AttributeContext context) throws IOException {
-		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, nameIndex, context)
+	private AnnotationsAttribute readTypeAnnotations(AttributeContext context, boolean visible) throws IOException {
+		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, nameIndex, context, visible)
 				.readTypeAnnotations();
 	}
 
@@ -549,7 +553,7 @@ public class AttributeReader {
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	private AnnotationDefaultAttribute readAnnotationDefault(AttributeContext context) throws IOException {
-		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, nameIndex, context)
+		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, nameIndex, context, true)
 				.readAnnotationDefault();
 	}
 

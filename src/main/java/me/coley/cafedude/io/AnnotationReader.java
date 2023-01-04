@@ -56,6 +56,7 @@ public class AnnotationReader {
 	private final AttributeContext context;
 	private final int nameIndex;
 	private final int maxCpIndex;
+	private final boolean visible;
 
 	/**
 	 * Create an annotation reader.
@@ -72,13 +73,15 @@ public class AnnotationReader {
 	 * 		Attribute name index.
 	 * @param context
 	 * 		Location of the annotation.
+	 * @param visible
+	 * 		Whether the annotation is visible at runtime.
 	 *
 	 * @throws IOException
 	 * 		When the subsection of the given stream for annotation reading cannot be allocated,
 	 * 		possible due to out-of-bounds problems. This is an indicator of a malformed class.
 	 */
 	public AnnotationReader(ClassFileReader reader, ConstPool cp, DataInputStream is, int length,
-							int nameIndex, AttributeContext context)
+							int nameIndex, AttributeContext context, boolean visible)
 			throws IOException {
 		this.reader = reader;
 		this.cp = cp;
@@ -88,6 +91,7 @@ public class AnnotationReader {
 		this.nameIndex = nameIndex;
 		this.context = context;
 		this.maxCpIndex = cp.size();
+		this.visible = visible;
 	}
 
 	/**
@@ -139,7 +143,7 @@ public class AnnotationReader {
 				}
 			}
 			// Didn't throw exception, its valid
-			return new AnnotationsAttribute(nameIndex, annotations);
+			return new AnnotationsAttribute(nameIndex, annotations, visible);
 		} catch (Throwable t) {
 			logger.debug("Illegally formatted Annotations", t);
 			return null;
@@ -194,7 +198,7 @@ public class AnnotationReader {
 			for (int i = 0; i < numAnnotations; i++)
 				annotations.add(readTypeAnnotation());
 			// Didn't throw exception, its valid
-			return new AnnotationsAttribute(nameIndex, annotations);
+			return new AnnotationsAttribute(nameIndex, annotations, visible);
 		} catch (Throwable t) {
 			logger.debug("Illegally formatted TypeAnnotations", t);
 			return null;
