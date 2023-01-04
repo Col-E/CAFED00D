@@ -69,6 +69,22 @@ public interface ClassVisitor {
 	}
 
 	/**
+	 * Visit a class annotation.
+	 *
+	 * @param type
+	 * 			Class type of the annotation.
+	 * @param visible
+	 * 			Whether the annotation is visible at runtime.
+	 * @return A visitor for the annotation.
+	 */
+	@Nullable
+	default AnnotationVisitor visitAnnotation(String type, boolean visible) {
+		ClassVisitor delegate = classDelegate();
+		if(delegate != null) return delegate.visitAnnotation(type, visible);
+		return null;
+	}
+
+	/**
 	 * End of the class.
 	 */
 	default void visitClassEnd() {

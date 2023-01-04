@@ -14,6 +14,22 @@ public interface FieldVisitor {
 	}
 
 	/**
+	 * Visit a field annotation.
+	 *
+	 * @param type
+	 * 			Class type of the annotation.
+	 * @param visible
+	 * 			Whether the annotation is visible at runtime.
+	 * @return A visitor for the annotation.
+	 */
+	@Nullable
+	default AnnotationVisitor visitAnnotation(String type, boolean visible) {
+		FieldVisitor delegate = fieldDelegate();
+		if(delegate != null) return delegate.visitAnnotation(type, visible);
+		return null;
+	}
+
+	/**
 	 * Visit the end of the field.
 	 */
 	default void visitFieldEnd() {
