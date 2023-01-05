@@ -2,7 +2,7 @@ package me.coley.cafedude.tree.visitor;
 
 import org.jetbrains.annotations.Nullable;
 
-public interface MethodVisitor {
+public interface MethodVisitor extends DeclarationVisitor {
 
 	/**
 	 * Return the delegate visitor for pass through implementations.
@@ -11,6 +11,11 @@ public interface MethodVisitor {
 	@Nullable
 	default MethodVisitor methodDelegate() {
 		return null;
+	}
+
+	@Override
+	default MethodVisitor declarationDelegate() {
+		return methodDelegate();
 	}
 
 	/**
@@ -24,19 +29,14 @@ public interface MethodVisitor {
 	}
 
 	/**
-	 * Visit a method annotation.
+	 * Visit a thrown exception.
 	 *
 	 * @param type
-	 * 			Class type of the annotation.
-	 * @param visible
-	 * 			Whether the annotation is visible at runtime.
-	 * @return A visitor for the annotation.
+	 * 		  Type of the exception.
 	 */
-	@Nullable
-	default AnnotationVisitor visitAnnotation(String type, boolean visible) {
+	default void visitThrows(String type) {
 		MethodVisitor delegate = methodDelegate();
-		if(delegate != null) return delegate.visitAnnotation(type, visible);
-		return null;
+		if(delegate != null) delegate.visitThrows(type);
 	}
 
 	/**

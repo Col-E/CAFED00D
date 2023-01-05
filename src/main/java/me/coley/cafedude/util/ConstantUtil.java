@@ -65,4 +65,21 @@ public class ConstantUtil {
 		return ConstantUtil.from(cp, pool);
 	}
 
+	/**
+	 * Get the UTF8 string of a {@link CpClass} index
+	 *
+	 * @param classIndex
+	 * 			Index of the class constant.
+	 * @param pool
+	 * 			Constant pool to use for resolving references.
+	 * @return UTF8 string.
+	 */
+	public static String getClassName(int classIndex, ConstPool pool) {
+		ConstPoolEntry entry = pool.get(classIndex);
+		if(entry.getTag() == CLASS) {
+			return pool.get(((CpClass) entry).getIndex()).toString();
+		}
+		return null;
+	}
+
 }

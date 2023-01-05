@@ -2,7 +2,7 @@ package me.coley.cafedude.tree.visitor;
 
 import org.jetbrains.annotations.Nullable;
 
-public interface FieldVisitor {
+public interface FieldVisitor extends DeclarationVisitor {
 
 	/**
 	 * Return the delegate visitor for pass through implementations.
@@ -13,20 +13,20 @@ public interface FieldVisitor {
 		return null;
 	}
 
+	@Override
+	default FieldVisitor declarationDelegate() {
+		return fieldDelegate();
+	}
+
 	/**
-	 * Visit a field annotation.
+	 * Visit a field constant value.
 	 *
-	 * @param type
-	 * 			Class type of the annotation.
-	 * @param visible
-	 * 			Whether the annotation is visible at runtime.
-	 * @return A visitor for the annotation.
+	 * @param value
+	 * 			Constant value.
 	 */
-	@Nullable
-	default AnnotationVisitor visitAnnotation(String type, boolean visible) {
+	default void visitConstantValue(Object value) {
 		FieldVisitor delegate = fieldDelegate();
-		if(delegate != null) return delegate.visitAnnotation(type, visible);
-		return null;
+		if(delegate != null) delegate.visitConstantValue(value);
 	}
 
 	/**

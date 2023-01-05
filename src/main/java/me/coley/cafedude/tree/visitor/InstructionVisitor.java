@@ -4,8 +4,7 @@ import me.coley.cafedude.classfile.ClassFile;
 import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.classfile.Descriptor;
 import me.coley.cafedude.classfile.Method;
-import me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute;
-import me.coley.cafedude.classfile.attribute.CodeAttribute;
+import me.coley.cafedude.classfile.attribute.*;
 import me.coley.cafedude.classfile.constant.*;
 import me.coley.cafedude.classfile.instruction.*;
 import me.coley.cafedude.tree.Constant;
@@ -26,6 +25,8 @@ public class InstructionVisitor {
 
 	private static final Logger logger = LoggerFactory.getLogger(InstructionVisitor.class);
 	private final BootstrapMethodsAttribute bsma;
+	private final LocalVariableTableAttribute lvta;
+	private final LocalVariableTypeTableAttribute lvtta;
 	private final CodeVisitor cv;
 	private final CodeAttribute ca;
 	private final ConstPool pool;
@@ -35,7 +36,9 @@ public class InstructionVisitor {
 
 	public InstructionVisitor(ClassFile clazz, CodeAttribute ca, CodeVisitor cv, Method method,
 							  Map<Integer, Label> labels, Map<Integer, Instruction> instructions) {
-		this.bsma = clazz.getAttribute(BootstrapMethodsAttribute.class).orElse(null);
+		this.bsma = clazz.getAttribute(BootstrapMethodsAttribute.class);
+		this.lvta = ca.getAttribute(LocalVariableTableAttribute.class);
+		this.lvtta = ca.getAttribute(LocalVariableTypeTableAttribute.class);
 		this.cv = cv;
 		this.ca = ca;
 		this.pool = clazz.getPool();
@@ -48,7 +51,7 @@ public class InstructionVisitor {
 	public void accept() {
 		if(instructions == null) {
 			logger.warn("Method visited but no instructions present, Method=" + pool.getUtf(method.getNameIndex()));
-			throw new RuntimeException();
+			return;
 		}
 		if(instructions.isEmpty()) return; // no instructions, abstract/interface method
 		for (Map.Entry<Integer, Instruction> entry : instructions.entrySet()) {
@@ -56,6 +59,9 @@ public class InstructionVisitor {
 			Label currentLabel = labels.get(insnPos);
 			if(currentLabel != null) {
 				cv.visitLabel(currentLabel);
+				for (Integer line : currentLabel.getLines()) {
+					cv.visitLineNumber(line, currentLabel);
+				}
 			}
 			Instruction insn = entry.getValue();
 			if (insn instanceof IntOperandInstruction) {

@@ -126,6 +126,19 @@ public interface CodeVisitor {
 	}
 
 	/**
+	 * Visit a line number
+	 *
+	 * @param line
+	 * 			Line number.
+	 * @param start
+	 * 			Label of the instruction which starts the line.
+	 */
+	default void visitLineNumber(int line, Label start) {
+		CodeVisitor cv = codeDelegate();
+		if (cv != null) cv.visitLineNumber(line, start);
+	}
+
+	/**
 	 * Visit an integer operand instruction.
 	 *
 	 * @param opcode

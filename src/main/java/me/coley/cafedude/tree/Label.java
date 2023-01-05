@@ -1,9 +1,12 @@
 package me.coley.cafedude.tree;
 
+import java.util.List;
+
 public class Label {
 
 	private String name;
 	private int offset;
+	private List<Integer> lines;
 
 	public Label(String name, int offset) {
 		this.name = name;
@@ -28,6 +31,18 @@ public class Label {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public void addLineNumber(int line) {
+		lines.add(line);
+	}
+
+	public List<Integer> getLines() {
+		return lines;
+	}
+
+	public void setLines(List<Integer> lines) {
+		this.lines = lines;
 	}
 
 }

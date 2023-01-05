@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Visitor for accepting class members and attributes.
  */
-public interface ClassVisitor {
+public interface ClassVisitor extends DeclarationVisitor {
 
 	/**
 	 * Return the delegate visitor for pass through implementations.
@@ -14,6 +14,11 @@ public interface ClassVisitor {
 	 */
 	default ClassVisitor classDelegate() {
 		return null;
+	}
+
+	@Override
+	default ClassVisitor declarationDelegate() {
+		return classDelegate();
 	}
 
 	/**
@@ -69,19 +74,37 @@ public interface ClassVisitor {
 	}
 
 	/**
-	 * Visit a class annotation.
+	 * Visits the enclosing class of the class.
 	 *
-	 * @param type
-	 * 			Class type of the annotation.
-	 * @param visible
-	 * 			Whether the annotation is visible at runtime.
-	 * @return A visitor for the annotation.
+	 * @param owner
+	 * 			Name of the enclosing class.
+	 * @param name
+	 * 			Name of the enclosing method.
+	 * @param descriptor
+	 * 			Descriptor of the enclosing method.
 	 */
-	@Nullable
-	default AnnotationVisitor visitAnnotation(String type, boolean visible) {
+	default void visitOuterClass(String owner, String name, Descriptor descriptor) {
 		ClassVisitor delegate = classDelegate();
-		if(delegate != null) return delegate.visitAnnotation(type, visible);
-		return null;
+		if(delegate != null) delegate.visitOuterClass(owner, name, descriptor);
+	}
+
+	/**
+	 * Visit an inner class.
+	 *
+	 * @param name
+	 * 			Name of the inner class.
+	 * @param outerName
+	 * 			Name of the outer class.
+	 * 			{@code null} if the inner class is not a member of another class.
+	 * @param innerName
+	 * 			Name of the inner class inside its enclosing class.
+	 * 			{@code null} if the inner class is anonymous.
+	 * @param access
+	 * 			Access flags of the inner class.
+	 */
+	default void visitInnerClass(String name, @Nullable String outerName, @Nullable String innerName, int access) {
+		ClassVisitor delegate = classDelegate();
+		if(delegate != null) delegate.visitInnerClass(name, outerName, innerName, access);
 	}
 
 	/**
