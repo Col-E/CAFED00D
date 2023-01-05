@@ -53,7 +53,7 @@ public interface CodeVisitor {
 	 * Visit a return instruction which returns a value from a method.
 	 *
 	 * @param opcode
-	 * 			opcode of the instruction. The opcode is either: RETURN, IRETURN, LRETURN, FRETURN,
+	 * 			opcode of the instruction. The opcode should be one of: RETURN, IRETURN, LRETURN, FRETURN,
 	 * 			DRETURN or ARETURN
 	 */
 	default void visitReturnInsn(int opcode) {
@@ -65,7 +65,7 @@ public interface CodeVisitor {
 	 * Visit a constant pushing instruction with no operand.
 	 *
 	 * @param opcode
-	 * 			opcode of the instruction. The opcode is either: ACONST_NULL, ICONST_M1, ICONST_0,
+	 * 			opcode of the instruction. The opcode should be one of: ACONST_NULL, ICONST_M1, ICONST_0,
 	 * 			ICONST_1, ICONST_2, ICONST_3, ICONST_4, ICONST_5, LCONST_0, LCONST_1, FCONST_0,
 	 * 			FCONST_1, FCONST_2, DCONST_0 or DCONST_1
 	 */
@@ -78,7 +78,7 @@ public interface CodeVisitor {
 	 * Visit an arithmetic instruction which performs an operation on two values on the stack.
 	 *
 	 * @param opcode
-	 * 			opcode of the instruction. The opcode is either: IADD, LADD, FADD, DADD, ISUB, LSUB,
+	 * 			opcode of the instruction. The opcode should be one of: IADD, LADD, FADD, DADD, ISUB, LSUB,
 	 * 			FSUB, DSUB, IMUL, LMUL, FMUL, DMUL, IDIV, LDIV, FDIV, DDIV, IREM, LREM, FREM, DREM,
 	 * 			INEG, LNEG, FNEG, DNEG, ISHL, LSHL, ISHR, LSHR, IUSHR, LUSHR, IAND, LAND, IOR, LOR,
 	 * 			IXOR, LXOR, I2L, I2F, I2D, L2I, L2F, L2D, F2I, F2L, F2D, D2I, D2L, D2F, I2B, I2C,
@@ -93,7 +93,7 @@ public interface CodeVisitor {
 	 * Visit an array operation instruction which performs an operation on an array.
 	 *
 	 * @param opcode
-	 * 			opcode of the instruction. The opcode is either: IALOAD, LALOAD, FALOAD, DALOAD,
+	 * 			opcode of the instruction. The opcode should be one of: IALOAD, LALOAD, FALOAD, DALOAD,
 	 * 			AALOAD, BALOAD, CALOAD, SALOAD, IASTORE, LASTORE, FASTORE, DASTORE, AASTORE,
 	 * 			BASTORE, CASTORE or SASTORE
 	 */
@@ -106,7 +106,7 @@ public interface CodeVisitor {
 	 * Visit a stack operation instruction which performs an operation on the stack.
 	 *
 	 * @param opcode
-	 * 			opcode of the instruction. The opcode is either: POP, POP2, DUP, DUP_X1, DUP_X2,
+	 * 			opcode of the instruction. The opcode should be one of: POP, POP2, DUP, DUP_X1, DUP_X2,
 	 * 			DUP2, DUP2_X1, DUP2_X2 or SWAP
 	 */
 	default void visitStackInsn(int opcode) {
@@ -142,7 +142,7 @@ public interface CodeVisitor {
 	 * Visit an integer operand instruction.
 	 *
 	 * @param opcode
-	 * 			opcode of the instruction. The opcode is either: BIPUSH, SIPUSH, NEWARRAY or RET
+	 * 			opcode of the instruction. The opcode should be one of: BIPUSH, SIPUSH, NEWARRAY or RET
 	 * @param operand
 	 * 			operand of the instruction. For BI/SIPUSH, the operand is a constant value to push
 	 * 			onto the stack, for NEWARRAY it is the type of array to create, and for RET it is
@@ -157,7 +157,7 @@ public interface CodeVisitor {
 	 * Visit a variable instruction which loads or stores a value from a local variable.
 	 *
 	 * @param opcode
-	 * 			opcode of the instruction. The opcode is either: ILOAD, LLOAD, FLOAD, DLOAD, ALOAD,
+	 * 			opcode of the instruction. The opcode should be one of: ILOAD, LLOAD, FLOAD, DLOAD, ALOAD,
 	 * 			ISTORE, LSTORE, FSTORE, DSTORE, ASTORE, ILOAD_N, LLOAD_N, FLOAD_N, DLOAD_N, ALOAD_N,
 	 * 			ISTORE_N, LSTORE_N, FSTORE_N, DSTORE_N, ASTORE_N where N is a number from 0 to 3.
 	 * 			Generally XLOAD_N and XSTORE_N are used for the first 4 local variables, and XLOAD
@@ -174,7 +174,7 @@ public interface CodeVisitor {
 	 * Visit a type instruction which accepts a class type as an operand.
 	 *
 	 * @param opcode
-	 * 			opcode of the instruction. The opcode is either: NEW, ANEWARRAY, CHECKCAST or INSTANCEOF
+	 * 			opcode of the instruction. The opcode should be one of: NEW, ANEWARRAY, CHECKCAST or INSTANCEOF
 	 * @param type
 	 * 			type of the instruction. For NEW it is the type of object to create, for ANEWARRAY it
 	 * 			is the type of array to create, for CHECKCAST it is the type to cast to, and for INSTANCEOF
@@ -189,7 +189,7 @@ public interface CodeVisitor {
 	 * Visit a field instruction which loads or stores a value from a field.
 	 *
 	 * @param opcode
-	 * 			opcode of the instruction. The opcode is either: GETSTATIC, PUTSTATIC, GETFIELD or PUTFIELD
+	 * 			opcode of the instruction. The opcode should be one of: GETSTATIC, PUTSTATIC, GETFIELD or PUTFIELD
 	 * @param owner
 	 * 			owner of the field. Owner is the class which contains this field.
 	 * @param name
@@ -206,7 +206,7 @@ public interface CodeVisitor {
 	 * Visit a method instruction which invokes a method.
 	 *
 	 * @param opcode
-	 * 			opcode of the instruction. The opcode is either:
+	 * 			opcode of the instruction. The opcode should be one of:
 	 * 			INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC or INVOKEINTERFACE
 	 * @param owner
 	 * 			owner of the method. Owner is the class which contains this method.
@@ -245,7 +245,7 @@ public interface CodeVisitor {
 	 * Visit a jump instruction which jumps to a label.
 	 *
 	 * @param opcode
-	 * 			opcode of the instruction. The opcode is either: IFEQ, IFNE, IFLT, IFGE, IFGT, IFLE,
+	 * 			opcode of the instruction. The opcode should be one of: IFEQ, IFNE, IFLT, IFGE, IFGT, IFLE,
 	 * 			IF_ICMPEQ, IF_ICMPNE, IF_ICMPLT, IF_ICMPGE, IF_ICMPGT, IF_ICMPLE, IF_ACMPEQ, IF_ACMPNE,
 	 * 			GOTO, JSR, IFNULL or IFNONNULL
 	 * @param label
