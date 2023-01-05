@@ -92,8 +92,14 @@ public abstract class ClassMember implements AttributeHolder, CpAccessor {
 		this.attributes = attributes;
 	}
 
-	public <T extends Attribute> Optional<T> getAttribute(Class<T> type) {
-		return attributes.stream().filter(type::isInstance).map(type::cast).findFirst();
+	@Override
+	public <T extends Attribute> T getAttribute(Class<T> type) {
+		for (Attribute attribute : attributes) {
+			if (type.isInstance(attribute)) {
+				return type.cast(attribute);
+			}
+		}
+		return null;
 	}
 
 	@Override

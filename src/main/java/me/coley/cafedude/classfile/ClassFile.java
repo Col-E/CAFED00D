@@ -256,8 +256,13 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 		return AttributeContext.CLASS;
 	}
 
-	public <T extends Attribute> Optional<T> getAttribute(Class<T> type) {
-		return attributes.stream().filter(type::isInstance).map(a -> (T) a).findFirst();
+	public <T extends Attribute> T getAttribute(Class<T> type) {
+		for (Attribute attribute : attributes) {
+			if (type.isInstance(attribute)) {
+				return type.cast(attribute);
+			}
+		}
+		return null;
 	}
 
 	@Override
