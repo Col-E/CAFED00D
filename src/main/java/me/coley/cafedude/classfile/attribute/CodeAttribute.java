@@ -5,6 +5,7 @@ import me.coley.cafedude.classfile.behavior.CpAccessor;
 import me.coley.cafedude.classfile.instruction.Instruction;
 import me.coley.cafedude.io.AttributeContext;
 import me.coley.cafedude.io.InstructionReader;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -109,6 +110,15 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 	@Override
 	public List<Attribute> getAttributes() {
 		return attributes;
+	}
+
+	@Override
+	public <T extends Attribute> @Nullable T getAttribute(Class<T> type) {
+		for (Attribute attribute : attributes) {
+			if (type.isInstance(attribute))
+				return type.cast(attribute);
+		}
+		return null;
 	}
 
 	@Override
