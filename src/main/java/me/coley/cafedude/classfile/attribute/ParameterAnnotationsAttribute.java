@@ -17,6 +17,7 @@ import java.util.Set;
  */
 public class ParameterAnnotationsAttribute extends Attribute {
 	private Map<Integer, List<Annotation>> parameterAnnotations;
+	private boolean visible;
 
 	/**
 	 * @param nameIndex
@@ -24,9 +25,10 @@ public class ParameterAnnotationsAttribute extends Attribute {
 	 * @param parameterAnnotations
 	 * 		Map of parameter indices to their list of attributes.
 	 */
-	public ParameterAnnotationsAttribute(int nameIndex, Map<Integer, List<Annotation>> parameterAnnotations) {
+	public ParameterAnnotationsAttribute(int nameIndex, Map<Integer, List<Annotation>> parameterAnnotations, boolean visible) {
 		super(nameIndex);
 		this.parameterAnnotations = parameterAnnotations;
+		this.visible = visible;
 	}
 
 	/**
@@ -42,6 +44,21 @@ public class ParameterAnnotationsAttribute extends Attribute {
 	 */
 	public void setParameterAnnotations(Map<Integer, List<Annotation>> parameterAnnotations) {
 		this.parameterAnnotations = parameterAnnotations;
+	}
+
+	/**
+	 * @return {@code true} if the annotations are visible at runtime.
+	 */
+	public boolean isVisible() {
+		return visible;
+	}
+
+	/**
+	 * @param visible
+	 * 		{@code true} if the annotations are visible at runtime.
+	 */
+	public void setVisible(boolean visible) {
+		this.visible = visible;
 	}
 
 	@Override
