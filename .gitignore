@@ -3,3 +3,5 @@
 *.iml
 target/*
 /target/
+/core/target/
+/tree/target
