@@ -3,6 +3,8 @@ package me.coley.cafedude.classfile;
 import me.coley.cafedude.classfile.attribute.Attribute;
 import me.coley.cafedude.classfile.attribute.CodeAttribute;
 import me.coley.cafedude.io.AttributeContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Set;
@@ -13,7 +15,10 @@ import java.util.TreeSet;
  *
  * @author Matt Coley
  */
-public class Method extends ClassMember{
+public class Method extends ClassMember {
+
+	private static final Logger logger = LoggerFactory.getLogger(Method.class);
+
 	/**
 	 * @param attributes
 	 * 		Attributes of the method.
@@ -41,9 +46,11 @@ public class Method extends ClassMember{
 		for (Attribute attribute : getAttributes()) {
 			if(attribute instanceof CodeAttribute) {
 				int access = getAccess();
-				if(Modifiers.has(access, Modifiers.ACC_NATIVE) || Modifiers.has(access, Modifiers.ACC_ABSTRACT))
+				if(Modifiers.has(access, Modifiers.ACC_NATIVE) || Modifiers.has(access, Modifiers.ACC_ABSTRACT)) {
 					// Native and abstract methods cannot have code, but they can still have the attribute.
+					logger.warn("Code attribute found on native or abstract method: {}", this);
 					continue;
+				}
 			}
 			set.addAll(attribute.cpAccesses());
 		}
