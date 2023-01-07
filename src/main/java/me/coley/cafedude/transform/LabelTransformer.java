@@ -44,7 +44,6 @@ public class LabelTransformer extends Transformer {
 				TreeMap<Integer, Instruction> instructions = new TreeMap<>();
 
 				int pos = 0;
-				int label = 0;
 				for (Instruction insn : insns) {
 					int opcode = insn.getOpcode();
 					if ((opcode >= IFEQ && opcode <= JSR)) {
@@ -52,8 +51,7 @@ public class LabelTransformer extends Transformer {
 						int offset = ioi.getOperand();
 						int target = pos + offset;
 						if (!labels.containsKey(target)) {
-							String name = StringUtil.generateName(StringUtil.ALPHABET, label++);
-							labels.put(target, new Label(name, target));
+							labels.put(target, new Label(target));
 						}
 					}
 					instructions.put(pos, insn);
