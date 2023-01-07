@@ -26,8 +26,8 @@ public class TableSwitchInsn extends Insn {
 	 * @param defaultLabel
 	 * 		Default offset of the switch.
 	 */
-	public TableSwitchInsn(int opcode, int min, int max, List<Label> labels, Label defaultLabel) {
-		super(opcode);
+	public TableSwitchInsn(int min, int max, List<Label> labels, Label defaultLabel) {
+		super(Opcodes.TABLESWITCH);
 		this.labels = labels;
 		this.defaultLabel = defaultLabel;
 		this.min = min;

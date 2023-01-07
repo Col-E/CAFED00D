@@ -16,6 +16,10 @@ import me.coley.cafedude.classfile.instruction.Opcodes;
  */
 public class ReturnInsn extends Insn {
 
+	/**
+	 * @param opcode
+	 * 		Instruction opcode.
+	 */
 	public ReturnInsn(int opcode) {
 		super(opcode);
 	}

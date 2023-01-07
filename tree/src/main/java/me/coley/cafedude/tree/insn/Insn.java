@@ -15,6 +15,10 @@ public class Insn {
 
 	private final int opcode;
 
+	/**
+	 * @param opcode
+	 * 		Instruction opcode.
+	 */
 	public Insn(int opcode) {
 		this.opcode = opcode;
 	}
