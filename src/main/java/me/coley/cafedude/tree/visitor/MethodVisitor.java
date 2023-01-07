@@ -40,6 +40,37 @@ public interface MethodVisitor extends DeclarationVisitor {
 	}
 
 	/**
+	 * Visit a parameter annotation.
+	 *
+	 * @param parameter
+	 * 		  Index of the parameter in the method descriptor.
+	 * @param type
+	 * 		  Class type of the annotation.
+	 * @param visible
+	 * 		  Whether the annotation is visible at runtime.
+	 * @return A visitor for the annotation.
+	 */
+	@Nullable
+	default AnnotationVisitor visitParameterAnnotation(int parameter, String type, boolean visible) {
+		MethodVisitor delegate = methodDelegate();
+		if(delegate != null) return delegate.visitParameterAnnotation(parameter, type, visible);
+		return null;
+	}
+
+	/**
+	 * Visit a method parameter
+	 *
+	 * @param name
+	 * 		  Name of the parameter.
+	 * @param access
+	 * 		  Access flags.
+	 */
+	default void visitParameter(String name, int access) {
+		MethodVisitor delegate = methodDelegate();
+		if(delegate != null) delegate.visitParameter(name, access);
+	}
+
+	/**
 	 * Visit the end of the method.
 	 */
 	default void visitMethodEnd() {

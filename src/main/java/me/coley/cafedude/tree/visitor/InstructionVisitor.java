@@ -10,13 +10,16 @@ import me.coley.cafedude.classfile.instruction.*;
 import me.coley.cafedude.tree.Constant;
 import me.coley.cafedude.tree.Handle;
 import me.coley.cafedude.tree.Label;
+import me.coley.cafedude.tree.Local;
 import me.coley.cafedude.util.ConstantUtil;
 import me.coley.cafedude.util.OpcodeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import static me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.BootstrapMethod;
 import static me.coley.cafedude.classfile.instruction.Opcodes.*;
@@ -83,6 +86,7 @@ public class InstructionVisitor {
 				visitBasicInsn((BasicInstruction) insn, insnPos);
 			}
 		}
+		visitLocalVariables();
 		cv.visitMaxs(ca.getMaxStack(), ca.getMaxLocals());
 		cv.visitCodeEnd();
 	}
@@ -230,4 +234,28 @@ public class InstructionVisitor {
 					+ OpcodeUtil.getOpcodeName(opcode) + " " + op1 + " " + op2 + " (" + opcode + ")" + " at " + pos);
 		}
 	}
+
+	private void visitLocalVariables() {
+		List<LocalVariableTypeTableAttribute.VarTypeEntry> varTypes = Collections.emptyList();
+		if (lvtta != null) {
+			varTypes = lvtta.getEntries();
+		}
+		if(lvta != null) {
+			for (LocalVariableTableAttribute.VarEntry entry : lvta.getEntries()) {
+				String name = pool.getUtf(entry.getNameIndex());
+				Descriptor desc = Descriptor.from(pool.getUtf(entry.getDescIndex()));
+				String signature = null;
+				for (LocalVariableTypeTableAttribute.VarTypeEntry varType : varTypes) {
+					if(varType.getIndex() == entry.getIndex() && varType.getStartPc() == entry.getStartPc()) {
+						signature = pool.getUtf(varType.getSignatureIndex());
+						break;
+					}
+				}
+				Label start = labels.computeIfAbsent(entry.getStartPc(), Label::new);
+				Label end = labels.computeIfAbsent(entry.getStartPc() + entry.getLength(), Label::new);
+				cv.visitLocalVariable(entry.getIndex(), name, desc, signature, start, end);
+			}
+		}
+	}
+
 }

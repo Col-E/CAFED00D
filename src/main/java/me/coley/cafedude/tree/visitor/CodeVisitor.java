@@ -341,6 +341,29 @@ public interface CodeVisitor {
 	}
 
 	/**
+	 * Visit a local variable declaration.
+	 *
+	 * @param index
+	 * 			index of the local variable.
+	 * @param name
+	 * 			name of the local variable.
+	 * @param descriptor
+	 * 			descriptor of the local variable.
+	 * @param signature
+	 * 			signature of the local variable.
+	 * 			{@code null} if the local variable type does not use generic types.
+	 * @param start
+	 * 			label of the first instruction where the local variable is defined.
+	 * @param end
+	 * 			label of the last instruction where the local variable is defined.
+	 */
+	default void visitLocalVariable(int index, String name, Descriptor descriptor, @Nullable String signature,
+									Label start, Label end) {
+		CodeVisitor cv = codeDelegate();
+		if (cv != null) cv.visitLocalVariable(index, name, descriptor, signature, start, end);
+	}
+
+	/**
 	 * Visit the end of the code.
 	 */
 	default void visitCodeEnd() {

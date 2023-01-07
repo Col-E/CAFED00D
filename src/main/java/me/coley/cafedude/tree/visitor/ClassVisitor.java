@@ -74,6 +74,42 @@ public interface ClassVisitor extends DeclarationVisitor {
 	}
 
 	/**
+	 * Visit a record component in this class.
+	 *
+	 * @param name
+	 * 		  Name of the record component.
+	 * @param descriptor
+	 * 		  Descriptor of the record component. May be {@link Descriptor.Kind#ILLEGAL} if the
+	 * 		  record component has an illegal type descriptor.
+	 * @return A visitor for the record component.
+	 */
+	@Nullable
+	default RecordComponentVisitor visitRecordComponent(String name, Descriptor descriptor) {
+		ClassVisitor delegate = classDelegate();
+		if(delegate != null) return delegate.visitRecordComponent(name, descriptor);
+		return null;
+	}
+
+	/**
+	 * Visit a module in this class.
+	 *
+	 * @param name
+	 * 		  Name of the module.
+	 * @param access
+	 * 		  Access flags of the module.
+	 * @param version
+	 * 		  Version of the module.
+	 * 		  {@code null} if the module has no version.
+	 * @return A visitor for the module.
+	 */
+	@Nullable
+	default ModuleVisitor visitModule(String name, int access, @Nullable String version) {
+		ClassVisitor delegate = classDelegate();
+		if(delegate != null) return delegate.visitModule(name, access, version);
+		return null;
+	}
+
+	/**
 	 * Visits the enclosing class of the class.
 	 *
 	 * @param owner
@@ -105,6 +141,53 @@ public interface ClassVisitor extends DeclarationVisitor {
 	default void visitInnerClass(String name, @Nullable String outerName, @Nullable String innerName, int access) {
 		ClassVisitor delegate = classDelegate();
 		if(delegate != null) delegate.visitInnerClass(name, outerName, innerName, access);
+	}
+
+	/**
+	 * Visit a source file.
+	 * @param source
+	 * 			Name of the source file.
+	 * 			{@code null} if the source file name is unknown.
+	 * @param debug
+	 * 			Debug information.
+	 * 			{@code null} if the debug information is unknown.
+	 */
+	default void visitSource(@Nullable String source, byte @Nullable [] debug) {
+		ClassVisitor delegate = classDelegate();
+		if(delegate != null) delegate.visitSource(source, debug);
+	}
+
+	/**
+	 * Visit the nest host class of this class.
+	 *
+	 * @param nestHost
+	 * 			Name of the nest host class.
+	 */
+	default void visitNestHost(String nestHost) {
+		ClassVisitor delegate = classDelegate();
+		if(delegate != null) delegate.visitNestHost(nestHost);
+	}
+
+	/**
+	 * Visit a nest member class of this class.
+	 *
+	 * @param nestMember
+	 * 			Name of the nest member class.
+	 */
+	default void visitNestMember(String nestMember) {
+		ClassVisitor delegate = classDelegate();
+		if(delegate != null) delegate.visitNestMember(nestMember);
+	}
+
+	/**
+	 * Visit a permitted subclass of this class.
+	 *
+	 * @param permittedSubclass
+	 * 			Name of the permitted subclass.
+	 */
+	default void visitPermittedSubclass(String permittedSubclass) {
+		ClassVisitor delegate = classDelegate();
+		if(delegate != null) delegate.visitPermittedSubclass(permittedSubclass);
 	}
 
 	/**

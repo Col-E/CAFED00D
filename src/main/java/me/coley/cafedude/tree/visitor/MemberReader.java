@@ -4,10 +4,15 @@ import me.coley.cafedude.classfile.ClassFile;
 import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.classfile.Method;
 import me.coley.cafedude.classfile.annotation.Annotation;
+import me.coley.cafedude.classfile.annotation.TypeAnnotation;
 import me.coley.cafedude.classfile.attribute.*;
 import me.coley.cafedude.classfile.behavior.AttributeHolder;
 import me.coley.cafedude.transform.LabelTransformer;
 import me.coley.cafedude.util.ConstantUtil;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 public class MemberReader {
 
@@ -24,9 +29,16 @@ public class MemberReader {
 	public static void visitDeclaration(DeclarationVisitor visitor, AttributeHolder member, ConstPool pool) {
 		AnnotationsAttribute annotations = member.getAttribute(AnnotationsAttribute.class);
 		if (annotations != null) {
+			boolean visible = annotations.isVisible();
 			for (Annotation annotation : annotations.getAnnotations()) {
 				String type = pool.getUtf(annotation.getTypeIndex());
-				AnnotationVisitor av = visitor.visitAnnotation(type, annotations.isVisible());
+				AnnotationVisitor av;
+				if(annotation instanceof TypeAnnotation) {
+					TypeAnnotation ta = (TypeAnnotation) annotation;
+					av = visitor.visitTypeAnnotation(type, ta.getTargetInfo(), ta.getTypePath(), visible);
+				} else {
+					av = visitor.visitAnnotation(type, visible);
+				}
 				if(av == null) continue;
 				AnnotationReader.visitAnnotation(annotation, av, pool);
 				av.visitAnnotationEnd();
@@ -37,6 +49,7 @@ public class MemberReader {
 			visitor.visitSignature(pool.getUtf(signature.getSignatureIndex()));
 		}
 		visitor.visitDeprecated(member.getAttribute(DeprecatedAttribute.class) != null);
+		visitor.visitSynthetic(member.getAttribute(SyntheticAttribute.class) != null);
 	}
 
 	public void visitMethod(MethodVisitor mv, AttributeHolder member) {
@@ -47,6 +60,27 @@ public class MemberReader {
 		if(exceptions != null) {
 			for (int exception : exceptions.getExceptionIndexTable()) {
 				mv.visitThrows(ConstantUtil.getClassName(exception, pool));
+			}
+		}
+		ParameterAnnotationsAttribute parameterAnnotations = member.getAttribute(ParameterAnnotationsAttribute.class);
+		if(parameterAnnotations != null) {
+			boolean visible = parameterAnnotations.isVisible();
+			for (Entry<Integer, List<Annotation>> entry : parameterAnnotations.getParameterAnnotations().entrySet()) {
+				int parameter = entry.getKey();
+				for (Annotation annotation : entry.getValue()) {
+					String type = pool.getUtf(annotation.getTypeIndex());
+					AnnotationVisitor av = mv.visitParameterAnnotation(parameter, type, visible);
+					if(av == null) continue;
+					AnnotationReader.visitAnnotation(annotation, av, pool);
+					av.visitAnnotationEnd();
+				}
+			}
+		}
+		MethodParametersAttribute methodParameters = member.getAttribute(MethodParametersAttribute.class);
+		if(methodParameters != null) {
+			for (MethodParametersAttribute.Parameter parameter : methodParameters.getParameters()) {
+				String name = pool.getUtf(parameter.getNameIndex());
+				mv.visitParameter(name, parameter.getAccessFlags());
 			}
 		}
 		mv.visitMethodEnd();
