@@ -17,7 +17,18 @@ public class InvokeDynamicInsn extends Insn {
 	private Handle bootstrapMethod;
 	private Constant[] bootstrapArguments;
 
-	protected InvokeDynamicInsn(String name, Descriptor descriptor, Handle bootstrapMethod, Constant[] bootstrapArguments) {
+	/**
+	 * @param name
+	 * 		Name of the method.
+	 * @param descriptor
+	 * 		Descriptor of the method.
+	 * @param bootstrapMethod
+	 * 		Handle to the bootstrap method.
+	 * @param bootstrapArguments
+	 * 		Zero or more extra arguments for the bootstrap method.
+	 */
+	public InvokeDynamicInsn(String name, Descriptor descriptor, Handle bootstrapMethod,
+							 Constant[] bootstrapArguments) {
 		super(Opcodes.INVOKEDYNAMIC);
 		this.name = name;
 		this.descriptor = descriptor;
@@ -25,34 +36,62 @@ public class InvokeDynamicInsn extends Insn {
 		this.bootstrapArguments = bootstrapArguments;
 	}
 
+	/**
+	 * @return Name of the method.
+	 */
 	public String getName() {
 		return name;
 	}
 
+	/**
+	 * @param name
+	 * 		Name of the method.
+	 */
 	public void setName(String name) {
 		this.name = name;
 	}
 
+	/**
+	 * @return Descriptor of the method.
+	 */
 	public Descriptor getDescriptor() {
 		return descriptor;
 	}
 
+	/**
+	 * @param descriptor
+	 * 		Descriptor of the method.
+	 */
 	public void setDescriptor(Descriptor descriptor) {
 		this.descriptor = descriptor;
 	}
 
+	/**
+	 * @return Handle to the bootstrap method.
+	 */
 	public Handle getBootstrapMethod() {
 		return bootstrapMethod;
 	}
 
+	/**
+	 * @param bootstrapMethod
+	 * 		Handle to the bootstrap method.
+	 */
 	public void setBootstrapMethod(Handle bootstrapMethod) {
 		this.bootstrapMethod = bootstrapMethod;
 	}
 
+	/**
+	 * @return Zero or more extra arguments for the bootstrap method.
+	 */
 	public Constant[] getBootstrapArguments() {
 		return bootstrapArguments;
 	}
 
+	/**
+	 * @param bootstrapArguments
+	 * 		Zero or more extra arguments for the bootstrap method.
+	 */
 	public void setBootstrapArguments(Constant[] bootstrapArguments) {
 		this.bootstrapArguments = bootstrapArguments;
 	}

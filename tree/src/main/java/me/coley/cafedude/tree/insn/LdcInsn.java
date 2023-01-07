@@ -12,15 +12,28 @@ public class LdcInsn extends Insn {
 
 	private Constant constant;
 
-	protected LdcInsn(int opcode, Constant constant) {
+	/**
+	 * @param opcode
+	 * 		Instruction opcode.
+	 * @param constant
+	 * 		Constant operand.
+	 */
+	public LdcInsn(int opcode, Constant constant) {
 		super(opcode);
 		this.constant = constant;
 	}
 
+	/**
+	 * @return Constant operand.
+	 */
 	public Constant getConstant() {
 		return constant;
 	}
 
+	/**
+	 * @param constant
+	 * 		Constant operand.
+	 */
 	public void setConstant(Constant constant) {
 		this.constant = constant;
 	}

@@ -31,15 +31,28 @@ public class FlowInsn extends Insn {
 
 	private Label label;
 
-	protected FlowInsn(int opcode, Label label) {
+	/**
+	 * @param opcode
+	 * 		Instruction opcode.
+	 * @param label
+	 * 		Label of the instruction.
+	 */
+	public FlowInsn(int opcode, Label label) {
 		super(opcode);
 		this.label = label;
 	}
 
+	/**
+	 * @return Label of the instruction.
+	 */
 	public Label getLabel() {
 		return label;
 	}
 
+	/**
+	 * @param label
+	 * 		Label of the instruction.
+	 */
 	public void setLabel(Label label) {
 		this.label = label;
 	}

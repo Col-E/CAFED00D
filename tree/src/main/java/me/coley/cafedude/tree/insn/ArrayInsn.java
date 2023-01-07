@@ -26,6 +26,11 @@ import me.coley.cafedude.classfile.instruction.Opcodes;
  * </ul>
  */
 public class ArrayInsn extends Insn {
+
+	/**
+	 * @param opcode
+	 * 		Instruction opcode.
+	 */
 	public ArrayInsn(int opcode) {
 		super(opcode);
 	}

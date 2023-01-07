@@ -23,7 +23,7 @@ import static me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.Bo
 import static me.coley.cafedude.classfile.attribute.StackMapTableAttribute.*;
 import static me.coley.cafedude.classfile.instruction.Opcodes.*;
 
-public class InstructionVisitor {
+class InstructionVisitor {
 
 	private static final Logger logger = LoggerFactory.getLogger(InstructionVisitor.class);
 	private final BootstrapMethodsAttribute bsma;
@@ -38,9 +38,9 @@ public class InstructionVisitor {
 	private final Map<Integer, Instruction> instructions;
 	private Stack<Value> stack = new Stack<>();
 	private final Stack<Value> locals = new Stack<>();
-	private final Stack<Value> EMPTY_STACK = new Stack<>();
+	private static final Stack<Value> EMPTY = new Stack<>();
 
-	public InstructionVisitor(ClassFile clazz, CodeAttribute ca, CodeVisitor cv, Method method,
+	InstructionVisitor(ClassFile clazz, CodeAttribute ca, CodeVisitor cv, Method method,
 							  Map<Integer, Label> labels, Map<Integer, Instruction> instructions) {
 		this.bsma = clazz.getAttribute(BootstrapMethodsAttribute.class);
 		this.lvta = ca.getAttribute(LocalVariableTableAttribute.class);
@@ -55,7 +55,7 @@ public class InstructionVisitor {
 	}
 
 
-	public void accept() {
+	void accept() {
 		if (instructions == null) {
 			logger.warn("Method visited but no instructions present, Method=" + pool.getUtf(method.getNameIndex()));
 			return;
@@ -130,11 +130,18 @@ public class InstructionVisitor {
 			cv.visitReturnInsn(opcode);
 		} else {
 			switch (opcode) {
-				case NOP: cv.visitNop(); break;
-				case ATHROW: cv.visitThrow(); break;
+				case NOP:
+					cv.visitNop();
+					break;
+				case ATHROW:
+					cv.visitThrow();
+					break;
 				case MONITORENTER:
-				case MONITOREXIT: cv.visitMonitorInsn(opcode); break;
-				default: throw new IllegalStateException("Unsupported opcode (no operand): "
+				case MONITOREXIT:
+					cv.visitMonitorInsn(opcode);
+					break;
+				default:
+					throw new IllegalStateException("Unsupported opcode (no operand): "
 						+ OpcodeUtil.getOpcodeName(opcode) + " (" + opcode + ")" + " at " + pos);
 			}
 		}
@@ -193,7 +200,10 @@ public class InstructionVisitor {
 			String owner = pool.getUtf(cc.getIndex());
 			String type = pool.getUtf(nt.getTypeIndex());
 			cv.visitFieldInsn(opcode, owner, name, Descriptor.from(type));
-		} else if (opcode == INVOKEVIRTUAL || opcode == INVOKESPECIAL || opcode == INVOKESTATIC || opcode == INVOKEINTERFACE) {
+		} else if (opcode == INVOKEVIRTUAL
+				|| opcode == INVOKESPECIAL
+				|| opcode == INVOKESTATIC
+				|| opcode == INVOKEINTERFACE) {
 			ConstRef fr = (ConstRef) pool.get(operand);
 			CpClass cc = (CpClass) pool.get(fr.getClassIndex());
 			CpNameType nt = (CpNameType) pool.get(fr.getNameTypeIndex());
@@ -203,7 +213,8 @@ public class InstructionVisitor {
 			cv.visitMethodInsn(opcode, owner, name, Descriptor.from(type));
 		} else if (opcode == INVOKEDYNAMIC) {
 			if(bsma == null) {
-				throw new IllegalStateException("INVOKEDYNAMIC instruction found, but no BootstrapMethodsAttribute present");
+				throw new IllegalStateException(
+						"INVOKEDYNAMIC instruction found, but no BootstrapMethodsAttribute present");
 			}
 			CpInvokeDynamic id = (CpInvokeDynamic) pool.get(operand);
 			CpNameType nt = (CpNameType) pool.get(id.getNameTypeIndex());
@@ -217,7 +228,11 @@ public class InstructionVisitor {
 			String bsmName = pool.getUtf(bsmnt.getNameIndex());
 			String bsmOwner = pool.getUtf(cc.getIndex());
 			String bsmType = pool.getUtf(bsmnt.getTypeIndex());
-			Handle bsmHandle = new Handle(Handle.Tag.fromKind(mh.getKind()), bsmOwner, bsmName, Descriptor.from(bsmType));
+			Handle bsmHandle = new Handle(
+					Handle.Tag.fromKind(mh.getKind()),
+					bsmOwner,
+					bsmName,
+					Descriptor.from(bsmType));
 			Constant[] args = new Constant[bsm.getArgs().size()];
 			for (int i = 0; i < args.length; i++) {
 				args[i] = ConstantUtil.from(pool.get(bsm.getArgs().get(i)), pool);
@@ -268,11 +283,11 @@ public class InstructionVisitor {
 	}
 
 	private void visitFrame(StackMapFrame frame) {
-		int kind = 0;
+		int kind = Frame.FULL;
 		int argument = 0;
 		if (frame instanceof SameFrame || frame instanceof SameFrameExtended) {
 			kind = Frame.SAME;
-			stack = EMPTY_STACK;
+			stack = EMPTY;
 		} else if (frame instanceof SameLocalsOneStackItem) {
 			SameLocalsOneStackItem slo = (SameLocalsOneStackItem) frame;
 			stack = new Stack<>();
@@ -289,7 +304,7 @@ public class InstructionVisitor {
 			for(int i = 0; i < argument; i++) {
 				locals.pop();
 			}
-			stack = EMPTY_STACK;
+			stack = EMPTY;
 			kind = Frame.CHOP;
 		} else if (frame instanceof AppendFrame) {
 			AppendFrame af = (AppendFrame) frame;
@@ -297,7 +312,7 @@ public class InstructionVisitor {
 			for (TypeInfo local : af.additionalLocals) {
 				locals.push(toValue(local));
 			}
-			stack = EMPTY_STACK;
+			stack = EMPTY;
 			kind = Frame.APPEND;
 		} else if (frame instanceof FullFrame) {
 			FullFrame ff = (FullFrame) frame;
@@ -307,7 +322,6 @@ public class InstructionVisitor {
 			for(TypeInfo stackItem : ff.stack) {
 				stack.push(toValue(stackItem));
 			}
-			kind = Frame.FULL;
 		} else {
 			throw new IllegalStateException("Unsupported frame type: " + frame.getClass().getName());
 		}

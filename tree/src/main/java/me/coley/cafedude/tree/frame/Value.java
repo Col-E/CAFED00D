@@ -1,5 +1,8 @@
 package me.coley.cafedude.tree.frame;
 
+/**
+ * Class representing a value in a frame.
+ */
 public class Value {
 
 	public static final int TOP = 0;

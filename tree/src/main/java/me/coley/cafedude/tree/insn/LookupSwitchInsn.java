@@ -3,32 +3,54 @@ package me.coley.cafedude.tree.insn;
 import me.coley.cafedude.classfile.instruction.Opcodes;
 import me.coley.cafedude.tree.Label;
 
+import java.util.List;
+
 /**
  * Instruction for the {@link Opcodes#LOOKUPSWITCH} instruction, which has a default offset and a list of offsets.
  * @see Opcodes#LOOKUPSWITCH
  */
 public class LookupSwitchInsn extends Insn {
-	private java.util.List<Label> labels;
+	private List<Label> labels;
 	private Label defaultLabel;
 
-	protected LookupSwitchInsn(int opcode, java.util.List<Label> labels, Label defaultLabel) {
-		super(opcode);
+	/**
+	 * @param labels
+	 * 		Offsets of the switch.
+	 * @param defaultLabel
+	 * 		Default offset of the switch.
+	 */
+	public LookupSwitchInsn(List<Label> labels, Label defaultLabel) {
+		super(Opcodes.LOOKUPSWITCH);
 		this.labels = labels;
 		this.defaultLabel = defaultLabel;
 	}
 
-	public java.util.List<Label> getLabels() {
+	/**
+	 * @return Offsets of the switch.
+	 */
+	public List<Label> getLabels() {
 		return labels;
 	}
 
-	public void setLabels(java.util.List<Label> labels) {
+	/**
+	 * @param labels
+	 * 		Offsets of the switch.
+	 */
+	public void setLabels(List<Label> labels) {
 		this.labels = labels;
 	}
 
+	/**
+	 * @return Default offset of the switch.
+	 */
 	public Label getDefaultLabel() {
 		return defaultLabel;
 	}
 
+	/**
+	 * @param defaultLabel
+	 * 		Default offset of the switch.
+	 */
 	public void setDefaultLabel(Label defaultLabel) {
 		this.defaultLabel = defaultLabel;
 	}

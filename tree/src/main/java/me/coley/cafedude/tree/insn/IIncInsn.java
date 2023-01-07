@@ -3,7 +3,8 @@ package me.coley.cafedude.tree.insn;
 import me.coley.cafedude.classfile.instruction.Opcodes;
 
 /**
- * Instruction for the {@link Opcodes#IINC} instruction, which has a local variable index and an increment integer operand.
+ * Instruction for the {@link Opcodes#IINC} instruction,
+ * which has a local variable index and an increment integer operand.
  * @see Opcodes#IINC
  */
 public class IIncInsn extends Insn {
@@ -12,24 +13,44 @@ public class IIncInsn extends Insn {
 
 	private int increment;
 
-	protected IIncInsn(int opcode, int index, int increment) {
-		super(opcode);
+	/**
+	 * @param index
+	 * 		Local variable index.
+	 * @param increment
+	 * 		Increment value.
+	 */
+	public IIncInsn(int index, int increment) {
+		super(Opcodes.IINC);
 		this.index = index;
 		this.increment = increment;
 	}
 
+	/**
+	 * @return Local variable index.
+	 */
 	public int getIndex() {
 		return index;
 	}
 
+	/**
+	 * @param index
+	 * 		Local variable index.
+	 */
 	public void setIndex(int index) {
 		this.index = index;
 	}
 
+	/**
+	 * @return Increment value.
+	 */
 	public int getIncrement() {
 		return increment;
 	}
 
+	/**
+	 * @param increment
+	 * 		Increment value.
+	 */
 	public void setIncrement(int increment) {
 		this.increment = increment;
 	}

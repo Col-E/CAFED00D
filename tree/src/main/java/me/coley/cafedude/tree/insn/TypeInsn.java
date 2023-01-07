@@ -17,15 +17,28 @@ public class TypeInsn extends Insn {
 
 	private Descriptor descriptor;
 
-	protected TypeInsn(int opcode, Descriptor descriptor) {
+	/**
+	 * @param opcode
+	 * 		Instruction opcode.
+	 * @param descriptor
+	 * 		Descriptor of the type.
+	 */
+	public TypeInsn(int opcode, Descriptor descriptor) {
 		super(opcode);
 		this.descriptor = descriptor;
 	}
 
+	/**
+	 * @return Descriptor of the type.
+	 */
 	public Descriptor getDescriptor() {
 		return descriptor;
 	}
 
+	/**
+	 * @param descriptor
+	 * 		Descriptor of the type.
+	 */
 	public void setDescriptor(Descriptor descriptor) {
 		this.descriptor = descriptor;
 	}

@@ -1,6 +1,7 @@
 package me.coley.cafedude.tree.visitor;
 
 import me.coley.cafedude.classfile.ClassFile;
+import me.coley.cafedude.classfile.ClassMember;
 import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.classfile.Method;
 import me.coley.cafedude.classfile.annotation.Annotation;
@@ -11,22 +12,40 @@ import me.coley.cafedude.transform.LabelTransformer;
 import me.coley.cafedude.util.ConstantUtil;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
+/**
+ * Helper class for transforming from information {@link ClassMember} into a visitor
+ */
 public class MemberReader {
 
 	private final ClassFile classFile;
 	private final ConstPool pool;
 	private final LabelTransformer transformer;
 
-	public MemberReader(ClassFile file, LabelTransformer transformer) {
+	/**
+	 * @param file
+	 * 		Class file containing the member.
+	 * @param transformer
+	 * 		Label transformer for accessing label and instruction positions.
+	 */
+	MemberReader(ClassFile file, LabelTransformer transformer) {
 		this.transformer = transformer;
 		this.classFile = file;
 		this.pool = file.getPool();
 	}
 
-	public static void visitDeclaration(DeclarationVisitor visitor, AttributeHolder member, ConstPool pool) {
+	/**
+	 * Visit a declaration of a {@link AttributeHolder}.
+	 *
+	 * @param visitor
+	 * 		Visitor to visit with.
+	 * @param member
+	 * 		Member to visit.
+	 * @param pool
+	 * 		Constant pool to use for resolving.
+	 */
+	static void visitDeclaration(DeclarationVisitor visitor, AttributeHolder member, ConstPool pool) {
 		AnnotationsAttribute annotations = member.getAttribute(AnnotationsAttribute.class);
 		if (annotations != null) {
 			boolean visible = annotations.isVisible();
@@ -52,7 +71,7 @@ public class MemberReader {
 		visitor.visitSynthetic(member.getAttribute(SyntheticAttribute.class) != null);
 	}
 
-	public void visitMethod(MethodVisitor mv, AttributeHolder member) {
+	void visitMethod(MethodVisitor mv, AttributeHolder member) {
 		if(mv == null) return;
 		visitDeclaration(mv, member, pool);
 		visitCode(mv.visitCode(), (Method) member);
@@ -86,7 +105,7 @@ public class MemberReader {
 		mv.visitMethodEnd();
 	}
 
-	public void visitField(FieldVisitor fv, AttributeHolder member) {
+	void visitField(FieldVisitor fv, AttributeHolder member) {
 		if(fv == null) return;
 		visitDeclaration(fv, member, pool);
 		ConstantValueAttribute constant = member.getAttribute(ConstantValueAttribute.class);

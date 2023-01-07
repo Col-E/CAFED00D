@@ -84,4 +84,25 @@
 	<suppress checks="CyclomaticComplexity"
 			  files="InstructionWriter.java"
 			  lines="0-9999"/>
+
+	<suppress checks="CyclomaticComplexity"
+			  files="InstructionVisitor.java"
+			  lines="0-9999"/>
+	<suppress checks="ClassFanOutComplexity"
+			  files="InstructionVisitor.java"
+			  lines="0-9999"/>
+	<suppress checks="BooleanExpressionComplexity"
+			  files="InstructionVisitor.java"
+			  lines="0-9999"/>
+
+	<suppress checks="CyclomaticComplexity"
+			  files="ClassReader.java"
+			  lines="0-9999"/>
+	<suppress checks="ClassFanOutComplexity"
+			  files="ClassReader.java"
+			  lines="0-9999"/>
+
+	<suppress checks="ClassFanOutComplexity"
+			  files="MemberReader.java"
+			  lines="0-9999"/>
 </suppressions>

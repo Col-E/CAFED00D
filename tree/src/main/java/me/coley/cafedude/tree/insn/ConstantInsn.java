@@ -28,7 +28,7 @@ public class ConstantInsn extends Insn {
 	 * @param opcode
 	 * 		Instruction opcode.
 	 */
-	protected ConstantInsn(int opcode) {
+	public ConstantInsn(int opcode) {
 		super(opcode);
 	}
 }

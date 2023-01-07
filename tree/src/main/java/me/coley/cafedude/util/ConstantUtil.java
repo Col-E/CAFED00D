@@ -11,6 +11,9 @@ import me.coley.cafedude.tree.Constant;
 
 import static me.coley.cafedude.classfile.ConstantPoolConstants.*;
 
+/**
+ * Utility for converting constant pool entries to their tree representation.
+ */
 public class ConstantUtil {
 
 	/**

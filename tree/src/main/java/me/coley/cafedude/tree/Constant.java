@@ -22,26 +22,62 @@ public class Constant {
 		this.value = value;
 	}
 
+	/**
+	 * Create a constant from a {@code float} value.
+	 * @param value
+	 * 			Float value.
+	 * @return Constant.
+	 */
 	public static Constant of(float value) {
 		return new Constant(Type.FLOAT, value);
 	}
 
+	/**
+	 * Create a constant from a {@code double} value.
+	 * @param value
+	 * 			Double value.
+	 * @return Constant.
+	 */
 	public static Constant of(double value) {
 		return new Constant(Type.DOUBLE, value);
 	}
 
+	/**
+	 * Create a constant from a {@code long} value.
+	 * @param value
+	 * 			Long value.
+	 * @return Constant.
+	 */
 	public static Constant of(long value) {
 		return new Constant(Type.LONG, value);
 	}
 
+	/**
+	 * Create a constant from a {@code int} value.
+	 * @param value
+	 * 			Integer value.
+	 * @return Constant.
+	 */
 	public static Constant of(int value) {
 		return new Constant(Type.INT, value);
 	}
 
+	/**
+	 * Create a constant from a {@code String} value.
+	 * @param value
+	 * 			String value.
+	 * @return Constant.
+	 */
 	public static Constant of(String value) {
 		return new Constant(Type.STRING, value);
 	}
 
+	/**
+	 * Create a constant from a {@link Descriptor} value.
+	 * @param value
+	 * 			Descriptor value.
+	 * @return Constant.
+	 */
 	public static Constant of(Descriptor value) {
 		return new Constant(Type.DESCRIPTOR, value);
 	}
@@ -60,6 +96,9 @@ public class Constant {
 		return value;
 	}
 
+	/**
+	 * Constant type.
+	 */
 	public enum Type {
 		/**
 		 * {@link String}

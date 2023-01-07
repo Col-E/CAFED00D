@@ -6,6 +6,13 @@ import me.coley.cafedude.classfile.annotation.TypeAnnotation;
 import me.coley.cafedude.classfile.annotation.TypePath;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Visitor for visiting generic declaration information.
+ * @see MethodVisitor
+ * @see FieldVisitor
+ * @see ClassVisitor
+ * @see RecordComponentVisitor
+ */
 public interface DeclarationVisitor {
 
 	/**

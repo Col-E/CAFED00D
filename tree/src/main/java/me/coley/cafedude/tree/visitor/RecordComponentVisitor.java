@@ -2,6 +2,9 @@ package me.coley.cafedude.tree.visitor;
 
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Visitor for visiting record component information.
+ */
 public interface RecordComponentVisitor extends DeclarationVisitor {
 
 	/**

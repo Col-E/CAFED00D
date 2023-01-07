@@ -3,10 +3,14 @@ package me.coley.cafedude.tree.visitor;
 import me.coley.cafedude.tree.Constant;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Visitor for visiting annotation array information.
+ */
 public interface AnnotationArrayVisitor {
 
 	/**
 	 * Return the delegate visitor for pass through implementations.
+	 * @return Delegate visitor.
 	 */
 	@Nullable
 	default AnnotationArrayVisitor arrayDelegate() {

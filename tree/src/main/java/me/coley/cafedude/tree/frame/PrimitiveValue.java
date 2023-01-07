@@ -11,19 +11,31 @@ package me.coley.cafedude.tree.frame;
  *     <li>{@link #LONG}</li>
  *     <li>{@link #NULL}</li>
  *     <li>{@link #UNINITIALIZED_THIS}</li>
+ * </ul>
  */
 public class PrimitiveValue extends Value {
 
 	private int value;
 
+	/**
+	 * @param value
+	 * 		Type of the value.
+	 */
 	public PrimitiveValue(int value) {
 		this.value = value;
 	}
 
+	/**
+	 * @return Type of the value.
+	 */
 	public int getValue() {
 		return value;
 	}
 
+	/**
+	 * @param value
+	 * 		Type of the value.
+	 */
 	public void setValue(int value) {
 		this.value = value;
 	}

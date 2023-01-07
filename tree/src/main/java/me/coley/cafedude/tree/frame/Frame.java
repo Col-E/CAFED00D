@@ -1,5 +1,8 @@
 package me.coley.cafedude.tree.frame;
 
+/**
+ * Frame representing a single state of stack and locals.
+ */
 public class Frame {
 
 	/**

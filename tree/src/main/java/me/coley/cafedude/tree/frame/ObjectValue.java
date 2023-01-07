@@ -7,14 +7,25 @@ public class ObjectValue extends Value {
 
 	private String type;
 
+	/**
+	 * @param type
+	 * 		Type of the value.
+	 */
 	public ObjectValue(String type) {
 		this.type = type;
 	}
 
+	/**
+	 * @return Type of the value.
+	 */
 	public String getType() {
 		return type;
 	}
 
+	/**
+	 * @param type
+	 * 		Type of the value.
+	 */
 	public void setType(String type) {
 		this.type = type;
 	}

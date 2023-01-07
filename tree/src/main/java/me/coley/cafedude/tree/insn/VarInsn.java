@@ -25,15 +25,28 @@ public class VarInsn extends Insn {
 
 	private int index;
 
-	protected VarInsn(int opcode, int index) {
+	/**
+	 * @param opcode
+	 * 		Instruction opcode.
+	 * @param index
+	 * 		Local variable index.
+	 */
+	public VarInsn(int opcode, int index) {
 		super(opcode);
 		this.index = index;
 	}
 
+	/**
+	 * @return Local variable index.
+	 */
 	public int getIndex() {
 		return index;
 	}
 
+	/**
+	 * @param index
+	 * 		Local variable index.
+	 */
 	public void setIndex(int index) {
 		this.index = index;
 	}

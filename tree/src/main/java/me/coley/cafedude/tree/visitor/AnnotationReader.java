@@ -6,15 +6,15 @@ import me.coley.cafedude.util.ConstantUtil;
 
 import java.util.Map;
 
-public class AnnotationReader {
+class AnnotationReader {
 
-	public static void visitAnnotation(Annotation annotation, AnnotationVisitor av, ConstPool pool) {
+	static void visitAnnotation(Annotation annotation, AnnotationVisitor av, ConstPool pool) {
 		for (Map.Entry<Integer, ElementValue> entry : annotation.getValues().entrySet()) {
 			visitAnnotationElement(pool.getUtf(entry.getKey()), entry.getValue(), av, pool);
 		}
 	}
 
-	public static void visitAnnotationElement(String key, ElementValue value, AnnotationVisitor av, ConstPool pool) {
+	static void visitAnnotationElement(String key, ElementValue value, AnnotationVisitor av, ConstPool pool) {
 		if(value.getTag() == '[' || value.getTag() == '@' || value.getTag() == 'e') {
 			if(value instanceof ArrayElementValue) {
 				ArrayElementValue array = (ArrayElementValue) value;
@@ -40,7 +40,7 @@ public class AnnotationReader {
 		}
 	}
 
-	public static void visitArrayElement(ElementValue value, AnnotationArrayVisitor aav, ConstPool pool) {
+	static void visitArrayElement(ElementValue value, AnnotationArrayVisitor aav, ConstPool pool) {
 		if(value.getTag() == '[' || value.getTag() == '@' || value.getTag() == 'e') {
 			if(value instanceof ArrayElementValue) {
 				ArrayElementValue array = (ArrayElementValue) value;

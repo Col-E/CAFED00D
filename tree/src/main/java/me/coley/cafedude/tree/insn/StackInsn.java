@@ -22,7 +22,7 @@ public class StackInsn extends Insn {
 	 * @param opcode
 	 * 		Instruction opcode.
 	 */
-	protected StackInsn(int opcode) {
+	public StackInsn(int opcode) {
 		super(opcode);
 	}
 }

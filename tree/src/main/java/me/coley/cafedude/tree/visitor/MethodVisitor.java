@@ -2,6 +2,9 @@ package me.coley.cafedude.tree.visitor;
 
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Visitor for visiting method information.
+ */
 public interface MethodVisitor extends DeclarationVisitor {
 
 	/**

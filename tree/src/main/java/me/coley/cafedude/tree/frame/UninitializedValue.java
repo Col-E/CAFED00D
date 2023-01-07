@@ -10,14 +10,25 @@ public class UninitializedValue extends Value {
 
 	private Label label;
 
+	/**
+	 * @param label
+	 * 		Offset of the instruction which created the value.
+	 */
 	public UninitializedValue(Label label) {
 		this.label = label;
 	}
 
+	/**
+	 * @return Offset of the instruction which created the value.
+	 */
 	public Label getLabel() {
 		return label;
 	}
 
+	/**
+	 * @param label
+	 * 		Offset of the instruction which created the value.
+	 */
 	public void setLabel(Label label) {
 		this.label = label;
 	}

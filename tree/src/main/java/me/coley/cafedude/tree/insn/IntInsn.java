@@ -15,15 +15,28 @@ public class IntInsn extends Insn {
 
 	protected int operand;
 
-	protected IntInsn(int opcode, int operand) {
+	/**
+	 * @param opcode
+	 * 		Instruction opcode.
+	 * @param operand
+	 * 		Operand value.
+	 */
+	public IntInsn(int opcode, int operand) {
 		super(opcode);
 		this.operand = operand;
 	}
 
+	/**
+	 * @return Operand value.
+	 */
 	public int getOperand() {
 		return operand;
 	}
 
+	/**
+	 * @param operand
+	 * 		Operand value.
+	 */
 	public void setOperand(int operand) {
 		this.operand = operand;
 	}

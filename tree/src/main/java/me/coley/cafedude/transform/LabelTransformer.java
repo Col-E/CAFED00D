@@ -17,6 +17,9 @@ import java.util.TreeMap;
 import static me.coley.cafedude.classfile.instruction.Opcodes.IFEQ;
 import static me.coley.cafedude.classfile.instruction.Opcodes.JSR;
 
+/**
+ * Label transformer for converting instruction offsets to labels.
+ */
 public class LabelTransformer extends Transformer {
 
 	private final Map<Method, TreeMap<Integer, Label>> labels = new HashMap<>();
