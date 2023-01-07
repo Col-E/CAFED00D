@@ -176,7 +176,7 @@
 		</module>
 		<module name="ClassFanOutComplexity">
 			<!-- Number of type references -->
-			<property name="max" value="20"/>
+			<property name="max" value="15"/>
 			<!-- Sets of excluded classes based on general use case -->
 			<property name="excludedClasses" value="boolean, byte, char, double, float, int, long, short, void"/>
 			<property name="excludedClasses" value="Boolean, Byte, Character, Double, Float, Integer, Long, Short, Void"/>
@@ -187,7 +187,7 @@
 		</module>
 		<module name="CyclomaticComplexity">
 			<!-- Number of possible paths through the source -->
-			<property name="max" value="15"/>
+			<property name="max" value="20"/>
 		</module>
 		<module name="AnonInnerLength">
 			<property name="max" value="60"/>

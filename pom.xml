@@ -7,13 +7,20 @@
     <groupId>me.coley</groupId>
     <artifactId>cafedude</artifactId>
     <url>https://github.com/Col-E/CAFED00D/</url>
-    <version>1.10.2</version>
+    <version>${revision}</version>
     <name>CAFED00D</name>
+    <packaging>pom</packaging>
+    
+    <modules>
+    	<module>core</module>
+    	<module>tree</module>
+    </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.8.1</junit.version>
         <asm.version>9.2</asm.version>
+        <revision>1.10.2</revision>
     </properties>
 
     <dependencies>
