@@ -5,23 +5,22 @@ import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.classfile.Descriptor;
 import me.coley.cafedude.classfile.Method;
 import me.coley.cafedude.classfile.attribute.*;
+import me.coley.cafedude.classfile.attribute.StackMapTableAttribute.*;
 import me.coley.cafedude.classfile.constant.*;
 import me.coley.cafedude.classfile.instruction.*;
 import me.coley.cafedude.tree.Constant;
 import me.coley.cafedude.tree.Handle;
 import me.coley.cafedude.tree.Label;
-import me.coley.cafedude.tree.Local;
+import me.coley.cafedude.tree.frame.*;
 import me.coley.cafedude.util.ConstantUtil;
 import me.coley.cafedude.util.OpcodeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 import static me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.BootstrapMethod;
+import static me.coley.cafedude.classfile.attribute.StackMapTableAttribute.*;
 import static me.coley.cafedude.classfile.instruction.Opcodes.*;
 
 public class InstructionVisitor {
@@ -30,18 +29,23 @@ public class InstructionVisitor {
 	private final BootstrapMethodsAttribute bsma;
 	private final LocalVariableTableAttribute lvta;
 	private final LocalVariableTypeTableAttribute lvtta;
+	private final StackMapTableAttribute smta;
 	private final CodeVisitor cv;
 	private final CodeAttribute ca;
 	private final ConstPool pool;
 	private final Method method;
 	private final Map<Integer, Label> labels;
 	private final Map<Integer, Instruction> instructions;
+	private Stack<Value> stack = new Stack<>();
+	private final Stack<Value> locals = new Stack<>();
+	private final Stack<Value> EMPTY_STACK = new Stack<>();
 
 	public InstructionVisitor(ClassFile clazz, CodeAttribute ca, CodeVisitor cv, Method method,
 							  Map<Integer, Label> labels, Map<Integer, Instruction> instructions) {
 		this.bsma = clazz.getAttribute(BootstrapMethodsAttribute.class);
 		this.lvta = ca.getAttribute(LocalVariableTableAttribute.class);
 		this.lvtta = ca.getAttribute(LocalVariableTypeTableAttribute.class);
+		this.smta = ca.getAttribute(StackMapTableAttribute.class);
 		this.cv = cv;
 		this.ca = ca;
 		this.pool = clazz.getPool();
@@ -52,37 +56,42 @@ public class InstructionVisitor {
 
 
 	public void accept() {
-		if(instructions == null) {
+		if (instructions == null) {
 			logger.warn("Method visited but no instructions present, Method=" + pool.getUtf(method.getNameIndex()));
 			return;
 		}
-		if(instructions.isEmpty()) return; // no instructions, abstract/interface method
+		if (instructions.isEmpty()) return; // no instructions, abstract/interface method
+		Map<Integer, StackMapFrame> frames = getStackMapFrames();
 		for (Map.Entry<Integer, Instruction> entry : instructions.entrySet()) {
 			int insnPos = entry.getKey();
 			Label currentLabel = labels.get(insnPos);
-			if(currentLabel != null) {
+			if (currentLabel != null) {
 				cv.visitLabel(currentLabel);
 				for (Integer line : currentLabel.getLines()) {
 					cv.visitLineNumber(line, currentLabel);
 				}
 			}
+			StackMapFrame frame = frames.get(insnPos);
+			if(frame != null) {
+				visitFrame(frame);
+			}
 			Instruction insn = entry.getValue();
 			if (insn instanceof IntOperandInstruction) {
 				visitIntOpInsn((IntOperandInstruction) insn, insnPos);
-			} else if(insn instanceof BiIntOperandInstruction) {
+			} else if (insn instanceof BiIntOperandInstruction) {
 				visitBiIntOpInsn((BiIntOperandInstruction) insn, insnPos);
-			} else if(insn instanceof WideInstruction) {
+			} else if (insn instanceof WideInstruction) {
 				Instruction backing = ((WideInstruction) insn).getBacking();
-				if(backing instanceof IntOperandInstruction) {
+				if (backing instanceof IntOperandInstruction) {
 					visitIntOpInsn((IntOperandInstruction) backing, insnPos);
-				} else if(backing instanceof BiIntOperandInstruction) {
+				} else if (backing instanceof BiIntOperandInstruction) {
 					visitBiIntOpInsn((BiIntOperandInstruction) backing, insnPos);
 				}
-			} else if(insn instanceof LookupSwitchInstruction) {
+			} else if (insn instanceof LookupSwitchInstruction) {
 				visitLookupSwitchInsn((LookupSwitchInstruction) insn, insnPos);
-			} else if(insn instanceof TableSwitchInstruction) {
+			} else if (insn instanceof TableSwitchInstruction) {
 				visitTableSwitchInsn((TableSwitchInstruction) insn, insnPos);
-			} else if(insn instanceof BasicInstruction) {
+			} else if (insn instanceof BasicInstruction) {
 				visitBasicInsn((BasicInstruction) insn, insnPos);
 			}
 		}
@@ -256,6 +265,92 @@ public class InstructionVisitor {
 				cv.visitLocalVariable(entry.getIndex(), name, desc, signature, start, end);
 			}
 		}
+	}
+
+	private void visitFrame(StackMapFrame frame) {
+		int kind = 0;
+		int argument = 0;
+		if (frame instanceof SameFrame || frame instanceof SameFrameExtended) {
+			kind = Frame.SAME;
+			stack = EMPTY_STACK;
+		} else if (frame instanceof SameLocalsOneStackItem) {
+			SameLocalsOneStackItem slo = (SameLocalsOneStackItem) frame;
+			stack = new Stack<>();
+			stack.push(toValue(slo.stack));
+			kind = Frame.SAME1;
+		} else if (frame instanceof SameLocalsOneStackItemExtended) {
+			SameLocalsOneStackItemExtended slo = (SameLocalsOneStackItemExtended) frame;
+			stack = new Stack<>();
+			stack.push(toValue(slo.stack));
+			kind = Frame.SAME1;
+		} else if (frame instanceof ChopFrame) {
+			ChopFrame cf = (ChopFrame) frame;
+			argument = cf.absentVariables;
+			for(int i = 0; i < argument; i++) {
+				locals.pop();
+			}
+			stack = EMPTY_STACK;
+			kind = Frame.CHOP;
+		} else if (frame instanceof AppendFrame) {
+			AppendFrame af = (AppendFrame) frame;
+			argument = af.additionalLocals.size();
+			for (TypeInfo local : af.additionalLocals) {
+				locals.push(toValue(local));
+			}
+			stack = EMPTY_STACK;
+			kind = Frame.APPEND;
+		} else if (frame instanceof FullFrame) {
+			FullFrame ff = (FullFrame) frame;
+			for(TypeInfo local : ff.locals) {
+				locals.push(toValue(local));
+			}
+			for(TypeInfo stackItem : ff.stack) {
+				stack.push(toValue(stackItem));
+			}
+			kind = Frame.FULL;
+		} else {
+			throw new IllegalStateException("Unsupported frame type: " + frame.getClass().getName());
+		}
+		cv.visitFrame(kind, stack.toArray(new Value[0]), locals.toArray(new Value[0]), argument);
+	}
+
+	private Value toValue(TypeInfo typeInfo) {
+		switch (typeInfo.getTag()) {
+			case ITEM_TOP:
+			case ITEM_INTEGER:
+			case ITEM_FLOAT:
+			case ITEM_DOUBLE:
+			case ITEM_LONG:
+			case ITEM_NULL:
+			case ITEM_UNINITIALIZED_THIS:
+				return new PrimitiveValue(typeInfo.getTag());
+			case ITEM_OBJECT:
+				ObjectVariableInfo objectInfo = (ObjectVariableInfo) typeInfo;
+				CpClass classInfo = (CpClass) pool.get(objectInfo.classIndex);
+				return new ObjectValue(pool.getUtf(classInfo.getIndex()));
+			case ITEM_UNINITIALIZED:
+				UninitializedVariableInfo uninitializedInfo = (UninitializedVariableInfo) typeInfo;
+				return new UninitializedValue(labels.computeIfAbsent(uninitializedInfo.offset, Label::new));
+			default:
+				throw new IllegalArgumentException("Unknown verification type tag " + typeInfo.getTag());
+		}
+	}
+
+	private Map<Integer, StackMapFrame> getStackMapFrames() {
+		if (smta == null) {
+			return Collections.emptyMap();
+		}
+		Map<Integer, StackMapFrame> frames = new HashMap<>();
+		int offset = -1;
+		for (StackMapFrame frame : smta.getFrames()) {
+			if(offset == -1) {
+				offset = frame.offsetDelta;
+			} else {
+				offset += frame.offsetDelta + 1;
+			}
+			frames.put(offset, frame);
+		}
+		return frames;
 	}
 
 }

@@ -324,8 +324,8 @@ public class AttributeWriter {
 	}
 
 	private void writeStackMapTable(DataOutputStream out, StackMapTableAttribute stackMapTable) throws IOException {
-		out.writeShort(stackMapTable.frames.size());
-		for (StackMapFrame frame : stackMapTable.frames) {
+		out.writeShort(stackMapTable.getFrames().size());
+		for (StackMapFrame frame : stackMapTable.getFrames()) {
 			out.writeByte(frame.getFrameType());
 			if (frame instanceof StackMapTableAttribute.SameLocalsOneStackItem) {
 				StackMapTableAttribute.SameLocalsOneStackItem sameLocals =

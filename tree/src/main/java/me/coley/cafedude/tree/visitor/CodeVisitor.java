@@ -5,6 +5,8 @@ import me.coley.cafedude.classfile.instruction.Opcodes;
 import me.coley.cafedude.tree.Constant;
 import me.coley.cafedude.tree.Handle;
 import me.coley.cafedude.tree.Label;
+import me.coley.cafedude.tree.frame.Frame;
+import me.coley.cafedude.tree.frame.Value;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -20,6 +22,29 @@ public interface CodeVisitor {
 	@Nullable
 	default CodeVisitor codeDelegate() {
 		return null;
+	}
+
+	/**
+	 * Visit a stack map frame
+	 *
+	 * @param kind
+	 * 		Kind of frame, may be one of: {@link Frame#FULL}, {@link Frame#APPEND}, {@link Frame#CHOP},
+	 * 		{@link Frame#SAME}, {@link Frame#SAME1}
+	 * @param locals
+	 * 		Locals at this current frame.
+	 * @param stack
+	 * 		Stack at this current frame.
+	 * @param argument
+	 * 		Argument for {@link Frame#APPEND} and {@link Frame#CHOP} frames.
+	 * 		Note that for operations like {@link Frame#APPEND} and {@link Frame#CHOP} are executed
+	 * 		before the frame is visited, thus the locals and stack are already updated.
+	 * @see Frame
+	 */
+	default void visitFrame(int kind, Value[] locals, Value[] stack, int argument) {
+		CodeVisitor delegate = codeDelegate();
+		if (delegate != null) {
+			delegate.visitFrame(kind, locals, stack, argument);
+		}
 	}
 
 	/**

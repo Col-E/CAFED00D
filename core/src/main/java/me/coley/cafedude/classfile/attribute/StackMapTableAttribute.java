@@ -27,7 +27,7 @@ public class StackMapTableAttribute
 	/**
 	 * A list of this table's stack map frames.
 	 */
-	public final List<StackMapFrame> frames;
+	private List<StackMapFrame> frames;
 
 	/**
 	 * @param nameIndex
@@ -37,6 +37,21 @@ public class StackMapTableAttribute
 	 */
 	public StackMapTableAttribute(int nameIndex, List<StackMapFrame> frames) {
 		super(nameIndex);
+		this.frames = frames;
+	}
+
+	/**
+	 * @return Stack map frames of a method.
+	 */
+	public List<StackMapFrame> getFrames() {
+		return frames;
+	}
+
+	/**
+	 * @param frames
+	 * 		Stack map frames of a method.
+	 */
+	public void setFrames(List<StackMapFrame> frames) {
 		this.frames = frames;
 	}
 
