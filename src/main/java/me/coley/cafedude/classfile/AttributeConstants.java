@@ -1,28 +1,6 @@
 package me.coley.cafedude.classfile;
 
-import me.coley.cafedude.classfile.attribute.AnnotationDefaultAttribute;
-import me.coley.cafedude.classfile.attribute.AnnotationsAttribute;
-import me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute;
-import me.coley.cafedude.classfile.attribute.CodeAttribute;
-import me.coley.cafedude.classfile.attribute.ConstantValueAttribute;
-import me.coley.cafedude.classfile.attribute.DeprecatedAttribute;
-import me.coley.cafedude.classfile.attribute.EnclosingMethodAttribute;
-import me.coley.cafedude.classfile.attribute.ExceptionsAttribute;
-import me.coley.cafedude.classfile.attribute.InnerClassesAttribute;
-import me.coley.cafedude.classfile.attribute.LineNumberTableAttribute;
-import me.coley.cafedude.classfile.attribute.LocalVariableTableAttribute;
-import me.coley.cafedude.classfile.attribute.LocalVariableTypeTableAttribute;
-import me.coley.cafedude.classfile.attribute.ModuleAttribute;
-import me.coley.cafedude.classfile.attribute.NestHostAttribute;
-import me.coley.cafedude.classfile.attribute.NestMembersAttribute;
-import me.coley.cafedude.classfile.attribute.ParameterAnnotationsAttribute;
-import me.coley.cafedude.classfile.attribute.PermittedClassesAttribute;
-import me.coley.cafedude.classfile.attribute.RecordAttribute;
-import me.coley.cafedude.classfile.attribute.SignatureAttribute;
-import me.coley.cafedude.classfile.attribute.SourceDebugExtensionAttribute;
-import me.coley.cafedude.classfile.attribute.SourceFileAttribute;
-import me.coley.cafedude.classfile.attribute.StackMapTableAttribute;
-import me.coley.cafedude.classfile.attribute.SyntheticAttribute;
+import me.coley.cafedude.classfile.attribute.*;
 
 /**
  * Constants for attribute names.
@@ -102,8 +80,10 @@ public interface AttributeConstants {
 	 * @see LocalVariableTypeTableAttribute
 	 */
 	String LOCAL_VARIABLE_TYPE_TABLE = "LocalVariableTypeTable";
-	// TODO: Attribute type
-	/** Attribute string value, used to indicate an attribute's type when parsed. */
+	/** Attribute string value, used to indicate an attribute's type when parsed.
+	 *
+	 * @see MethodParametersAttribute
+	 */
 	String METHOD_PARAMETERS = "MethodParameters";
 	/**
 	 * Attribute string value, used to indicate an attribute's type when parsed.
@@ -114,11 +94,15 @@ public interface AttributeConstants {
 	// TODO: Internal attribute?
 	/** Attribute string value, used to indicate an attribute's type when parsed. */
 	String MODULE_HASHES = "ModuleHashes";
-	// TODO: Attribute type
-	/** Attribute string value, used to indicate an attribute's type when parsed. */
+	/** Attribute string value, used to indicate an attribute's type when parsed.
+	 *
+	 * @see ModuleMainClassAttribute
+	 */
 	String MODULE_MAIN_CLASS = "ModuleMainClass";
-	// TODO: Attribute type
-	/** Attribute string value, used to indicate an attribute's type when parsed. */
+	/** Attribute string value, used to indicate an attribute's type when parsed.
+	 *
+	 * @see ModulePackagesAttribute
+	 */
 	String MODULE_PACKAGES = "ModulePackages";
 	// TODO: Internal attribute?
 	/** Attribute string value, used to indicate an attribute's type when parsed. */

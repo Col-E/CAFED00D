@@ -173,7 +173,7 @@ public class AnnotationReader {
 				parameterAnnotations.put(p, annotations);
 			}
 			// Didn't crash, its valid
-			return new ParameterAnnotationsAttribute(nameIndex, parameterAnnotations);
+			return new ParameterAnnotationsAttribute(nameIndex, parameterAnnotations, visible);
 		} catch (Throwable t) {
 			logger.debug("Illegally formatted ParameterAnnotations", t);
 			return null;

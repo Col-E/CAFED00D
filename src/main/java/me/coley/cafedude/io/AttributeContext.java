@@ -12,7 +12,7 @@ import static me.coley.cafedude.classfile.AnnotationConstants.*;
  * @author Matt Coley
  */
 public enum AttributeContext {
-	CLASS, FIELD, METHOD, ATTRIBUTE;
+	CLASS, FIELD, METHOD, RECORD_COMPONENT, ATTRIBUTE;
 
 	private static final Logger logger = LoggerFactory.getLogger(AttributeContext.class);
 

@@ -1,6 +1,9 @@
 package me.coley.cafedude.classfile.attribute;
 
+import me.coley.cafedude.classfile.behavior.AttributeHolder;
 import me.coley.cafedude.classfile.behavior.CpAccessor;
+import me.coley.cafedude.io.AttributeContext;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Set;
@@ -58,7 +61,7 @@ public class RecordAttribute extends Attribute {
 	/**
 	 * Component entry.
 	 */
-	public static class RecordComponent implements CpAccessor {
+	public static class RecordComponent implements CpAccessor, AttributeHolder {
 		private int nameIndex;
 		private int descIndex;
 		private List<Attribute> attributes;
@@ -114,12 +117,22 @@ public class RecordAttribute extends Attribute {
 			return attributes;
 		}
 
+		@Override
+		public <T extends Attribute> @Nullable T getAttribute(Class<T> type) {
+			return null;
+		}
+
 		/**
 		 * @param attributes
 		 * 		New attributes of the record field.
 		 */
 		public void setAttributes(List<Attribute> attributes) {
 			this.attributes = attributes;
+		}
+
+		@Override
+		public AttributeContext getHolderType() {
+			return AttributeContext.RECORD_COMPONENT;
 		}
 
 		@Override

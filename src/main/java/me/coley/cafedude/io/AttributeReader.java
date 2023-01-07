@@ -1,46 +1,20 @@
 package me.coley.cafedude.io;
 
-import me.coley.cafedude.classfile.AttributeConstants;
 import me.coley.cafedude.classfile.ConstPool;
-import me.coley.cafedude.classfile.attribute.AnnotationDefaultAttribute;
-import me.coley.cafedude.classfile.attribute.AnnotationsAttribute;
-import me.coley.cafedude.classfile.attribute.Attribute;
-import me.coley.cafedude.classfile.attribute.AttributeVersions;
-import me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute;
+import me.coley.cafedude.classfile.attribute.*;
 import me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.BootstrapMethod;
-import me.coley.cafedude.classfile.attribute.CodeAttribute;
 import me.coley.cafedude.classfile.attribute.CodeAttribute.ExceptionTableEntry;
-import me.coley.cafedude.classfile.attribute.ConstantValueAttribute;
-import me.coley.cafedude.classfile.attribute.SourceDebugExtensionAttribute;
-import me.coley.cafedude.classfile.attribute.DefaultAttribute;
-import me.coley.cafedude.classfile.attribute.DeprecatedAttribute;
-import me.coley.cafedude.classfile.attribute.EnclosingMethodAttribute;
-import me.coley.cafedude.classfile.attribute.ExceptionsAttribute;
-import me.coley.cafedude.classfile.attribute.InnerClassesAttribute;
 import me.coley.cafedude.classfile.attribute.InnerClassesAttribute.InnerClass;
-import me.coley.cafedude.classfile.attribute.LineNumberTableAttribute;
 import me.coley.cafedude.classfile.attribute.LineNumberTableAttribute.LineEntry;
-import me.coley.cafedude.classfile.attribute.LocalVariableTableAttribute;
 import me.coley.cafedude.classfile.attribute.LocalVariableTableAttribute.VarEntry;
-import me.coley.cafedude.classfile.attribute.LocalVariableTypeTableAttribute;
 import me.coley.cafedude.classfile.attribute.LocalVariableTypeTableAttribute.VarTypeEntry;
-import me.coley.cafedude.classfile.attribute.ModuleAttribute;
 import me.coley.cafedude.classfile.attribute.ModuleAttribute.Exports;
 import me.coley.cafedude.classfile.attribute.ModuleAttribute.Opens;
 import me.coley.cafedude.classfile.attribute.ModuleAttribute.Provides;
 import me.coley.cafedude.classfile.attribute.ModuleAttribute.Requires;
-import me.coley.cafedude.classfile.attribute.NestHostAttribute;
-import me.coley.cafedude.classfile.attribute.NestMembersAttribute;
-import me.coley.cafedude.classfile.attribute.ParameterAnnotationsAttribute;
-import me.coley.cafedude.classfile.attribute.PermittedClassesAttribute;
-import me.coley.cafedude.classfile.attribute.RecordAttribute;
 import me.coley.cafedude.classfile.attribute.RecordAttribute.RecordComponent;
-import me.coley.cafedude.classfile.attribute.SignatureAttribute;
-import me.coley.cafedude.classfile.attribute.SourceFileAttribute;
-import me.coley.cafedude.classfile.attribute.StackMapTableAttribute;
 import me.coley.cafedude.classfile.attribute.StackMapTableAttribute.StackMapFrame;
 import me.coley.cafedude.classfile.attribute.StackMapTableAttribute.TypeInfo;
-import me.coley.cafedude.classfile.attribute.SyntheticAttribute;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -184,8 +158,14 @@ public class AttributeReader {
 				return readSignature();
 			case SOURCE_FILE:
 				return readSourceFile();
-			case AttributeConstants.MODULE:
+			case METHOD_PARAMETERS:
+				return readMethodParameters();
+			case MODULE:
 				return readModule();
+			case MODULE_MAIN_CLASS:
+				return readModuleMainClass();
+			case MODULE_PACKAGES:
+				return readModulePackages();
 			case STACK_MAP_TABLE:
 				return readStackMapTable();
 			case LINE_NUMBER_TABLE:
@@ -200,10 +180,7 @@ public class AttributeReader {
 				return readRecord();
 			case CHARACTER_RANGE_TABLE:
 			case COMPILATION_ID:
-			case METHOD_PARAMETERS:
 			case MODULE_HASHES:
-			case MODULE_MAIN_CLASS:
-			case MODULE_PACKAGES:
 			case MODULE_RESOLUTION:
 			case MODULE_TARGET:
 			case SOURCE_ID:
@@ -320,6 +297,21 @@ public class AttributeReader {
 	}
 
 	/**
+	 * @return MethodParametersAttribute attribute.
+	 * @throws IOException When the stream is unexpectedly closed or ends.
+	 */
+	private MethodParametersAttribute readMethodParameters() throws IOException {
+		List<MethodParametersAttribute.Parameter> entries = new ArrayList<>();
+		int count = is.readUnsignedByte();
+		for (int i = 0; i < count; i++) {
+			int nameIndex = is.readUnsignedShort();
+			int accessFlags = is.readUnsignedShort();
+			entries.add(new MethodParametersAttribute.Parameter(nameIndex, accessFlags));
+		}
+		return new MethodParametersAttribute(nameIndex, entries);
+	}
+
+	/**
 	 * @return ModuleAttribute attribute.
 	 *
 	 * @throws IOException
@@ -379,6 +371,27 @@ public class AttributeReader {
 		}
 		return new ModuleAttribute(nameIndex, moduleIndex, flags, versionIndex,
 				requires, exports, opens, uses, provides);
+	}
+
+	/**
+	 * @return ModuleMainClassAttribute attribute.
+	 * @throws IOException When the stream is unexpectedly closed or ends.
+	 */
+	private ModuleMainClassAttribute readModuleMainClass() throws IOException {
+		return new ModuleMainClassAttribute(nameIndex, is.readUnsignedShort());
+	}
+
+	/**
+	 * @return ModulePackagesAttribute attribute.
+	 * @throws IOException When the stream is unexpectedly closed or ends.
+	 */
+	private ModulePackagesAttribute readModulePackages() throws IOException {
+		List<Integer> packages = new ArrayList<>();
+		int count = is.readUnsignedShort();
+		for (int i = 0; i < count; i++) {
+			packages.add(is.readUnsignedShort());
+		}
+		return new ModulePackagesAttribute(nameIndex, packages);
 	}
 
 	/**
