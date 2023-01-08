@@ -1,5 +1,7 @@
 package me.coley.cafedude.tree.visitor;
 
+import me.coley.cafedude.classfile.annotation.ElementValue;
+import me.coley.cafedude.tree.Constant;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -71,6 +73,16 @@ public interface MethodVisitor extends DeclarationVisitor {
 	default void visitParameter(String name, int access) {
 		MethodVisitor delegate = methodDelegate();
 		if(delegate != null) delegate.visitParameter(name, access);
+	}
+
+	/**
+	 * Visit the annotation default value for this method
+	 * @param value
+	 * 		  Default value.
+	 */
+	default void visitAnnotationDefault(Constant value) {
+		MethodVisitor delegate = methodDelegate();
+		if(delegate != null) delegate.visitAnnotationDefault(value);
 	}
 
 	/**

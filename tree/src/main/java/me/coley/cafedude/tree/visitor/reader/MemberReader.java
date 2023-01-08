@@ -103,6 +103,10 @@ public class MemberReader {
 				mv.visitParameter(name, parameter.getAccessFlags());
 			}
 		}
+		AnnotationDefaultAttribute annotationDefault = member.getAttribute(AnnotationDefaultAttribute.class);
+		if(annotationDefault != null) {
+			mv.visitAnnotationDefault(ConstantUtil.from(annotationDefault.getElementValue(), pool));
+		}
 		mv.visitMethodEnd();
 	}
 

@@ -4,11 +4,10 @@ import me.coley.cafedude.classfile.AttributeConstants;
 import me.coley.cafedude.classfile.Method;
 import me.coley.cafedude.classfile.annotation.Annotation;
 import me.coley.cafedude.classfile.attribute.*;
-import me.coley.cafedude.io.InstructionWriter;
+import me.coley.cafedude.tree.Constant;
 import me.coley.cafedude.tree.visitor.AnnotationVisitor;
 import me.coley.cafedude.tree.visitor.CodeVisitor;
 import me.coley.cafedude.tree.visitor.MethodVisitor;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,6 +55,13 @@ public class MethodWriter extends DeclarationWriter implements MethodVisitor {
 	@Override
 	public CodeVisitor visitCode() {
 		return null;
+	}
+
+	@Override
+	public void visitAnnotationDefault(Constant value) {
+		attributes.add(new AnnotationDefaultAttribute(
+				symbols.newUtf8(AttributeConstants.ANNOTATION_DEFAULT),
+				symbols.newElementValue(value)));
 	}
 
 	@Override
