@@ -116,10 +116,12 @@ public interface ClassVisitor extends DeclarationVisitor {
 	 * 			Name of the enclosing class.
 	 * @param name
 	 * 			Name of the enclosing method.
+	 * 			{@code null} if the class is not enclosed in a method.
 	 * @param descriptor
 	 * 			Descriptor of the enclosing method.
+	 * 			{@code null} if the class is not enclosed in a method.
 	 */
-	default void visitOuterClass(String owner, String name, Descriptor descriptor) {
+	default void visitOuterClass(String owner, @Nullable String name, @Nullable Descriptor descriptor) {
 		ClassVisitor delegate = classDelegate();
 		if(delegate != null) delegate.visitOuterClass(owner, name, descriptor);
 	}
