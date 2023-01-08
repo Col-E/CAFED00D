@@ -18,11 +18,11 @@ import static me.coley.cafedude.classfile.VersionConstants.JAVA1;
  * @author Matt Coley
  */
 public class ClassBuilder {
-	private final ConstPool pool = new ConstPool();
 	private final List<Attribute> attributes = new ArrayList<>();
 	private final List<Integer> interfaces = new ArrayList<>();
 	private final List<Field> fields = new ArrayList<>();
 	private final List<Method> methods = new ArrayList<>();
+	private ConstPool pool = new ConstPool();
 	private int versionMajor;
 	private int versionMinor;
 	private int access;
@@ -48,6 +48,10 @@ public class ClassBuilder {
 	 */
 	public ConstPool getPool() {
 		return pool;
+	}
+
+	public void setConstPool(ConstPool pool) {
+		this.pool = pool;
 	}
 
 	/**
@@ -141,6 +145,34 @@ public class ClassBuilder {
 	 */
 	public void addAttribute(Attribute attribute) {
 		attributes.add(attribute);
+	}
+
+	/**
+	 * @return list of interfaces.
+	 */
+	public List<Integer> getInterfaces() {
+		return interfaces;
+	}
+
+	/**
+	 * @return list of fields.
+	 */
+	public List<Field> getFields() {
+		return fields;
+	}
+
+	/**
+	 * @return list of methods.
+	 */
+	public List<Method> getMethods() {
+		return methods;
+	}
+
+	/**
+	 * @return list of attributes.
+	 */
+	public List<Attribute> getAttributes() {
+		return attributes;
 	}
 
 	/**

@@ -17,7 +17,7 @@ public interface RecordComponentVisitor extends DeclarationVisitor {
 	}
 
 	@Override
-	default RecordComponentVisitor declarationDelegate() {
+	default DeclarationVisitor declarationDelegate() {
 		return recordComponentDelegate();
 	}
 

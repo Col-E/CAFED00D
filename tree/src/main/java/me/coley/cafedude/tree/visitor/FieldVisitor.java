@@ -18,7 +18,7 @@ public interface FieldVisitor extends DeclarationVisitor {
 	}
 
 	@Override
-	default FieldVisitor declarationDelegate() {
+	default DeclarationVisitor declarationDelegate() {
 		return fieldDelegate();
 	}
 

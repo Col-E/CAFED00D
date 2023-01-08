@@ -5,6 +5,7 @@ import me.coley.cafedude.classfile.Descriptor;
 import me.coley.cafedude.io.ClassFileReader;
 import me.coley.cafedude.transform.IllegalStrippingTransformer;
 import me.coley.cafedude.tree.visitor.*;
+import me.coley.cafedude.tree.visitor.reader.ClassReader;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 

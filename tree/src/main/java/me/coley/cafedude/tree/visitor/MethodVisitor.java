@@ -17,7 +17,7 @@ public interface MethodVisitor extends DeclarationVisitor {
 	}
 
 	@Override
-	default MethodVisitor declarationDelegate() {
+	default DeclarationVisitor declarationDelegate() {
 		return methodDelegate();
 	}
 

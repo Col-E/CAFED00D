@@ -1,5 +1,6 @@
 package me.coley.cafedude.tree;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -8,7 +9,7 @@ import java.util.List;
 public class Label {
 
 	private int offset;
-	private List<Integer> lines;
+	private List<Integer> lines = new ArrayList<>();
 
 	/**
 	 * @param offset

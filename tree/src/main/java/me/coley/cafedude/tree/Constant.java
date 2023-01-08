@@ -23,7 +23,62 @@ public class Constant {
 	}
 
 	/**
+	 * Create a constant from a {@code boolean} value.
+	 * <p>
+	 * Corresponds to {@code CpInt}.
+	 *
+	 * @param value
+	 * 		Boolean value.
+	 * @return Constant.
+	 */
+	public static Constant of(boolean value) {
+		return new Constant(Type.BOOLEAN, value);
+	}
+
+	/**
+	 * Create a constant from a {@code byte} value.
+	 * <p>
+	 * Corresponds to {@code CpInt}.
+	 *
+	 * @param value
+	 * 		Byte value.
+	 * @return Constant.
+	 */
+	public static Constant of(byte value) {
+		return new Constant(Type.BYTE, value);
+	}
+
+	/**
+	 * Create a constant from a {@code char} value.
+	 * <p>
+	 * Corresponds to {@code CpInt}.
+	 *
+	 * @param value
+	 * 		Char value.
+	 * @return Constant.
+	 */
+	public static Constant of(char value) {
+		return new Constant(Type.CHAR, value);
+	}
+
+	/**
+	 * Create a constant from a {@code short} value.
+	 * <p>
+	 * Corresponds to {@code CpInt}.
+	 *
+	 * @param value
+	 * 		Short value.
+	 * @return Constant.
+	 */
+	public static Constant of(short value) {
+		return new Constant(Type.SHORT, value);
+	}
+
+	/**
 	 * Create a constant from a {@code float} value.
+	 * <p>
+	 * Corresponds to {@code CpFloat}.
+	 *
 	 * @param value
 	 * 			Float value.
 	 * @return Constant.
@@ -34,6 +89,9 @@ public class Constant {
 
 	/**
 	 * Create a constant from a {@code double} value.
+	 * <p>
+	 * Corresponds to {@code CpDouble}.
+	 *
 	 * @param value
 	 * 			Double value.
 	 * @return Constant.
@@ -44,6 +102,9 @@ public class Constant {
 
 	/**
 	 * Create a constant from a {@code long} value.
+	 * <p>
+	 * Corresponds to {@code CpLong}.
+	 *
 	 * @param value
 	 * 			Long value.
 	 * @return Constant.
@@ -54,6 +115,9 @@ public class Constant {
 
 	/**
 	 * Create a constant from a {@code int} value.
+	 * <p>
+	 * Corresponds to {@code CpInt}.
+	 *
 	 * @param value
 	 * 			Integer value.
 	 * @return Constant.
@@ -64,6 +128,9 @@ public class Constant {
 
 	/**
 	 * Create a constant from a {@code String} value.
+	 * <p>
+	 * Corresponds to {@code CpUtf8}.
+	 *
 	 * @param value
 	 * 			String value.
 	 * @return Constant.
@@ -74,12 +141,29 @@ public class Constant {
 
 	/**
 	 * Create a constant from a {@link Descriptor} value.
+	 * Can have 3 different types:
+	 * <ul>
+	 * 		<li>{@link Descriptor.Kind#OBJECT} - Corresponds to {@code CpClass}</li>
+	 * 		<li>{@link Descriptor.Kind#ARRAY} - Corresponds to {@code CpClass}</li>
+	 * 		<li>{@link Descriptor.Kind#METHOD} - Corresponds to {@code CpMethodType}</li>
+	 * </ul>
+	 * <p>
+	 * Any other kind does not have a corresponding constant type.
+	 *
 	 * @param value
 	 * 			Descriptor value.
 	 * @return Constant.
+	 * @throws IllegalArgumentException If the descriptor kind is not {@link Descriptor.Kind#OBJECT},
+	 * 			{@link Descriptor.Kind#ARRAY} or {@link Descriptor.Kind#METHOD}.
 	 */
 	public static Constant of(Descriptor value) {
-		return new Constant(Type.DESCRIPTOR, value);
+		if(value.getKind() == Descriptor.Kind.OBJECT
+				|| value.getKind() == Descriptor.Kind.ARRAY
+				|| value.getKind() == Descriptor.Kind.METHOD) {
+			return new Constant(Type.DESCRIPTOR, value);
+		} else {
+			throw new IllegalArgumentException("Invalid descriptor kind: " + value.getKind());
+		}
 	}
 
 	/**
@@ -105,6 +189,22 @@ public class Constant {
 		 */
 		STRING,
 		/**
+		 * {@code boolean}
+		 */
+		BOOLEAN,
+		/**
+		 * {@code byte}
+		 */
+		BYTE,
+		/**
+		 * {@code char}
+		 */
+		CHAR,
+		/**
+		 * {@code short}
+		 */
+		SHORT,
+		/**
 		 * {@code int}
 		 */
 		INT,
@@ -121,7 +221,8 @@ public class Constant {
 		 */
 		DOUBLE,
 		/**
-		 * {@link Descriptor}
+		 * {@link Descriptor} ({@link Descriptor.Kind#OBJECT}, {@link Descriptor.Kind#ARRAY}
+		 * or {@link Descriptor.Kind#METHOD})
 		 */
 		DESCRIPTOR,
 

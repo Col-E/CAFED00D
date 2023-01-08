@@ -95,5 +95,4 @@ public interface DeclarationVisitor {
 		if(delegate != null) delegate.visitSynthetic(synthetic);
 	}
 
-
 }

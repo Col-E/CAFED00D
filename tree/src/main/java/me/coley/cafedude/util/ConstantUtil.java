@@ -34,8 +34,13 @@ public class ConstantUtil {
 			case DOUBLE: return new Constant(Constant.Type.DOUBLE, ((CpDouble) entry).getValue());
 			case CLASS: {
 				CpClass cpClass = (CpClass) entry;
-				String name = pool.get(cpClass.getIndex()).toString();
+				String name = pool.getUtf(cpClass.getIndex());
 				return new Constant(Constant.Type.DESCRIPTOR, Descriptor.from(name));
+			}
+			case METHOD_TYPE: {
+				CpMethodType cpMethodType = (CpMethodType) entry;
+				String desc = pool.getUtf(cpMethodType.getIndex());
+				return new Constant(Constant.Type.DESCRIPTOR, Descriptor.from(desc));
 			}
 			default: return null;
 		}

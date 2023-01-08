@@ -93,6 +93,8 @@ public class ConstPool implements List<ConstPoolEntry> {
 	 * @return Converted CP index.
 	 */
 	private int internalToCp(int index) {
+		if(index == -1)
+			return -1; // -1 is used when the index is not found in the CP.
 		// 0: Double --> 1
 		// 1: String --> 3 --
 		// 2: String --> 4
