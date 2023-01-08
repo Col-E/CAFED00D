@@ -27,7 +27,7 @@ public class Symbols {
 	}
 
 	int newNameType(String name, Descriptor type) {
-		return newSym(new CpNameType(newUtf8(name), newUtf8(type.toString())));
+		return newSym(new CpNameType(newUtf8(name), newUtf8(type.getDescriptor())));
 	}
 
 	int newField(String owner, String name, Descriptor type) {
