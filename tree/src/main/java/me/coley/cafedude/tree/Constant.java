@@ -167,6 +167,19 @@ public class Constant {
 	}
 
 	/**
+	 * Create a constant from a {@link Handle} value.
+	 * <p>
+	 * Corresponds to {@code CpMethodHandle}.
+	 *
+	 * @param value
+	 * 			Handle value.
+	 * @return Constant.
+	 */
+	public static Constant of(Handle value) {
+		return new Constant(Type.HANDLE, value);
+	}
+
+	/**
 	 * @return Type of constant.
 	 */
 	public Type getType() {
@@ -225,6 +238,10 @@ public class Constant {
 		 * or {@link Descriptor.Kind#METHOD})
 		 */
 		DESCRIPTOR,
+		/**
+		 * {@link Handle}
+		 */
+		HANDLE
 
 	}
 

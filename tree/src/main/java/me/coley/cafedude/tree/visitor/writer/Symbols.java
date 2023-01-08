@@ -94,6 +94,10 @@ public class Symbols {
 						throw new IllegalStateException("Cannot create constant for illegal descriptor");
 				}
 			}
+			case HANDLE: {
+				Handle handle = (Handle) value.getValue();
+				return newHandle(handle);
+			}
 		}
 		throw new IllegalStateException("Unknown constant type: " + value.getType());
 	}

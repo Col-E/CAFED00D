@@ -8,6 +8,7 @@ import me.coley.cafedude.classfile.annotation.PrimitiveElementValue;
 import me.coley.cafedude.classfile.annotation.Utf8ElementValue;
 import me.coley.cafedude.classfile.constant.*;
 import me.coley.cafedude.tree.Constant;
+import me.coley.cafedude.tree.Handle;
 
 import static me.coley.cafedude.classfile.ConstantPoolConstants.*;
 
@@ -41,6 +42,18 @@ public class ConstantUtil {
 				CpMethodType cpMethodType = (CpMethodType) entry;
 				String desc = pool.getUtf(cpMethodType.getIndex());
 				return new Constant(Constant.Type.DESCRIPTOR, Descriptor.from(desc));
+			}
+			case METHOD_HANDLE: {
+				CpMethodHandle cpMethodHandle = (CpMethodHandle) entry;
+				int refIndex = cpMethodHandle.getReferenceIndex();
+				ConstRef ref = (ConstRef) pool.get(refIndex);
+				CpClass cpClass = (CpClass) pool.get(ref.getClassIndex());
+				CpNameType cpNameType = (CpNameType) pool.get(ref.getNameTypeIndex());
+				String owner = pool.getUtf(cpClass.getIndex());
+				String name = pool.getUtf(cpNameType.getNameIndex());
+				String desc = pool.getUtf(cpNameType.getTypeIndex());
+				return new Constant(Constant.Type.HANDLE,
+						new Handle(Handle.Tag.fromKind(cpMethodHandle.getKind()), owner, name, Descriptor.from(desc)));
 			}
 			default: return null;
 		}

@@ -110,7 +110,7 @@ public class Handle {
 		 * @return Tag for the given ordinal.
 		 */
 		public static Tag fromKind(int kind) {
-			return values()[kind];
+			return values()[kind-1];
 		}
 	}
 
