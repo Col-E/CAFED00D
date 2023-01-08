@@ -36,4 +36,17 @@ public class CpDouble extends ConstPoolEntry {
 	public boolean isWide() {
 		return true;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		CpDouble cpDouble = (CpDouble) o;
+		return Double.compare(cpDouble.value, value) == 0;
+	}
+
+	@Override
+	public int hashCode() {
+		return Double.hashCode(value);
+	}
 }

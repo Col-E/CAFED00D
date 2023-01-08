@@ -1,5 +1,7 @@
 package me.coley.cafedude.classfile.constant;
 
+import java.util.Objects;
+
 /**
  * Base dynamic value pool entry. Points to a {@link CpNameType NameType} constant
  * and a bootstrap method index in the class's bootstrap-methods attribute.
@@ -53,5 +55,18 @@ public abstract class ConstDynamic extends ConstPoolEntry {
      */
     public void setNameTypeIndex(int nameTypeIndex) {
         this.nameTypeIndex = nameTypeIndex;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ConstDynamic that = (ConstDynamic) o;
+        return bsmIndex == that.bsmIndex && nameTypeIndex == that.nameTypeIndex;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(bsmIndex, nameTypeIndex);
     }
 }

@@ -31,4 +31,17 @@ public class CpModule extends ConstPoolEntry {
 	public void setIndex(int index) {
 		this.index = index;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		CpModule that = (CpModule) o;
+		return index == that.index;
+	}
+
+	@Override
+	public int hashCode() {
+		return Integer.hashCode(index);
+	}
 }

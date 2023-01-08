@@ -50,4 +50,17 @@ public class CpNameType extends ConstPoolEntry {
 	public void setTypeIndex(int typeIndex) {
 		this.typeIndex = typeIndex;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		CpNameType that = (CpNameType) o;
+		return nameIndex == that.nameIndex && typeIndex == that.typeIndex;
+	}
+
+	@Override
+	public int hashCode() {
+		return Integer.hashCode(nameIndex) + Integer.hashCode(typeIndex);
+	}
 }

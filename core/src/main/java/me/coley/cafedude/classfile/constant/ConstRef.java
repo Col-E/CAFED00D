@@ -2,6 +2,8 @@ package me.coley.cafedude.classfile.constant;
 
 import me.coley.cafedude.classfile.ConstantPoolConstants;
 
+import java.util.Objects;
+
 /**
  * Base reference pool entry. Points to a reference's {@link CpClass defining class} in pool
  * and the reference's {@link CpNameType name and descriptor} in pool.
@@ -56,5 +58,19 @@ public abstract class ConstRef extends ConstPoolEntry {
 	 */
 	public void setNameTypeIndex(int nameTypeIndex) {
 		this.nameTypeIndex = nameTypeIndex;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		ConstRef constRef = (ConstRef) o;
+		return classIndex == constRef.classIndex &&
+				nameTypeIndex == constRef.nameTypeIndex;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(classIndex, nameTypeIndex);
 	}
 }

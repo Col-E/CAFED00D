@@ -31,4 +31,17 @@ public class CpInt extends ConstPoolEntry {
 	public void setValue(int value) {
 		this.value = value;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		CpInt cpInt = (CpInt) o;
+		return value == cpInt.value;
+	}
+
+	@Override
+	public int hashCode() {
+		return Integer.hashCode(value);
+	}
 }

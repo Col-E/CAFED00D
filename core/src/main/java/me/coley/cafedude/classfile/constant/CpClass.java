@@ -31,4 +31,17 @@ public class CpClass extends ConstPoolEntry {
 	public void setIndex(int index) {
 		this.index = index;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		CpClass cpClass = (CpClass) o;
+		return index == cpClass.index;
+	}
+
+	@Override
+	public int hashCode() {
+		return index;
+	}
 }

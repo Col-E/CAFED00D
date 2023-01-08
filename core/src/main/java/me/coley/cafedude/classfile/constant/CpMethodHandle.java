@@ -114,4 +114,18 @@ public class CpMethodHandle extends ConstPoolEntry {
 	public void setReferenceIndex(int referenceIndex) {
 		this.referenceIndex = referenceIndex;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		CpMethodHandle that = (CpMethodHandle) o;
+		return referenceIndex == that.referenceIndex &&
+				kind == that.kind;
+	}
+
+	@Override
+	public int hashCode() {
+		return referenceIndex;
+	}
 }

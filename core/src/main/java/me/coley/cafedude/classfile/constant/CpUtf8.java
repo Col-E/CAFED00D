@@ -33,4 +33,17 @@ public class CpUtf8 extends ConstPoolEntry {
 	public void setText(String text) {
 		this.text = text;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		CpUtf8 cpUtf8 = (CpUtf8) o;
+		return text.equals(cpUtf8.text);
+	}
+
+	@Override
+	public int hashCode() {
+		return text.hashCode();
+	}
 }

@@ -36,4 +36,17 @@ public class CpLong extends ConstPoolEntry {
 	public boolean isWide() {
 		return true;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		CpLong cpLong = (CpLong) o;
+		return value == cpLong.value;
+	}
+
+	@Override
+	public int hashCode() {
+		return Long.hashCode(value);
+	}
 }
