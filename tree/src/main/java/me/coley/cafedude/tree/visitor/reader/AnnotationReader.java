@@ -1,7 +1,9 @@
-package me.coley.cafedude.tree.visitor;
+package me.coley.cafedude.tree.visitor.reader;
 
 import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.classfile.annotation.*;
+import me.coley.cafedude.tree.visitor.AnnotationArrayVisitor;
+import me.coley.cafedude.tree.visitor.AnnotationVisitor;
 import me.coley.cafedude.util.ConstantUtil;
 
 import java.util.Map;

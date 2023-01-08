@@ -1,4 +1,4 @@
-package me.coley.cafedude.tree.visitor;
+package me.coley.cafedude.tree.visitor.reader;
 
 import me.coley.cafedude.InvalidClassException;
 import me.coley.cafedude.classfile.*;
@@ -8,6 +8,9 @@ import me.coley.cafedude.classfile.constant.CpNameType;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.io.ClassFileReader;
 import me.coley.cafedude.transform.LabelTransformer;
+import me.coley.cafedude.tree.visitor.ClassVisitor;
+import me.coley.cafedude.tree.visitor.ModuleVisitor;
+import me.coley.cafedude.tree.visitor.RecordComponentVisitor;
 
 import java.util.List;
 

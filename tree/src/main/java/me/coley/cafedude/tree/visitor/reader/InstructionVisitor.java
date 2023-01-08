@@ -1,17 +1,17 @@
-package me.coley.cafedude.tree.visitor;
+package me.coley.cafedude.tree.visitor.reader;
 
 import me.coley.cafedude.classfile.ClassFile;
 import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.classfile.Descriptor;
 import me.coley.cafedude.classfile.Method;
 import me.coley.cafedude.classfile.attribute.*;
-import me.coley.cafedude.classfile.attribute.StackMapTableAttribute.*;
 import me.coley.cafedude.classfile.constant.*;
 import me.coley.cafedude.classfile.instruction.*;
 import me.coley.cafedude.tree.Constant;
 import me.coley.cafedude.tree.Handle;
 import me.coley.cafedude.tree.Label;
 import me.coley.cafedude.tree.frame.*;
+import me.coley.cafedude.tree.visitor.CodeVisitor;
 import me.coley.cafedude.util.ConstantUtil;
 import me.coley.cafedude.util.OpcodeUtil;
 import org.slf4j.Logger;

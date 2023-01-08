@@ -1,4 +1,4 @@
-package me.coley.cafedude.tree.visitor;
+package me.coley.cafedude.tree.visitor.reader;
 
 import me.coley.cafedude.classfile.ClassFile;
 import me.coley.cafedude.classfile.ClassMember;
@@ -9,6 +9,7 @@ import me.coley.cafedude.classfile.annotation.TypeAnnotation;
 import me.coley.cafedude.classfile.attribute.*;
 import me.coley.cafedude.classfile.behavior.AttributeHolder;
 import me.coley.cafedude.transform.LabelTransformer;
+import me.coley.cafedude.tree.visitor.*;
 import me.coley.cafedude.util.ConstantUtil;
 
 import java.util.List;

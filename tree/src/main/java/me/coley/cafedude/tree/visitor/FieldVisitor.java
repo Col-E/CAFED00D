@@ -1,5 +1,6 @@
 package me.coley.cafedude.tree.visitor;
 
+import me.coley.cafedude.tree.Constant;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -27,7 +28,7 @@ public interface FieldVisitor extends DeclarationVisitor {
 	 * @param value
 	 * 			Constant value.
 	 */
-	default void visitConstantValue(Object value) {
+	default void visitConstantValue(Constant value) {
 		FieldVisitor delegate = fieldDelegate();
 		if(delegate != null) delegate.visitConstantValue(value);
 	}
