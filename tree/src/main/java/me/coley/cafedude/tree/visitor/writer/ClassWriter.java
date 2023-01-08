@@ -24,11 +24,11 @@ public class ClassWriter extends DeclarationWriter implements ClassVisitor {
 
 	@Override
 	public void visitClass(String name, int access, String superName, String... interfaces) {
-		builder.setClassIndex(symbols.newUtf8(name));
+		builder.setClassIndex(symbols.newClass(name));
 		builder.setAccess(access);
-		builder.setSuperIndex(symbols.newUtf8(superName));
+		builder.setSuperIndex(symbols.newClass(superName));
 		for (String anInterface : interfaces) {
-			builder.addInterface(symbols.newUtf8(anInterface));
+			builder.addInterface(symbols.newClass(anInterface));
 		}
 	}
 
