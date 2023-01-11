@@ -45,6 +45,19 @@ public interface MethodVisitor extends DeclarationVisitor {
 	}
 
 	/**
+	 * Visit the annotation default value for this method
+	 *
+	 * @return Visitor for visiting the annotation default value.
+	 */
+	@Nullable
+	default AnnotationDefaultVisitor visitAnnotationDefault() {
+		MethodVisitor delegate = methodDelegate();
+		if(delegate != null) return delegate.visitAnnotationDefault();
+		return null;
+	}
+
+
+	/**
 	 * Visit a parameter annotation.
 	 *
 	 * @param parameter
@@ -73,16 +86,6 @@ public interface MethodVisitor extends DeclarationVisitor {
 	default void visitParameter(String name, int access) {
 		MethodVisitor delegate = methodDelegate();
 		if(delegate != null) delegate.visitParameter(name, access);
-	}
-
-	/**
-	 * Visit the annotation default value for this method
-	 * @param value
-	 * 		  Default value.
-	 */
-	default void visitAnnotationDefault(Constant value) {
-		MethodVisitor delegate = methodDelegate();
-		if(delegate != null) delegate.visitAnnotationDefault(value);
 	}
 
 	/**

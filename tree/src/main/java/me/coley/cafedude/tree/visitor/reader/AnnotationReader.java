@@ -3,6 +3,7 @@ package me.coley.cafedude.tree.visitor.reader;
 import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.classfile.annotation.*;
 import me.coley.cafedude.tree.visitor.AnnotationArrayVisitor;
+import me.coley.cafedude.tree.visitor.AnnotationDefaultVisitor;
 import me.coley.cafedude.tree.visitor.AnnotationVisitor;
 import me.coley.cafedude.util.ConstantUtil;
 
@@ -65,6 +66,32 @@ class AnnotationReader {
 			}
 		} else {
 			aav.visitArrayValue(ConstantUtil.from(value, pool));
+		}
+	}
+
+	static void visitAnnotationDefaultElement(ElementValue value, AnnotationDefaultVisitor adv, ConstPool pool) {
+		if(value.getTag() == '[' || value.getTag() == '@' || value.getTag() == 'e') {
+			if(value instanceof ArrayElementValue) {
+				ArrayElementValue array = (ArrayElementValue) value;
+				AnnotationArrayVisitor aav = adv.visitDefaultArray();
+				if(aav == null) return; // skip
+				for (ElementValue elementValue : array.getArray()) {
+					visitArrayElement(elementValue, aav, pool);
+				}
+				aav.visitArrayEnd();
+			} else if(value instanceof EnumElementValue) {
+				EnumElementValue enumValue = (EnumElementValue) value;
+				adv.visitDefaultEnum(pool.getUtf(enumValue.getTypeIndex()), pool.getUtf(enumValue.getNameIndex()));
+			} else if(value instanceof AnnotationElementValue) {
+				AnnotationElementValue annotationValue = (AnnotationElementValue) value;
+				Annotation annotation = annotationValue.getAnnotation();
+				AnnotationVisitor annotationVisitor = adv.visitDefaultAnnotation(pool.getUtf(annotation.getTypeIndex()));
+				if(annotationVisitor == null) return; // skip
+				visitAnnotation(annotationValue.getAnnotation(), annotationVisitor, pool);
+				annotationVisitor.visitAnnotationEnd();
+			}
+		} else {
+			adv.visitDefaultValue(ConstantUtil.from(value, pool));
 		}
 	}
 

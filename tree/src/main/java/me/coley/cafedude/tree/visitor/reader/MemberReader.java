@@ -105,7 +105,9 @@ public class MemberReader {
 		}
 		AnnotationDefaultAttribute annotationDefault = member.getAttribute(AnnotationDefaultAttribute.class);
 		if(annotationDefault != null) {
-			mv.visitAnnotationDefault(ConstantUtil.from(annotationDefault.getElementValue(), pool));
+			AnnotationDefaultVisitor adv = mv.visitAnnotationDefault();
+			if(adv == null) return;
+			AnnotationReader.visitAnnotationDefaultElement(annotationDefault.getElementValue(), adv, pool);
 		}
 		mv.visitMethodEnd();
 	}
@@ -124,9 +126,9 @@ public class MemberReader {
 		if(cv == null) return; // skip code
 		CodeAttribute code = method.getAttribute(CodeAttribute.class);
 		if(code == null) return; // skip code
-		InstructionVisitor ir = new InstructionVisitor(classFile, code, cv, method,
+		CodeReader cr = new CodeReader(classFile, code, cv, method,
 				transformer.getLabels(method), transformer.getInstructions(method));
-		ir. accept();
+		cr.accept();
 	}
 
 }
