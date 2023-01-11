@@ -63,7 +63,7 @@ public class Symbols {
 	int newConstant(Constant value) {
 		switch (value.getType()) {
 			case STRING:
-				return newUtf8((String) value.getValue());
+				return newSym(new CpString(newUtf8((String) value.getValue())));
 			case BOOLEAN:
 			case BYTE:
 			case CHAR:
