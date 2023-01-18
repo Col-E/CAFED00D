@@ -8,9 +8,7 @@ import me.coley.cafedude.classfile.Descriptor;
 import me.coley.cafedude.classfile.attribute.*;
 import me.coley.cafedude.io.ClassBuilder;
 import me.coley.cafedude.io.ClassFileWriter;
-import me.coley.cafedude.tree.visitor.ClassVisitor;
-import me.coley.cafedude.tree.visitor.FieldVisitor;
-import me.coley.cafedude.tree.visitor.MethodVisitor;
+import me.coley.cafedude.tree.visitor.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -22,6 +20,7 @@ public class ClassWriter extends DeclarationWriter implements ClassVisitor {
 
 	final ClassBuilder builder;
 	private final List<InnerClass> innerClasses = new ArrayList<>();
+	private final List<RecordAttribute.RecordComponent> recordComponents = new ArrayList<>();
 
 	public ClassWriter(int versionMajor, int versionMinor) {
 		super(new Symbols(new ConstPool()));
@@ -85,12 +84,29 @@ public class ClassWriter extends DeclarationWriter implements ClassVisitor {
 	}
 
 	@Override
+	public ModuleVisitor visitModule(String name, int access, @Nullable String version) {
+		return new ModuleWriter(symbols, symbols.newUtf8(name), version != null ? symbols.newUtf8(version) : 0,
+				access, attributes::addAll);
+	}
+
+	@Override
+	public RecordComponentVisitor visitRecordComponent(String name, Descriptor descriptor) {
+		return new RecordComponentWriter(symbols, symbols.newUtf8(name), symbols.newUtf8(descriptor.getDescriptor()),
+				recordComponents::add);
+	}
+
+	@Override
 	public void visitClassEnd() {
 		super.visitDeclarationEnd();
 		if(!innerClasses.isEmpty()) {
 			attributes.add(new InnerClassesAttribute(
 					symbols.newUtf8(AttributeConstants.INNER_CLASSES),
 					innerClasses));
+		}
+		if(!recordComponents.isEmpty()) {
+			attributes.add(new RecordAttribute(
+					symbols.newUtf8(AttributeConstants.RECORD),
+					recordComponents));
 		}
 		for (Attribute attribute : attributes) {
 			builder.addAttribute(attribute);

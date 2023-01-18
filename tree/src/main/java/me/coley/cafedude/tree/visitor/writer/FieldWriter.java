@@ -13,7 +13,6 @@ import java.util.function.Consumer;
 
 public class FieldWriter extends DeclarationWriter implements FieldVisitor {
 
-	private final List<Attribute> attributes = new ArrayList<>();
 	private final Field field;
 	private final Consumer<Field> callback;
 

@@ -4,7 +4,7 @@ import me.coley.cafedude.classfile.AttributeConstants;
 import me.coley.cafedude.classfile.Method;
 import me.coley.cafedude.classfile.annotation.Annotation;
 import me.coley.cafedude.classfile.attribute.*;
-import me.coley.cafedude.tree.Constant;
+import me.coley.cafedude.tree.visitor.AnnotationDefaultVisitor;
 import me.coley.cafedude.tree.visitor.AnnotationVisitor;
 import me.coley.cafedude.tree.visitor.CodeVisitor;
 import me.coley.cafedude.tree.visitor.MethodVisitor;
@@ -58,10 +58,12 @@ public class MethodWriter extends DeclarationWriter implements MethodVisitor {
 	}
 
 	@Override
-	public void visitAnnotationDefault(Constant value) {
-		attributes.add(new AnnotationDefaultAttribute(
-				symbols.newUtf8(AttributeConstants.ANNOTATION_DEFAULT),
-				symbols.newElementValue(value)));
+	public AnnotationDefaultVisitor visitAnnotationDefault() {
+		return new AnnotationDefaultWriter(symbols, value -> {
+			attributes.add(new AnnotationDefaultAttribute(
+					symbols.newUtf8(AttributeConstants.ANNOTATION_DEFAULT),
+					value));
+		});
 	}
 
 	@Override

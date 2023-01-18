@@ -19,6 +19,8 @@ public class Symbols {
 	}
 
 	int newUtf8(String value) {
+		if(value == null)
+			return 0;
 		return newSym(new CpUtf8(value));
 	}
 
@@ -49,6 +51,14 @@ public class Symbols {
 
 	int newInvokeDynamic(int bootstrapMethodIndex, int nameAndTypeIndex) {
 		return newSym(new CpInvokeDynamic(bootstrapMethodIndex, nameAndTypeIndex));
+	}
+
+	int newPackage(String exportPackage) {
+		return newSym(new CpPackage(newUtf8(exportPackage)));
+	}
+
+	int newModule(String module) {
+		return newSym(new CpModule(newUtf8(module)));
 	}
 
 	int newSym(ConstPoolEntry entry) {
