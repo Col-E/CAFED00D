@@ -10,6 +10,8 @@ import java.util.List;
  * @see Opcodes#LOOKUPSWITCH
  */
 public class LookupSwitchInsn extends Insn {
+
+	private List<Integer> keys;
 	private List<Label> labels;
 	private Label defaultLabel;
 
@@ -19,10 +21,26 @@ public class LookupSwitchInsn extends Insn {
 	 * @param defaultLabel
 	 * 		Default offset of the switch.
 	 */
-	public LookupSwitchInsn(List<Label> labels, Label defaultLabel) {
+	public LookupSwitchInsn(List<Integer> keys, List<Label> labels, Label defaultLabel) {
 		super(Opcodes.LOOKUPSWITCH);
+		this.keys = keys;
 		this.labels = labels;
 		this.defaultLabel = defaultLabel;
+	}
+
+	/**
+	 * @return Keys of the switch.
+	 */
+	public List<Integer> getKeys() {
+		return keys;
+	}
+
+	/**
+	 * @param keys
+	 * 		Keys of the switch.
+	 */
+	public void setKeys(List<Integer> keys) {
+		this.keys = keys;
 	}
 
 	/**

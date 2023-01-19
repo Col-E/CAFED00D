@@ -54,7 +54,7 @@ public class MethodWriter extends DeclarationWriter implements MethodVisitor {
 
 	@Override
 	public CodeVisitor visitCode() {
-		return null;
+		return new CodeWriter(symbols, attributes::add);
 	}
 
 	@Override

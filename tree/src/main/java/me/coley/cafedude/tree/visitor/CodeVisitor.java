@@ -48,6 +48,26 @@ public interface CodeVisitor {
 	}
 
 	/**
+	 * Visit an exception handler
+	 *
+	 * @param type
+	 * 		Exception type.
+	 * 	    {@code null} to catch all exceptions.
+	 * @param start
+	 * 		Start of the handled region.
+	 * @param end
+	 * 		End of the handled region.
+	 * @param handler
+	 * 		Handler of the exception.
+	 */
+	default void visitExceptionHandler(@Nullable String type, Label start, Label end, Label handler) {
+		CodeVisitor delegate = codeDelegate();
+		if (delegate != null) {
+			delegate.visitExceptionHandler(type, start, end, handler);
+		}
+	}
+
+	/**
 	 * Visit a {@link Opcodes#NOP} instruction.
 	 */
 	default void visitNop() {
@@ -284,14 +304,14 @@ public interface CodeVisitor {
 	/**
 	 * Visit a LDC instruction which pushes the constant operand onto the stack.
 	 *
-	 * @param constant
-	 * 			constant to push onto the stack. The type of the constant can be all types of
-	 * 			{@link Constant.Type}.
+	 * @param opcode
+	 * @param constant constant to push onto the stack. The type of the constant can be all types of
+	 *                 {@link Constant.Type}.
 	 * @see Constant
 	 */
-	default void visitLdcInsn(Constant constant) {
+	default void visitLdcInsn(int opcode, Constant constant) {
 		CodeVisitor cv = codeDelegate();
-		if (cv != null) cv.visitLdcInsn(constant);
+		if (cv != null) cv.visitLdcInsn(opcode, constant);
 	}
 
 	/**

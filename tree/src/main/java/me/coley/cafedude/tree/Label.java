@@ -68,4 +68,8 @@ public class Label {
 		this.lines = lines;
 	}
 
+	public boolean isResolved() {
+		return offset != -1;
+	}
+
 }

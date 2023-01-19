@@ -23,9 +23,9 @@ import static me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.Bo
 import static me.coley.cafedude.classfile.attribute.StackMapTableAttribute.*;
 import static me.coley.cafedude.classfile.instruction.Opcodes.*;
 
-class InstructionVisitor {
+class CodeReader {
 
-	private static final Logger logger = LoggerFactory.getLogger(InstructionVisitor.class);
+	private static final Logger logger = LoggerFactory.getLogger(CodeReader.class);
 	private final BootstrapMethodsAttribute bsma;
 	private final LocalVariableTableAttribute lvta;
 	private final LocalVariableTypeTableAttribute lvtta;
@@ -40,8 +40,8 @@ class InstructionVisitor {
 	private final Stack<Value> locals = new Stack<>();
 	private static final Stack<Value> EMPTY = new Stack<>();
 
-	InstructionVisitor(ClassFile clazz, CodeAttribute ca, CodeVisitor cv, Method method,
-							  Map<Integer, Label> labels, Map<Integer, Instruction> instructions) {
+	CodeReader(ClassFile clazz, CodeAttribute ca, CodeVisitor cv, Method method,
+			   Map<Integer, Label> labels, Map<Integer, Instruction> instructions) {
 		this.bsma = clazz.getAttribute(BootstrapMethodsAttribute.class);
 		this.lvta = ca.getAttribute(LocalVariableTableAttribute.class);
 		this.lvtta = ca.getAttribute(LocalVariableTypeTableAttribute.class);
@@ -61,6 +61,18 @@ class InstructionVisitor {
 			return;
 		}
 		if (instructions.isEmpty()) return; // no instructions, abstract/interface method
+		// visit exception handlers
+		for (CodeAttribute.ExceptionTableEntry entry : ca.getExceptionTable()) {
+			String type = null;
+			if (entry.getCatchTypeIndex() != 0) {
+				CpClass cpClass = (CpClass) pool.get(entry.getCatchTypeIndex());
+				type = pool.getUtf(cpClass.getIndex());
+			}
+			cv.visitExceptionHandler(type,
+					labels.get(entry.getStartPc()),
+					labels.get(entry.getEndPc()),
+					labels.get(entry.getHandlerPc()));
+		}
 		Map<Integer, StackMapFrame> frames = getStackMapFrames();
 		for (Map.Entry<Integer, Instruction> entry : instructions.entrySet()) {
 			int insnPos = entry.getKey();
@@ -182,7 +194,7 @@ class InstructionVisitor {
 			cv.visitIntInsn(opcode, operand);
 		} else if (opcode == LDC || opcode == LDC_W || opcode == LDC2_W) {
 			Constant cst = ConstantUtil.from(pool.get(operand), pool);
-			cv.visitLdcInsn(cst);
+			cv.visitLdcInsn(opcode, cst);
 		} else if ((opcode >= ILOAD && opcode <= ALOAD) || (opcode >= ISTORE && opcode <= ASTORE)) {
 			cv.visitVarInsn(opcode, operand);
 		} else if ((opcode >= IFEQ && opcode <= JSR) || (opcode >= IFNULL && opcode <= JSR_W)) {

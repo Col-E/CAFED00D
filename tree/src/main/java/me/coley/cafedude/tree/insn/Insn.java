@@ -23,6 +23,13 @@ public class Insn {
 		this.opcode = opcode;
 	}
 
+	/**
+	 * @return Instruction opcode.
+	 */
+	public int getOpcode() {
+		return opcode;
+	}
+
 	@Override
 	public String toString() {
 		return "insn(" + opcode + ")";
