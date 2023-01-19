@@ -101,7 +101,7 @@ public class ConstPool implements List<ConstPoolEntry> {
 		// 3: Double --> 5
 		// 4: String --> 7 --
 		// 5: String --> 8
-		int wideCount = indexToWides.computeIfAbsent(index, i -> wideIndices.headSet(i + 1).size());
+		int wideCount = indexToWides.computeIfAbsent(index, i -> wideIndices.headSet(i).size());
 		return 1 + index + wideCount;
 	}
 
