@@ -36,7 +36,7 @@ public class ConstantUtil {
 			case CLASS: {
 				CpClass cpClass = (CpClass) entry;
 				String name = pool.getUtf(cpClass.getIndex());
-				return new Constant(Constant.Type.DESCRIPTOR, Descriptor.from(name));
+				return new Constant(Constant.Type.DESCRIPTOR, Descriptor.from('L' + name + ';'));
 			}
 			case METHOD_TYPE: {
 				CpMethodType cpMethodType = (CpMethodType) entry;

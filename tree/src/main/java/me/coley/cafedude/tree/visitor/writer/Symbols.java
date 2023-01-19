@@ -114,7 +114,11 @@ public class Symbols {
 
 	ElementValue newElementValue(Constant value) {
 		char tag = ' ';
-		int index = newConstant(value);
+		int index;
+		if(value.getType().equals(Constant.Type.STRING))
+			// ElementValue requires UTF8 instead of String
+			index = newUtf8((String) value.getValue());
+		else index = newConstant(value);
 		switch (value.getType()) {
 			case BOOLEAN:
 				tag = 'Z';
