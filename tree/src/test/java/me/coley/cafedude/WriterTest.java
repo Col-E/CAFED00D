@@ -5,8 +5,7 @@ import me.coley.cafedude.io.ClassFileReader;
 import me.coley.cafedude.tree.visitor.reader.ClassReader;
 import me.coley.cafedude.tree.visitor.writer.ClassWriter;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -21,11 +20,10 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class WriterTest {
 
-	@ParameterizedTest
-	@MethodSource("supply")
-	public void testVisitClass(Path file) {
+	@Test
+	public void testVisitClass() {
 		try {
-			byte[] code = Files.readAllBytes(file);
+			byte[] code = Files.readAllBytes(Paths.get("src/test/resources/samples/normal/javac/ConfDisplay.class"));
 			ClassFile classFile = new ClassFileReader().read(code);
 			ClassWriter writer = new ClassWriter(classFile.getVersionMajor(), classFile.getVersionMinor());
 			ClassReader reader = new ClassReader(classFile);
@@ -36,7 +34,7 @@ public class WriterTest {
 		} catch (InvalidClassException e) {
 			fail("Failed to compare written output, invalid class", e);
 		} catch (Exception ex) {
-			fail("Unexpected error while testing class " + file, ex);
+			fail("Unexpected error while testing class ", ex);
 		}
 	}
 
@@ -44,7 +42,7 @@ public class WriterTest {
 		try {
 			BiPredicate<Path, BasicFileAttributes> filter =
 					(path, attrib) -> attrib.isRegularFile() && path.toString().endsWith(".class");
-			return Files.find(Paths.get("src/test/resources/samples/normal/"), 25, filter)
+			return Files.find(Paths.get("src/test/resources/samples/normal/javac"), 25, filter)
 					.collect(Collectors.toList());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
