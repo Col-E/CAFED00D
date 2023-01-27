@@ -7,7 +7,7 @@ import me.coley.cafedude.classfile.instruction.Opcodes;
  * which has a class reference and a dimension count operand.
  * @see Opcodes#MULTIANEWARRAY
  */
-public class MultianewarrayInsn extends Insn {
+public class MultiANewArrayInsn extends Insn {
 
 	private String owner;
 
@@ -19,8 +19,8 @@ public class MultianewarrayInsn extends Insn {
 	 * @param dimensions
 	 * 		Number of dimensions of the array.
 	 */
-	public MultianewarrayInsn(String owner, int dimensions) {
-		super(Opcodes.MULTIANEWARRAY);
+	public MultiANewArrayInsn(String owner, int dimensions) {
+		super(InsnKind.MULTI_ANEWARRAY, Opcodes.MULTIANEWARRAY);
 		this.owner = owner;
 		this.dimensions = dimensions;
 	}
@@ -55,4 +55,11 @@ public class MultianewarrayInsn extends Insn {
 		this.dimensions = dimensions;
 	}
 
+	@Override
+	public int size() {
+		// u1 opcode
+		// u2 index
+		// u1 dimensions
+		return 4;
+	}
 }

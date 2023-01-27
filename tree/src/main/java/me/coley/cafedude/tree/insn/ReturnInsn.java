@@ -21,7 +21,7 @@ public class ReturnInsn extends Insn {
 	 * 		Instruction opcode.
 	 */
 	public ReturnInsn(int opcode) {
-		super(opcode);
+		super(InsnKind.RETURN, opcode);
 	}
 
 }

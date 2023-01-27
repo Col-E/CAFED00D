@@ -24,7 +24,7 @@ public class TypeInsn extends Insn {
 	 * 		Descriptor of the type.
 	 */
 	public TypeInsn(int opcode, Descriptor descriptor) {
-		super(opcode);
+		super(InsnKind.TYPE, opcode);
 		this.descriptor = descriptor;
 	}
 
@@ -43,4 +43,10 @@ public class TypeInsn extends Insn {
 		this.descriptor = descriptor;
 	}
 
+	@Override
+	public int size() {
+		// u1 opcode
+		// u2 descriptor
+		return 3;
+	}
 }

@@ -29,6 +29,6 @@ public class ConstantInsn extends Insn {
 	 * 		Instruction opcode.
 	 */
 	public ConstantInsn(int opcode) {
-		super(opcode);
+		super(InsnKind.CONSTANT, opcode);
 	}
 }

@@ -32,6 +32,6 @@ public class ArrayInsn extends Insn {
 	 * 		Instruction opcode.
 	 */
 	public ArrayInsn(int opcode) {
-		super(opcode);
+		super(InsnKind.ARRAY, opcode);
 	}
 }

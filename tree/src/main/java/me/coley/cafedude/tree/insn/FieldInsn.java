@@ -30,7 +30,7 @@ public class FieldInsn extends Insn {
 	 * 		Descriptor of the field.
 	 */
 	public FieldInsn(int opcode, String owner, String name, Descriptor descriptor) {
-		super(opcode);
+		super(InsnKind.FIELD, opcode);
 		this.owner = owner;
 		this.name = name;
 		this.descriptor = descriptor;
@@ -81,4 +81,10 @@ public class FieldInsn extends Insn {
 		this.descriptor = descriptor;
 	}
 
+	@Override
+	public int size() {
+		// u1 opcode
+		// u2 index
+		return 3;
+	}
 }

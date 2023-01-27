@@ -71,7 +71,7 @@ public class ArithmeticInsn extends Insn {
 	 * 		Instruction opcode.
 	 */
 	public ArithmeticInsn(int opcode) {
-		super(opcode);
+		super(InsnKind.ARITHMETIC, opcode);
 	}
 
 }

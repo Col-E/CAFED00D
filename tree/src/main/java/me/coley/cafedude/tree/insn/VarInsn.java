@@ -1,6 +1,8 @@
 package me.coley.cafedude.tree.insn;
 
 import me.coley.cafedude.classfile.instruction.Opcodes;
+import me.coley.cafedude.tree.visitor.reader.CodeReader;
+import me.coley.cafedude.tree.visitor.writer.CodeWriter;
 
 /**
  * Instruction which has an operand that is a local variable index, to either store or load from.
@@ -17,7 +19,9 @@ import me.coley.cafedude.classfile.instruction.Opcodes;
  *     <li>{@link Opcodes#DSTORE}</li>
  *     <li>{@link Opcodes#ASTORE}</li>
  * </ul>
- * And all XLOAD_N and XSTORE_N instructions.
+ * {@link CodeReader} will convert all XLOAD_N and XSTORE_N instructions to XLOAD and XSTORE with respective
+ * operand values. <br>
+ * {@link CodeWriter} will convert them to XLOAD_N and XSTORE_N instructions if possible.
  * @see Opcodes#ILOAD_0
  * @see Opcodes#ISTORE_0
  */
@@ -32,7 +36,7 @@ public class VarInsn extends Insn {
 	 * 		Local variable index.
 	 */
 	public VarInsn(int opcode, int index) {
-		super(opcode);
+		super(InsnKind.VAR, opcode);
 		this.index = index;
 	}
 
@@ -51,4 +55,10 @@ public class VarInsn extends Insn {
 		this.index = index;
 	}
 
+	@Override
+	public int size() {
+		// u1 opcode
+		// u1 index
+		return 2;
+	}
 }

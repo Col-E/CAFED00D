@@ -20,7 +20,7 @@ public class IIncInsn extends Insn {
 	 * 		Increment value.
 	 */
 	public IIncInsn(int index, int increment) {
-		super(Opcodes.IINC);
+		super(InsnKind.IINC, Opcodes.IINC);
 		this.index = index;
 		this.increment = increment;
 	}
@@ -55,4 +55,11 @@ public class IIncInsn extends Insn {
 		this.increment = increment;
 	}
 
+	@Override
+	public int size() {
+		// u1 opcode
+		// u1 index
+		// u1 increment
+		return 3;
+	}
 }

@@ -1,5 +1,6 @@
 package me.coley.cafedude.tree.insn;
 
+import me.coley.cafedude.classfile.Descriptor;
 import me.coley.cafedude.classfile.instruction.Opcodes;
 
 /**
@@ -17,7 +18,7 @@ public class MethodInsn extends Insn {
 
 	private String owner;
 	private String name;
-	private String descriptor;
+	private Descriptor descriptor;
 
 	/**
 	 * @param opcode
@@ -29,8 +30,8 @@ public class MethodInsn extends Insn {
 	 * @param descriptor
 	 * 		Descriptor of the method.
 	 */
-	public MethodInsn(int opcode, String owner, String name, String descriptor) {
-		super(opcode);
+	public MethodInsn(int opcode, String owner, String name, Descriptor descriptor) {
+		super(InsnKind.METHOD, opcode);
 		this.owner = owner;
 		this.name = name;
 		this.descriptor = descriptor;
@@ -69,7 +70,7 @@ public class MethodInsn extends Insn {
 	/**
 	 * @return Descriptor of the method.
 	 */
-	public String getDescriptor() {
+	public Descriptor getDescriptor() {
 		return descriptor;
 	}
 
@@ -77,8 +78,14 @@ public class MethodInsn extends Insn {
 	 * @param descriptor
 	 * 		Descriptor of the method.
 	 */
-	public void setDescriptor(String descriptor) {
+	public void setDescriptor(Descriptor descriptor) {
 		this.descriptor = descriptor;
 	}
 
+	@Override
+	public int size() {
+		// u1 opcode
+		// u2 index
+		return 3;
+	}
 }

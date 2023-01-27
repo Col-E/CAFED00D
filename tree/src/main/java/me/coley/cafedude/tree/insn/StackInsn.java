@@ -23,6 +23,6 @@ public class StackInsn extends Insn {
 	 * 		Instruction opcode.
 	 */
 	public StackInsn(int opcode) {
-		super(opcode);
+		super(InsnKind.STACK, opcode);
 	}
 }

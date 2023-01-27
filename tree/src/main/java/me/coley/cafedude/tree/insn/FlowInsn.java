@@ -38,7 +38,7 @@ public class FlowInsn extends Insn {
 	 * 		Label of the instruction.
 	 */
 	public FlowInsn(int opcode, Label label) {
-		super(opcode);
+		super(InsnKind.FLOW, opcode);
 		this.label = label;
 	}
 
@@ -57,4 +57,10 @@ public class FlowInsn extends Insn {
 		this.label = label;
 	}
 
+	@Override
+	public int size() {
+		// u1 opcode
+		// u2 label offset
+		return 3;
+	}
 }

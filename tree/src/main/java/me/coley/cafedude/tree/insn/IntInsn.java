@@ -22,7 +22,7 @@ public class IntInsn extends Insn {
 	 * 		Operand value.
 	 */
 	public IntInsn(int opcode, int operand) {
-		super(opcode);
+		super(InsnKind.INT, opcode);
 		this.operand = operand;
 	}
 
@@ -41,4 +41,10 @@ public class IntInsn extends Insn {
 		this.operand = operand;
 	}
 
+	@Override
+	public int size() {
+		// u1 opcode
+		// s1 operand
+		return 2;
+	}
 }

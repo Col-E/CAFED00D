@@ -5,6 +5,8 @@ import me.coley.cafedude.classfile.instruction.Opcodes;
 import me.coley.cafedude.tree.Constant;
 import me.coley.cafedude.tree.Handle;
 
+import java.util.List;
+
 /**
  * Instruction for the invoke-dynamic opcode which contains a handle to the bootstrap method,
  * the name and type of the method to be dynamically invoked, and zero or more extra arguments
@@ -15,7 +17,7 @@ public class InvokeDynamicInsn extends Insn {
 	private String name;
 	private Descriptor descriptor;
 	private Handle bootstrapMethod;
-	private Constant[] bootstrapArguments;
+	private List<Constant> bootstrapArguments;
 
 	/**
 	 * @param name
@@ -28,8 +30,8 @@ public class InvokeDynamicInsn extends Insn {
 	 * 		Zero or more extra arguments for the bootstrap method.
 	 */
 	public InvokeDynamicInsn(String name, Descriptor descriptor, Handle bootstrapMethod,
-							 Constant[] bootstrapArguments) {
-		super(Opcodes.INVOKEDYNAMIC);
+							 List<Constant> bootstrapArguments) {
+		super(InsnKind.INVOKE_DYNAMIC, Opcodes.INVOKEDYNAMIC);
 		this.name = name;
 		this.descriptor = descriptor;
 		this.bootstrapMethod = bootstrapMethod;
@@ -82,9 +84,9 @@ public class InvokeDynamicInsn extends Insn {
 	}
 
 	/**
-	 * @return Zero or more extra arguments for the bootstrap method.
+	 * @return Zero or more arguments for the bootstrap method.
 	 */
-	public Constant[] getBootstrapArguments() {
+	public List<Constant> getBootstrapArguments() {
 		return bootstrapArguments;
 	}
 
@@ -92,7 +94,17 @@ public class InvokeDynamicInsn extends Insn {
 	 * @param bootstrapArguments
 	 * 		Zero or more extra arguments for the bootstrap method.
 	 */
-	public void setBootstrapArguments(Constant[] bootstrapArguments) {
+	public void setBootstrapArguments(List<Constant> bootstrapArguments) {
 		this.bootstrapArguments = bootstrapArguments;
+	}
+
+	@Override
+	public int size() {
+		// u1 opcode
+		// u2 bootstrapMethodAttrIndex
+		// u2 nameAndTypeIndex
+		// bootstrapsArguments are detached from this instruction, because they come from the
+		// BootstrapMethods attribute
+		return 5;
 	}
 }

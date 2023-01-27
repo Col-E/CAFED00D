@@ -22,7 +22,7 @@ public class LookupSwitchInsn extends Insn {
 	 * 		Default offset of the switch.
 	 */
 	public LookupSwitchInsn(List<Integer> keys, List<Label> labels, Label defaultLabel) {
-		super(Opcodes.LOOKUPSWITCH);
+		super(InsnKind.LOOKUP_SWITCH, Opcodes.LOOKUPSWITCH);
 		this.keys = keys;
 		this.labels = labels;
 		this.defaultLabel = defaultLabel;
@@ -71,5 +71,15 @@ public class LookupSwitchInsn extends Insn {
 	 */
 	public void setDefaultLabel(Label defaultLabel) {
 		this.defaultLabel = defaultLabel;
+	}
+
+	@Override
+	public int size() {
+		// u1 opcode
+		// u4 padding
+		// u4 default
+		// u4 npairs
+		// { u4 key, u4 offset } npairs times
+		return 1 + 4 + 4 + 4 + (keys.size() * 8);
 	}
 }

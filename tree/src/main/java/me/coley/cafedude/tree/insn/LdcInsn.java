@@ -19,7 +19,7 @@ public class LdcInsn extends Insn {
 	 * 		Constant operand.
 	 */
 	public LdcInsn(int opcode, Constant constant) {
-		super(opcode);
+		super(InsnKind.LDC, opcode);
 		this.constant = constant;
 	}
 
@@ -38,4 +38,16 @@ public class LdcInsn extends Insn {
 		this.constant = constant;
 	}
 
+	@Override
+	public int size() {
+		switch (getOpcode()) {
+			case Opcodes.LDC:
+				return 2;
+			case Opcodes.LDC_W:
+			case Opcodes.LDC2_W:
+				return 3;
+			default:
+				throw new IllegalStateException("Invalid opcode for LdcInsn: " + getOpcode());
+		}
+	}
 }

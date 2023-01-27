@@ -1,0 +1,27 @@
+package me.coley.cafedude.tree.insn;
+
+public enum InsnKind {
+
+	ARITHMETIC,
+	ARRAY,
+	CONSTANT,
+	FIELD,
+	FLOW,
+	IINC,
+	INT,
+	INVOKE_DYNAMIC,
+	LDC,
+	LOOKUP_SWITCH,
+	METHOD,
+	MULTI_ANEWARRAY,
+	MONITOR,
+	NOP,
+	RETURN,
+	STACK,
+	THROW,
+	TABLE_SWITCH,
+	TYPE,
+	VAR,
+	UNKNOWN;
+
+}
