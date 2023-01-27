@@ -1,6 +1,9 @@
 package me.coley.cafedude.classfile.attribute;
 
 import me.coley.cafedude.classfile.behavior.CpAccessor;
+import me.coley.cafedude.classfile.constant.CpClass;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 
 import java.util.Set;
 
@@ -9,36 +12,36 @@ import java.util.Set;
  */
 public class ModuleMainClassAttribute extends Attribute implements CpAccessor {
 
-	private int mainClassIndex;
+	private CpClass mainClass;
 
 	/**
-	 * @param nameIndex Name index in constant pool.
-	 * @param mainClassIndex Index of main class in constant pool.
+	 * @param name Name index in constant pool.
+	 * @param mainClass Index of main class in constant pool.
 	 */
-	public ModuleMainClassAttribute(int nameIndex, int mainClassIndex) {
-		super(nameIndex);
-		this.mainClassIndex = mainClassIndex;
+	public ModuleMainClassAttribute(CpUtf8 name, CpClass mainClass) {
+		super(name);
+		this.mainClass = mainClass;
 	}
 
 	/**
 	 * @return Index of main class in constant pool.
 	 */
-	public int getMainClassIndex() {
-		return mainClassIndex;
+	public CpClass getMainClass() {
+		return mainClass;
 	}
 
 	/**
-	 * @param mainClassIndex New index of main class in constant
+	 * @param mainClass New index of main class in constant
 	 * 					 pool.
 	 */
-	public void setMainClassIndex(int mainClassIndex) {
-		this.mainClassIndex = mainClassIndex;
+	public void setMainClass(CpClass mainClass) {
+		this.mainClass = mainClass;
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = super.cpAccesses();
-		set.add(mainClassIndex);
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = super.cpAccesses();
+		set.add(mainClass);
 		return set;
 	}
 

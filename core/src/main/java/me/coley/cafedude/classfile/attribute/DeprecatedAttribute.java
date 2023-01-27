@@ -1,5 +1,7 @@
 package me.coley.cafedude.classfile.attribute;
 
+import me.coley.cafedude.classfile.constant.CpUtf8;
+
 /**
  * Deprecation marker attribute.
  *
@@ -7,11 +9,11 @@ package me.coley.cafedude.classfile.attribute;
  */
 public class DeprecatedAttribute extends Attribute {
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		Name index in constant pool.
 	 */
-	public DeprecatedAttribute(int nameIndex) {
-		super(nameIndex);
+	public DeprecatedAttribute(CpUtf8 name) {
+		super(name);
 	}
 
 	@Override

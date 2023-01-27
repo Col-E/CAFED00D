@@ -1,5 +1,7 @@
 package me.coley.cafedude.classfile.annotation;
 
+import me.coley.cafedude.classfile.constant.CpUtf8;
+
 import java.util.Map;
 
 /**
@@ -21,7 +23,7 @@ public class TypeAnnotation extends Annotation {
 	 * @param typePath
 	 * 		Information about which part of the type is annotated.
 	 */
-	public TypeAnnotation(int typeIndex, Map<Integer, ElementValue> values, TargetInfo targetInfo, TypePath typePath) {
+	public TypeAnnotation(CpUtf8 typeIndex, Map<CpUtf8, ElementValue> values, TargetInfo targetInfo, TypePath typePath) {
 		super(typeIndex, values);
 		this.targetInfo = targetInfo;
 		this.typePath = typePath;

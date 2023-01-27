@@ -6,7 +6,7 @@ import me.coley.cafedude.classfile.Field;
 import me.coley.cafedude.InvalidClassException;
 import me.coley.cafedude.classfile.Method;
 import me.coley.cafedude.classfile.attribute.Attribute;
-import me.coley.cafedude.classfile.constant.ConstPoolEntry;
+import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.ConstRef;
 import me.coley.cafedude.classfile.constant.CpClass;
 import me.coley.cafedude.classfile.constant.CpDouble;
@@ -59,17 +59,17 @@ public class ClassFileWriter {
 			out.writeShort(clazz.getVersionMajor());
 			// Constant pool
 			out.writeShort(clazz.getPool().size() + 1);
-			for (ConstPoolEntry entry : clazz.getPool())
+			for (CpEntry entry : clazz.getPool())
 				writeCpEntry(entry);
 			// Flags
 			out.writeShort(clazz.getAccess());
 			// This/super classes
-			out.writeShort(clazz.getClassIndex());
-			out.writeShort(clazz.getSuperIndex());
+			out.writeShort(clazz.getThisClass().getIndex());
+			out.writeShort(clazz.getSuperClass().getIndex());
 			// Interfaces
-			out.writeShort(clazz.getInterfaceIndices().size());
-			for (int interfaceIdx : clazz.getInterfaceIndices())
-				out.writeShort(interfaceIdx);
+			out.writeShort(clazz.getInterfaceClasses().size());
+			for (CpClass interfaceEntry : clazz.getInterfaceClasses())
+				out.writeShort(interfaceEntry.getIndex());
 			// Fields
 			out.writeShort(clazz.getFields().size());
 			for (Field field : clazz.getFields())
@@ -97,7 +97,7 @@ public class ClassFileWriter {
 	 * @throws InvalidClassException
 	 * 		When the class has unexpected data.
 	 */
-	private void writeCpEntry(ConstPoolEntry entry) throws IOException, InvalidClassException {
+	private void writeCpEntry(CpEntry entry) throws IOException, InvalidClassException {
 		int tag = entry.getTag();
 		out.writeByte(tag);
 		switch (tag) {
@@ -117,41 +117,41 @@ public class ClassFileWriter {
 				out.writeDouble(((CpDouble) entry).getValue());
 				break;
 			case ConstantPoolConstants.STRING:
-				out.writeShort(((CpString) entry).getIndex());
+				out.writeShort(((CpString) entry).getString().getIndex());
 				break;
 			case ConstantPoolConstants.CLASS:
-				out.writeShort(((CpClass) entry).getIndex());
+				out.writeShort(((CpClass) entry).getName().getIndex());
 				break;
 			case ConstantPoolConstants.FIELD_REF:
 			case ConstantPoolConstants.METHOD_REF:
 			case ConstantPoolConstants.INTERFACE_METHOD_REF:
-				out.writeShort(((ConstRef) entry).getClassIndex());
-				out.writeShort(((ConstRef) entry).getNameTypeIndex());
+				out.writeShort(((ConstRef) entry).getClassRef().getIndex());
+				out.writeShort(((ConstRef) entry).getNameType().getIndex());
 				break;
 			case ConstantPoolConstants.NAME_TYPE:
-				out.writeShort(((CpNameType) entry).getNameIndex());
-				out.writeShort(((CpNameType) entry).getTypeIndex());
+				out.writeShort(((CpNameType) entry).getName().getIndex());
+				out.writeShort(((CpNameType) entry).getType().getIndex());
 				break;
 			case ConstantPoolConstants.DYNAMIC:
 				out.writeShort(((CpDynamic) entry).getBsmIndex());
-				out.writeShort(((CpDynamic) entry).getNameTypeIndex());
+				out.writeShort(((CpDynamic) entry).getNameType().getIndex());
 				break;
 			case ConstantPoolConstants.METHOD_HANDLE:
 				out.writeByte(((CpMethodHandle) entry).getKind());
-				out.writeShort(((CpMethodHandle) entry).getReferenceIndex());
+				out.writeShort(((CpMethodHandle) entry).getReference().getIndex());
 				break;
 			case ConstantPoolConstants.METHOD_TYPE:
-				out.writeShort(((CpMethodType) entry).getIndex());
+				out.writeShort(((CpMethodType) entry).getDescriptor().getIndex());
 				break;
 			case ConstantPoolConstants.INVOKE_DYNAMIC:
 				out.writeShort(((CpInvokeDynamic) entry).getBsmIndex());
-				out.writeShort(((CpInvokeDynamic) entry).getNameTypeIndex());
+				out.writeShort(((CpInvokeDynamic) entry).getNameType().getIndex());
 				break;
 			case ConstantPoolConstants.MODULE:
-				out.writeShort(((CpModule) entry).getIndex());
+				out.writeShort(((CpModule) entry).getName().getIndex());
 				break;
 			case ConstantPoolConstants.PACKAGE:
-				out.writeShort(((CpPackage) entry).getIndex());
+				out.writeShort(((CpPackage) entry).getPackageName().getIndex());
 				break;
 			default:
 				throw new InvalidClassException("Unknown constant-pool tag: " + tag);
@@ -183,8 +183,8 @@ public class ClassFileWriter {
 	 */
 	private void writeField(Field field) throws IOException, InvalidClassException {
 		out.writeShort(field.getAccess());
-		out.writeShort(field.getNameIndex());
-		out.writeShort(field.getTypeIndex());
+		out.writeShort(field.getName().getIndex());
+		out.writeShort(field.getType().getIndex());
 		out.writeShort(field.getAttributes().size());
 		for (Attribute attribute : field.getAttributes())
 			writeAttribute(attribute);
@@ -201,8 +201,8 @@ public class ClassFileWriter {
 	 */
 	private void writeMethod(Method method) throws IOException, InvalidClassException {
 		out.writeShort(method.getAccess());
-		out.writeShort(method.getNameIndex());
-		out.writeShort(method.getTypeIndex());
+		out.writeShort(method.getName().getIndex());
+		out.writeShort(method.getType().getIndex());
 		out.writeShort(method.getAttributes().size());
 		for (Attribute attribute : method.getAttributes())
 			writeAttribute(attribute);

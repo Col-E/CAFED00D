@@ -1,5 +1,7 @@
 package me.coley.cafedude.classfile.behavior;
 
+import me.coley.cafedude.classfile.constant.CpEntry;
+
 import java.util.Set;
 
 /**
@@ -11,5 +13,5 @@ public interface CpAccessor {
 	/**
 	 * @return Indices accessed.
 	 */
-	Set<Integer> cpAccesses();
+	Set<CpEntry> cpAccesses();
 }

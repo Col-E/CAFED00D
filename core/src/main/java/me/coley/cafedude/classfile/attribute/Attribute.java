@@ -1,9 +1,11 @@
 package me.coley.cafedude.classfile.attribute;
 
 import me.coley.cafedude.classfile.behavior.CpAccessor;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Base attribute.
@@ -11,21 +13,21 @@ import java.util.TreeSet;
  * @author Matt Coley
  */
 public abstract class Attribute implements CpAccessor {
-	private final int nameIndex;
+	private final CpUtf8 name;
 
 	/**
-	 * @param nameIndex
-	 * 		Name index in constant pool.
+	 * @param name
+	 * 		Name in constant pool.
 	 */
-	public Attribute(int nameIndex) {
-		this.nameIndex = nameIndex;
+	public Attribute(CpUtf8 name) {
+		this.name = name;
 	}
 
 	/**
-	 * @return Name index in constant pool.
+	 * @return Name in constant pool.
 	 */
-	public int getNameIndex() {
-		return nameIndex;
+	public CpUtf8 getName() {
+		return name;
 	}
 
 	/**
@@ -34,7 +36,7 @@ public abstract class Attribute implements CpAccessor {
 	public abstract int computeInternalLength();
 
 	/**
-	 * Complete length is the {@link #getNameIndex() U2:name_index}
+	 * Complete length is the {@link #getName() U2:name_index}
 	 * plus the {@link #computeInternalLength() U4:attribute_length}
 	 * plus the {@link #computeInternalLength() internal length}
 	 *
@@ -48,9 +50,9 @@ public abstract class Attribute implements CpAccessor {
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = new TreeSet<>();
-		set.add(getNameIndex());
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = new HashSet<>();
+		set.add(getName());
 		return set;
 	}
 }

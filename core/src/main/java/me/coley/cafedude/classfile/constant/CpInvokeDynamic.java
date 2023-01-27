@@ -14,7 +14,7 @@ public class CpInvokeDynamic extends ConstDynamic {
 	 * @param nameTypeIndex
 	 * 		Index of {@link CpNameType} in pool.
 	 */
-	public CpInvokeDynamic(int bsmIndex, int nameTypeIndex) {
-		super(INVOKE_DYNAMIC, bsmIndex, nameTypeIndex);
+	public CpInvokeDynamic(int bsmIndex, CpNameType nameType) {
+		super(INVOKE_DYNAMIC, bsmIndex, nameType);
 	}
 }

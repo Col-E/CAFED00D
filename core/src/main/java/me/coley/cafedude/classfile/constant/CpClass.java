@@ -1,35 +1,37 @@
 package me.coley.cafedude.classfile.constant;
 
+import java.util.Objects;
+
 /**
- * Class pool entry. Points to an UTF constant.
+ * Class pool entry. Points to a UTF constant.
  *
  * @author Matt Coley
  */
-public class CpClass extends ConstPoolEntry {
-	private int index;
+public class CpClass extends CpEntry {
+	private CpUtf8 name;
 
 	/**
 	 * @param index
 	 * 		Index of class name UTF in pool.
 	 */
-	public CpClass(int index) {
+	public CpClass(CpUtf8 name) {
 		super(CLASS);
-		this.index = index;
+		this.name = name;
 	}
 
 	/**
 	 * @return Index of class name UTF in pool.
 	 */
-	public int getIndex() {
-		return index;
+	public CpUtf8 getName() {
+		return name;
 	}
 
 	/**
-	 * @param index
+	 * @param name
 	 * 		New index of class name UTF in pool.
 	 */
-	public void setIndex(int index) {
-		this.index = index;
+	public void setName(CpUtf8 name) {
+		this.name = name;
 	}
 
 	@Override
@@ -37,11 +39,11 @@ public class CpClass extends ConstPoolEntry {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		CpClass cpClass = (CpClass) o;
-		return index == cpClass.index;
+		return Objects.equals(name, cpClass.name);
 	}
 
 	@Override
 	public int hashCode() {
-		return index;
+		return Objects.hash(name);
 	}
 }

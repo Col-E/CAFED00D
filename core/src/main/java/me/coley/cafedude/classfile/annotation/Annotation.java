@@ -3,7 +3,10 @@ package me.coley.cafedude.classfile.annotation;
 import me.coley.cafedude.classfile.attribute.AnnotationsAttribute;
 import me.coley.cafedude.classfile.attribute.ParameterAnnotationsAttribute;
 import me.coley.cafedude.classfile.behavior.CpAccessor;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -22,25 +25,25 @@ import java.util.TreeSet;
  * @see ParameterAnnotationsAttribute
  */
 public class Annotation implements CpAccessor {
-	private final Map<Integer, ElementValue> values;
-	private final int typeIndex;
+	private final Map<CpUtf8, ElementValue> values;
+	private final CpUtf8 type;
 
 	/**
-	 * @param typeIndex
+	 * @param type
 	 * 		Annotation descriptor index.
 	 * @param values
 	 * 		Annotation key-value pairs. Keys point to UTF8 constants.
 	 */
-	public Annotation(int typeIndex, Map<Integer, ElementValue> values) {
-		this.typeIndex = typeIndex;
+	public Annotation(CpUtf8 type, Map<CpUtf8, ElementValue> values) {
+		this.type = type;
 		this.values = values;
 	}
 
 	/**
 	 * @return Annotation descriptor index.
 	 */
-	public int getTypeIndex() {
-		return typeIndex;
+	public CpUtf8 getType() {
+		return type;
 	}
 
 	/**
@@ -50,14 +53,14 @@ public class Annotation implements CpAccessor {
 	 *
 	 * @see ElementValue Values.
 	 */
-	public Map<Integer, ElementValue> getValues() {
+	public Map<CpUtf8, ElementValue> getValues() {
 		return values;
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = new TreeSet<>();
-		set.add(getTypeIndex());
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = new HashSet<>();
+		set.add(getType());
 		for (ElementValue value : values.values())
 			set.addAll(value.cpAccesses());
 		return set;
@@ -71,7 +74,7 @@ public class Annotation implements CpAccessor {
 		// u2: num_element_value_pairs
 		int length = 4;
 		// ??: element_values
-		for (Map.Entry<Integer, ElementValue> entry : values.entrySet()) {
+		for (Map.Entry<CpUtf8, ElementValue> entry : values.entrySet()) {
 			// u2: name_index (key)
 			// ??: value
 			length += 2;

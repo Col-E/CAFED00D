@@ -3,10 +3,10 @@ package me.coley.cafedude.classfile;
 import me.coley.cafedude.classfile.attribute.Attribute;
 import me.coley.cafedude.classfile.behavior.AttributeHolder;
 import me.coley.cafedude.classfile.behavior.CpAccessor;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Base class member.
@@ -16,24 +16,24 @@ import java.util.TreeSet;
 public abstract class ClassMember implements AttributeHolder, CpAccessor {
 	private List<Attribute> attributes;
 	private int access;
-	private int nameIndex;
-	private int typeIndex;
+	private CpUtf8 name;
+	private CpUtf8 type;
 
 	/**
 	 * @param attributes
 	 * 		Attributes of the member.
 	 * @param access
 	 * 		Member access flags.
-	 * @param nameIndex
+	 * @param name
 	 * 		Index of name UTF in pool.
-	 * @param typeIndex
+	 * @param type
 	 * 		Index of descriptor UTF in pool.
 	 */
-	public ClassMember(List<Attribute> attributes, int access, int nameIndex, int typeIndex) {
+	public ClassMember(List<Attribute> attributes, int access, CpUtf8 name, CpUtf8 type) {
 		this.attributes = attributes;
 		this.access = access;
-		this.nameIndex = nameIndex;
-		this.typeIndex = typeIndex;
+		this.name = name;
+		this.type = type;
 	}
 
 	/**
@@ -54,31 +54,31 @@ public abstract class ClassMember implements AttributeHolder, CpAccessor {
 	/**
 	 * @return Index of name UTF in pool.
 	 */
-	public int getNameIndex() {
-		return nameIndex;
+	public CpUtf8 getName() {
+		return name;
 	}
 
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		New index of name UTF in pool.
 	 */
-	public void setNameIndex(int nameIndex) {
-		this.nameIndex = nameIndex;
+	public void setName(CpUtf8 name) {
+		this.name = name;
 	}
 
 	/**
 	 * @return Index of descriptor UTF in pool.
 	 */
-	public int getTypeIndex() {
-		return typeIndex;
+	public CpUtf8 getType() {
+		return type;
 	}
 
 	/**
-	 * @param typeIndex
+	 * @param type
 	 * 		New index of descriptor UTF in pool.
 	 */
-	public void setTypeIndex(int typeIndex) {
-		this.typeIndex = typeIndex;
+	public void setType(CpUtf8 type) {
+		this.type = type;
 	}
 
 	@Override
@@ -102,10 +102,10 @@ public abstract class ClassMember implements AttributeHolder, CpAccessor {
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = new TreeSet<>();
-		set.add(getNameIndex());
-		set.add(getTypeIndex());
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = new HashSet<>();
+		set.add(getName());
+		set.add(getType());
 		for (Attribute attribute : getAttributes())
 			set.addAll(attribute.cpAccesses());
 		return set;
@@ -113,10 +113,6 @@ public abstract class ClassMember implements AttributeHolder, CpAccessor {
 
 	@Override
 	public int hashCode() {
-		int result = 1;
-		result = 31 * result + access;
-		result = 31 * result + nameIndex;
-		result = 31 * result + typeIndex;
-		return result;
+		return Objects.hash(attributes, access, name, type);
 	}
 }

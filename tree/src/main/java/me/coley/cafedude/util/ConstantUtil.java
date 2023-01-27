@@ -18,40 +18,38 @@ import static me.coley.cafedude.classfile.ConstantPoolConstants.*;
 public class ConstantUtil {
 
 	/**
-	 * Convert a {@link ConstPoolEntry} to a {@link Constant}.
+	 * Convert a {@link CpEntry} to a {@link Constant}.
 	 * @param entry
 	 * 			Constant pool entry.
 	 * @param pool
 	 * 			Constant pool to use for resolving references.
 	 * @return Constant or {@code null} if the entry is not convertible.
 	 */
-	public static Constant from(ConstPoolEntry entry, ConstPool pool) {
+	public static Constant from(CpEntry entry) {
 		switch (entry.getTag()) {
 			case UTF8: return new Constant(Constant.Type.STRING, ((CpUtf8) entry).getText());
-			case STRING: return from(pool.get(((CpString) entry).getIndex()), pool);
+			case STRING: return from(((CpString) entry).getString());
 			case INTEGER: return new Constant(Constant.Type.INT, ((CpInt) entry).getValue());
 			case FLOAT: return new Constant(Constant.Type.FLOAT, ((CpFloat) entry).getValue());
 			case LONG: return new Constant(Constant.Type.LONG, ((CpLong) entry).getValue());
 			case DOUBLE: return new Constant(Constant.Type.DOUBLE, ((CpDouble) entry).getValue());
 			case CLASS: {
 				CpClass cpClass = (CpClass) entry;
-				String name = pool.getUtf(cpClass.getIndex());
-				return new Constant(Constant.Type.DESCRIPTOR, Descriptor.from('L' + name + ';'));
+				return new Constant(Constant.Type.DESCRIPTOR,
+						Descriptor.from('L' + cpClass.getName().getText() + ';'));
 			}
 			case METHOD_TYPE: {
 				CpMethodType cpMethodType = (CpMethodType) entry;
-				String desc = pool.getUtf(cpMethodType.getIndex());
-				return new Constant(Constant.Type.DESCRIPTOR, Descriptor.from(desc));
+				return new Constant(Constant.Type.DESCRIPTOR,
+						Descriptor.from(cpMethodType.getDescriptor().getText()));
 			}
 			case METHOD_HANDLE: {
 				CpMethodHandle cpMethodHandle = (CpMethodHandle) entry;
-				int refIndex = cpMethodHandle.getReferenceIndex();
-				ConstRef ref = (ConstRef) pool.get(refIndex);
-				CpClass cpClass = (CpClass) pool.get(ref.getClassIndex());
-				CpNameType cpNameType = (CpNameType) pool.get(ref.getNameTypeIndex());
-				String owner = pool.getUtf(cpClass.getIndex());
-				String name = pool.getUtf(cpNameType.getNameIndex());
-				String desc = pool.getUtf(cpNameType.getTypeIndex());
+				ConstRef ref = cpMethodHandle.getReference();
+				CpNameType nt = ref.getNameType();
+				String owner = ref.getClassRef().getName().getText();
+				String name = nt.getName().getText();
+				String desc = nt.getType().getText();
 				return new Constant(Constant.Type.HANDLE,
 						new Handle(Handle.Tag.fromKind(cpMethodHandle.getKind()), owner, name, Descriptor.from(desc)));
 			}
@@ -69,38 +67,21 @@ public class ConstantUtil {
 	 * @return Constant or {@code null} if the value is not convertible.
 	 * @throws IllegalArgumentException If a invalid element value is encountered.
 	 */
-	public static Constant from(ElementValue value, ConstPool pool) {
-		ConstPoolEntry cp;
+	public static Constant from(ElementValue value) {
+		CpEntry cp;
 		if(value instanceof PrimitiveElementValue) {
 			PrimitiveElementValue primitive = (PrimitiveElementValue) value;
-			cp = pool.get(primitive.getValueIndex());
+			cp = primitive.getValue();
 		} else if(value instanceof Utf8ElementValue) {
 			Utf8ElementValue utf8 = (Utf8ElementValue) value;
-			cp = pool.get(utf8.getUtfIndex());
+			cp = utf8.getValue();
 		} else if(value instanceof ClassElementValue) {
 			ClassElementValue clazz = (ClassElementValue) value;
-			cp = pool.get(clazz.getClassIndex());
+			cp = clazz.getClassEntry();
 		} else {
 			throw new IllegalStateException("Unknown element value: " + value);
 		}
-		return ConstantUtil.from(cp, pool);
-	}
-
-	/**
-	 * Get the UTF8 string of a {@link CpClass} index
-	 *
-	 * @param classIndex
-	 * 			Index of the class constant.
-	 * @param pool
-	 * 			Constant pool to use for resolving references.
-	 * @return UTF8 string.
-	 */
-	public static String getClassName(int classIndex, ConstPool pool) {
-		ConstPoolEntry entry = pool.get(classIndex);
-		if(entry.getTag() == CLASS) {
-			return pool.get(((CpClass) entry).getIndex()).toString();
-		}
-		return null;
+		return ConstantUtil.from(cp);
 	}
 
 }

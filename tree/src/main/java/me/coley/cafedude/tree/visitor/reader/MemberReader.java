@@ -8,6 +8,7 @@ import me.coley.cafedude.classfile.annotation.Annotation;
 import me.coley.cafedude.classfile.annotation.TypeAnnotation;
 import me.coley.cafedude.classfile.attribute.*;
 import me.coley.cafedude.classfile.behavior.AttributeHolder;
+import me.coley.cafedude.classfile.constant.CpClass;
 import me.coley.cafedude.transform.LabelTransformer;
 import me.coley.cafedude.tree.visitor.*;
 import me.coley.cafedude.util.ConstantUtil;
@@ -21,7 +22,6 @@ import java.util.Map.Entry;
 public class MemberReader {
 
 	private final ClassFile classFile;
-	private final ConstPool pool;
 	private final LabelTransformer transformer;
 
 	/**
@@ -33,7 +33,6 @@ public class MemberReader {
 	MemberReader(ClassFile file, LabelTransformer transformer) {
 		this.transformer = transformer;
 		this.classFile = file;
-		this.pool = file.getPool();
 	}
 
 	/**
@@ -46,12 +45,12 @@ public class MemberReader {
 	 * @param pool
 	 * 		Constant pool to use for resolving.
 	 */
-	static void visitDeclaration(DeclarationVisitor visitor, AttributeHolder member, ConstPool pool) {
+	static void visitDeclaration(DeclarationVisitor visitor, AttributeHolder member) {
 		AnnotationsAttribute annotations = member.getAttribute(AnnotationsAttribute.class);
 		if (annotations != null) {
 			boolean visible = annotations.isVisible();
 			for (Annotation annotation : annotations.getAnnotations()) {
-				String type = pool.getUtf(annotation.getTypeIndex());
+				String type = annotation.getType().getText();
 				AnnotationVisitor av;
 				if(annotation instanceof TypeAnnotation) {
 					TypeAnnotation ta = (TypeAnnotation) annotation;
@@ -60,13 +59,13 @@ public class MemberReader {
 					av = visitor.visitAnnotation(type, visible);
 				}
 				if(av == null) continue;
-				AnnotationReader.visitAnnotation(annotation, av, pool);
+				AnnotationReader.visitAnnotation(annotation, av);
 				av.visitAnnotationEnd();
 			}
 		}
 		SignatureAttribute signature = member.getAttribute(SignatureAttribute.class);
 		if (signature != null) {
-			visitor.visitSignature(pool.getUtf(signature.getSignatureIndex()));
+			visitor.visitSignature(signature.getSignature().getText());
 		}
 		visitor.visitDeprecated(member.getAttribute(DeprecatedAttribute.class) != null);
 		visitor.visitSynthetic(member.getAttribute(SyntheticAttribute.class) != null);
@@ -74,12 +73,12 @@ public class MemberReader {
 
 	void visitMethod(MethodVisitor mv, AttributeHolder member) {
 		if(mv == null) return;
-		visitDeclaration(mv, member, pool);
+		visitDeclaration(mv, member);
 		visitCode(mv.visitCode(), (Method) member);
 		ExceptionsAttribute exceptions = member.getAttribute(ExceptionsAttribute.class);
 		if(exceptions != null) {
-			for (int exception : exceptions.getExceptionIndexTable()) {
-				mv.visitThrows(ConstantUtil.getClassName(exception, pool));
+			for (CpClass exception : exceptions.getExceptionTable()) {
+				mv.visitThrows(exception.getName().getText());
 			}
 		}
 		ParameterAnnotationsAttribute parameterAnnotations = member.getAttribute(ParameterAnnotationsAttribute.class);
@@ -88,10 +87,10 @@ public class MemberReader {
 			for (Entry<Integer, List<Annotation>> entry : parameterAnnotations.getParameterAnnotations().entrySet()) {
 				int parameter = entry.getKey();
 				for (Annotation annotation : entry.getValue()) {
-					String type = pool.getUtf(annotation.getTypeIndex());
+					String type = annotation.getType().getText();
 					AnnotationVisitor av = mv.visitParameterAnnotation(parameter, type, visible);
 					if(av == null) continue;
-					AnnotationReader.visitAnnotation(annotation, av, pool);
+					AnnotationReader.visitAnnotation(annotation, av);
 					av.visitAnnotationEnd();
 				}
 			}
@@ -99,7 +98,7 @@ public class MemberReader {
 		MethodParametersAttribute methodParameters = member.getAttribute(MethodParametersAttribute.class);
 		if(methodParameters != null) {
 			for (MethodParametersAttribute.Parameter parameter : methodParameters.getParameters()) {
-				String name = pool.getUtf(parameter.getNameIndex());
+				String name = parameter.getName().getText();
 				mv.visitParameter(name, parameter.getAccessFlags());
 			}
 		}
@@ -107,17 +106,17 @@ public class MemberReader {
 		if(annotationDefault != null) {
 			AnnotationDefaultVisitor adv = mv.visitAnnotationDefault();
 			if(adv == null) return;
-			AnnotationReader.visitAnnotationDefaultElement(annotationDefault.getElementValue(), adv, pool);
+			AnnotationReader.visitAnnotationDefaultElement(annotationDefault.getElementValue(), adv);
 		}
 		mv.visitMethodEnd();
 	}
 
 	void visitField(FieldVisitor fv, AttributeHolder member) {
 		if(fv == null) return;
-		visitDeclaration(fv, member, pool);
+		visitDeclaration(fv, member);
 		ConstantValueAttribute constant = member.getAttribute(ConstantValueAttribute.class);
 		if(constant != null) {
-			fv.visitConstantValue(ConstantUtil.from(pool.get(constant.getConstantValueIndex()), pool));
+			fv.visitConstantValue(ConstantUtil.from(constant.getConstantValue()));
 		}
 		fv.visitFieldEnd();
 	}

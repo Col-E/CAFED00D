@@ -1,5 +1,8 @@
 package me.coley.cafedude.classfile.attribute;
 
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
+
 import java.util.Set;
 
 /**
@@ -8,23 +11,23 @@ import java.util.Set;
  * @author JCWasmx86
  */
 public class ConstantValueAttribute extends Attribute {
-	private int constantValueIndex;
+	private CpEntry constantValue;
 
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		Name index in constant pool.
-	 * @param constantValueIndex
+	 * @param constantValue
 	 * 		Index in the constant pool representing the value of this attribute.
 	 */
-	public ConstantValueAttribute(int nameIndex, int constantValueIndex) {
-		super(nameIndex);
-		this.constantValueIndex = constantValueIndex;
+	public ConstantValueAttribute(CpUtf8 name, CpEntry constantValue) {
+		super(name);
+		this.constantValue = constantValue;
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = super.cpAccesses();
-		set.add(getConstantValueIndex());
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = super.cpAccesses();
+		set.add(getConstantValue());
 		return set;
 	}
 
@@ -36,15 +39,15 @@ public class ConstantValueAttribute extends Attribute {
 	/**
 	 * @return Index in the constant pool representing the value of this attribute.
 	 */
-	public int getConstantValueIndex() {
-		return constantValueIndex;
+	public CpEntry getConstantValue() {
+		return constantValue;
 	}
 
 	/**
 	 * @param constantValueIndex
 	 * 		Index in the constant pool representing the value of this attribute.
 	 */
-	public void setConstantValueIndex(int constantValueIndex) {
-		this.constantValueIndex = constantValueIndex;
+	public void setConstantValueIndex(CpEntry constantValue) {
+		this.constantValue = constantValue;
 	}
 }

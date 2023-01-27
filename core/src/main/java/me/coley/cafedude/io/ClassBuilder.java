@@ -6,6 +6,7 @@ import me.coley.cafedude.classfile.Field;
 import me.coley.cafedude.classfile.Method;
 import me.coley.cafedude.classfile.Modifiers;
 import me.coley.cafedude.classfile.attribute.Attribute;
+import me.coley.cafedude.classfile.constant.CpClass;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,15 +20,15 @@ import static me.coley.cafedude.classfile.VersionConstants.JAVA1;
  */
 public class ClassBuilder {
 	private final List<Attribute> attributes = new ArrayList<>();
-	private final List<Integer> interfaces = new ArrayList<>();
+	private final List<CpClass> interfaces = new ArrayList<>();
 	private final List<Field> fields = new ArrayList<>();
 	private final List<Method> methods = new ArrayList<>();
 	private ConstPool pool = new ConstPool();
 	private int versionMajor;
 	private int versionMinor;
 	private int access;
-	private int classIndex;
-	private int superIndex;
+	private CpClass thisClass;
+	private CpClass superClass;
 
 	/**
 	 * @return {@code true} when the version pattern indicates a pre-java Oak class.
@@ -100,27 +101,27 @@ public class ClassBuilder {
 	}
 
 	/**
-	 * @param classIndex
+	 * @param thisClass
 	 * 		CP index of the current class's type.
 	 */
-	public void setClassIndex(int classIndex) {
-		this.classIndex = classIndex;
+	public void setThisClass(CpClass thisClass) {
+		this.thisClass = thisClass;
 	}
 
 	/**
-	 * @param superIndex
+	 * @param superClass
 	 * 		CP index of the parent super-class's type.
 	 */
-	public void setSuperIndex(int superIndex) {
-		this.superIndex = superIndex;
+	public void setSuperClass(CpClass superClass) {
+		this.superClass = superClass;
 	}
 
 	/**
 	 * @param interfaceIndex
 	 * 		CP index of an interface type for the class.
 	 */
-	public void addInterface(int interfaceIndex) {
-		interfaces.add(interfaceIndex);
+	public void addInterface(CpClass interfaceEntry) {
+		interfaces.add(interfaceEntry);
 	}
 
 	/**
@@ -150,7 +151,7 @@ public class ClassBuilder {
 	/**
 	 * @return list of interfaces.
 	 */
-	public List<Integer> getInterfaces() {
+	public List<CpClass> getInterfaces() {
 		return interfaces;
 	}
 
@@ -183,7 +184,7 @@ public class ClassBuilder {
 				versionMinor, versionMajor,
 				pool,
 				access,
-				classIndex, superIndex,
+				thisClass, superClass,
 				interfaces,
 				fields,
 				methods,

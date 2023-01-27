@@ -14,7 +14,7 @@ public class CpDynamic extends ConstDynamic {
 	 * @param nameTypeIndex
 	 * 		Index of {@link CpNameType} in pool.
 	 */
-	public CpDynamic(int bsmIndex, int nameTypeIndex) {
-		super(DYNAMIC, bsmIndex, nameTypeIndex);
+	public CpDynamic(int bsmIndex, CpNameType nameType) {
+		super(DYNAMIC, bsmIndex, nameType);
 	}
 }

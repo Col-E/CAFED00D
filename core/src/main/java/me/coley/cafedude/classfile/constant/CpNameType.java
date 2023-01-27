@@ -1,54 +1,56 @@
 package me.coley.cafedude.classfile.constant;
 
+import java.util.Objects;
+
 /**
  * NameType pool entry. Points to two UTF constants.
  *
  * @author Matt Coley
  */
-public class CpNameType extends ConstPoolEntry {
-	private int nameIndex;
-	private int typeIndex;
+public class CpNameType extends CpEntry {
+	private CpUtf8 name;
+	private CpUtf8 type;
 
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		Index of name UTF string in pool.
-	 * @param typeIndex
+	 * @param type
 	 * 		Index of descriptor UTF string in pool.
 	 */
-	public CpNameType(int nameIndex, int typeIndex) {
+	public CpNameType(CpUtf8 name, CpUtf8 type) {
 		super(NAME_TYPE);
-		this.nameIndex = nameIndex;
-		this.typeIndex = typeIndex;
+		this.name = name;
+		this.type = type;
 	}
 
 	/**
 	 * @return Index of name UTF string in pool.
 	 */
-	public int getNameIndex() {
-		return nameIndex;
+	public CpUtf8 getName() {
+		return name;
 	}
 
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		New index of name UTF string in pool.
 	 */
-	public void setNameIndex(int nameIndex) {
-		this.nameIndex = nameIndex;
+	public void setName(CpUtf8 name) {
+		this.name = name;
 	}
 
 	/**
 	 * @return Index of descriptor UTF string in pool.
 	 */
-	public int getTypeIndex() {
-		return typeIndex;
+	public CpUtf8 getType() {
+		return type;
 	}
 
 	/**
-	 * @param typeIndex
+	 * @param type
 	 * 		New index of descriptor UTF string in pool.
 	 */
-	public void setTypeIndex(int typeIndex) {
-		this.typeIndex = typeIndex;
+	public void setType(CpUtf8 type) {
+		this.type = type;
 	}
 
 	@Override
@@ -56,11 +58,11 @@ public class CpNameType extends ConstPoolEntry {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		CpNameType that = (CpNameType) o;
-		return nameIndex == that.nameIndex && typeIndex == that.typeIndex;
+		return name.equals(that.name) && type.equals(that.type);
 	}
 
 	@Override
 	public int hashCode() {
-		return Integer.hashCode(nameIndex) + Integer.hashCode(typeIndex);
+		return Objects.hash(name, type);
 	}
 }

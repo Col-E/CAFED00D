@@ -1,5 +1,7 @@
 package me.coley.cafedude.classfile.attribute;
 
+import me.coley.cafedude.classfile.constant.*;
+
 import java.util.Set;
 
 /**
@@ -8,60 +10,60 @@ import java.util.Set;
  * @author JCWasmx86
  */
 public class EnclosingMethodAttribute extends Attribute {
-	private int classIndex;
-	private int methodIndex;
+	private CpClass classEntry;
+	private CpNameType methodEntry;
 
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		Name index in constant pool.
-	 * @param classIndex
+	 * @param classEntry
 	 * 		Index into the constant pool representing the innermost class that encloses
 	 * 		the declaration of the current class.
-	 * @param methodIndex
+	 * @param methodEntry
 	 * 		Used for anonymous classes e.g. in a method or constructor. If not, it is
-	 * 		zero.
+	 * 		{@code null}.
 	 */
-	public EnclosingMethodAttribute(int nameIndex, int classIndex, int methodIndex) {
-		super(nameIndex);
-		this.classIndex = classIndex;
-		this.methodIndex = methodIndex;
+	public EnclosingMethodAttribute(CpUtf8 name, CpClass classEntry, CpNameType methodEntry) {
+		super(name);
+		this.classEntry = classEntry;
+		this.methodEntry = methodEntry;
 	}
 
 	/**
 	 * @return Class index of the enclosing class.
 	 */
-	public int getClassIndex() {
-		return classIndex;
+	public CpClass getClassEntry() {
+		return classEntry;
 	}
 
 	/**
 	 * @return Index of the enclosing method.
 	 */
-	public int getMethodIndex() {
-		return methodIndex;
+	public CpNameType getMethodEntry() {
+		return methodEntry;
 	}
 
 	/**
-	 * @param classIndex
+	 * @param classEntry
 	 * 		Set the enclosing class index.
 	 */
-	public void setClassIndex(int classIndex) {
-		this.classIndex = classIndex;
+	public void setClassEntry(CpClass classEntry) {
+		this.classEntry = classEntry;
 	}
 
 	/**
-	 * @param methodIndex
+	 * @param methodEntry
 	 * 		Set the enclosing method index.
 	 */
-	public void setMethodIndex(int methodIndex) {
-		this.methodIndex = methodIndex;
+	public void setMethodEntry(CpNameType methodEntry) {
+		this.methodEntry = methodEntry;
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = super.cpAccesses();
-		set.add(getClassIndex());
-		set.add(getMethodIndex());
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = super.cpAccesses();
+		set.add(getClassEntry());
+		set.add(getMethodEntry());
 		return set;
 	}
 

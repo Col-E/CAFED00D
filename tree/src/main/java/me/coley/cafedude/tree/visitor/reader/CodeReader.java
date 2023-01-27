@@ -14,6 +14,7 @@ import me.coley.cafedude.tree.frame.*;
 import me.coley.cafedude.tree.visitor.CodeVisitor;
 import me.coley.cafedude.util.ConstantUtil;
 import me.coley.cafedude.util.OpcodeUtil;
+import me.coley.cafedude.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +24,7 @@ import static me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.Bo
 import static me.coley.cafedude.classfile.attribute.StackMapTableAttribute.*;
 import static me.coley.cafedude.classfile.instruction.Opcodes.*;
 
-class CodeReader {
+public class CodeReader {
 
 	private static final Logger logger = LoggerFactory.getLogger(CodeReader.class);
 	private final BootstrapMethodsAttribute bsma;
@@ -32,7 +33,6 @@ class CodeReader {
 	private final StackMapTableAttribute smta;
 	private final CodeVisitor cv;
 	private final CodeAttribute ca;
-	private final ConstPool pool;
 	private final Method method;
 	private final Map<Integer, Label> labels;
 	private final Map<Integer, Instruction> instructions;
@@ -48,7 +48,6 @@ class CodeReader {
 		this.smta = ca.getAttribute(StackMapTableAttribute.class);
 		this.cv = cv;
 		this.ca = ca;
-		this.pool = clazz.getPool();
 		this.labels = labels;
 		this.method = method;
 		this.instructions = instructions;
@@ -57,17 +56,13 @@ class CodeReader {
 
 	void accept() {
 		if (instructions == null) {
-			logger.warn("Method visited but no instructions present, Method=" + pool.getUtf(method.getNameIndex()));
+			logger.warn("Method visited but no instructions present, Method=" + method.getName().getText());
 			return;
 		}
 		if (instructions.isEmpty()) return; // no instructions, abstract/interface method
 		// visit exception handlers
 		for (CodeAttribute.ExceptionTableEntry entry : ca.getExceptionTable()) {
-			String type = null;
-			if (entry.getCatchTypeIndex() != 0) {
-				CpClass cpClass = (CpClass) pool.get(entry.getCatchTypeIndex());
-				type = pool.getUtf(cpClass.getIndex());
-			}
+			String type = Optional.orNull(entry.getCatchType(), t -> t.getName().getText());
 			cv.visitExceptionHandler(type,
 					labels.get(entry.getStartPc()),
 					labels.get(entry.getEndPc()),
@@ -90,14 +85,18 @@ class CodeReader {
 			Instruction insn = entry.getValue();
 			if (insn instanceof IntOperandInstruction) {
 				visitIntOpInsn((IntOperandInstruction) insn, insnPos);
-			} else if (insn instanceof BiIntOperandInstruction) {
-				visitBiIntOpInsn((BiIntOperandInstruction) insn, insnPos);
+			} else if(insn instanceof CpRefInstruction) {
+				visitCpRefInsn((CpRefInstruction) insn, insnPos);
+			}else if (insn instanceof IincInstruction) {
+				visitIincInsn((IincInstruction) insn);
+			} else if (insn instanceof MultiANewArrayInstruction) {
+				visitMultiANewArrayInsn((MultiANewArrayInstruction) insn);
 			} else if (insn instanceof WideInstruction) {
 				Instruction backing = ((WideInstruction) insn).getBacking();
 				if (backing instanceof IntOperandInstruction) {
 					visitIntOpInsn((IntOperandInstruction) backing, insnPos);
-				} else if (backing instanceof BiIntOperandInstruction) {
-					visitBiIntOpInsn((BiIntOperandInstruction) backing, insnPos);
+				} else if (backing instanceof IincInstruction) {
+					visitIincInsn((IincInstruction) backing);
 				}
 			} else if (insn instanceof LookupSwitchInstruction) {
 				visitLookupSwitchInsn((LookupSwitchInstruction) insn, insnPos);
@@ -192,54 +191,57 @@ class CodeReader {
 		int opcode = ioi.getOpcode();
 		if (opcode == BIPUSH || opcode == SIPUSH || opcode == NEWARRAY || opcode == RET) {
 			cv.visitIntInsn(opcode, operand);
-		} else if (opcode == LDC || opcode == LDC_W || opcode == LDC2_W) {
-			Constant cst = ConstantUtil.from(pool.get(operand), pool);
-			cv.visitLdcInsn(opcode, cst);
 		} else if ((opcode >= ILOAD && opcode <= ALOAD) || (opcode >= ISTORE && opcode <= ASTORE)) {
 			cv.visitVarInsn(opcode, operand);
 		} else if ((opcode >= IFEQ && opcode <= JSR) || (opcode >= IFNULL && opcode <= JSR_W)) {
 			int targetPos = pos + operand;
 			Label targetLabel = labels.get(targetPos);
 			cv.visitFlowInsn(opcode, targetLabel);
-		} else if (opcode == NEW || opcode == ANEWARRAY || opcode == CHECKCAST || opcode == INSTANCEOF) {
-			CpClass cc = (CpClass) pool.get(operand);
-			cv.visitTypeInsn(opcode, pool.getUtf(cc.getIndex()));
+		} else {
+			throw new IllegalStateException("Unsupported opcode (integer operand): "
+					+ OpcodeUtil.getOpcodeName(opcode) + " " + operand + " (" + opcode + ")" + " at " + pos);
+		}
+	}
+
+	private void visitCpRefInsn(CpRefInstruction cpr, int pos) {
+		int opcode = cpr.getOpcode();
+		if (opcode == NEW || opcode == ANEWARRAY || opcode == CHECKCAST || opcode == INSTANCEOF) {
+			CpClass cc = (CpClass) cpr.getEntry();
+			cv.visitTypeInsn(opcode, cc.getName().getText());
 		} else if (opcode >= GETSTATIC && opcode <= PUTFIELD) {
-			CpFieldRef fr = (CpFieldRef) pool.get(operand);
-			CpClass cc = (CpClass) pool.get(fr.getClassIndex());
-			CpNameType nt = (CpNameType) pool.get(fr.getNameTypeIndex());
-			String name = pool.getUtf(nt.getNameIndex());
-			String owner = pool.getUtf(cc.getIndex());
-			String type = pool.getUtf(nt.getTypeIndex());
+			CpFieldRef fr = (CpFieldRef) cpr.getEntry();
+			CpNameType nt = fr.getNameType();
+			String name = nt.getName().getText();
+			String owner = fr.getClassRef().getName().getText();
+			String type = nt.getType().getText();
 			cv.visitFieldInsn(opcode, owner, name, Descriptor.from(type));
 		} else if (opcode == INVOKEVIRTUAL
 				|| opcode == INVOKESPECIAL
 				|| opcode == INVOKESTATIC
 				|| opcode == INVOKEINTERFACE) {
-			ConstRef fr = (ConstRef) pool.get(operand);
-			CpClass cc = (CpClass) pool.get(fr.getClassIndex());
-			CpNameType nt = (CpNameType) pool.get(fr.getNameTypeIndex());
-			String name = pool.getUtf(nt.getNameIndex());
-			String owner = pool.getUtf(cc.getIndex());
-			String type = pool.getUtf(nt.getTypeIndex());
+			ConstRef cr = (ConstRef) cpr.getEntry();
+			CpNameType nt = cr.getNameType();
+			String name = nt.getName().getText();
+			String owner = cr.getClassRef().getName().getText();
+			String type = nt.getType().getText();
 			cv.visitMethodInsn(opcode, owner, name, Descriptor.from(type));
 		} else if (opcode == INVOKEDYNAMIC) {
 			if(bsma == null) {
 				throw new IllegalStateException(
-						"INVOKEDYNAMIC instruction found, but no BootstrapMethodsAttribute present");
+						"INVOKEDYNAMIC instruction found, but no BootstrapMethodsAttribute present " +
+								"at " + pos);
 			}
-			CpInvokeDynamic id = (CpInvokeDynamic) pool.get(operand);
-			CpNameType nt = (CpNameType) pool.get(id.getNameTypeIndex());
-			String name = pool.getUtf(nt.getNameIndex());
-			String type = pool.getUtf(nt.getTypeIndex());
+			CpInvokeDynamic id = (CpInvokeDynamic) cpr.getEntry();
+			CpNameType nt = id.getNameType();
+			String name = nt.getName().getText();
+			String type = nt.getType().getText();
 			BootstrapMethod bsm = bsma.getBootstrapMethods().get(id.getBsmIndex());
-			CpMethodHandle mh = (CpMethodHandle) pool.get(bsm.getBsmMethodref());
-			ConstRef mr = (ConstRef) pool.get(mh.getReferenceIndex());
-			CpClass cc = (CpClass) pool.get(mr.getClassIndex());
-			CpNameType bsmnt = (CpNameType) pool.get(mr.getNameTypeIndex());
-			String bsmName = pool.getUtf(bsmnt.getNameIndex());
-			String bsmOwner = pool.getUtf(cc.getIndex());
-			String bsmType = pool.getUtf(bsmnt.getTypeIndex());
+			CpMethodHandle mh = bsm.getBsmMethodref();
+			ConstRef mr = mh.getReference();
+			CpNameType bsmnt = mr.getNameType();
+			String bsmName = bsmnt.getName().getText();
+			String bsmOwner = mr.getClassRef().getName().getText();
+			String bsmType = bsmnt.getType().getText();
 			Handle bsmHandle = new Handle(
 					Handle.Tag.fromKind(mh.getKind()),
 					bsmOwner,
@@ -247,28 +249,18 @@ class CodeReader {
 					Descriptor.from(bsmType));
 			Constant[] args = new Constant[bsm.getArgs().size()];
 			for (int i = 0; i < args.length; i++) {
-				args[i] = ConstantUtil.from(pool.get(bsm.getArgs().get(i)), pool);
+				args[i] = ConstantUtil.from(bsm.getArgs().get(i));
 			}
 			cv.visitInvokeDynamicInsn(name, Descriptor.from(type), bsmHandle, args);
-		} else {
-			throw new IllegalStateException("Unsupported opcode (integer operand): "
-					+ OpcodeUtil.getOpcodeName(opcode) + " " + operand + " (" + opcode + ")" + " at " + pos);
 		}
 	}
 
-	private void visitBiIntOpInsn(BiIntOperandInstruction ioi, int pos) {
-		int op1 = ioi.getFirstOperand();
-		int op2 = ioi.getSecondOperand();
-		int opcode = ioi.getOpcode();
-		if (opcode == IINC) {
-			cv.visitIIncInsn(op1, op2);
-		} else if (opcode == MULTIANEWARRAY) {
-			CpClass cc = (CpClass) pool.get(op1);
-			cv.visitMultiANewArrayInsn(pool.getUtf(cc.getIndex()), op2);
-		} else {
-			throw new IllegalStateException("Unsupported opcode (two integer operands): "
-					+ OpcodeUtil.getOpcodeName(opcode) + " " + op1 + " " + op2 + " (" + opcode + ")" + " at " + pos);
-		}
+	private void visitIincInsn(IincInstruction iinc) {
+		cv.visitIIncInsn(iinc.getVar(), iinc.getIncrement());
+	}
+
+	private void visitMultiANewArrayInsn(MultiANewArrayInstruction manai) {
+		cv.visitMultiANewArrayInsn(manai.getDescriptor().getName().getText(), manai.getDimensions());
 	}
 
 	private void visitLocalVariables() {
@@ -278,12 +270,12 @@ class CodeReader {
 		}
 		if(lvta != null) {
 			for (LocalVariableTableAttribute.VarEntry entry : lvta.getEntries()) {
-				String name = pool.getUtf(entry.getNameIndex());
-				Descriptor desc = Descriptor.from(pool.getUtf(entry.getDescIndex()));
+				String name = entry.getName().getText();
+				Descriptor desc = Descriptor.from(entry.getDesc().getText());
 				String signature = null;
 				for (LocalVariableTypeTableAttribute.VarTypeEntry varType : varTypes) {
 					if(varType.getIndex() == entry.getIndex() && varType.getStartPc() == entry.getStartPc()) {
-						signature = pool.getUtf(varType.getSignatureIndex());
+						signature = varType.getSignature().getText();
 						break;
 					}
 				}
@@ -352,8 +344,7 @@ class CodeReader {
 				return new PrimitiveValue(typeInfo.getTag());
 			case ITEM_OBJECT:
 				ObjectVariableInfo objectInfo = (ObjectVariableInfo) typeInfo;
-				CpClass classInfo = (CpClass) pool.get(objectInfo.classIndex);
-				return new ObjectValue(pool.getUtf(classInfo.getIndex()));
+				return new ObjectValue(objectInfo.classEntry.getName().getText());
 			case ITEM_UNINITIALIZED:
 				UninitializedVariableInfo uninitializedInfo = (UninitializedVariableInfo) typeInfo;
 				return new UninitializedValue(labels.computeIfAbsent(uninitializedInfo.offset, Label::new));

@@ -2,6 +2,9 @@ package me.coley.cafedude.classfile.attribute;
 
 import me.coley.cafedude.classfile.behavior.AttributeHolder;
 import me.coley.cafedude.classfile.behavior.CpAccessor;
+import me.coley.cafedude.classfile.constant.CpClass;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.classfile.instruction.Instruction;
 import me.coley.cafedude.io.AttributeContext;
 import me.coley.cafedude.io.InstructionReader;
@@ -24,7 +27,7 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 	private int maxLocals;
 
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		Name index in constant pool.
 	 * @param maxStack
 	 * 		Maximum number of values on the stack in the method.
@@ -37,9 +40,9 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 	 * @param attributes
 	 * 		List of other attributes.
 	 */
-	public CodeAttribute(int nameIndex, int maxStack, int maxLocals, byte[] code,
+	public CodeAttribute(CpUtf8 name, int maxStack, int maxLocals, byte[] code,
 						 List<ExceptionTableEntry> exceptionTable, List<Attribute> attributes) {
-		super(nameIndex);
+		super(name);
 		this.maxStack = maxStack;
 		this.maxLocals = maxLocals;
 		this.code = code;
@@ -132,16 +135,12 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = super.cpAccesses();
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = super.cpAccesses();
 		for (Attribute attribute : getAttributes())
 			set.addAll(attribute.cpAccesses());
 		for (ExceptionTableEntry ex : getExceptionTable())
 			set.addAll(ex.cpAccesses());
-		InstructionReader reader = new InstructionReader();
-		for (Instruction instruction : reader.read(getCode()))
-			if(instruction instanceof CpAccessor)
-				set.addAll(((CpAccessor) instruction).cpAccesses());
 		return set;
 	}
 
@@ -175,7 +174,7 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 		private int startPc;
 		private int endPc;
 		private int handlerPc;
-		private int catchTypeIndex;
+		private CpClass catchType;
 
 		/**
 		 * @param startPc
@@ -184,14 +183,14 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 		 * 		Instruction offset for end of try-catch range.
 		 * @param handlerPc
 		 * 		Instruction offset for start of catch handler range.
-		 * @param catchTypeIndex
+		 * @param catchType
 		 * 		Index in constant pool of class type to catch.
 		 */
-		public ExceptionTableEntry(int startPc, int endPc, int handlerPc, int catchTypeIndex) {
+		public ExceptionTableEntry(int startPc, int endPc, int handlerPc, CpClass catchType) {
 			this.startPc = startPc;
 			this.endPc = endPc;
 			this.handlerPc = handlerPc;
-			this.catchTypeIndex = catchTypeIndex;
+			this.catchType = catchType;
 		}
 
 		/**
@@ -242,21 +241,21 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 		/**
 		 * @return Index in constant pool of class type to catch.
 		 */
-		public int getCatchTypeIndex() {
-			return catchTypeIndex;
+		public CpClass getCatchType() {
+			return catchType;
 		}
 
 		/**
-		 * @param catchTypeIndex
+		 * @param catchType
 		 * 		Index in constant pool of class type to catch.
 		 */
-		public void setCatchTypeIndex(int catchTypeIndex) {
-			this.catchTypeIndex = catchTypeIndex;
+		public void setCatchType(CpClass catchType) {
+			this.catchType = catchType;
 		}
 
 		@Override
-		public Set<Integer> cpAccesses() {
-			return Collections.singleton(getCatchTypeIndex());
+		public Set<CpEntry> cpAccesses() {
+			return Collections.singleton(getCatchType());
 		}
 	}
 }

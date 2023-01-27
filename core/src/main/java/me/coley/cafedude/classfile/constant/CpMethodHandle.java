@@ -1,13 +1,15 @@
 package me.coley.cafedude.classfile.constant;
 
+import java.util.Objects;
+
 /**
  * MethodHandle pool entry. Holds a byte to indicate behavior and points to a relevant reference constant
  * based on the byte's value.
  *
  * @author Matt Coley
  */
-public class CpMethodHandle extends ConstPoolEntry {
-	private int referenceIndex;
+public class CpMethodHandle extends CpEntry {
+	private ConstRef reference;
 	private byte kind;
 
 	/**
@@ -17,10 +19,10 @@ public class CpMethodHandle extends ConstPoolEntry {
 	 * 		Index of handle's {@link ConstRef reference} in pool.
 	 * 		Reference type depends on the byte value.
 	 */
-	public CpMethodHandle(byte kind, int referenceIndex) {
+	public CpMethodHandle(byte kind, ConstRef reference) {
 		super(METHOD_HANDLE);
 		this.kind = kind;
-		this.referenceIndex = referenceIndex;
+		this.reference = reference;
 	}
 
 	/**
@@ -100,19 +102,19 @@ public class CpMethodHandle extends ConstPoolEntry {
 	 *
 	 * @see #getKind()
 	 */
-	public int getReferenceIndex() {
-		return referenceIndex;
+	public ConstRef getReference() {
+		return reference;
 	}
 
 	/**
-	 * @param referenceIndex
+	 * @param reference
 	 * 		New index of handle's {@link ConstRef reference} in pool.
 	 * 		Reference type depends on the byte value.
 	 *
 	 * @see #getKind()
 	 */
-	public void setReferenceIndex(int referenceIndex) {
-		this.referenceIndex = referenceIndex;
+	public void setReference(ConstRef reference) {
+		this.reference = reference;
 	}
 
 	@Override
@@ -120,12 +122,11 @@ public class CpMethodHandle extends ConstPoolEntry {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		CpMethodHandle that = (CpMethodHandle) o;
-		return referenceIndex == that.referenceIndex &&
-				kind == that.kind;
+		return kind == that.kind && Objects.equals(reference, that.reference);
 	}
 
 	@Override
 	public int hashCode() {
-		return referenceIndex;
+		return Objects.hash(reference, kind);
 	}
 }

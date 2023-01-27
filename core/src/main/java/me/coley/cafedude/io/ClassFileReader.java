@@ -1,29 +1,9 @@
 package me.coley.cafedude.io;
 
-import me.coley.cafedude.classfile.ClassFile;
-import me.coley.cafedude.classfile.ConstantPoolConstants;
-import me.coley.cafedude.classfile.Field;
+import me.coley.cafedude.classfile.*;
 import me.coley.cafedude.InvalidClassException;
-import me.coley.cafedude.classfile.Method;
 import me.coley.cafedude.classfile.attribute.Attribute;
-import me.coley.cafedude.classfile.constant.ConstPoolEntry;
-import me.coley.cafedude.classfile.constant.CpClass;
-import me.coley.cafedude.classfile.constant.CpDouble;
-import me.coley.cafedude.classfile.constant.CpDynamic;
-import me.coley.cafedude.classfile.constant.CpFieldRef;
-import me.coley.cafedude.classfile.constant.CpFloat;
-import me.coley.cafedude.classfile.constant.CpInt;
-import me.coley.cafedude.classfile.constant.CpInterfaceMethodRef;
-import me.coley.cafedude.classfile.constant.CpInvokeDynamic;
-import me.coley.cafedude.classfile.constant.CpLong;
-import me.coley.cafedude.classfile.constant.CpMethodHandle;
-import me.coley.cafedude.classfile.constant.CpMethodRef;
-import me.coley.cafedude.classfile.constant.CpMethodType;
-import me.coley.cafedude.classfile.constant.CpModule;
-import me.coley.cafedude.classfile.constant.CpNameType;
-import me.coley.cafedude.classfile.constant.CpPackage;
-import me.coley.cafedude.classfile.constant.CpString;
-import me.coley.cafedude.classfile.constant.CpUtf8;
+import me.coley.cafedude.classfile.constant.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,9 +50,23 @@ public class ClassFileReader {
 				builder.setVersionMajor(is.readUnsignedShort());
 				// Constant pool
 				int numConstants = is.readUnsignedShort();
+				int start = is.getIndex();
+				ConstPool constPool = builder.getPool();
+				// first pass
 				for (int i = 1; i < numConstants; i++) {
-					ConstPoolEntry entry = readPoolEntry();
-					builder.getPool().add(entry);
+					CpEntry entry = readPoolEntryBasic();
+					constPool.add(entry);
+					if (entry.isWide()) {
+						i++;
+					}
+				}
+				// rewind
+				int diff = is.getIndex() - start;
+				is.reset(diff);
+				// second pass
+				for (int i = 1; i < numConstants; i++) {
+					CpEntry entry = constPool.get(i);
+					readPoolEntryResolve(constPool, entry);
 					if (entry.isWide()) {
 						i++;
 					}
@@ -80,12 +74,12 @@ public class ClassFileReader {
 				// Flags
 				builder.setAccess(is.readUnsignedShort());
 				// This/super classes
-				builder.setClassIndex(is.readUnsignedShort());
-				builder.setSuperIndex(is.readUnsignedShort());
+				builder.setThisClass((CpClass) constPool.get(is.readUnsignedShort()));
+				builder.setSuperClass((CpClass) constPool.get(is.readUnsignedShort()));
 				// Interfaces
 				int numInterfaces = is.readUnsignedShort();
 				for (int i = 0; i < numInterfaces; i++)
-					builder.addInterface(is.readUnsignedShort());
+					builder.addInterface((CpClass) constPool.get(is.readUnsignedShort()));
 				// Fields
 				int numFields = is.readUnsignedShort();
 				for (int i = 0; i < numFields; i++)
@@ -120,7 +114,7 @@ public class ClassFileReader {
 	 * @throws InvalidClassException
 	 * 		An unknown attribute is present.
 	 */
-	private ConstPoolEntry readPoolEntry() throws IOException, InvalidClassException {
+	private CpEntry readPoolEntryBasic() throws IOException, InvalidClassException {
 		int tag = is.readUnsignedByte();
 		switch (tag) {
 			case UTF8:
@@ -134,31 +128,137 @@ public class ClassFileReader {
 			case DOUBLE:
 				return new CpDouble(is.readDouble());
 			case STRING:
-				return new CpString(is.readUnsignedShort());
+				is.readUnsignedShort();
+				return new CpString(null);
 			case CLASS:
-				return new CpClass(is.readUnsignedShort());
+				is.readUnsignedShort();
+				return new CpClass(null);
 			case FIELD_REF:
-				return new CpFieldRef(is.readUnsignedShort(), is.readUnsignedShort());
+				is.readUnsignedShort();
+				is.readUnsignedShort();
+				return new CpFieldRef(null, null);
 			case METHOD_REF:
-				return new CpMethodRef(is.readUnsignedShort(), is.readUnsignedShort());
+				is.readUnsignedShort();
+				is.readUnsignedShort();
+				return new CpMethodRef(null, null);
 			case INTERFACE_METHOD_REF:
-				return new CpInterfaceMethodRef(is.readUnsignedShort(), is.readUnsignedShort());
+				is.readUnsignedShort();
+				is.readUnsignedShort();
+				return new CpInterfaceMethodRef(null, null);
 			case NAME_TYPE:
-				return new CpNameType(is.readUnsignedShort(), is.readUnsignedShort());
+				is.readUnsignedShort();
+				is.readUnsignedShort();
+				return new CpNameType(null, null);
 			case DYNAMIC:
-				return new CpDynamic(is.readUnsignedShort(), is.readUnsignedShort());
+				int bsmIndex = is.readUnsignedShort();
+				is.readUnsignedShort();
+				return new CpDynamic(bsmIndex, null);
 			case METHOD_HANDLE:
-				return new CpMethodHandle(is.readByte(), is.readUnsignedShort());
+				byte refKind = is.readByte();
+				is.readUnsignedShort();
+				return new CpMethodHandle(refKind, null);
 			case METHOD_TYPE:
-				return new CpMethodType(is.readUnsignedShort());
+				is.readUnsignedShort();
+				return new CpMethodType(null);
 			case INVOKE_DYNAMIC:
-				return new CpInvokeDynamic(is.readUnsignedShort(), is.readUnsignedShort());
-			case ConstantPoolConstants.MODULE:
-				return new CpModule(is.readUnsignedShort());
+				int bsmIndex2 = is.readUnsignedShort();
+				is.readUnsignedShort();
+				return new CpInvokeDynamic(bsmIndex2, null);
+			case MODULE:
+				is.readUnsignedShort();
+				return new CpModule(null);
 			case PACKAGE:
-				return new CpPackage(is.readUnsignedShort());
+				is.readUnsignedShort();
+				return new CpPackage(null);
 			default:
 				throw new InvalidClassException("Unknown constant-pool tag: " + tag);
+		}
+	}
+
+	private void readPoolEntryResolve(ConstPool constPool, CpEntry entry) throws IOException, InvalidClassException {
+		int tag = entry.getTag();
+		if(tag != is.readUnsignedByte()) {
+			throw new InvalidClassException("Constant pool tag mismatch");
+		}
+		switch (tag) {
+			case UTF8:
+				is.readUTF();
+				break;
+			case INTEGER:
+				is.readInt();
+				break;
+			case FLOAT:
+				is.readFloat();
+				break;
+			case LONG:
+				is.readLong();
+				break;
+			case DOUBLE:
+				is.readDouble();
+				break;
+			case STRING: {
+				CpUtf8 utf8 = (CpUtf8) constPool.get(is.readUnsignedShort());
+				CpString string = (CpString) entry;
+				string.setString(utf8);
+				break;
+			}
+			case CLASS: {
+				CpUtf8 utf8 = (CpUtf8) constPool.get(is.readUnsignedShort());
+				CpClass clazz = (CpClass) entry;
+				clazz.setName(utf8);
+				break;
+			}
+			case FIELD_REF:
+			case METHOD_REF:
+			case INTERFACE_METHOD_REF: {
+				CpClass clazz = (CpClass) constPool.get(is.readUnsignedShort());
+				CpNameType nameType = (CpNameType) constPool.get(is.readUnsignedShort());
+				ConstRef ref = (ConstRef) entry;
+				ref.setClassRef(clazz);
+				ref.setNameType(nameType);
+				break;
+			}
+			case NAME_TYPE: {
+				CpUtf8 name = (CpUtf8) constPool.get(is.readUnsignedShort());
+				CpUtf8 type = (CpUtf8) constPool.get(is.readUnsignedShort());
+				CpNameType nameType = (CpNameType) entry;
+				nameType.setName(name);
+				nameType.setType(type);
+				break;
+			}
+			case DYNAMIC:
+			case INVOKE_DYNAMIC: {
+				is.readUnsignedShort();
+				CpNameType nameType = (CpNameType) constPool.get(is.readUnsignedShort());
+				ConstDynamic dynamic = (ConstDynamic) entry;
+				dynamic.setNameType(nameType);
+				break;
+			}
+			case METHOD_HANDLE: {
+				is.readByte();
+				ConstRef ref = (ConstRef) constPool.get(is.readUnsignedShort());
+				CpMethodHandle methodHandle = (CpMethodHandle) entry;
+				methodHandle.setReference(ref);
+				break;
+			}
+			case METHOD_TYPE: {
+				CpUtf8 type = (CpUtf8) constPool.get(is.readUnsignedShort());
+				CpMethodType methodType = (CpMethodType) entry;
+				methodType.setDescriptor(type);
+				break;
+			}
+			case MODULE: {
+				CpUtf8 name = (CpUtf8) constPool.get(is.readUnsignedShort());
+				CpModule module = (CpModule) entry;
+				module.setName(name);
+				break;
+			}
+			case PACKAGE: {
+				CpUtf8 name = (CpUtf8) constPool.get(is.readUnsignedShort());
+				CpPackage pkg = (CpPackage) entry;
+				pkg.setPackageName(name);
+				break;
+			}
 		}
 	}
 
@@ -173,8 +273,8 @@ public class ClassFileReader {
 	 */
 	private Field readField(ClassBuilder builder) throws IOException {
 		int access = is.readUnsignedShort();
-		int nameIndex = is.readUnsignedShort();
-		int typeIndex = is.readUnsignedShort();
+		CpUtf8 name = (CpUtf8) builder.getPool().get(is.readUnsignedShort());
+		CpUtf8 type = (CpUtf8) builder.getPool().get(is.readUnsignedShort());
 		int numAttributes = is.readUnsignedShort();
 		List<Attribute> attributes = new ArrayList<>();
 		for (int i = 0; i < numAttributes; i++) {
@@ -182,7 +282,7 @@ public class ClassFileReader {
 			if (attr != null)
 				attributes.add(attr);
 		}
-		return new Field(attributes, access, nameIndex, typeIndex);
+		return new Field(attributes, access, name, type);
 	}
 
 	/**
@@ -196,8 +296,8 @@ public class ClassFileReader {
 	 */
 	private Method readMethod(ClassBuilder builder) throws IOException {
 		int access = is.readUnsignedShort();
-		int nameIndex = is.readUnsignedShort();
-		int typeIndex = is.readUnsignedShort();
+		CpUtf8 name = (CpUtf8) builder.getPool().get(is.readUnsignedShort());
+		CpUtf8 type = (CpUtf8) builder.getPool().get(is.readUnsignedShort());
 		int numAttributes = is.readUnsignedShort();
 		List<Attribute> attributes = new ArrayList<>();
 		for (int i = 0; i < numAttributes; i++) {
@@ -205,7 +305,7 @@ public class ClassFileReader {
 			if (attr != null)
 				attributes.add(attr);
 		}
-		return new Method(attributes, access, nameIndex, typeIndex);
+		return new Method(attributes, access, name, type);
 	}
 
 	/**

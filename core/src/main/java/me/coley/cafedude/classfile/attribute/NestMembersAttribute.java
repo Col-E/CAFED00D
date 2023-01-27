@@ -1,5 +1,9 @@
 package me.coley.cafedude.classfile.attribute;
 
+import me.coley.cafedude.classfile.constant.CpClass;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
+
 import java.util.List;
 import java.util.Set;
 
@@ -9,41 +13,41 @@ import java.util.Set;
  * @author Matt Coley
  */
 public class NestMembersAttribute extends Attribute {
-	private List<Integer> memberClassIndices;
+	private List<CpClass> memberClasses;
 
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		Name index in constant pool.
-	 * @param memberClassIndices
+	 * @param memberClasses
 	 * 		Class indices in constant pool of class that are allowed to declare
 	 * 		nest membership of the nest hosted by the current class.
 	 */
-	public NestMembersAttribute(int nameIndex, List<Integer> memberClassIndices) {
-		super(nameIndex);
-		this.memberClassIndices = memberClassIndices;
+	public NestMembersAttribute(CpUtf8 name, List<CpClass> memberClasses) {
+		super(name);
+		this.memberClasses = memberClasses;
 	}
 
 	/**
 	 * @return Class indices in constant pool of class that are allowed to declare
 	 * nest membership of the nest hosted by the current class.
 	 */
-	public List<Integer> getMemberClassIndices() {
-		return memberClassIndices;
+	public List<CpClass> getMemberClasses() {
+		return memberClasses;
 	}
 
 	/**
-	 * @param memberClassIndices
+	 * @param memberClasses
 	 * 		New class indices in constant pool of class that are allowed to declare
 	 * 		nest membership of the nest hosted by the current class.
 	 */
-	public void setMemberClassIndices(List<Integer> memberClassIndices) {
-		this.memberClassIndices = memberClassIndices;
+	public void setMemberClasses(List<CpClass> memberClasses) {
+		this.memberClasses = memberClasses;
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = super.cpAccesses();
-		set.addAll(getMemberClassIndices());
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = super.cpAccesses();
+		set.addAll(getMemberClasses());
 		return set;
 	}
 
@@ -51,6 +55,6 @@ public class NestMembersAttribute extends Attribute {
 	public int computeInternalLength() {
 		// U2: classCount
 		// ??: count * 2
-		return 2 + (memberClassIndices.size() * 2);
+		return 2 + (memberClasses.size() * 2);
 	}
 }

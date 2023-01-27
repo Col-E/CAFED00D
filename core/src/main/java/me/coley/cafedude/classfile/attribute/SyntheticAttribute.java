@@ -1,5 +1,7 @@
 package me.coley.cafedude.classfile.attribute;
 
+import me.coley.cafedude.classfile.constant.CpUtf8;
+
 /**
  * Synthetic marker attribute.
  *
@@ -7,11 +9,11 @@ package me.coley.cafedude.classfile.attribute;
  */
 public class SyntheticAttribute extends Attribute {
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		Name index in constant pool.
 	 */
-	public SyntheticAttribute(int nameIndex) {
-		super(nameIndex);
+	public SyntheticAttribute(CpUtf8 name) {
+		super(name);
 	}
 
 	@Override

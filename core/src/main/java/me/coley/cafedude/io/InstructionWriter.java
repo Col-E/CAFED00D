@@ -1,11 +1,6 @@
 package me.coley.cafedude.io;
 
-import me.coley.cafedude.classfile.instruction.BiIntOperandInstruction;
-import me.coley.cafedude.classfile.instruction.Instruction;
-import me.coley.cafedude.classfile.instruction.IntOperandInstruction;
-import me.coley.cafedude.classfile.instruction.LookupSwitchInstruction;
-import me.coley.cafedude.classfile.instruction.TableSwitchInstruction;
-import me.coley.cafedude.classfile.instruction.WideInstruction;
+import me.coley.cafedude.classfile.instruction.*;
 import me.coley.cafedude.util.GrowingByteBuffer;
 
 import java.nio.ByteBuffer;
@@ -255,12 +250,12 @@ public class InstructionWriter {
 				case ANEWARRAY:
 				case CHECKCAST:
 				case INSTANCEOF:
-					buffer.putShort(((IntOperandInstruction) instruction).getOperand() & 0xFFFF);
+					buffer.putShort(((CpRefInstruction) instruction).getEntry().getIndex() & 0xFFFF);
 					break;
 				case IINC: {
-					BiIntOperandInstruction iinc = (BiIntOperandInstruction) instruction;
-					buffer.put(iinc.getFirstOperand() & 0xFF);
-					buffer.put(iinc.getSecondOperand());
+					IincInstruction iinc = (IincInstruction) instruction;
+					buffer.put(iinc.getVar() & 0xFF);
+					buffer.put(iinc.getIncrement());
 					break;
 				}
 				case TABLESWITCH: {
@@ -311,18 +306,18 @@ public class InstructionWriter {
 							buffer.putShort(((IntOperandInstruction) backing).getOperand() & 0xFFFF);
 							break;
 						case IINC:
-							BiIntOperandInstruction iinc = (BiIntOperandInstruction) backing;
-							buffer.putShort(iinc.getFirstOperand() & 0xFFFF);
-							buffer.putShort(iinc.getSecondOperand());
+							IincInstruction iinc = (IincInstruction) backing;
+							buffer.putShort(iinc.getVar() & 0xFFFF);
+							buffer.putShort(iinc.getIncrement());
 							break;
 						default:
 							throw new IllegalStateException("Illegal wide instruction type: " + type);
 					}
 					break;
 				case MULTIANEWARRAY:
-					BiIntOperandInstruction multiNewArray = (BiIntOperandInstruction) instruction;
-					buffer.putShort(multiNewArray.getFirstOperand() & 0xFFFF);
-					buffer.put(multiNewArray.getSecondOperand() & 0xFF);
+					MultiANewArrayInstruction multi = (MultiANewArrayInstruction) instruction;
+					buffer.putShort(multi.getDescriptor().getIndex() & 0xFFFF);
+					buffer.put(multi.getDimensions());
 					break;
 				case GOTO_W:
 				case JSR_W:

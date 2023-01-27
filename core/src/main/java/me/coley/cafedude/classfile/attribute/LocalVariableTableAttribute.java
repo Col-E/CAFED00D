@@ -1,10 +1,12 @@
 package me.coley.cafedude.classfile.attribute;
 
 import me.coley.cafedude.classfile.behavior.CpAccessor;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Variable table attribute.
@@ -15,19 +17,19 @@ public class LocalVariableTableAttribute extends Attribute {
 	private List<VarEntry> entries;
 
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		Name index in constant pool.
 	 * @param entries
 	 * 		Variable table entries.
 	 */
-	public LocalVariableTableAttribute(int nameIndex, List<VarEntry> entries) {
-		super(nameIndex);
+	public LocalVariableTableAttribute(CpUtf8 name, List<VarEntry> entries) {
+		super(name);
 		this.entries = entries;
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = super.cpAccesses();
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = super.cpAccesses();
 		for (VarEntry entry : getEntries())
 			set.addAll(entry.cpAccesses());
 		return set;
@@ -67,8 +69,8 @@ public class LocalVariableTableAttribute extends Attribute {
 	public static class VarEntry implements CpAccessor {
 		private final int startPc;
 		private final int length;
-		private final int nameIndex;
-		private final int descIndex;
+		private final CpUtf8 name;
+		private final CpUtf8 desc;
 		private final int index;
 
 		/**
@@ -76,18 +78,18 @@ public class LocalVariableTableAttribute extends Attribute {
 		 * 		Bytecode offset var starts at.
 		 * @param length
 		 * 		Bytecode length var spans across.
-		 * @param nameIndex
+		 * @param name
 		 * 		CP UTF8 name index.
-		 * @param descIndex
+		 * @param desc
 		 * 		CP UTF8 desc index.
 		 * @param index
 		 * 		Variable index.
 		 */
-		public VarEntry(int startPc, int length, int nameIndex, int descIndex, int index) {
+		public VarEntry(int startPc, int length, CpUtf8 name, CpUtf8 desc, int index) {
 			this.startPc = startPc;
 			this.length = length;
-			this.nameIndex = nameIndex;
-			this.descIndex = descIndex;
+			this.name = name;
+			this.desc = desc;
 			this.index = index;
 		}
 
@@ -108,15 +110,15 @@ public class LocalVariableTableAttribute extends Attribute {
 		/**
 		 * @return CP UTF8 name index.
 		 */
-		public int getNameIndex() {
-			return nameIndex;
+		public CpUtf8 getName() {
+			return name;
 		}
 
 		/**
 		 * @return CP UTF8 desc index.
 		 */
-		public int getDescIndex() {
-			return descIndex;
+		public CpUtf8 getDesc() {
+			return desc;
 		}
 
 		/**
@@ -127,10 +129,10 @@ public class LocalVariableTableAttribute extends Attribute {
 		}
 
 		@Override
-		public Set<Integer> cpAccesses() {
-			Set<Integer> set = new TreeSet<>();
-			set.add(getNameIndex());
-			set.add(getDescIndex());
+		public Set<CpEntry> cpAccesses() {
+			Set<CpEntry> set = new HashSet<>();
+			set.add(getName());
+			set.add(getDesc());
 			return set;
 		}
 	}

@@ -2,13 +2,15 @@ package me.coley.cafedude.classfile;
 
 import me.coley.cafedude.classfile.attribute.Attribute;
 import me.coley.cafedude.classfile.attribute.CodeAttribute;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.io.AttributeContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Method class member.
@@ -24,13 +26,13 @@ public class Method extends ClassMember {
 	 * 		Attributes of the method.
 	 * @param access
 	 * 		Method access flags.
-	 * @param nameIndex
+	 * @param name
 	 * 		Index of name UTF in pool.
 	 * @param typeIndex
 	 * 		Index of descriptor UTF in pool.
 	 */
-	public Method(List<Attribute> attributes, int access, int nameIndex, int typeIndex) {
-		super(attributes, access, nameIndex, typeIndex);
+	public Method(List<Attribute> attributes, int access, CpUtf8 name, CpUtf8 type) {
+		super(attributes, access, name, type);
 	}
 
 	@Override
@@ -39,10 +41,8 @@ public class Method extends ClassMember {
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = new TreeSet<>();
-		set.add(getNameIndex());
-		set.add(getTypeIndex());
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = super.cpAccesses();
 		for (Attribute attribute : getAttributes()) {
 			if(attribute instanceof CodeAttribute) {
 				int access = getAccess();

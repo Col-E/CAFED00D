@@ -10,54 +10,54 @@ import java.util.Objects;
  *
  * @author Matt Coley
  */
-public abstract class ConstRef extends ConstPoolEntry {
-	private int classIndex;
-	private int nameTypeIndex;
+public abstract class ConstRef extends CpEntry {
+	private CpClass classRef;
+	private CpNameType nameType;
 
 	/**
 	 * @param type
 	 * 		Reference type.
 	 * 		Must be {@link ConstantPoolConstants#FIELD_REF}, {@link ConstantPoolConstants#METHOD_REF},
 	 * 		or {@link ConstantPoolConstants#INTERFACE_METHOD_REF}.
-	 * @param classIndex
+	 * @param classRef
 	 * 		Index of reference {@link CpClass defining class} in pool.
-	 * @param nameTypeIndex
+	 * @param nameType
 	 * 		Index of field/method {@link CpNameType name and descriptor} in pool.
 	 */
-	public ConstRef(int type, int classIndex, int nameTypeIndex) {
+	public ConstRef(int type, CpClass classRef, CpNameType nameType) {
 		super(type);
-		this.classIndex = classIndex;
-		this.nameTypeIndex = nameTypeIndex;
+		this.classRef = classRef;
+		this.nameType = nameType;
 	}
 
 	/**
 	 * @return Index of reference {@link CpClass defining class} in pool.
 	 */
-	public int getClassIndex() {
-		return classIndex;
+	public CpClass getClassRef() {
+		return classRef;
 	}
 
 	/**
-	 * @param classIndex
+	 * @param classRef
 	 * 		New index of reference {@link CpClass defining class} in pool.
 	 */
-	public void setClassIndex(int classIndex) {
-		this.classIndex = classIndex;
+	public void setClassRef(CpClass classRef) {
+		this.classRef = classRef;
 	}
 
 	/**
 	 * @return Index of field/method {@link CpNameType name and descriptor} in pool.
 	 */
-	public int getNameTypeIndex() {
-		return nameTypeIndex;
+	public CpNameType getNameType() {
+		return nameType;
 	}
 
 	/**
-	 * @param nameTypeIndex
+	 * @param nameType
 	 * 		New index of field/method {@link CpNameType name and descriptor} in pool.
 	 */
-	public void setNameTypeIndex(int nameTypeIndex) {
-		this.nameTypeIndex = nameTypeIndex;
+	public void setNameType(CpNameType nameType) {
+		this.nameType = nameType;
 	}
 
 	@Override
@@ -65,12 +65,12 @@ public abstract class ConstRef extends ConstPoolEntry {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		ConstRef constRef = (ConstRef) o;
-		return classIndex == constRef.classIndex &&
-				nameTypeIndex == constRef.nameTypeIndex;
+		return classRef == constRef.classRef &&
+				nameType == constRef.nameType;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(classIndex, nameTypeIndex);
+		return Objects.hash(classRef, nameType);
 	}
 }

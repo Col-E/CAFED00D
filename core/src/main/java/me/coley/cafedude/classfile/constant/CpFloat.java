@@ -5,7 +5,7 @@ package me.coley.cafedude.classfile.constant;
  *
  * @author Matt Coley
  */
-public class CpFloat extends ConstPoolEntry {
+public class CpFloat extends CpEntry {
 	private float value;
 
 	/**

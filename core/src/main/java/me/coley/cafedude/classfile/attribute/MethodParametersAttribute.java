@@ -1,6 +1,8 @@
 package me.coley.cafedude.classfile.attribute;
 
 import me.coley.cafedude.classfile.behavior.CpAccessor;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 
 import java.util.HashSet;
 import java.util.List;
@@ -14,11 +16,11 @@ public class MethodParametersAttribute extends Attribute {
 	private List<Parameter> parameters;
 
 	/**
-	 * @param nameIndex Name index in constant pool.
+	 * @param name Name index in constant pool.
 	 * @param parameters Parameters.
 	 */
-	public MethodParametersAttribute(int nameIndex, List<Parameter> parameters) {
-		super(nameIndex);
+	public MethodParametersAttribute(CpUtf8 name, List<Parameter> parameters) {
+		super(name);
 		this.parameters = parameters;
 	}
 
@@ -37,9 +39,17 @@ public class MethodParametersAttribute extends Attribute {
 	}
 
 	@Override
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = super.cpAccesses();
+		for (Parameter p : parameters)
+			set.addAll(p.cpAccesses());
+		return set;
+	}
+
+	@Override
 	public int computeInternalLength() {
 		// U1: parameterCount
-		// (U2: nameIndex, U2: accessFlags) * parameterCount
+		// (U2: name, U2: accessFlags) * parameterCount
 		return 1 + (parameters.size() * 4);
 	}
 
@@ -49,15 +59,15 @@ public class MethodParametersAttribute extends Attribute {
 	public static class Parameter implements CpAccessor {
 
 		private int accessFlags;
-		private int nameIndex;
+		private CpUtf8 name;
 
 		/**
 		 * @param accessFlags Access flags.
-		 * @param nameIndex Name index in constant pool.
+		 * @param name Name index in constant pool.
 		 */
-		public Parameter(int accessFlags, int nameIndex) {
+		public Parameter(int accessFlags, CpUtf8 name) {
 			this.accessFlags = accessFlags;
-			this.nameIndex = nameIndex;
+			this.name = name;
 		}
 
 		/**
@@ -77,21 +87,21 @@ public class MethodParametersAttribute extends Attribute {
 		/**
 		 * @return Name index in constant pool.
 		 */
-		public int getNameIndex() {
-			return nameIndex;
+		public CpUtf8 getName() {
+			return name;
 		}
 
 		/**
-		 * @param nameIndex New name index in constant pool.
+		 * @param name New name index in constant pool.
 		 */
-		public void setNameIndex(int nameIndex) {
-			this.nameIndex = nameIndex;
+		public void setName(CpUtf8 name) {
+			this.name = name;
 		}
 
 		@Override
-		public Set<Integer> cpAccesses() {
-			Set<Integer> set = new HashSet<>();
-			set.add(nameIndex);
+		public Set<CpEntry> cpAccesses() {
+			Set<CpEntry> set = new HashSet<>();
+			set.add(name);
 			return set;
 		}
 

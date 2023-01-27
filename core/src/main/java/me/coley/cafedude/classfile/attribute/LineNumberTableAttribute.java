@@ -1,5 +1,7 @@
 package me.coley.cafedude.classfile.attribute;
 
+import me.coley.cafedude.classfile.constant.CpUtf8;
+
 import java.util.List;
 
 /**
@@ -11,13 +13,13 @@ public class LineNumberTableAttribute extends Attribute {
 	private List<LineEntry> entries;
 
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		Name index in constant pool.
 	 * @param entries
 	 * 		Line number table entries.
 	 */
-	public LineNumberTableAttribute(int nameIndex, List<LineEntry> entries) {
-		super(nameIndex);
+	public LineNumberTableAttribute(CpUtf8 name, List<LineEntry> entries) {
+		super(name);
 		this.entries = entries;
 	}
 

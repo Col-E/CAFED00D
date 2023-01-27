@@ -25,6 +25,7 @@ import me.coley.cafedude.classfile.annotation.Utf8ElementValue;
 import me.coley.cafedude.classfile.attribute.AnnotationDefaultAttribute;
 import me.coley.cafedude.classfile.attribute.AnnotationsAttribute;
 import me.coley.cafedude.classfile.attribute.ParameterAnnotationsAttribute;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -131,7 +132,7 @@ public class AnnotationWriter {
 	 * 		When the stream cannot be written to.
 	 */
 	private void writeAnnotation(Annotation annotation) throws IOException {
-		out.writeShort(annotation.getTypeIndex());
+		out.writeShort(annotation.getType().getIndex());
 		writeElementPairs(annotation.getValues());
 	}
 
@@ -218,16 +219,16 @@ public class AnnotationWriter {
 
 	/**
 	 * @param values
-	 * 		The annotation field pairs <i>({@code NameIndex} --> {@code Value})</i> to write.
+	 * 		The annotation field pairs <i>({@code name} --> {@code Value})</i> to write.
 	 *
 	 * @throws IOException
 	 * 		When the stream cannot be written to.
 	 */
-	private void writeElementPairs(Map<Integer, ElementValue> values) throws IOException {
+	private void writeElementPairs(Map<CpUtf8, ElementValue> values) throws IOException {
 		out.writeShort(values.size());
-		for (Map.Entry<Integer, ElementValue> elementValueEntry : values.entrySet()) {
-			int nameIndex = elementValueEntry.getKey();
-			out.writeShort(nameIndex);
+		for (Map.Entry<CpUtf8, ElementValue> elementValueEntry : values.entrySet()) {
+			CpUtf8 name = elementValueEntry.getKey();
+			out.writeShort(name.getIndex());
 			ElementValue value = elementValueEntry.getValue();
 			writeElementValue(value);
 		}
@@ -252,20 +253,20 @@ public class AnnotationWriter {
 			case 'S': // short
 			case 'Z': // boolean
 				PrimitiveElementValue primitiveElementValue = (PrimitiveElementValue) elementValue;
-				out.writeShort(primitiveElementValue.getValueIndex());
+				out.writeShort(primitiveElementValue.getValue().getIndex());
 				break;
 			case 's': // String
 				Utf8ElementValue utf8ElementValue = (Utf8ElementValue) elementValue;
-				out.writeShort(utf8ElementValue.getUtfIndex());
+				out.writeShort(utf8ElementValue.getValue().getIndex());
 				break;
 			case 'e': // Enum
 				EnumElementValue enumElementValue = (EnumElementValue) elementValue;
-				out.writeShort(enumElementValue.getTypeIndex());
-				out.writeShort(enumElementValue.getNameIndex());
+				out.writeShort(enumElementValue.getType().getIndex());
+				out.writeShort(enumElementValue.getName().getIndex());
 				break;
 			case 'c': // Class
 				ClassElementValue classElementValue = (ClassElementValue) elementValue;
-				out.writeShort(classElementValue.getClassIndex());
+				out.writeShort(classElementValue.getClassEntry().getIndex());
 				break;
 			case '@': // Annotation
 				AnnotationElementValue annotationElementValue = (AnnotationElementValue) elementValue;

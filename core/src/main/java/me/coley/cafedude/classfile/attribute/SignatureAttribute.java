@@ -1,5 +1,8 @@
 package me.coley.cafedude.classfile.attribute;
 
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
+
 import java.util.Set;
 
 /**
@@ -8,38 +11,38 @@ import java.util.Set;
  * @author Matt Coley
  */
 public class SignatureAttribute extends Attribute {
-	private int signatureIndex;
+	private CpUtf8 signature;
 
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		Name index in constant pool.
-	 * @param signatureIndex
+	 * @param signature
 	 * 		UTF8 index in constant pool of the signature.
 	 */
-	public SignatureAttribute(int nameIndex, int signatureIndex) {
-		super(nameIndex);
-		this.signatureIndex = signatureIndex;
+	public SignatureAttribute(CpUtf8 name, CpUtf8 signature) {
+		super(name);
+		this.signature = signature;
 	}
 
 	/**
 	 * @return UTF8 index in constant pool of the signature.
 	 */
-	public int getSignatureIndex() {
-		return signatureIndex;
+	public CpUtf8 getSignature() {
+		return signature;
 	}
 
 	/**
-	 * @param signatureIndex
+	 * @param signature
 	 * 		UTF8 index in constant pool of the signature.
 	 */
-	public void setSignatureIndex(int signatureIndex) {
-		this.signatureIndex = signatureIndex;
+	public void setSignature(CpUtf8 signature) {
+		this.signature = signature;
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = super.cpAccesses();
-		set.add(getSignatureIndex());
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = super.cpAccesses();
+		set.add(getSignature());
 		return set;
 	}
 

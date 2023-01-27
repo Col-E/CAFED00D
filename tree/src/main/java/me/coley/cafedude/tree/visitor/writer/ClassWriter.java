@@ -9,6 +9,7 @@ import me.coley.cafedude.classfile.attribute.*;
 import me.coley.cafedude.io.ClassBuilder;
 import me.coley.cafedude.io.ClassFileWriter;
 import me.coley.cafedude.tree.visitor.*;
+import me.coley.cafedude.util.Optional;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -28,13 +29,14 @@ public class ClassWriter extends DeclarationWriter implements ClassVisitor {
 		// set version minor and major
 		builder.setVersionMajor(versionMajor);
 		builder.setVersionMinor(versionMinor);
+		builder.setConstPool(symbols.pool);
 	}
 
 	@Override
 	public void visitClass(String name, int access, String superName, String... interfaces) {
-		builder.setClassIndex(symbols.newClass(name));
+		builder.setThisClass(symbols.newClass(name));
 		builder.setAccess(access);
-		builder.setSuperIndex(symbols.newClass(superName));
+		builder.setSuperClass(symbols.newClass(superName));
 		for (String anInterface : interfaces) {
 			builder.addInterface(symbols.newClass(anInterface));
 		}
@@ -57,15 +59,15 @@ public class ClassWriter extends DeclarationWriter implements ClassVisitor {
 		attributes.add(new EnclosingMethodAttribute(
 				symbols.newUtf8(AttributeConstants.ENCLOSING_METHOD),
 				symbols.newClass(owner),
-				name == null ? 0 : symbols.newNameType(name, descriptor)));
+				Optional.orNull(name, n -> symbols.newNameType(name, descriptor))));
 	}
 
 	@Override
 	public void visitInnerClass(String name, @Nullable String outerName, @Nullable String innerName, int access) {
 		innerClasses.add(new InnerClass(
 				symbols.newClass(name),
-				outerName == null ? 0 : symbols.newClass(outerName),
-				innerName == null ? 0 : symbols.newUtf8(innerName),
+				Optional.orNull(outerName, symbols::newClass),
+				Optional.orNull(innerName, symbols::newUtf8),
 				access));
 	}
 
@@ -85,8 +87,8 @@ public class ClassWriter extends DeclarationWriter implements ClassVisitor {
 
 	@Override
 	public ModuleVisitor visitModule(String name, int access, @Nullable String version) {
-		return new ModuleWriter(symbols, symbols.newUtf8(name), version != null ? symbols.newUtf8(version) : 0,
-				access, attributes::addAll);
+		return new ModuleWriter(symbols, symbols.newModule(name), access, Optional.orNull(version, symbols::newUtf8),
+				attributes::addAll);
 	}
 
 	@Override

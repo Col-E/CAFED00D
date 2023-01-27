@@ -9,22 +9,22 @@ import java.util.Objects;
  * @author Matt Coley
  * @author Wolfie / win32kbase
  */
-public abstract class ConstDynamic extends ConstPoolEntry {
+public abstract class ConstDynamic extends CpEntry {
     private int bsmIndex;
-    private int nameTypeIndex;
+    private CpNameType nameType;
 
     /**
      * @param type
      *      Dynamic pool entry type.
      * @param bsmIndex
      * 		Index in the class's bootstrap method attribute-table.
-     * @param nameTypeIndex
+     * @param nameType
      * 		Index of {@link CpNameType} in pool.
      */
-    public ConstDynamic(int type, int bsmIndex, int nameTypeIndex) {
+    public ConstDynamic(int type, int bsmIndex, CpNameType nameType) {
         super(type);
         this.bsmIndex = bsmIndex;
-        this.nameTypeIndex = nameTypeIndex;
+        this.nameType = nameType;
     }
 
     /**
@@ -45,16 +45,16 @@ public abstract class ConstDynamic extends ConstPoolEntry {
     /**
      * @return Index of {@link CpNameType} in pool.
      */
-    public int getNameTypeIndex() {
-        return nameTypeIndex;
+    public CpNameType getNameType() {
+        return nameType;
     }
 
     /**
-     * @param nameTypeIndex
+     * @param nameType
      * 		New index of {@link CpNameType} in pool.
      */
-    public void setNameTypeIndex(int nameTypeIndex) {
-        this.nameTypeIndex = nameTypeIndex;
+    public void setNameType(CpNameType nameType) {
+        this.nameType = nameType;
     }
 
     @Override
@@ -62,11 +62,11 @@ public abstract class ConstDynamic extends ConstPoolEntry {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ConstDynamic that = (ConstDynamic) o;
-        return bsmIndex == that.bsmIndex && nameTypeIndex == that.nameTypeIndex;
+        return bsmIndex == that.bsmIndex && nameType == that.nameType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(bsmIndex, nameTypeIndex);
+        return Objects.hash(bsmIndex, nameType);
     }
 }

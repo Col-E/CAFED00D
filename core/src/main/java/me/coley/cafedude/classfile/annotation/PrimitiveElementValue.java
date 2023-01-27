@@ -1,5 +1,9 @@
 package me.coley.cafedude.classfile.annotation;
 
+import me.coley.cafedude.classfile.constant.CpEntry;
+
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -9,32 +13,32 @@ import java.util.TreeSet;
  * @author Matt Coley
  */
 public class PrimitiveElementValue extends ElementValue {
-	private int valueIndex;
+	private CpEntry value;
 
 	/**
 	 * @param tag
 	 * 		ASCII tag representation, indicating the type of primitive element value.
-	 * @param valueIndex
+	 * @param value
 	 * 		Index of primitive value constant.
 	 */
-	public PrimitiveElementValue(char tag, int valueIndex) {
+	public PrimitiveElementValue(char tag, CpEntry value) {
 		super(tag);
-		this.valueIndex = valueIndex;
+		this.value = value;
 	}
 
 	/**
 	 * @return Index of primitive value constant.
 	 */
-	public int getValueIndex() {
-		return valueIndex;
+	public CpEntry getValue() {
+		return value;
 	}
 
 	/**
-	 * @param valueIndex
+	 * @param value
 	 * 		Index of primitive value constant.
 	 */
-	public void setValueIndex(int valueIndex) {
-		this.valueIndex = valueIndex;
+	public void setValue(CpEntry value) {
+		this.value = value;
 	}
 
 	/**
@@ -46,10 +50,8 @@ public class PrimitiveElementValue extends ElementValue {
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = new TreeSet<>();
-		set.add(getValueIndex());
-		return set;
+	public Set<CpEntry> cpAccesses() {
+		return Collections.singleton(value);
 	}
 
 	@Override

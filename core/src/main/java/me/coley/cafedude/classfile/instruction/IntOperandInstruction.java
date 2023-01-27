@@ -10,7 +10,7 @@ import java.util.Set;
  *
  * @author xDark
  */
-public class IntOperandInstruction extends BasicInstruction implements CpAccessor {
+public class IntOperandInstruction extends BasicInstruction {
 	private int operand;
 
 	/**
@@ -74,7 +74,6 @@ public class IntOperandInstruction extends BasicInstruction implements CpAccesso
 			case Opcodes.ISTORE:
 			case Opcodes.LLOAD:
 			case Opcodes.LSTORE:
-			case Opcodes.LDC:
 			case Opcodes.NEWARRAY:
 				return 2; // opcode + operand (1 byte)
 			default:
@@ -87,29 +86,4 @@ public class IntOperandInstruction extends BasicInstruction implements CpAccesso
 		return "insn(" + getOpcode() + ": " + operand + ")";
 	}
 
-	@Override
-	public Set<Integer> cpAccesses() {
-		switch (getOpcode()) {
-			case Opcodes.GETFIELD:
-			case Opcodes.GETSTATIC:
-			case Opcodes.PUTFIELD:
-			case Opcodes.PUTSTATIC:
-			case Opcodes.INVOKEVIRTUAL:
-			case Opcodes.INVOKESPECIAL:
-			case Opcodes.INVOKESTATIC:
-			case Opcodes.INVOKEINTERFACE:
-			case Opcodes.LDC:
-			case Opcodes.LDC_W:
-			case Opcodes.LDC2_W:
-			case Opcodes.NEW:
-			case Opcodes.ANEWARRAY:
-			case Opcodes.CHECKCAST:
-			case Opcodes.INSTANCEOF:
-			case Opcodes.MULTIANEWARRAY:
-			case Opcodes.INVOKEDYNAMIC:
-				return Collections.singleton(operand);
-			default:
-				return Collections.emptySet();
-		}
-	}
 }

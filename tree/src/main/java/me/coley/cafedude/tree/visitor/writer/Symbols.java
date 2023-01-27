@@ -18,59 +18,60 @@ public class Symbols {
 		this.pool = pool;
 	}
 
-	int newUtf8(String value) {
+	CpUtf8 newUtf8(String value) {
 		if(value == null)
-			return 0;
+			return null;
 		return newSym(new CpUtf8(value));
 	}
 
-	int newClass(String type) {
+	CpClass newClass(String type) {
 		return newSym(new CpClass(newUtf8(type)));
 	}
 
-	int newNameType(String name, Descriptor type) {
+	CpNameType newNameType(String name, Descriptor type) {
 		return newSym(new CpNameType(newUtf8(name), newUtf8(type.getDescriptor())));
 	}
 
-	int newField(String owner, String name, Descriptor type) {
+	CpFieldRef newField(String owner, String name, Descriptor type) {
 		return newSym(new CpFieldRef(newClass(owner), newNameType(name, type)));
 	}
 
-	int newMethod(String owner, String name, Descriptor type) {
+	CpMethodRef newMethod(String owner, String name, Descriptor type) {
 		return newSym(new CpMethodRef(newClass(owner), newNameType(name, type)));
 	}
 
-	int newInterfaceMethod(String owner, String name, Descriptor type) {
+	CpInterfaceMethodRef newInterfaceMethod(String owner, String name, Descriptor type) {
 		return newSym(new CpInterfaceMethodRef(newClass(owner), newNameType(name, type)));
 	}
 
-	int newHandle(Handle handle) {
+	CpMethodHandle newHandle(Handle handle) {
 		return newSym(new CpMethodHandle((byte) handle.getTag().ordinal(),
 				newMethod(handle.getOwner(), handle.getName(), handle.getDescriptor())));
 	}
 
-	int newInvokeDynamic(int bootstrapMethodIndex, int nameAndTypeIndex) {
+	CpInvokeDynamic newInvokeDynamic(int bootstrapMethodIndex, CpNameType nameAndTypeIndex) {
 		return newSym(new CpInvokeDynamic(bootstrapMethodIndex, nameAndTypeIndex));
 	}
 
-	int newPackage(String exportPackage) {
+	CpPackage newPackage(String exportPackage) {
 		return newSym(new CpPackage(newUtf8(exportPackage)));
 	}
 
-	int newModule(String module) {
+	CpModule newModule(String module) {
 		return newSym(new CpModule(newUtf8(module)));
 	}
 
-	int newSym(ConstPoolEntry entry) {
+	@SuppressWarnings("unchecked")
+	<T extends CpEntry> T newSym(T entry) {
 		int index = pool.indexOf(entry);
 		if(index != -1) { // no duplicate entries
-			return index;
+			return (T) pool.get(index);
 		}
 		pool.add(entry);
-		return pool.indexOf(entry);
+		return entry;
 	}
 
-	int newConstant(Constant value) {
+	CpEntry newConstant(Constant value) {
 		switch (value.getType()) {
 			case STRING:
 				return newSym(new CpString(newUtf8((String) value.getValue())));
@@ -90,12 +91,12 @@ public class Symbols {
 				Descriptor descriptor = (Descriptor) value.getValue();
 				switch (descriptor.getKind()) {
 					case METHOD: {
-						int descriptorIndex = newUtf8(descriptor.getDescriptor());
+						CpUtf8 descriptorIndex = newUtf8(descriptor.getDescriptor());
 						return newSym(new CpMethodType(descriptorIndex));
 					}
 					case OBJECT:
 					case ARRAY: {
-						int descriptorIndex = newUtf8(descriptor.getDescriptor());
+						CpUtf8 descriptorIndex = newUtf8(descriptor.getDescriptor());
 						return newSym(new CpClass(descriptorIndex));
 					}
 					case PRIMITIVE:
@@ -114,11 +115,11 @@ public class Symbols {
 
 	ElementValue newElementValue(Constant value) {
 		char tag = ' ';
-		int index;
+		CpEntry entry;
 		if(value.getType().equals(Constant.Type.STRING))
 			// ElementValue requires UTF8 instead of String
-			index = newUtf8((String) value.getValue());
-		else index = newConstant(value);
+			entry = newUtf8((String) value.getValue());
+		else entry = newConstant(value);
 		switch (value.getType()) {
 			case BOOLEAN:
 				tag = 'Z';
@@ -175,11 +176,11 @@ public class Symbols {
 			case 'J': // long
 			case 'S': // short
 			case 'Z': // boolean
-				return new PrimitiveElementValue(tag, index);
+				return new PrimitiveElementValue(tag, entry);
 			case 's': // String
-				return new Utf8ElementValue(tag, index);
+				return new Utf8ElementValue(tag, (CpUtf8) entry);
 			case 'c': // Class
-				return new ClassElementValue(tag, index);
+				return new ClassElementValue(tag, (CpUtf8) entry);
 		}
 		throw new IllegalStateException("Unknown element value tag: " + tag);
 	}

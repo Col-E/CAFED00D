@@ -13,7 +13,7 @@ public class CpInterfaceMethodRef extends ConstRef {
 	 * @param nameTypeIndex
 	 * 		Index of method's {@link CpNameType name and descriptor} in pool.
 	 */
-	public CpInterfaceMethodRef(int classIndex, int nameTypeIndex) {
-		super(INTERFACE_METHOD_REF, classIndex, nameTypeIndex);
+	public CpInterfaceMethodRef(CpClass classRef, CpNameType nameType) {
+		super(INTERFACE_METHOD_REF, classRef, nameType);
 	}
 }

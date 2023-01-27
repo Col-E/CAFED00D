@@ -1,6 +1,7 @@
 package me.coley.cafedude.classfile;
 
 import me.coley.cafedude.classfile.attribute.Attribute;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.io.AttributeContext;
 
 import java.util.List;
@@ -16,13 +17,13 @@ public class Field extends ClassMember {
 	 * 		Attributes of the field.
 	 * @param access
 	 * 		Field access flags.
-	 * @param nameIndex
+	 * @param name
 	 * 		Index of name UTF in pool.
 	 * @param typeIndex
 	 * 		Index of descriptor UTF in pool.
 	 */
-	public Field(List<Attribute> attributes, int access, int nameIndex, int typeIndex) {
-		super(attributes, access, nameIndex, typeIndex);
+	public Field(List<Attribute> attributes, int access, CpUtf8 name, CpUtf8 type) {
+		super(attributes, access, name, type);
 	}
 
 	@Override

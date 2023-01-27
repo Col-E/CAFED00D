@@ -3,6 +3,7 @@ package me.coley.cafedude.classfile.annotation;
 import me.coley.cafedude.classfile.attribute.ExceptionsAttribute;
 import me.coley.cafedude.classfile.attribute.LocalVariableTableAttribute;
 import me.coley.cafedude.classfile.behavior.CpAccessor;
+import me.coley.cafedude.classfile.constant.CpEntry;
 
 import java.util.Collections;
 import java.util.List;
@@ -43,7 +44,7 @@ public abstract class TargetInfo implements CpAccessor {
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
+	public Set<CpEntry> cpAccesses() {
 		return Collections.emptySet();
 	}
 
@@ -117,11 +118,6 @@ public abstract class TargetInfo implements CpAccessor {
 		 */
 		public int getSuperTypeIndex() {
 			return superTypeIndex;
-		}
-
-		@Override
-		public Set<Integer> cpAccesses() {
-			return Collections.singleton(superTypeIndex);
 		}
 
 		@Override

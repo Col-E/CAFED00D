@@ -5,7 +5,7 @@ package me.coley.cafedude.classfile.constant;
  *
  * @author Matt Coley
  */
-public class CpInt extends ConstPoolEntry {
+public class CpInt extends CpEntry {
 	private int value;
 
 	/**

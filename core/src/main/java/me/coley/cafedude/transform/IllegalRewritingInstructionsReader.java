@@ -1,7 +1,7 @@
 package me.coley.cafedude.transform;
 
 import me.coley.cafedude.classfile.ConstPool;
-import me.coley.cafedude.classfile.constant.ConstPoolEntry;
+import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpDynamic;
 import me.coley.cafedude.classfile.constant.CpMethodHandle;
 import me.coley.cafedude.classfile.constant.CpMethodType;
@@ -86,7 +86,7 @@ final class IllegalRewritingInstructionsReader implements FallbackInstructionRea
 			cpMap = new HashMap<>();
 			int index = 0;
 			int cpIndex = 1;
-			for (ConstPoolEntry item : cp) {
+			for (CpEntry item : cp) {
 				if (item instanceof CpString || item instanceof CpMethodHandle
 						|| item instanceof CpMethodType || item instanceof CpDynamic) {
 					cpMap.put(index++, cpIndex);

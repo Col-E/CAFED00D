@@ -3,11 +3,12 @@ package me.coley.cafedude.classfile;
 import me.coley.cafedude.classfile.attribute.Attribute;
 import me.coley.cafedude.classfile.behavior.AttributeHolder;
 import me.coley.cafedude.classfile.behavior.CpAccessor;
-import me.coley.cafedude.classfile.constant.ConstPoolEntry;
+import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpClass;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.io.AttributeContext;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -19,15 +20,15 @@ import java.util.TreeSet;
  */
 public class ClassFile implements AttributeHolder, CpAccessor {
 	private final ConstPool pool;
-	private List<Integer> interfaceIndices;
+	private List<CpClass> interfaceClasses;
 	private List<Field> fields;
 	private List<Method> methods;
 	private List<Attribute> attributes;
 	private int access;
 	private int versionMinor;
 	private int versionMajor;
-	private int classIndex;
-	private int superIndex;
+	private CpClass thisClass;
+	private CpClass superClass;
 
 	/**
 	 * @param versionMinor
@@ -38,12 +39,12 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	 * 		Pool entries.
 	 * @param access
 	 * 		Class access flags.
-	 * @param classIndex
-	 * 		Index in pool for the current class.
-	 * @param superIndex
-	 * 		Index in pool for the super class.
-	 * @param interfaceIndices
-	 * 		Indices in pool for interfaces.
+	 * @param thisClass
+	 * 		Constant pool entry for this class.
+	 * @param superClass
+	 * 		Constant pool entry for parent class.
+	 * @param interfaceClasses
+	 * 		Entries for interfaces.
 	 * @param fields
 	 * 		Fields.
 	 * @param methods
@@ -52,16 +53,16 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	 * 		Attributes.
 	 */
 	public ClassFile(int versionMinor, int versionMajor,
-					 ConstPool pool, int access, int classIndex, int superIndex,
-					 List<Integer> interfaceIndices, List<Field> fields, List<Method> methods,
+					 ConstPool pool, int access, CpClass thisClass, CpClass superClass,
+					 List<CpClass> interfaceClasses, List<Field> fields, List<Method> methods,
 					 List<Attribute> attributes) {
 		this.versionMinor = versionMinor;
 		this.versionMajor = versionMajor;
 		this.pool = pool;
 		this.access = access;
-		this.classIndex = classIndex;
-		this.superIndex = superIndex;
-		this.interfaceIndices = interfaceIndices;
+		this.thisClass = thisClass;
+		this.superClass = superClass;
+		this.interfaceClasses = interfaceClasses;
 		this.fields = fields;
 		this.methods = methods;
 		this.attributes = attributes;
@@ -71,26 +72,14 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	 * @return Class name.
 	 */
 	public String getName() {
-		return getClassName(classIndex);
+		return thisClass.getName().getText();
 	}
 
 	/**
 	 * @return Parent class name.
 	 */
 	public String getSuperName() {
-		return getClassName(superIndex);
-	}
-
-	/**
-	 * @param classIndex
-	 * 		CP index pointing to a class.
-	 *
-	 * @return Name of class.
-	 */
-	private String getClassName(int classIndex) {
-		CpClass cpClass = (CpClass) getCp(classIndex);
-		CpUtf8 cpClassName = (CpUtf8) getCp(cpClass.getIndex());
-		return cpClassName.getText();
+		return superClass.getName().getText();
 	}
 
 	/**
@@ -99,7 +88,7 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	 *
 	 * @return Constant pool value at index.
 	 */
-	public ConstPoolEntry getCp(int index) {
+	public CpEntry getCp(int index) {
 		return pool.get(index);
 	}
 
@@ -109,7 +98,7 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	 * @param entry
 	 * 		New constant pool value at index.
 	 */
-	public void setCp(int index, ConstPoolEntry entry) {
+	public void setCp(int index, CpEntry entry) {
 		pool.set(index, entry);
 	}
 
@@ -123,16 +112,16 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	/**
 	 * @return Indices in pool for interfaces.
 	 */
-	public List<Integer> getInterfaceIndices() {
-		return interfaceIndices;
+	public List<CpClass> getInterfaceClasses() {
+		return interfaceClasses;
 	}
 
 	/**
-	 * @param interfaceIndices
+	 * @param interfaceClasses
 	 * 		New indices in pool for interfaces.
 	 */
-	public void setInterfaceIndices(List<Integer> interfaceIndices) {
-		this.interfaceIndices = interfaceIndices;
+	public void setInterfaceClasses(List<CpClass> interfaceClasses) {
+		this.interfaceClasses = interfaceClasses;
 	}
 
 	/**
@@ -213,31 +202,31 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	/**
 	 * @return Index in pool for the current class.
 	 */
-	public int getClassIndex() {
-		return classIndex;
+	public CpClass getThisClass() {
+		return thisClass;
 	}
 
 	/**
-	 * @param classIndex
+	 * @param thisClass
 	 * 		Index in pool for the current class.
 	 */
-	public void setClassIndex(int classIndex) {
-		this.classIndex = classIndex;
+	public void setThisClass(CpClass thisClass) {
+		this.thisClass = thisClass;
 	}
 
 	/**
 	 * @return Index in pool for the super class.
 	 */
-	public int getSuperIndex() {
-		return superIndex;
+	public CpClass getSuperClass() {
+		return superClass;
 	}
 
 	/**
-	 * @param superIndex
+	 * @param superClass
 	 * 		Index in pool for the super class.
 	 */
-	public void setSuperIndex(int superIndex) {
-		this.superIndex = superIndex;
+	public void setSuperClass(CpClass superClass) {
+		this.superClass = superClass;
 	}
 
 	@Override
@@ -272,11 +261,11 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = new TreeSet<>();
-		set.add(getClassIndex());
-		set.add(getSuperIndex());
-		set.addAll(getInterfaceIndices());
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = new HashSet<>();
+		set.add(getThisClass());
+		set.add(getSuperClass());
+		set.addAll(getInterfaceClasses());
 		for (Attribute attribute : getAttributes())
 			set.addAll(attribute.cpAccesses());
 		for (ClassMember field : getFields())

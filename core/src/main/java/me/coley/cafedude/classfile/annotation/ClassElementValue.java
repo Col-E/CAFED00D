@@ -1,5 +1,11 @@
 package me.coley.cafedude.classfile.annotation;
 
+import me.coley.cafedude.classfile.constant.CpClass;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
+
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -9,34 +15,34 @@ import java.util.TreeSet;
  * @author Matt Coley
  */
 public class ClassElementValue extends ElementValue {
-	private int classIndex;
+	private CpUtf8 classEntry;
 
 	/**
 	 * @param tag
 	 * 		ASCII tag representation, must be {@code c}.
-	 * @param classIndex
+	 * @param classEntry
 	 * 		Index of class constant.
 	 */
-	public ClassElementValue(char tag, int classIndex) {
+	public ClassElementValue(char tag, CpUtf8 classEntry) {
 		super(tag);
 		if (tag != 'c')
 			throw new IllegalArgumentException("Class element value must have 'c' tag");
-		this.classIndex = classIndex;
+		this.classEntry = classEntry;
 	}
 
 	/**
 	 * @return Index of a class's descriptor.
 	 */
-	public int getClassIndex() {
-		return classIndex;
+	public CpUtf8 getClassEntry() {
+		return classEntry;
 	}
 
 	/**
-	 * @param classIndex
+	 * @param classEntry
 	 * 		Index of a class's descriptor.
 	 */
-	public void setClassIndex(int classIndex) {
-		this.classIndex = classIndex;
+	public void setClassEntry(CpUtf8 classEntry) {
+		this.classEntry = classEntry;
 	}
 
 	/**
@@ -48,10 +54,8 @@ public class ClassElementValue extends ElementValue {
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = new TreeSet<>();
-		set.add(getClassIndex());
-		return set;
+	public Set<CpEntry> cpAccesses() {
+		return Collections.singleton(classEntry);
 	}
 
 	@Override

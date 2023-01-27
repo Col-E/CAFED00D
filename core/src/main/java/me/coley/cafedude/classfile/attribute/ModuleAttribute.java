@@ -1,14 +1,11 @@
 package me.coley.cafedude.classfile.attribute;
 
 import me.coley.cafedude.classfile.behavior.CpAccessor;
-import me.coley.cafedude.classfile.constant.CpClass;
-import me.coley.cafedude.classfile.constant.CpModule;
-import me.coley.cafedude.classfile.constant.CpPackage;
-import me.coley.cafedude.classfile.constant.CpUtf8;
+import me.coley.cafedude.classfile.constant.*;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Module attribute.
@@ -16,26 +13,26 @@ import java.util.TreeSet;
  * @author Matt Coley
  */
 public class ModuleAttribute extends Attribute {
-	private int moduleIndex;
+	private CpModule module;
 	private int flags;
-	private int versionIndex;
+	private CpUtf8 version;
 	private List<Requires> requires;
 	private List<Exports> exports;
 	private List<Opens> opens;
-	private List<Integer> uses;
+	private List<CpClass> uses;
 	private List<Provides> provides;
 
 	/**
-	 * @param attrNameIndex
+	 * @param attrname
 	 * 		Name index in constant pool of attribute.
-	 * @param moduleIndex
+	 * @param module
 	 * 		Constant pool index of {@link CpModule module name}.
 	 * @param flags
 	 * 		Module flags, see
 	 *        {@code ACC_OPEN / 0x0020},
 	 *        {@code ACC_SYNTHETIC / 0x1000}, and
 	 *        {@code ACC_MANDATED / 0x8000}
-	 * @param versionIndex
+	 * @param version
 	 * 		Index in constant pool of module version utf8, or 0 if no version info.
 	 * @param requires
 	 * 		The {@link Requires} items.
@@ -48,14 +45,14 @@ public class ModuleAttribute extends Attribute {
 	 * @param provides
 	 * 		The {@link Provides} items.
 	 */
-	public ModuleAttribute(int attrNameIndex, int moduleIndex, int flags, int versionIndex,
+	public ModuleAttribute(CpUtf8 name, CpModule module, int flags, CpUtf8 version,
 						   List<Requires> requires, List<Exports> exports,
-						   List<Opens> opens, List<Integer> uses,
+						   List<Opens> opens, List<CpClass> uses,
 						   List<Provides> provides) {
-		super(attrNameIndex);
-		this.moduleIndex = moduleIndex;
+		super(name);
+		this.module = module;
 		this.flags = flags;
-		this.versionIndex = versionIndex;
+		this.version = version;
 		this.requires = requires;
 		this.exports = exports;
 		this.opens = opens;
@@ -66,16 +63,16 @@ public class ModuleAttribute extends Attribute {
 	/**
 	 * @return Constant pool index of {@link CpModule module}.
 	 */
-	public int getModuleIndex() {
-		return moduleIndex;
+	public CpModule getModule() {
+		return module;
 	}
 
 	/**
-	 * @param moduleIndex
+	 * @param module
 	 * 		New module index.
 	 */
-	public void setModuleIndex(int moduleIndex) {
-		this.moduleIndex = moduleIndex;
+	public void setModule(CpModule module) {
+		this.module = module;
 	}
 
 	/**
@@ -99,16 +96,16 @@ public class ModuleAttribute extends Attribute {
 	/**
 	 * @return Index in constant pool of module {@link CpUtf8 version string}, or {@code 0} if no version info.
 	 */
-	public int getVersionIndex() {
-		return versionIndex;
+	public CpUtf8 getVersion() {
+		return version;
 	}
 
 	/**
-	 * @param versionIndex
+	 * @param version
 	 * 		New version index.
 	 */
-	public void setVersionIndex(int versionIndex) {
-		this.versionIndex = versionIndex;
+	public void setVersion(CpUtf8 version) {
+		this.version = version;
 	}
 
 	/**
@@ -160,7 +157,7 @@ public class ModuleAttribute extends Attribute {
 	 * @return The uses list. Constant pool indices of {@link CpClass service interfaces classes} discoverable
 	 * by using {@code ServiceLoader}.
 	 */
-	public List<Integer> getUses() {
+	public List<CpClass> getUses() {
 		return uses;
 	}
 
@@ -168,7 +165,7 @@ public class ModuleAttribute extends Attribute {
 	 * @param uses
 	 * 		New uses list.
 	 */
-	public void setUses(List<Integer> uses) {
+	public void setUses(List<CpClass> uses) {
 		this.uses = uses;
 	}
 
@@ -188,10 +185,10 @@ public class ModuleAttribute extends Attribute {
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = super.cpAccesses();
-		set.add(getModuleIndex());
-		set.add(getVersionIndex());
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = super.cpAccesses();
+		set.add(getModule());
+		set.add(getVersion());
 		set.addAll(getUses());
 		for (Requires requires : getRequires())
 			set.addAll(requires.cpAccesses());
@@ -227,45 +224,45 @@ public class ModuleAttribute extends Attribute {
 	 * @author Matt Coley
 	 */
 	public static class Requires implements CpAccessor {
-		private int index;
+		private CpModule module;
 		private int flags;
-		private int versionIndex;
+		private CpUtf8 version;
 
 		/**
-		 * @param index
+		 * @param module
 		 * 		Constant pool index of {@link CpModule required module}.
 		 * @param flags
 		 * 		Require flags, see {@link #getFlags()} for more info.
-		 * @param versionIndex
+		 * @param version
 		 * 		Index in constant pool of required module {@link CpUtf8 version string},
-		 * 		or {@code 0} if no version info.
+		 * 		or {@code null} if no version info.
 		 */
-		public Requires(int index, int flags, int versionIndex) {
-			this.index = index;
+		public Requires(CpModule module, int flags, CpUtf8 version) {
+			this.module = module;
 			this.flags = flags;
-			this.versionIndex = versionIndex;
+			this.version = version;
 		}
 
 		/**
 		 * @return Constant pool index of {@link CpModule required module}.
 		 */
-		public int getIndex() {
-			return index;
+		public CpModule getModule() {
+			return module;
 		}
 
 		/**
-		 * @param index
+		 * @param module
 		 * 		New required module index.
 		 */
-		public void setIndex(int index) {
-			this.index = index;
+		public void setModule(CpModule module) {
+			this.module = module;
 		}
 
 		/**
 		 * @return Require flags, see
 		 * <ul>
 		 *     <li>{@code ACC_TRANSITIVE} if any module depending on the current module also depends on
-		 *     {@link #getIndex() this required module}</li>
+		 *     {@link #getModule() this required module}</li>
 		 *     <li>{@code ACC_STATIC_PHASE} if the dependency is only required at compile time.</li>
 		 *     <li>{@code ACC_SYNTHETIC} if the dependency was not explicitly or implicitly defined
 		 *     in the source of the module.</li>
@@ -288,23 +285,23 @@ public class ModuleAttribute extends Attribute {
 		 * @return Index in constant pool of required module {@link CpUtf8 version string},
 		 * or {@code 0} if no version info.
 		 */
-		public int getVersionIndex() {
-			return versionIndex;
+		public CpUtf8 getVersion() {
+			return version;
 		}
 
 		/**
-		 * @param versionIndex
+		 * @param version
 		 * 		New required module version index.
 		 */
-		public void setVersionIndex(int versionIndex) {
-			this.versionIndex = versionIndex;
+		public void setVersion(CpUtf8 version) {
+			this.version = version;
 		}
 
 		@Override
-		public Set<Integer> cpAccesses() {
-			Set<Integer> set = new TreeSet<>();
-			set.add(getVersionIndex());
-			set.add(getIndex());
+		public Set<CpEntry> cpAccesses() {
+			Set<CpEntry> set = new HashSet<>();
+			set.add(getVersion());
+			set.add(getModule());
 			return set;
 		}
 	}
@@ -315,39 +312,39 @@ public class ModuleAttribute extends Attribute {
 	 * @author Matt Coley
 	 */
 	public static class Exports implements CpAccessor {
-		private int index;
+		private CpPackage packageEntry;
 		private int flags;
-		private List<Integer> toIndices;
+		private List<CpModule> to;
 
 		/**
-		 * @param index
+		 * @param packageEntry
 		 * 		Constant pool index of a {@link CpPackage package}.
 		 * @param flags
 		 * 		Export flags,
 		 *        {@code ACC_SYNTHETIC} if it was not explicitly/implicitly declared in the module source code.
 		 *        {@code ACC_MANDATED} if it was implicitly declared in the module source code.
-		 * @param toIndices
-		 * 		Constant pool indices of {@link CpModule modules} the {@link #getIndex() package} exports to.
+		 * @param to
+		 * 		Constant pool indices of {@link CpModule modules} the {@link #getPackageEntry() package} exports to.
 		 */
-		public Exports(int index, int flags, List<Integer> toIndices) {
-			this.index = index;
+		public Exports(CpPackage packageEntry, int flags, List<CpModule> to) {
+			this.packageEntry = packageEntry;
 			this.flags = flags;
-			this.toIndices = toIndices;
+			this.to = to;
 		}
 
 		/**
 		 * @return Constant pool index of a {@link CpPackage package}.
 		 */
-		public int getIndex() {
-			return index;
+		public CpPackage getPackageEntry() {
+			return packageEntry;
 		}
 
 		/**
-		 * @param index
+		 * @param packageEntry
 		 * 		New package cp index.
 		 */
-		public void setIndex(int index) {
-			this.index = index;
+		public void setPackageEntry(CpPackage packageEntry) {
+			this.packageEntry = packageEntry;
 		}
 
 		/**
@@ -368,18 +365,18 @@ public class ModuleAttribute extends Attribute {
 		}
 
 		/**
-		 * @return Constant pool indices of {@link CpModule modules} the {@link #getIndex() package} exports to.
+		 * @return Constant pool indices of {@link CpModule modules} the {@link #getPackageEntry() package} exports to.
 		 */
-		public List<Integer> getToIndices() {
-			return toIndices;
+		public List<CpModule> getTo() {
+			return to;
 		}
 
 		/**
 		 * @param toIndex
 		 * 		New opened module indices.
 		 */
-		public void setToIndices(List<Integer> toIndex) {
-			this.toIndices = toIndex;
+		public void setTo(List<CpModule> toIndex) {
+			this.to = toIndex;
 		}
 
 		/**
@@ -387,14 +384,14 @@ public class ModuleAttribute extends Attribute {
 		 */
 		public int length() {
 			// 6 = index + flags + list.size()
-			return 6 + 2 * toIndices.size();
+			return 6 + 2 * to.size();
 		}
 
 		@Override
-		public Set<Integer> cpAccesses() {
-			Set<Integer> set = new TreeSet<>();
-			set.add(getIndex());
-			set.addAll(getToIndices());
+		public Set<CpEntry> cpAccesses() {
+			Set<CpEntry> set = new HashSet<>();
+			set.add(getPackageEntry());
+			set.addAll(getTo());
 			return set;
 		}
 	}
@@ -405,39 +402,39 @@ public class ModuleAttribute extends Attribute {
 	 * @author Matt Coley
 	 */
 	public static class Opens implements CpAccessor {
-		private int index;
+		private CpPackage packageEntry;
 		private int flags;
-		private List<Integer> toIndices;
+		private List<CpModule> to;
 
 		/**
-		 * @param index
+		 * @param packageEntry
 		 * 		Constant pool index of a {@link CpPackage package}.
 		 * @param flags
 		 * 		Open flags,
 		 *        {@code ACC_SYNTHETIC} if it was not explicitly/implicitly declared in the module source code.
 		 *        {@code ACC_MANDATED} if it was implicitly declared in the module source code.
-		 * @param toIndices
-		 * 		Constant pool indices of {@link CpModule modules} the {@link #getIndex()} is open to.
+		 * @param to
+		 * 		Constant pool indices of {@link CpModule modules} the {@link #getPackageEntry()} is open to.
 		 */
-		public Opens(int index, int flags, List<Integer> toIndices) {
-			this.index = index;
+		public Opens(CpPackage packageEntry, int flags, List<CpModule> to) {
+			this.packageEntry = packageEntry;
 			this.flags = flags;
-			this.toIndices = toIndices;
+			this.to = to;
 		}
 
 		/**
 		 * @return Constant pool index of a {@link CpPackage package}.
 		 */
-		public int getIndex() {
-			return index;
+		public CpPackage getPackageEntry() {
+			return packageEntry;
 		}
 
 		/**
-		 * @param index
+		 * @param packageEntry
 		 * 		New package cp index.
 		 */
-		public void setIndex(int index) {
-			this.index = index;
+		public void setPackageEntry(CpPackage packageEntry) {
+			this.packageEntry = packageEntry;
 		}
 
 		/**
@@ -458,18 +455,18 @@ public class ModuleAttribute extends Attribute {
 		}
 
 		/**
-		 * @return Constant pool indices of {@link CpModule modules} the {@link #getIndex() package} is open to.
+		 * @return Constant pool indices of {@link CpModule modules} the {@link #getPackageEntry() package} is open to.
 		 */
-		public List<Integer> getToIndices() {
-			return toIndices;
+		public List<CpModule> getTo() {
+			return to;
 		}
 
 		/**
 		 * @param toIndex
 		 * 		New opened module indices.
 		 */
-		public void setToIndices(List<Integer> toIndex) {
-			this.toIndices = toIndex;
+		public void setTo(List<CpModule> toIndex) {
+			this.to = toIndex;
 		}
 
 		/**
@@ -477,14 +474,14 @@ public class ModuleAttribute extends Attribute {
 		 */
 		public int length() {
 			// 6 = index + flags + list.size()
-			return 6 + 2 * toIndices.size();
+			return 6 + 2 * to.size();
 		}
 
 		@Override
-		public Set<Integer> cpAccesses() {
-			Set<Integer> set = new TreeSet<>();
-			set.add(getIndex());
-			set.addAll(getToIndices());
+		public Set<CpEntry> cpAccesses() {
+			Set<CpEntry> set = new HashSet<>();
+			set.add(getPackageEntry());
+			set.addAll(getTo());
 			return set;
 		}
 	}
@@ -495,50 +492,50 @@ public class ModuleAttribute extends Attribute {
 	 * @author Matt Coley
 	 */
 	public static class Provides implements CpAccessor {
-		private int index;
-		private List<Integer> withIndex;
+		private CpClass module;
+		private List<CpClass> with;
 
 		/**
-		 * @param index
+		 * @param module
 		 * 		Constant pool index of {@link CpClass class} of a service interface.
-		 * @param withIndex
+		 * @param with
 		 * 		Constant pool indices of {@link CpClass classes} that are implementations of
-		 *        {@link #getIndex() the service interface}.
+		 *        {@link #getModule() the service interface}.
 		 */
-		public Provides(int index, List<Integer> withIndex) {
-			this.index = index;
-			this.withIndex = withIndex;
+		public Provides(CpClass module, List<CpClass> with) {
+			this.module = module;
+			this.with = with;
 		}
 
 		/**
 		 * @return Constant pool index of {@link CpClass class} of a service interface.
 		 */
-		public int getIndex() {
-			return index;
+		public CpClass getModule() {
+			return module;
 		}
 
 		/**
-		 * @param index
+		 * @param module
 		 * 		New service interface index.
 		 */
-		public void setIndex(int index) {
-			this.index = index;
+		public void setModule(CpClass module) {
+			this.module = module;
 		}
 
 		/**
 		 * @return Constant pool indices of {@link CpClass classes} that are implementations of
-		 * {@link #getIndex() the service interface}.
+		 * {@link #getModule() the service interface}.
 		 */
-		public List<Integer> getWithIndices() {
-			return withIndex;
+		public List<CpClass> getWith() {
+			return with;
 		}
 
 		/**
-		 * @param withIndex
+		 * @param with
 		 * 		New implementation indices.
 		 */
-		public void setWithIndex(List<Integer> withIndex) {
-			this.withIndex = withIndex;
+		public void setWith(List<CpClass> with) {
+			this.with = with;
 		}
 
 		/**
@@ -546,14 +543,14 @@ public class ModuleAttribute extends Attribute {
 		 */
 		public int length() {
 			// 4 = index + list.size()
-			return 4 + 2 * withIndex.size();
+			return 4 + 2 * with.size();
 		}
 
 		@Override
-		public Set<Integer> cpAccesses() {
-			Set<Integer> set = new TreeSet<>();
-			set.add(getIndex());
-			set.addAll(getWithIndices());
+		public Set<CpEntry> cpAccesses() {
+			Set<CpEntry> set = new HashSet<>();
+			set.add(getModule());
+			set.addAll(getWith());
 			return set;
 		}
 	}

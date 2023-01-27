@@ -2,11 +2,11 @@ package me.coley.cafedude.classfile.attribute;
 
 import me.coley.cafedude.classfile.StackMapTableConstants;
 import me.coley.cafedude.classfile.behavior.CpAccessor;
+import me.coley.cafedude.classfile.constant.CpClass;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Used during the process of verification by type checking.
@@ -30,13 +30,13 @@ public class StackMapTableAttribute
 	private List<StackMapFrame> frames;
 
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		Name index in constant pool.
 	 * @param frames
 	 * 		Stack map frames of a method.
 	 */
-	public StackMapTableAttribute(int nameIndex, List<StackMapFrame> frames) {
-		super(nameIndex);
+	public StackMapTableAttribute(CpUtf8 name, List<StackMapFrame> frames) {
+		super(name);
 		this.frames = frames;
 	}
 
@@ -56,8 +56,8 @@ public class StackMapTableAttribute
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = super.cpAccesses();
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = super.cpAccesses();
 		for (StackMapFrame frame : frames)
 			set.addAll(frame.cpAccesses());
 		return set;
@@ -96,7 +96,7 @@ public class StackMapTableAttribute
 		}
 
 		@Override
-		public Set<Integer> cpAccesses() {
+		public Set<CpEntry> cpAccesses() {
 			return Collections.emptySet();
 		}
 	}
@@ -182,19 +182,19 @@ public class StackMapTableAttribute
 		/**
 		 * The index of the ClassConstant denoting the type of this variable.
 		 */
-		public int classIndex;
+		public CpClass classEntry;
 
 		/**
 		 * @param classIndex
 		 * 		Index of the ClassConstant representing type of this variable.
 		 */
-		public ObjectVariableInfo(int classIndex) {
-			this.classIndex = classIndex;
+		public ObjectVariableInfo(CpClass classEntry) {
+			this.classEntry = classEntry;
 		}
 
 		@Override
-		public Set<Integer> cpAccesses() {
-			return Collections.singleton(classIndex);
+		public Set<CpEntry> cpAccesses() {
+			return Collections.singleton(classEntry);
 		}
 
 		/**
@@ -311,7 +311,7 @@ public class StackMapTableAttribute
 		}
 
 		@Override
-		public Set<Integer> cpAccesses() {
+		public Set<CpEntry> cpAccesses() {
 			return Collections.emptySet();
 		}
 	}
@@ -363,7 +363,7 @@ public class StackMapTableAttribute
 		}
 
 		@Override
-		public Set<Integer> cpAccesses() {
+		public Set<CpEntry> cpAccesses() {
 			return stack.cpAccesses();
 		}
 
@@ -406,7 +406,7 @@ public class StackMapTableAttribute
 		}
 
 		@Override
-		public Set<Integer> cpAccesses() {
+		public Set<CpEntry> cpAccesses() {
 			return stack.cpAccesses();
 		}
 
@@ -526,8 +526,8 @@ public class StackMapTableAttribute
 		}
 
 		@Override
-		public Set<Integer> cpAccesses() {
-			Set<Integer> set = new TreeSet<>();
+		public Set<CpEntry> cpAccesses() {
+			Set<CpEntry> set = new HashSet<>();
 			for (TypeInfo info : additionalLocals)
 				set.addAll(info.cpAccesses());
 			return set;
@@ -584,8 +584,8 @@ public class StackMapTableAttribute
 		}
 
 		@Override
-		public Set<Integer> cpAccesses() {
-			Set<Integer> set = new TreeSet<>();
+		public Set<CpEntry> cpAccesses() {
+			Set<CpEntry> set = new HashSet<>();
 			for (TypeInfo info : locals)
 				set.addAll(info.cpAccesses());
 			for (TypeInfo info : stack)

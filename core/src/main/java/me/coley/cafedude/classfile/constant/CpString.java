@@ -5,30 +5,30 @@ package me.coley.cafedude.classfile.constant;
  *
  * @author Matt Coley
  */
-public class CpString extends ConstPoolEntry {
-	private int index;
+public class CpString extends CpEntry {
+	private CpUtf8 string;
 
 	/**
-	 * @param index
+	 * @param string
 	 * 		Index of UTF string in pool.
 	 */
-	public CpString(int index) {
+	public CpString(CpUtf8 string) {
 		super(STRING);
-		this.index = index;
+		this.string = string;
 	}
 
 	/**
 	 * @return Index of UTF string in pool.
 	 */
-	public int getIndex() {
-		return index;
+	public CpUtf8 getString() {
+		return string;
 	}
 
 	/**
-	 * @param index
+	 * @param string
 	 * 		New index of UTF string in pool.
 	 */
-	public void setIndex(int index) {
-		this.index = index;
+	public void setString(CpUtf8 string) {
+		this.string = string;
 	}
 }

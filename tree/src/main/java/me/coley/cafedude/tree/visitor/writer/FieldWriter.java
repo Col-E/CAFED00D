@@ -4,6 +4,7 @@ import me.coley.cafedude.classfile.AttributeConstants;
 import me.coley.cafedude.classfile.Field;
 import me.coley.cafedude.classfile.attribute.Attribute;
 import me.coley.cafedude.classfile.attribute.ConstantValueAttribute;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.tree.Constant;
 import me.coley.cafedude.tree.visitor.FieldVisitor;
 
@@ -16,9 +17,9 @@ public class FieldWriter extends DeclarationWriter implements FieldVisitor {
 	private final Field field;
 	private final Consumer<Field> callback;
 
-	public FieldWriter(Symbols symbols, int access, int nameIndex, int descriptorIndex, Consumer<Field> callback) {
+	public FieldWriter(Symbols symbols, int access, CpUtf8 name, CpUtf8 descriptor, Consumer<Field> callback) {
 		super(symbols);
-		this.field = new Field(attributes, access, nameIndex, descriptorIndex);
+		this.field = new Field(attributes, access, name, descriptor);
 		this.callback = callback;
 	}
 

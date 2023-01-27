@@ -1,5 +1,8 @@
 package me.coley.cafedude.classfile.annotation;
 
+import me.coley.cafedude.classfile.constant.CpEntry;
+
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -49,8 +52,8 @@ public class ArrayElementValue extends ElementValue {
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = new TreeSet<>();
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = new HashSet<>();
 		for (ElementValue value : getArray())
 			set.addAll(value.cpAccesses());
 		return set;

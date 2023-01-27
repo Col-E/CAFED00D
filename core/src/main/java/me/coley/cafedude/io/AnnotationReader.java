@@ -29,6 +29,8 @@ import me.coley.cafedude.classfile.annotation.Utf8ElementValue;
 import me.coley.cafedude.classfile.attribute.AnnotationDefaultAttribute;
 import me.coley.cafedude.classfile.attribute.AnnotationsAttribute;
 import me.coley.cafedude.classfile.attribute.ParameterAnnotationsAttribute;
+import me.coley.cafedude.classfile.constant.CpClass;
+import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +56,7 @@ public class AnnotationReader {
 	private final ConstPool cp;
 	private final DataInputStream is;
 	private final AttributeContext context;
-	private final int nameIndex;
+	private final CpUtf8 name;
 	private final int maxCpIndex;
 	private final boolean visible;
 
@@ -69,7 +71,7 @@ public class AnnotationReader {
 	 * 		Stream to read from.
 	 * @param length
 	 * 		Expected length of data to read.
-	 * @param nameIndex
+	 * @param name
 	 * 		Attribute name index.
 	 * @param context
 	 * 		Location of the annotation.
@@ -81,14 +83,14 @@ public class AnnotationReader {
 	 * 		possible due to out-of-bounds problems. This is an indicator of a malformed class.
 	 */
 	public AnnotationReader(ClassFileReader reader, ConstPool cp, DataInputStream is, int length,
-							int nameIndex, AttributeContext context, boolean visible)
+							CpUtf8 name, AttributeContext context, boolean visible)
 			throws IOException {
 		this.reader = reader;
 		this.cp = cp;
 		byte[] data = new byte[length];
 		is.readFully(data);
 		this.is = new DataInputStream(new ByteArrayInputStream(data));
-		this.nameIndex = nameIndex;
+		this.name = name;
 		this.context = context;
 		this.maxCpIndex = cp.size();
 		this.visible = visible;
@@ -101,7 +103,7 @@ public class AnnotationReader {
 	 */
 	public AnnotationDefaultAttribute readAnnotationDefault() {
 		try {
-			return new AnnotationDefaultAttribute(nameIndex, readElementValue());
+			return new AnnotationDefaultAttribute(name, readElementValue());
 		} catch (Throwable t) {
 			logger.debug("Illegally formatted AnnotationDefault", t);
 			return null;
@@ -132,7 +134,7 @@ public class AnnotationReader {
 				Annotation annotation = readAnnotation();
 				if (reader.doDropDupeAnnotations()) {
 					// Only add if the type hasn't been used before
-					String type = cp.getUtf(annotation.getTypeIndex());
+					String type = annotation.getType().getText();
 					if (!usedAnnotationTypes.contains(type)) {
 						annotations.add(annotation);
 						usedAnnotationTypes.add(type);
@@ -143,7 +145,7 @@ public class AnnotationReader {
 				}
 			}
 			// Didn't throw exception, its valid
-			return new AnnotationsAttribute(nameIndex, annotations, visible);
+			return new AnnotationsAttribute(name, annotations, visible);
 		} catch (Throwable t) {
 			logger.debug("Illegally formatted Annotations", t);
 			return null;
@@ -173,7 +175,7 @@ public class AnnotationReader {
 				parameterAnnotations.put(p, annotations);
 			}
 			// Didn't crash, its valid
-			return new ParameterAnnotationsAttribute(nameIndex, parameterAnnotations, visible);
+			return new ParameterAnnotationsAttribute(name, parameterAnnotations, visible);
 		} catch (Throwable t) {
 			logger.debug("Illegally formatted ParameterAnnotations", t);
 			return null;
@@ -198,7 +200,7 @@ public class AnnotationReader {
 			for (int i = 0; i < numAnnotations; i++)
 				annotations.add(readTypeAnnotation());
 			// Didn't throw exception, its valid
-			return new AnnotationsAttribute(nameIndex, annotations, visible);
+			return new AnnotationsAttribute(name, annotations, visible);
 		} catch (Throwable t) {
 			logger.debug("Illegally formatted TypeAnnotations", t);
 			return null;
@@ -219,12 +221,9 @@ public class AnnotationReader {
 					typeIndex, maxCpIndex);
 			throw new IllegalArgumentException("Annotation type_index out of CP bounds!");
 		}
-		if (!cp.isIndexOfType(typeIndex, CpUtf8.class)) {
-			logger.warn("Illegally formatted Annotation item, type_index={} != CP_UTF8", typeIndex);
-			throw new IllegalArgumentException("Annotation type_index does not point to CP_UTF8!");
-		}
-		Map<Integer, ElementValue> values = readElementPairs();
-		return new Annotation(typeIndex, values);
+		CpUtf8 type = (CpUtf8) cp.get(typeIndex);
+		Map<CpUtf8, ElementValue> values = readElementPairs();
+		return new Annotation(type, values);
 	}
 
 	/**
@@ -308,9 +307,9 @@ public class AnnotationReader {
 		// Parse type path
 		TypePath typePath = readTypePath();
 		// Parse the stuff that populates a normal annotation
-		int typeIndex = is.readUnsignedShort();
-		Map<Integer, ElementValue> values = readElementPairs();
-		return new TypeAnnotation(typeIndex, values, info, typePath);
+		CpUtf8 type = (CpUtf8) cp.get(is.readUnsignedShort());
+		Map<CpUtf8, ElementValue> values = readElementPairs();
+		return new TypeAnnotation(type, values, info, typePath);
 	}
 
 	/**
@@ -331,20 +330,20 @@ public class AnnotationReader {
 	}
 
 	/**
-	 * @return The annotation field pairs <i>({@code NameIndex} --> {@code Value})</i>.
+	 * @return The annotation field pairs <i>({@code name} --> {@code Value})</i>.
 	 *
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
-	private Map<Integer, ElementValue> readElementPairs() throws IOException {
+	private Map<CpUtf8, ElementValue> readElementPairs() throws IOException {
 		int numPairs = is.readUnsignedShort();
-		Map<Integer, ElementValue> values = new LinkedHashMap<>();
+		Map<CpUtf8, ElementValue> values = new LinkedHashMap<>();
 		while (numPairs > 0) {
-			int nameIndex = is.readUnsignedShort();
+			CpUtf8 name = (CpUtf8) cp.get(is.readUnsignedShort());
 			ElementValue value = readElementValue();
-			if (values.containsKey(nameIndex))
-				throw new IllegalArgumentException("Element pairs already has field by name index: " + nameIndex);
-			values.put(nameIndex, value);
+			if (values.containsKey(name))
+				throw new IllegalArgumentException("Element pairs already has field by name index: " + name);
+			values.put(name, value);
 			numPairs--;
 		}
 		return values;
@@ -368,17 +367,22 @@ public class AnnotationReader {
 			case 'S': // short
 			case 'Z': // boolean
 				int index = is.readUnsignedShort();
-				return new PrimitiveElementValue(tag, index);
+				CpEntry entry = cp.get(index);
+				return new PrimitiveElementValue(tag, entry);
 			case 's': // String
 				int utfIndex = is.readUnsignedShort();
-				return new Utf8ElementValue(tag, utfIndex);
+				CpUtf8 utf = (CpUtf8) cp.get(utfIndex);
+				return new Utf8ElementValue(tag, utf);
 			case 'e': // Enum
-				int typeNameIndex = is.readUnsignedShort();
-				int constNameIndex = is.readUnsignedShort();
-				return new EnumElementValue(tag, typeNameIndex, constNameIndex);
+				int typename = is.readUnsignedShort();
+				int constname = is.readUnsignedShort();
+				CpUtf8 type = (CpUtf8) cp.get(typename);
+				CpUtf8 constant = (CpUtf8) cp.get(constname);
+				return new EnumElementValue(tag, type, constant);
 			case 'c': // Class
 				int classInfoIndex = is.readUnsignedShort();
-				return new ClassElementValue(tag, classInfoIndex);
+				CpUtf8 classInfo = (CpUtf8) cp.get(classInfoIndex);
+				return new ClassElementValue(tag, classInfo);
 			case '@': // Annotation
 				Annotation nestedAnnotation = readAnnotation();
 				return new AnnotationElementValue(tag, nestedAnnotation);

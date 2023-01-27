@@ -1,7 +1,11 @@
 package me.coley.cafedude.classfile.attribute;
 
 import me.coley.cafedude.classfile.behavior.CpAccessor;
+import me.coley.cafedude.classfile.constant.CpClass;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -15,13 +19,13 @@ public class InnerClassesAttribute extends Attribute {
 	private List<InnerClass> innerClasses;
 
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		Name index in constant pool.
 	 * @param classes
 	 * 		All inner classes.
 	 */
-	public InnerClassesAttribute(int nameIndex, List<InnerClass> classes) {
-		super(nameIndex);
+	public InnerClassesAttribute(CpUtf8 name, List<InnerClass> classes) {
+		super(name);
 		this.innerClasses = classes;
 	}
 
@@ -41,8 +45,8 @@ public class InnerClassesAttribute extends Attribute {
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = super.cpAccesses();
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = super.cpAccesses();
 		for (InnerClass inner : getInnerClasses())
 			set.addAll(inner.cpAccesses());
 		return set;
@@ -59,78 +63,78 @@ public class InnerClassesAttribute extends Attribute {
 	 * @author JCWasmx86
 	 */
 	public static class InnerClass implements CpAccessor {
-		private int innerClassInfoIndex;
-		private int outerClassInfoIndex;
-		private int innerNameIndex;
+		private CpClass innerClassInfo;
+		private CpClass outerClassInfo;
+		private CpUtf8 innerName;
 		private int innerClassAccessFlags;
 
 		/**
-		 * @param innerClassInfoIndex
+		 * @param innerClassInfo
 		 * 		Index into the constant pool describing this inner class.
-		 * @param outerClassInfoIndex
+		 * @param outerClassInfo
 		 * 		Index into the constant pool describing the outer class. 0 if this
 		 * 		is a local or anonymous class.
-		 * @param innerNameIndex
+		 * @param innerName
 		 * 		Index into the constant pool. At this index, the name of this inner class
 		 * 		will be specified. 0 if this class is anonymous.
 		 * @param innerClassAccessFlags
 		 * 		Access flags of the inner class.
 		 */
-		public InnerClass(int innerClassInfoIndex, int outerClassInfoIndex, int innerNameIndex,
+		public InnerClass(CpClass innerClassInfo, CpClass outerClassInfo, CpUtf8 innerName,
 						  int innerClassAccessFlags) {
-			this.innerClassInfoIndex = innerClassInfoIndex;
-			this.outerClassInfoIndex = outerClassInfoIndex;
-			this.innerNameIndex = innerNameIndex;
+			this.innerClassInfo = innerClassInfo;
+			this.outerClassInfo = outerClassInfo;
+			this.innerName = innerName;
 			this.innerClassAccessFlags = innerClassAccessFlags;
 		}
 
 		/**
 		 * @return Index into the constant pool describing this inner class.
 		 */
-		public int getInnerClassInfoIndex() {
-			return innerClassInfoIndex;
+		public CpClass getInnerClassInfo() {
+			return innerClassInfo;
 		}
 
 		/**
-		 * @param innerClassInfoIndex
+		 * @param innerClassInfo
 		 * 		New index into the constant pool describing this inner class.
 		 */
-		public void setInnerClassInfoIndex(int innerClassInfoIndex) {
-			this.innerClassInfoIndex = innerClassInfoIndex;
+		public void setInnerClassInfo(CpClass innerClassInfo) {
+			this.innerClassInfo = innerClassInfo;
 		}
 
 		/**
 		 * @return Index into the constant pool describing the outer class. 0 if this
 		 * is a local or anonymous class.
 		 */
-		public int getOuterClassInfoIndex() {
-			return outerClassInfoIndex;
+		public CpClass getOuterClassInfo() {
+			return outerClassInfo;
 		}
 
 		/**
-		 * @param outerClassInfoIndex
+		 * @param outerClassInfo
 		 * 		New index into the constant pool describing the outer class. 0 if this
 		 * 		is a local or anonymous class.
 		 */
-		public void setOuterClassInfoIndex(int outerClassInfoIndex) {
-			this.outerClassInfoIndex = outerClassInfoIndex;
+		public void setOuterClassInfo(CpClass outerClassInfo) {
+			this.outerClassInfo = outerClassInfo;
 		}
 
 		/**
 		 * @return Index into the constant pool. At this index, the name of this inner class
 		 * will be specified. 0 if this class is anonymous.
 		 */
-		public int getInnerNameIndex() {
-			return innerNameIndex;
+		public CpUtf8 getInnerName() {
+			return innerName;
 		}
 
 		/**
-		 * @param innerNameIndex
+		 * @param innerName
 		 * 		New index into the constant pool. At this index, the name of this inner class
 		 * 		will be specified. 0 if this class is anonymous.
 		 */
-		public void setInnerNameIndex(int innerNameIndex) {
-			this.innerNameIndex = innerNameIndex;
+		public void setInnerName(CpUtf8 innerName) {
+			this.innerName = innerName;
 		}
 
 		/**
@@ -149,11 +153,11 @@ public class InnerClassesAttribute extends Attribute {
 		}
 
 		@Override
-		public Set<Integer> cpAccesses() {
-			Set<Integer> set = new TreeSet<>();
-			set.add(getOuterClassInfoIndex());
-			set.add(getInnerClassInfoIndex());
-			set.add(getInnerNameIndex());
+		public Set<CpEntry> cpAccesses() {
+			Set<CpEntry> set = new HashSet<>();
+			set.add(getOuterClassInfo());
+			set.add(getInnerClassInfo());
+			set.add(getInnerName());
 			return set;
 		}
 	}

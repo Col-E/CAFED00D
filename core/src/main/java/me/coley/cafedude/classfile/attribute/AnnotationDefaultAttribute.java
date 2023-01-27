@@ -1,6 +1,8 @@
 package me.coley.cafedude.classfile.attribute;
 
 import me.coley.cafedude.classfile.annotation.ElementValue;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 
 import java.util.Set;
 
@@ -13,14 +15,14 @@ public class AnnotationDefaultAttribute extends Attribute {
 	private final ElementValue elementValue;
 
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		Name index in constant pool.
 	 * @param elementValue
 	 * 		Value of the annotation type element represented by the {@code method_info} structure
 	 * 		enclosing this attribute.
 	 */
-	public AnnotationDefaultAttribute(int nameIndex, ElementValue elementValue) {
-		super(nameIndex);
+	public AnnotationDefaultAttribute(CpUtf8 name, ElementValue elementValue) {
+		super(name);
 		this.elementValue = elementValue;
 	}
 
@@ -33,8 +35,8 @@ public class AnnotationDefaultAttribute extends Attribute {
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = super.cpAccesses();
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = super.cpAccesses();
 		set.addAll(elementValue.cpAccesses());
 		return set;
 	}

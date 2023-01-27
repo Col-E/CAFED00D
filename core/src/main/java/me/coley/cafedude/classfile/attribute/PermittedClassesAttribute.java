@@ -1,5 +1,9 @@
 package me.coley.cafedude.classfile.attribute;
 
+import me.coley.cafedude.classfile.constant.CpClass;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
+
 import java.util.List;
 import java.util.Set;
 
@@ -9,23 +13,23 @@ import java.util.Set;
  * @author Matt Coley
  */
 public class PermittedClassesAttribute extends Attribute {
-	private List<Integer> classes;
+	private List<CpClass> classes;
 
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		Name index in constant pool.
 	 * @param classes
 	 * 		Indices of allowed {@code CP_CLASS} values.
 	 */
-	public PermittedClassesAttribute(int nameIndex, List<Integer> classes) {
-		super(nameIndex);
+	public PermittedClassesAttribute(CpUtf8 name, List<CpClass> classes) {
+		super(name);
 		this.classes = classes;
 	}
 
 	/**
 	 * @return Indices of allowed {@code CP_CLASS} values.
 	 */
-	public List<Integer> getClasses() {
+	public List<CpClass> getClasses() {
 		return classes;
 	}
 
@@ -33,13 +37,13 @@ public class PermittedClassesAttribute extends Attribute {
 	 * @param classes
 	 * 		New indices of allowed {@code CP_CLASS} values.
 	 */
-	public void setClasses(List<Integer> classes) {
+	public void setClasses(List<CpClass> classes) {
 		this.classes = classes;
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = super.cpAccesses();
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = super.cpAccesses();
 		set.addAll(getClasses());
 		return set;
 	}

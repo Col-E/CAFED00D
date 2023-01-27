@@ -13,7 +13,7 @@ public class CpFieldRef extends ConstRef {
 	 * @param nameTypeIndex
 	 * 		Index of field's {@link CpNameType name and descriptor} in pool.
 	 */
-	public CpFieldRef(int classIndex, int nameTypeIndex) {
-		super(FIELD_REF, classIndex, nameTypeIndex);
+	public CpFieldRef(CpClass classRef, CpNameType nameType) {
+		super(FIELD_REF, classRef, nameType);
 	}
 }

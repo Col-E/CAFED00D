@@ -2,9 +2,12 @@ package me.coley.cafedude.classfile.attribute;
 
 import me.coley.cafedude.classfile.behavior.AttributeHolder;
 import me.coley.cafedude.classfile.behavior.CpAccessor;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.io.AttributeContext;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -18,19 +21,19 @@ public class RecordAttribute extends Attribute {
 	private List<RecordComponent> components;
 
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		Name index in constant pool.
 	 * @param components
 	 * 		Record components <i>(fields)</i>.
 	 */
-	public RecordAttribute(int nameIndex, List<RecordComponent> components) {
-		super(nameIndex);
+	public RecordAttribute(CpUtf8 name, List<RecordComponent> components) {
+		super(name);
 		this.components = components;
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = super.cpAccesses();
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = super.cpAccesses();
 		for (RecordComponent component : getComponents())
 			set.addAll(component.cpAccesses());
 		return set;
@@ -62,52 +65,52 @@ public class RecordAttribute extends Attribute {
 	 * Component entry.
 	 */
 	public static class RecordComponent implements CpAccessor, AttributeHolder {
-		private int nameIndex;
-		private int descIndex;
+		private CpUtf8 name;
+		private CpUtf8 desc;
 		private List<Attribute> attributes;
 
 		/**
-		 * @param nameIndex
-		 * 		Index of name of component.
-		 * @param descIndex
-		 * 		Index of field descriptor of component.
+		 * @param name
+		 * 		Entry of name of component.
+		 * @param desc
+		 * 		Entry of field descriptor of component.
 		 * @param attributes
 		 * 		Attributes of the record field.
 		 */
-		public RecordComponent(int nameIndex, int descIndex, List<Attribute> attributes) {
-			this.nameIndex = nameIndex;
-			this.descIndex = descIndex;
+		public RecordComponent(CpUtf8 name, CpUtf8 desc, List<Attribute> attributes) {
+			this.name = name;
+			this.desc = desc;
 			this.attributes = attributes;
 		}
 
 		/**
 		 * @return Index of name of component.
 		 */
-		public int getNameIndex() {
-			return nameIndex;
+		public CpUtf8 getName() {
+			return name;
 		}
 
 		/**
-		 * @param nameIndex
+		 * @param name
 		 * 		New index of name of component.
 		 */
-		public void setNameIndex(int nameIndex) {
-			this.nameIndex = nameIndex;
+		public void setName(CpUtf8 name) {
+			this.name = name;
 		}
 
 		/**
 		 * @return Index of field descriptor of component.
 		 */
-		public int getDescIndex() {
-			return descIndex;
+		public CpUtf8 getDesc() {
+			return desc;
 		}
 
 		/**
 		 * @param descIndex
 		 * 		New index of field descriptor of component.
 		 */
-		public void setDescIndex(int descIndex) {
-			this.descIndex = descIndex;
+		public void setDesc(CpUtf8 desc) {
+			this.desc = desc;
 		}
 
 		/**
@@ -136,10 +139,10 @@ public class RecordAttribute extends Attribute {
 		}
 
 		@Override
-		public Set<Integer> cpAccesses() {
-			Set<Integer> set = new TreeSet<>();
-			set.add(getNameIndex());
-			set.add(getDescIndex());
+		public Set<CpEntry> cpAccesses() {
+			Set<CpEntry> set = new HashSet<>();
+			set.add(name);
+			set.add(desc);
 			return set;
 		}
 

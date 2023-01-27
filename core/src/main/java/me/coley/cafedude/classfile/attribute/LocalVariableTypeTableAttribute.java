@@ -1,7 +1,10 @@
 package me.coley.cafedude.classfile.attribute;
 
 import me.coley.cafedude.classfile.behavior.CpAccessor;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -15,19 +18,19 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 	private List<VarTypeEntry> entries;
 
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		Name index in constant pool.
 	 * @param entries
 	 * 		Variable type table entries.
 	 */
-	public LocalVariableTypeTableAttribute(int nameIndex, List<VarTypeEntry> entries) {
-		super(nameIndex);
+	public LocalVariableTypeTableAttribute(CpUtf8 name, List<VarTypeEntry> entries) {
+		super(name);
 		this.entries = entries;
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = super.cpAccesses();
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = super.cpAccesses();
 		for (VarTypeEntry entry : getEntries())
 			set.addAll(entry.cpAccesses());
 		return set;
@@ -67,8 +70,8 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 	public static class VarTypeEntry implements CpAccessor {
 		private final int startPc;
 		private final int length;
-		private final int nameIndex;
-		private final int signatureIndex;
+		private final CpUtf8 name;
+		private final CpUtf8 signature;
 		private final int index;
 
 		/**
@@ -76,18 +79,18 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 		 * 		Bytecode offset var starts at.
 		 * @param length
 		 * 		Bytecode length var spans across.
-		 * @param nameIndex
+		 * @param name
 		 * 		CP UTF8 name index.
 		 * @param signatureIndex
 		 * 		CP UTF8 signature index.
 		 * @param index
 		 * 		Variable index.
 		 */
-		public VarTypeEntry(int startPc, int length, int nameIndex, int signatureIndex, int index) {
+		public VarTypeEntry(int startPc, int length, CpUtf8 name, CpUtf8 signature, int index) {
 			this.startPc = startPc;
 			this.length = length;
-			this.nameIndex = nameIndex;
-			this.signatureIndex = signatureIndex;
+			this.name = name;
+			this.signature = signature;
 			this.index = index;
 		}
 
@@ -108,15 +111,15 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 		/**
 		 * @return CP UTF8 name index.
 		 */
-		public int getNameIndex() {
-			return nameIndex;
+		public CpUtf8 getName() {
+			return name;
 		}
 
 		/**
 		 * @return CP UTF8 signature index.
 		 */
-		public int getSignatureIndex() {
-			return signatureIndex;
+		public CpUtf8 getSignature() {
+			return signature;
 		}
 
 		/**
@@ -127,10 +130,10 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 		}
 
 		@Override
-		public Set<Integer> cpAccesses() {
-			Set<Integer> set = new TreeSet<>();
-			set.add(getNameIndex());
-			set.add(getSignatureIndex());
+		public Set<CpEntry> cpAccesses() {
+			Set<CpEntry> set = new HashSet<>();
+			set.add(name);
+			set.add(signature);
 			return set;
 		}
 	}

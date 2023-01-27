@@ -1,6 +1,7 @@
 package me.coley.cafedude.io;
 
 import me.coley.cafedude.classfile.ConstPool;
+import me.coley.cafedude.classfile.InvalidCpIndexException;
 import me.coley.cafedude.classfile.attribute.*;
 import me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.BootstrapMethod;
 import me.coley.cafedude.classfile.attribute.CodeAttribute.ExceptionTableEntry;
@@ -15,7 +16,7 @@ import me.coley.cafedude.classfile.attribute.ModuleAttribute.Requires;
 import me.coley.cafedude.classfile.attribute.RecordAttribute.RecordComponent;
 import me.coley.cafedude.classfile.attribute.StackMapTableAttribute.StackMapFrame;
 import me.coley.cafedude.classfile.attribute.StackMapTableAttribute.TypeInfo;
-import me.coley.cafedude.classfile.constant.CpUtf8;
+import me.coley.cafedude.classfile.constant.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,9 +41,10 @@ public class AttributeReader {
 	private final IndexableByteStream is;
 	private final ClassFileReader reader;
 	private final ClassBuilder builder;
+	private final ConstPool cp;
 	// Attribute info
 	private final int expectedContentLength;
-	private final int nameIndex;
+	private CpUtf8 name;
 
 	/**
 	 * @param reader
@@ -58,8 +60,9 @@ public class AttributeReader {
 	public AttributeReader(ClassFileReader reader, ClassBuilder builder, DataInputStream is) throws IOException {
 		this.reader = reader;
 		this.builder = builder;
+		this.cp = builder.getPool();
 		// Extract name/lengtjh
-		this.nameIndex = is.readUnsignedShort();
+		this.name = (CpUtf8) cp.get(is.readUnsignedShort());
 		this.expectedContentLength = is.readInt();
 		// Create local stream
 		byte[] subsection = new byte[expectedContentLength];
@@ -83,18 +86,25 @@ public class AttributeReader {
 				return null;
 			int read = is.getIndex();
 			if (read != expectedContentLength) {
-				String name = ((CpUtf8) builder.getPool().get(nameIndex)).getText();
 				logger.debug("Invalid '{}' on {}, claimed to be {} bytes, but was {}",
-						name, context.name(), expectedContentLength, read);
+						name.getText(), context.name(), expectedContentLength, read);
 				return null;
 			}
 			return attribute;
+		} catch (InvalidCpIndexException cpIndexException) {
+			if(name != null) {
+				logger.debug("Invalid '{}' on {}, invalid constant pool index: {}", name.getText(), context.name(),
+						cpIndexException.getIndex());
+			} else {
+				logger.debug("Invalid attribute on {}, invalid attribute name index", context.name());
+			}
+
+			return null;
 		} catch (Exception ex) {
 			if (reader.doDropEofAttributes()) {
-				if (nameIndex < builder.getPool().size()) {
-					String name = ((CpUtf8) builder.getPool().get(nameIndex)).getText();
+				if (name != null) {
 					logger.debug("Invalid '{}' on {}, EOF thrown when parsing attribute, expected {} bytes",
-							name, context.name(), expectedContentLength);
+							name.getText(), context.name(), expectedContentLength);
 				} else {
 					logger.debug("Invalid attribute on {}, invalid attribute name index", context.name());
 				}
@@ -107,23 +117,22 @@ public class AttributeReader {
 
 	private Attribute read(AttributeContext context) throws IOException {
 		ConstPool pool = builder.getPool();
-		String name = pool.getUtf(nameIndex);
 		// Check for illegally inserted attributes from future versions
 		if (reader.doDropForwardVersioned()) {
-			int introducedAt = AttributeVersions.getIntroducedVersion(name);
+			int introducedAt = AttributeVersions.getIntroducedVersion(name.getText());
 			if (introducedAt > builder.getVersionMajor()) {
 				logger.debug("Found '{}' on {} in class version {}, min supported is {}",
-						name, context.name(), builder.getVersionMajor(), introducedAt);
+						name.getText(), context.name(), builder.getVersionMajor(), introducedAt);
 				return null;
 			}
 		}
-		switch (name) {
+		switch (name.getText()) {
 			case CODE:
 				return readCode();
 			case CONSTANT_VALUE:
 				return readConstantValue();
 			case DEPRECATED:
-				return new DeprecatedAttribute(nameIndex);
+				return new DeprecatedAttribute(name);
 			case ENCLOSING_METHOD:
 				return readEnclosingMethod();
 			case EXCEPTIONS:
@@ -196,7 +205,7 @@ public class AttributeReader {
 		}
 		// Default handling, skip remaining bytes
 		is.skipBytes(expectedContentLength);
-		return new DefaultAttribute(nameIndex, is.getBuffer());
+		return new DefaultAttribute(name, is.getBuffer());
 	}
 
 	/**
@@ -209,8 +218,8 @@ public class AttributeReader {
 		List<RecordComponent> components = new ArrayList<>();
 		int count = is.readUnsignedShort();
 		for (int i = 0; i < count; i++) {
-			int nameIndex = is.readUnsignedShort();
-			int descIndex = is.readUnsignedShort();
+			CpUtf8 name = (CpUtf8) cp.get(is.readUnsignedShort());
+			CpUtf8 descriptor = (CpUtf8) cp.get(is.readUnsignedShort());
 			int numAttributes = is.readUnsignedShort();
 			List<Attribute> attributes = new ArrayList<>();
 			for (int x = 0; x < numAttributes; x++) {
@@ -218,9 +227,9 @@ public class AttributeReader {
 				if (attr != null)
 					attributes.add(attr);
 			}
-			components.add(new RecordComponent(nameIndex, descIndex, attributes));
+			components.add(new RecordComponent(name, descriptor, attributes));
 		}
-		return new RecordAttribute(nameIndex, components);
+		return new RecordAttribute(name, components);
 	}
 
 	/**
@@ -230,13 +239,13 @@ public class AttributeReader {
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	private PermittedClassesAttribute readPermittedClasses() throws IOException {
-		List<Integer> entries = new ArrayList<>();
+		List<CpClass> entries = new ArrayList<>();
 		int count = is.readUnsignedShort();
 		for (int i = 0; i < count; i++) {
-			int index = is.readUnsignedShort();
-			entries.add(index);
+			CpClass entry = (CpClass) cp.get(is.readUnsignedShort());
+			entries.add(entry);
 		}
-		return new PermittedClassesAttribute(nameIndex, entries);
+		return new PermittedClassesAttribute(name, entries);
 	}
 
 	/**
@@ -251,12 +260,12 @@ public class AttributeReader {
 		for (int i = 0; i < count; i++) {
 			int startPc = is.readUnsignedShort();
 			int length = is.readUnsignedShort();
-			int name = is.readUnsignedShort();
-			int sig = is.readUnsignedShort();
+			CpUtf8 name = (CpUtf8) cp.get(is.readUnsignedShort());
+			CpUtf8 sig = (CpUtf8) cp.get(is.readUnsignedShort());
 			int index = is.readUnsignedShort();
 			entries.add(new VarTypeEntry(startPc, length, name, sig, index));
 		}
-		return new LocalVariableTypeTableAttribute(nameIndex, entries);
+		return new LocalVariableTypeTableAttribute(name, entries);
 	}
 
 	/**
@@ -271,12 +280,12 @@ public class AttributeReader {
 		for (int i = 0; i < count; i++) {
 			int startPc = is.readUnsignedShort();
 			int length = is.readUnsignedShort();
-			int name = is.readUnsignedShort();
-			int desc = is.readUnsignedShort();
+			CpUtf8 name = (CpUtf8) cp.get(is.readUnsignedShort());
+			CpUtf8 desc = (CpUtf8) cp.get(is.readUnsignedShort());
 			int index = is.readUnsignedShort();
 			entries.add(new VarEntry(startPc, length, name, desc, index));
 		}
-		return new LocalVariableTableAttribute(nameIndex, entries);
+		return new LocalVariableTableAttribute(name, entries);
 	}
 
 	/**
@@ -293,7 +302,7 @@ public class AttributeReader {
 			int line = is.readUnsignedShort();
 			entries.add(new LineEntry(offset, line));
 		}
-		return new LineNumberTableAttribute(nameIndex, entries);
+		return new LineNumberTableAttribute(name, entries);
 	}
 
 	/**
@@ -304,11 +313,11 @@ public class AttributeReader {
 		List<MethodParametersAttribute.Parameter> entries = new ArrayList<>();
 		int count = is.readUnsignedByte();
 		for (int i = 0; i < count; i++) {
-			int nameIndex = is.readUnsignedShort();
+			CpUtf8 name = orNull(is.readUnsignedShort());
 			int accessFlags = is.readUnsignedShort();
-			entries.add(new MethodParametersAttribute.Parameter(nameIndex, accessFlags));
+			entries.add(new MethodParametersAttribute.Parameter(accessFlags, name));
 		}
-		return new MethodParametersAttribute(nameIndex, entries);
+		return new MethodParametersAttribute(name, entries);
 	}
 
 	/**
@@ -318,58 +327,62 @@ public class AttributeReader {
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	private ModuleAttribute readModule() throws IOException {
-		int moduleIndex = is.readUnsignedShort();
+		CpModule module = (CpModule) cp.get(is.readUnsignedShort());
 		int flags = is.readUnsignedShort();
-		int versionIndex = is.readUnsignedShort();
+		CpUtf8 version = orNull(is.readUnsignedShort());
 		List<Requires> requires = new ArrayList<>();
 		int count = is.readUnsignedShort();
 		for (int i = 0; i < count; i++) {
-			int reqIndex = is.readUnsignedShort();
+			CpModule reqModule = (CpModule) cp.get(is.readUnsignedShort());
 			int reqFlags = is.readUnsignedShort();
-			int reqVersion = is.readUnsignedShort();
-			requires.add(new Requires(reqIndex, reqFlags, reqVersion));
+			CpUtf8 reqVersion = orNull(is.readUnsignedShort());
+			requires.add(new Requires(reqModule, reqFlags, reqVersion));
 		}
 		List<Exports> exports = new ArrayList<>();
 		count = is.readUnsignedShort();
 		for (int i = 0; i < count; i++) {
-			int expIndex = is.readUnsignedShort();
+			CpPackage expPackage = (CpPackage) cp.get(is.readUnsignedShort());
 			int expFlags = is.readUnsignedShort();
 			int expCount = is.readUnsignedShort();
-			List<Integer> indices = new ArrayList<>();
+			List<CpModule> expModules = new ArrayList<>();
 			for (int j = 0; j < expCount; j++) {
-				indices.add(is.readUnsignedShort());
+				CpModule expModule = (CpModule) cp.get(is.readUnsignedShort());
+				expModules.add(expModule);
 			}
-			exports.add(new Exports(expIndex, expFlags, indices));
+			exports.add(new Exports(expPackage, expFlags, expModules));
 		}
 		List<Opens> opens = new ArrayList<>();
 		count = is.readUnsignedShort();
 		for (int i = 0; i < count; i++) {
-			int openIndex = is.readUnsignedShort();
+			CpPackage openPackage = (CpPackage) cp.get(is.readUnsignedShort());
 			int openFlags = is.readUnsignedShort();
 			int openCount = is.readUnsignedShort();
-			List<Integer> indices = new ArrayList<>();
+			List<CpModule> openModules = new ArrayList<>();
 			for (int j = 0; j < openCount; j++) {
-				indices.add(is.readUnsignedShort());
+				CpModule openModule = (CpModule) cp.get(is.readUnsignedShort());
+				openModules.add(openModule);
 			}
-			opens.add(new Opens(openIndex, openFlags, indices));
+			opens.add(new Opens(openPackage, openFlags, openModules));
 		}
-		List<Integer> uses = new ArrayList<>();
+		List<CpClass> uses = new ArrayList<>();
 		count = is.readUnsignedShort();
 		for (int i = 0; i < count; i++) {
-			uses.add(is.readUnsignedShort());
+			CpClass useClass = (CpClass) cp.get(is.readUnsignedShort());
+			uses.add(useClass);
 		}
 		List<Provides> provides = new ArrayList<>();
 		count = is.readUnsignedShort();
 		for (int i = 0; i < count; i++) {
-			int prvIndex = is.readUnsignedShort();
+			CpClass service = (CpClass) cp.get(is.readUnsignedShort());
 			int prvCount = is.readUnsignedShort();
-			List<Integer> indices = new ArrayList<>();
+			List<CpClass> providers = new ArrayList<>();
 			for (int j = 0; j < prvCount; j++) {
-				indices.add(is.readUnsignedShort());
+				CpClass provider = (CpClass) cp.get(is.readUnsignedShort());
+				providers.add(provider);
 			}
-			provides.add(new Provides(prvIndex, indices));
+			provides.add(new Provides(service, providers));
 		}
-		return new ModuleAttribute(nameIndex, moduleIndex, flags, versionIndex,
+		return new ModuleAttribute(name, module, flags, version,
 				requires, exports, opens, uses, provides);
 	}
 
@@ -378,7 +391,7 @@ public class AttributeReader {
 	 * @throws IOException When the stream is unexpectedly closed or ends.
 	 */
 	private ModuleMainClassAttribute readModuleMainClass() throws IOException {
-		return new ModuleMainClassAttribute(nameIndex, is.readUnsignedShort());
+		return new ModuleMainClassAttribute(name, (CpClass) cp.get(is.readUnsignedShort()));
 	}
 
 	/**
@@ -386,12 +399,12 @@ public class AttributeReader {
 	 * @throws IOException When the stream is unexpectedly closed or ends.
 	 */
 	private ModulePackagesAttribute readModulePackages() throws IOException {
-		List<Integer> packages = new ArrayList<>();
+		List<CpPackage> packages = new ArrayList<>();
 		int count = is.readUnsignedShort();
 		for (int i = 0; i < count; i++) {
-			packages.add(is.readUnsignedShort());
+			packages.add((CpPackage) cp.get(is.readUnsignedShort()));
 		}
-		return new ModulePackagesAttribute(nameIndex, packages);
+		return new ModulePackagesAttribute(name, packages);
 	}
 
 	/**
@@ -401,8 +414,8 @@ public class AttributeReader {
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	private SignatureAttribute readSignature() throws IOException {
-		int signatureIndex = is.readUnsignedShort();
-		return new SignatureAttribute(nameIndex, signatureIndex);
+		CpUtf8 signature = (CpUtf8) cp.get(is.readUnsignedShort());
+		return new SignatureAttribute(name, signature);
 	}
 
 	/**
@@ -412,8 +425,8 @@ public class AttributeReader {
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	private SourceFileAttribute readSourceFile() throws IOException {
-		int sourceFileNameIndex = is.readUnsignedShort();
-		return new SourceFileAttribute(nameIndex, sourceFileNameIndex);
+		CpUtf8 sourceFile = (CpUtf8) cp.get(is.readUnsignedShort());
+		return new SourceFileAttribute(name, sourceFile);
 	}
 
 	/**
@@ -423,9 +436,9 @@ public class AttributeReader {
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	private EnclosingMethodAttribute readEnclosingMethod() throws IOException {
-		int classIndex = is.readUnsignedShort();
-		int methodIndex = is.readUnsignedShort();
-		return new EnclosingMethodAttribute(nameIndex, classIndex, methodIndex);
+		CpClass enclosingClass = (CpClass) cp.get(is.readUnsignedShort());
+		CpNameType enclosingMethod = orNull(is.readUnsignedShort());
+		return new EnclosingMethodAttribute(name, enclosingClass, enclosingMethod);
 	}
 
 	/**
@@ -436,11 +449,11 @@ public class AttributeReader {
 	 */
 	private ExceptionsAttribute readExceptions() throws IOException {
 		int numberOfExceptionIndices = is.readUnsignedShort();
-		List<Integer> exceptionIndexTable = new ArrayList<>();
+		List<CpClass> exceptions = new ArrayList<>(numberOfExceptionIndices);
 		for (int i = 0; i < numberOfExceptionIndices; i++) {
-			exceptionIndexTable.add(is.readUnsignedShort());
+			exceptions.add((CpClass) cp.get(is.readUnsignedShort()));
 		}
-		return new ExceptionsAttribute(nameIndex, exceptionIndexTable);
+		return new ExceptionsAttribute(name, exceptions);
 	}
 
 	/**
@@ -453,14 +466,13 @@ public class AttributeReader {
 		int numberOfInnerClasses = is.readUnsignedShort();
 		List<InnerClass> innerClasses = new ArrayList<>();
 		for (int i = 0; i < numberOfInnerClasses; i++) {
-			int innerClassInfoIndex = is.readUnsignedShort();
-			int outerClassInfoIndex = is.readUnsignedShort();
-			int innerNameIndex = is.readUnsignedShort();
+			CpClass innerClass = (CpClass) cp.get(is.readUnsignedShort());
+			CpClass outerClass = orNull(is.readUnsignedShort());
+			CpUtf8 innerName = orNull(is.readUnsignedShort());
 			int innerClassAccessFlags = is.readUnsignedShort();
-			innerClasses.add(new InnerClass(innerClassInfoIndex, outerClassInfoIndex,
-					innerNameIndex, innerClassAccessFlags));
+			innerClasses.add(new InnerClass(innerClass, outerClass, innerName, innerClassAccessFlags));
 		}
-		return new InnerClassesAttribute(nameIndex, innerClasses);
+		return new InnerClassesAttribute(name, innerClasses);
 	}
 
 	/**
@@ -474,8 +486,8 @@ public class AttributeReader {
 			logger.debug("Found NestHost with illegal content length: {} != 2", expectedContentLength);
 			return null;
 		}
-		int hostClassIndex = is.readUnsignedShort();
-		return new NestHostAttribute(nameIndex, hostClassIndex);
+		CpClass nestHost = (CpClass) cp.get(is.readUnsignedShort());
+		return new NestHostAttribute(name, nestHost);
 	}
 
 	/**
@@ -486,12 +498,11 @@ public class AttributeReader {
 	 */
 	private NestMembersAttribute readNestMembers() throws IOException {
 		int count = is.readUnsignedShort();
-		List<Integer> memberClassIndices = new ArrayList<>();
+		List<CpClass> memberClassIndices = new ArrayList<>();
 		for (int i = 0; i < count; i++) {
-			int classIndex = is.readUnsignedShort();
-			memberClassIndices.add(classIndex);
+			memberClassIndices.add((CpClass) cp.get(is.readUnsignedShort()));
 		}
-		return new NestMembersAttribute(nameIndex, memberClassIndices);
+		return new NestMembersAttribute(name, memberClassIndices);
 	}
 
 	/**
@@ -510,7 +521,7 @@ public class AttributeReader {
 			logger.debug("Invalid SourceDebugExtension, not a valid UTF");
 			return null;
 		}
-		return new SourceDebugExtensionAttribute(nameIndex, debugExtension);
+		return new SourceDebugExtensionAttribute(name, debugExtension);
 	}
 
 	/**
@@ -523,7 +534,7 @@ public class AttributeReader {
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	private AnnotationsAttribute readAnnotations(AttributeContext context, boolean visible) throws IOException {
-		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, nameIndex, context, visible)
+		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, name, context, visible)
 				.readAnnotations();
 	}
 
@@ -538,7 +549,7 @@ public class AttributeReader {
 	 */
 	private ParameterAnnotationsAttribute readParameterAnnotations(AttributeContext context, boolean visible)
 			throws IOException {
-		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, nameIndex, context, visible)
+		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, name, context, visible)
 				.readParameterAnnotations();
 	}
 
@@ -552,7 +563,7 @@ public class AttributeReader {
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	private AnnotationsAttribute readTypeAnnotations(AttributeContext context, boolean visible) throws IOException {
-		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, nameIndex, context, visible)
+		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, name, context, visible)
 				.readTypeAnnotations();
 	}
 
@@ -566,7 +577,7 @@ public class AttributeReader {
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	private AnnotationDefaultAttribute readAnnotationDefault(AttributeContext context) throws IOException {
-		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, nameIndex, context, true)
+		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, name, context, true)
 				.readAnnotationDefault();
 	}
 
@@ -574,7 +585,7 @@ public class AttributeReader {
 	 * @return Synthetic attribute.
 	 */
 	private SyntheticAttribute readSynthetic() {
-		return new SyntheticAttribute(nameIndex);
+		return new SyntheticAttribute(name);
 	}
 
 	/**
@@ -587,15 +598,15 @@ public class AttributeReader {
 		List<BootstrapMethod> bootstrapMethods = new ArrayList<>();
 		int bsmCount = is.readUnsignedShort();
 		for (int i = 0; i < bsmCount; i++) {
-			int methodRef = is.readUnsignedShort();
+			CpMethodHandle methodRef = (CpMethodHandle) cp.get(is.readUnsignedShort());
 			int argCount = is.readUnsignedShort();
-			List<Integer> args = new ArrayList<>();
+			List<CpEntry> args = new ArrayList<>();
 			for (int j = 0; j < argCount; j++) {
-				args.add(is.readUnsignedShort());
+				args.add(cp.get(is.readUnsignedShort()));
 			}
 			bootstrapMethods.add(new BootstrapMethod(methodRef, args));
 		}
-		return new BootstrapMethodsAttribute(nameIndex, bootstrapMethods);
+		return new BootstrapMethodsAttribute(name, bootstrapMethods);
 	}
 
 	/**
@@ -637,7 +648,7 @@ public class AttributeReader {
 			if (attr != null)
 				attributes.add(attr);
 		}
-		return new CodeAttribute(nameIndex, maxStack, maxLocals, code, exceptions, attributes);
+		return new CodeAttribute(name, maxStack, maxLocals, code, exceptions, attributes);
 	}
 
 	/**
@@ -651,7 +662,7 @@ public class AttributeReader {
 				is.readUnsignedShort(),
 				is.readUnsignedShort(),
 				is.readUnsignedShort(),
-				is.readUnsignedShort()
+				orNull(is.readUnsignedShort())
 		);
 	}
 
@@ -662,8 +673,8 @@ public class AttributeReader {
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	private ConstantValueAttribute readConstantValue() throws IOException {
-		int valueIndex = is.readUnsignedShort();
-		return new ConstantValueAttribute(nameIndex, valueIndex);
+		CpEntry value = cp.get(is.readUnsignedShort());
+		return new ConstantValueAttribute(name, value);
 	}
 
 	private StackMapTableAttribute readStackMapTable() throws IOException {
@@ -753,7 +764,7 @@ public class AttributeReader {
 				throw new IllegalArgumentException("Unknown frame type " + frameType);
 			}
 		}
-		return new StackMapTableAttribute(nameIndex, frames);
+		return new StackMapTableAttribute(name, frames);
 	}
 
 	private TypeInfo readVerificationTypeInfo() throws IOException {
@@ -776,8 +787,8 @@ public class AttributeReader {
 				return new StackMapTableAttribute.UninitializedThisVariableInfo();
 			case ITEM_OBJECT:
 				// u2 cpool_index
-				int cpoolIndex = is.readUnsignedShort();
-				return new StackMapTableAttribute.ObjectVariableInfo(cpoolIndex);
+				CpClass classEntry = (CpClass) cp.get(is.readUnsignedShort());
+				return new StackMapTableAttribute.ObjectVariableInfo(classEntry);
 			case ITEM_UNINITIALIZED:
 				// u2 offset
 				int offset = is.readUnsignedShort();
@@ -785,5 +796,9 @@ public class AttributeReader {
 			default:
 				throw new IllegalArgumentException("Unknown verification type tag " + tag);
 		}
+	}
+
+	public <T extends CpEntry> T orNull(int index) {
+		return index == 0 ? null : (T) cp.get(index);
 	}
 }

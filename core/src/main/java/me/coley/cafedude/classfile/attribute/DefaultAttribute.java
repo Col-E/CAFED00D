@@ -1,5 +1,7 @@
 package me.coley.cafedude.classfile.attribute;
 
+import me.coley.cafedude.classfile.constant.CpUtf8;
+
 /**
  * An attribute implementation that is used as a default for any unhandled attribute type.
  *
@@ -9,13 +11,13 @@ public class DefaultAttribute extends Attribute {
 	private byte[] data;
 
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		Name index in constant pool.
 	 * @param data
 	 * 		Literal data stored in attribute.
 	 */
-	public DefaultAttribute(int nameIndex, byte[] data) {
-		super(nameIndex);
+	public DefaultAttribute(CpUtf8 name, byte[] data) {
+		super(name);
 		this.data = data;
 	}
 

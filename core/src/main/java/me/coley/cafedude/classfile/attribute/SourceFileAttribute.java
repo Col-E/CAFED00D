@@ -1,5 +1,8 @@
 package me.coley.cafedude.classfile.attribute;
 
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
+
 import java.util.Set;
 
 /**
@@ -8,44 +11,44 @@ import java.util.Set;
  * @author Matt Coley
  */
 public class SourceFileAttribute extends Attribute {
-	private int sourceFileNameIndex;
+	private CpUtf8 sourceFilename;
 
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		Name index in constant pool.
-	 * @param sourceFileNameIndex
+	 * @param sourceFilename
 	 * 		UTF8 index in constant pool of the source file name.
 	 */
-	public SourceFileAttribute(int nameIndex, int sourceFileNameIndex) {
-		super(nameIndex);
-		this.sourceFileNameIndex = sourceFileNameIndex;
+	public SourceFileAttribute(CpUtf8 name, CpUtf8 sourceFilename) {
+		super(name);
+		this.sourceFilename = sourceFilename;
 	}
 
 	/**
 	 * @return UTF8 index in constant pool of the source file name.
 	 */
-	public int getSourceFileNameIndex() {
-		return sourceFileNameIndex;
+	public CpUtf8 getSourceFilename() {
+		return sourceFilename;
 	}
 
 	/**
-	 * @param sourceFileNameIndex
+	 * @param sourceFilename
 	 * 		UTF8 index in constant pool of the source file name.
 	 */
-	public void setSourceFileNameIndex(int sourceFileNameIndex) {
-		this.sourceFileNameIndex = sourceFileNameIndex;
+	public void setSourceFilename(CpUtf8 sourceFilename) {
+		this.sourceFilename = sourceFilename;
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = super.cpAccesses();
-		set.add(getSourceFileNameIndex());
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = super.cpAccesses();
+		set.add(getSourceFilename());
 		return set;
 	}
 
 	@Override
 	public int computeInternalLength() {
-		// U2: sourceFileNameIndex
+		// U2: sourceFilename
 		return 2;
 	}
 }

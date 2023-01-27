@@ -1,6 +1,8 @@
 package me.coley.cafedude.classfile.attribute;
 
 import me.coley.cafedude.classfile.annotation.Annotation;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 
 import java.util.List;
 import java.util.Map;
@@ -20,16 +22,16 @@ public class ParameterAnnotationsAttribute extends Attribute {
 	private boolean visible;
 
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		Name index in constant pool.
 	 * @param parameterAnnotations
 	 * 		Map of parameter indices to their list of attributes.
 	 * @param visible
 	 * 		Whether the annotations are visible at runtime.
 	 */
-	public ParameterAnnotationsAttribute(int nameIndex, Map<Integer, List<Annotation>> parameterAnnotations,
+	public ParameterAnnotationsAttribute(CpUtf8 name, Map<Integer, List<Annotation>> parameterAnnotations,
 										 boolean visible) {
-		super(nameIndex);
+		super(name);
 		this.parameterAnnotations = parameterAnnotations;
 		this.visible = visible;
 	}
@@ -65,8 +67,8 @@ public class ParameterAnnotationsAttribute extends Attribute {
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = super.cpAccesses();
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = super.cpAccesses();
 		for (List<Annotation> list : getParameterAnnotations().values())
 			for (Annotation annotation : list)
 				set.addAll(annotation.cpAccesses());

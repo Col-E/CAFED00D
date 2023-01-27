@@ -4,6 +4,8 @@ import me.coley.cafedude.classfile.AttributeConstants;
 import me.coley.cafedude.classfile.Method;
 import me.coley.cafedude.classfile.annotation.Annotation;
 import me.coley.cafedude.classfile.attribute.*;
+import me.coley.cafedude.classfile.constant.CpClass;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.tree.visitor.AnnotationDefaultVisitor;
 import me.coley.cafedude.tree.visitor.AnnotationVisitor;
 import me.coley.cafedude.tree.visitor.CodeVisitor;
@@ -18,16 +20,16 @@ import java.util.function.Consumer;
 public class MethodWriter extends DeclarationWriter implements MethodVisitor {
 
 	private final List<Attribute> attributes = new ArrayList<>();
-	private final List<Integer> exceptions = new ArrayList<>();
+	private final List<CpClass> exceptions = new ArrayList<>();
 	private final List<MethodParametersAttribute.Parameter> parameters = new ArrayList<>();
 	private final Map<Integer, List<Annotation>> visibleParameterAnnotations = new HashMap<>();
 	private final Map<Integer, List<Annotation>> invisibleParameterAnnotations = new HashMap<>();
 	private final Consumer<Method> callback;
 	private final Method method;
 
-	public MethodWriter(Symbols symbols, int access, int nameIndex, int descriptorIndex, Consumer<Method> callback) {
+	public MethodWriter(Symbols symbols, int access, CpUtf8 name, CpUtf8 descriptor, Consumer<Method> callback) {
 		super(symbols);
-		this.method = new Method(attributes, access, nameIndex, descriptorIndex);
+		this.method = new Method(attributes, access, name, descriptor);
 		this.callback = callback;
 	}
 
@@ -39,8 +41,8 @@ public class MethodWriter extends DeclarationWriter implements MethodVisitor {
 	@Override
 	public void visitParameter(String name, int access) {
 		parameters.add(new MethodParametersAttribute.Parameter(
-				symbols.newUtf8(name),
-				access));
+				access,
+				symbols.newUtf8(name)));
 	}
 
 	@Override
@@ -54,7 +56,8 @@ public class MethodWriter extends DeclarationWriter implements MethodVisitor {
 
 	@Override
 	public CodeVisitor visitCode() {
-		return new CodeWriter(symbols, attributes::add);
+		//return new CodeWriter(symbols, attributes::add);
+		return null;
 	}
 
 	@Override

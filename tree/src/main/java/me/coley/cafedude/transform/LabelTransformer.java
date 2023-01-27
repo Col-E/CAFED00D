@@ -42,7 +42,7 @@ public class LabelTransformer extends Transformer {
 
 			if (ca != null) {
 				LineNumberTableAttribute lnta = ca.getAttribute(LineNumberTableAttribute.class);
-				List<Instruction> insns = reader.read(ca.getCode());
+				List<Instruction> insns = reader.read(ca.getCode(), pool);
 				// populate maps
 				TreeMap<Integer, Label> labels = new TreeMap<>();
 				TreeMap<Integer, Instruction> instructions = new TreeMap<>();

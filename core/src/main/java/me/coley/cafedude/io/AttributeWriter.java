@@ -38,8 +38,12 @@ import me.coley.cafedude.classfile.attribute.SourceFileAttribute;
 import me.coley.cafedude.classfile.attribute.StackMapTableAttribute;
 import me.coley.cafedude.classfile.attribute.StackMapTableAttribute.StackMapFrame;
 import me.coley.cafedude.classfile.attribute.StackMapTableAttribute.TypeInfo;
-import me.coley.cafedude.classfile.constant.ConstPoolEntry;
+import me.coley.cafedude.classfile.constant.CpClass;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpModule;
 import me.coley.cafedude.classfile.constant.CpUtf8;
+import me.coley.cafedude.util.Optional;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -81,29 +85,29 @@ public class AttributeWriter {
 		DataOutputStream out = new DataOutputStream(baos);
 		if (attribute instanceof DefaultAttribute) {
 			DefaultAttribute dflt = (DefaultAttribute) attribute;
-			out.writeShort(dflt.getNameIndex());
+			out.writeShort(dflt.getName().getIndex());
 			out.writeInt(dflt.getData().length);
 			out.write(dflt.getData());
 		} else {
-			ConstPoolEntry cpName = clazz.getCp(attribute.getNameIndex());
-			if (!(cpName instanceof CpUtf8))
+			CpUtf8 cpName = attribute.getName();
+			if (cpName == null)
 				throw new InvalidClassException("Attribute name index does not point to CP_UTF8");
 			// Write common attribute bits
-			out.writeShort(attribute.getNameIndex());
+			out.writeShort(cpName.getIndex());
 			out.writeInt(attribute.computeInternalLength());
 			// Write specific bits.
 			// Note: Unlike reading, writing is quite streamline and doesn't require many variable declarations
 			//   so I don't think its super necessary to break these into separate methods.
-			String attrName = ((CpUtf8) cpName).getText();
+			String attrName = cpName.getText();
 			switch (attrName) {
 				case AttributeConstants.BOOTSTRAP_METHODS:
 					BootstrapMethodsAttribute bsms = (BootstrapMethodsAttribute) attribute;
 					out.writeShort(bsms.getBootstrapMethods().size());
 					for (BootstrapMethod bsm : bsms.getBootstrapMethods()) {
-						out.writeShort(bsm.getBsmMethodref());
+						out.writeShort(bsm.getBsmMethodref().getIndex());
 						out.writeShort(bsm.getArgs().size());
-						for (int arg : bsm.getArgs()) {
-							out.writeShort(arg);
+						for (CpEntry arg : bsm.getArgs()) {
+							out.writeShort(arg.getIndex());
 						}
 					}
 					break;
@@ -120,14 +124,14 @@ public class AttributeWriter {
 						out.writeShort(tableEntry.getStartPc());
 						out.writeShort(tableEntry.getEndPc());
 						out.writeShort(tableEntry.getHandlerPc());
-						out.writeShort(tableEntry.getCatchTypeIndex());
+						out.writeShort(orZero(tableEntry.getCatchType()));
 					}
 					out.writeShort(code.getAttributes().size());
 					for (Attribute subAttribute : code.getAttributes())
 						out.write(writeAttribute(subAttribute));
 					break;
 				case AttributeConstants.CONSTANT_VALUE:
-					out.writeShort(((ConstantValueAttribute) attribute).getConstantValueIndex());
+					out.writeShort(((ConstantValueAttribute) attribute).getConstantValue().getIndex());
 					break;
 				case AttributeConstants.COMPILATION_ID:
 					break;
@@ -136,23 +140,23 @@ public class AttributeWriter {
 					break;
 				case AttributeConstants.ENCLOSING_METHOD:
 					EnclosingMethodAttribute enclosingMethodAttribute = (EnclosingMethodAttribute) attribute;
-					out.writeShort(enclosingMethodAttribute.getClassIndex());
-					out.writeShort(enclosingMethodAttribute.getMethodIndex());
+					out.writeShort(enclosingMethodAttribute.getClassEntry().getIndex());
+					out.writeShort(orZero(enclosingMethodAttribute.getMethodEntry()));
 					break;
 				case AttributeConstants.EXCEPTIONS:
 					ExceptionsAttribute exceptionsAttribute = (ExceptionsAttribute) attribute;
-					out.writeShort(exceptionsAttribute.getExceptionIndexTable().size());
-					for (int index : exceptionsAttribute.getExceptionIndexTable()) {
-						out.writeShort(index);
+					out.writeShort(exceptionsAttribute.getExceptionTable().size());
+					for (CpClass index : exceptionsAttribute.getExceptionTable()) {
+						out.writeShort(index.getIndex());
 					}
 					break;
 				case AttributeConstants.INNER_CLASSES:
 					InnerClassesAttribute innerClassesAttribute = (InnerClassesAttribute) attribute;
 					out.writeShort(innerClassesAttribute.getInnerClasses().size());
 					for (InnerClass ic : innerClassesAttribute.getInnerClasses()) {
-						out.writeShort(ic.getInnerClassInfoIndex());
-						out.writeShort(ic.getOuterClassInfoIndex());
-						out.writeShort(ic.getInnerNameIndex());
+						out.writeShort(ic.getInnerClassInfo().getIndex());
+						out.writeShort(orZero(ic.getOuterClassInfo()));
+						out.writeShort(orZero(ic.getInnerName()));
 						out.writeShort(ic.getInnerClassAccessFlags());
 					}
 					break;
@@ -170,8 +174,8 @@ public class AttributeWriter {
 					for (VarEntry entry : varTable.getEntries()) {
 						out.writeShort(entry.getStartPc());
 						out.writeShort(entry.getLength());
-						out.writeShort(entry.getNameIndex());
-						out.writeShort(entry.getDescIndex());
+						out.writeShort(entry.getName().getIndex());
+						out.writeShort(entry.getDesc().getIndex());
 						out.writeShort(entry.getIndex());
 					}
 					break;
@@ -181,8 +185,8 @@ public class AttributeWriter {
 					for (VarTypeEntry entry : typeTable.getEntries()) {
 						out.writeShort(entry.getStartPc());
 						out.writeShort(entry.getLength());
-						out.writeShort(entry.getNameIndex());
-						out.writeShort(entry.getSignatureIndex());
+						out.writeShort(entry.getName().getIndex());
+						out.writeShort(entry.getSignature().getIndex());
 						out.writeShort(entry.getIndex());
 					}
 					break;
@@ -190,45 +194,47 @@ public class AttributeWriter {
 					break;
 				case AttributeConstants.MODULE:
 					ModuleAttribute moduleAttribute = (ModuleAttribute) attribute;
-					out.writeShort(moduleAttribute.getModuleIndex());
+					out.writeShort(moduleAttribute.getModule().getIndex());
 					out.writeShort(moduleAttribute.getFlags());
-					out.writeShort(moduleAttribute.getVersionIndex());
+					out.writeShort(orZero(moduleAttribute.getVersion()));
 					// requires
 					out.writeShort(moduleAttribute.getRequires().size());
 					for (Requires requires : moduleAttribute.getRequires()) {
-						out.writeShort(requires.getIndex());
+						out.writeShort(requires.getModule().getIndex());
 						out.writeShort(requires.getFlags());
-						out.writeShort(requires.getVersionIndex());
+						out.writeShort(orZero(requires.getVersion()));
 					}
 					// exports
 					out.writeShort(moduleAttribute.getExports().size());
 					for (Exports exports : moduleAttribute.getExports()) {
-						out.writeShort(exports.getIndex());
+						out.writeShort(exports.getPackageEntry().getIndex());
 						out.writeShort(exports.getFlags());
-						out.writeShort(exports.getToIndices().size());
-						for (int i : exports.getToIndices())
-							out.writeShort(i);
+						out.writeShort(exports.getTo().size());
+						for (CpModule to : exports.getTo()) {
+							out.writeShort(to.getIndex());
+						}
 					}
 					// opens
 					out.writeShort(moduleAttribute.getOpens().size());
 					for (Opens opens : moduleAttribute.getOpens()) {
-						out.writeShort(opens.getIndex());
+						out.writeShort(opens.getPackageEntry().getIndex());
 						out.writeShort(opens.getFlags());
-						out.writeShort(opens.getToIndices().size());
-						for (int i : opens.getToIndices())
-							out.writeShort(i);
+						out.writeShort(opens.getTo().size());
+						for (CpModule to : opens.getTo()) {
+							out.writeShort(to.getIndex());
+						}
 					}
 					// uses
 					out.writeShort(moduleAttribute.getUses().size());
-					for (int i : moduleAttribute.getUses())
-						out.writeShort(i);
+					for (CpClass i : moduleAttribute.getUses())
+						out.writeShort(i.getIndex());
 					// provides
 					out.writeShort(moduleAttribute.getProvides().size());
 					for (Provides provides : moduleAttribute.getProvides()) {
-						out.writeShort(provides.getIndex());
-						out.writeShort(provides.getWithIndices().size());
-						for (int i : provides.getWithIndices())
-							out.writeShort(i);
+						out.writeShort(provides.getModule().getIndex());
+						out.writeShort(provides.getWith().size());
+						for (CpClass i : provides.getWith())
+							out.writeShort(i.getIndex());
 					}
 					break;
 				case AttributeConstants.MODULE_HASHES:
@@ -243,21 +249,21 @@ public class AttributeWriter {
 					break;
 				case AttributeConstants.NEST_HOST:
 					NestHostAttribute nestHost = (NestHostAttribute) attribute;
-					out.writeShort(nestHost.getHostClassIndex());
+					out.writeShort(nestHost.getHostClass().getIndex());
 					break;
 				case AttributeConstants.NEST_MEMBERS:
 					NestMembersAttribute nestMembers = (NestMembersAttribute) attribute;
-					out.writeShort(nestMembers.getMemberClassIndices().size());
-					for (int classIndex : nestMembers.getMemberClassIndices()) {
-						out.writeShort(classIndex);
+					out.writeShort(nestMembers.getMemberClasses().size());
+					for (CpClass classIndex : nestMembers.getMemberClasses()) {
+						out.writeShort(classIndex.getIndex());
 					}
 					break;
 				case AttributeConstants.RECORD:
 					RecordAttribute recordAttribute = (RecordAttribute) attribute;
 					out.writeShort(recordAttribute.getComponents().size());
 					for (RecordComponent component : recordAttribute.getComponents()) {
-						out.writeShort(component.getNameIndex());
-						out.writeShort(component.getDescIndex());
+						out.writeShort(component.getName().getIndex());
+						out.writeShort(component.getDesc().getIndex());
 						out.writeShort(component.getAttributes().size());
 						for (Attribute subAttribute : component.getAttributes())
 							out.write(writeAttribute(subAttribute));
@@ -281,12 +287,13 @@ public class AttributeWriter {
 				case AttributeConstants.PERMITTED_SUBCLASSES:
 					PermittedClassesAttribute permittedClasses = (PermittedClassesAttribute) attribute;
 					out.writeShort(permittedClasses.getClasses().size());
-					for (int classIndex : permittedClasses.getClasses())
-						out.writeShort(classIndex);
+					for (CpClass classIndex : permittedClasses.getClasses()) {
+						out.writeShort(classIndex.getIndex());
+					}
 					break;
 				case AttributeConstants.SIGNATURE:
 					SignatureAttribute signatureAttribute = (SignatureAttribute) attribute;
-					out.writeShort(signatureAttribute.getSignatureIndex());
+					out.writeShort(signatureAttribute.getSignature().getIndex());
 					break;
 				case AttributeConstants.SOURCE_DEBUG_EXTENSION:
 					SourceDebugExtensionAttribute debugExtension = (SourceDebugExtensionAttribute) attribute;
@@ -294,7 +301,7 @@ public class AttributeWriter {
 					break;
 				case AttributeConstants.SOURCE_FILE:
 					SourceFileAttribute sourceFileAttribute = (SourceFileAttribute) attribute;
-					out.writeShort(sourceFileAttribute.getSourceFileNameIndex());
+					out.writeShort(sourceFileAttribute.getSourceFilename().getIndex());
 					break;
 				case AttributeConstants.SOURCE_ID:
 					break;
@@ -310,12 +317,17 @@ public class AttributeWriter {
 		return baos.toByteArray();
 	}
 
+	private int orZero(@Nullable CpEntry entry) {
+		if(entry == null) return 0;
+		return entry.getIndex();
+	}
+
 	private void writeVerificationType(DataOutputStream out, StackMapTableAttribute.TypeInfo type)throws IOException {
 		out.writeByte(type.getTag());
 		if (type instanceof StackMapTableAttribute.ObjectVariableInfo) {
 			StackMapTableAttribute.ObjectVariableInfo objVar =
 					(StackMapTableAttribute.ObjectVariableInfo) type;
-			out.writeShort(objVar.classIndex);
+			out.writeShort(objVar.classEntry.getIndex());
 		} else if (type instanceof StackMapTableAttribute.UninitializedVariableInfo) {
 			StackMapTableAttribute.UninitializedVariableInfo uninitVar =
 					(StackMapTableAttribute.UninitializedVariableInfo) type;

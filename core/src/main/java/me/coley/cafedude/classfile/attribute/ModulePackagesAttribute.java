@@ -1,6 +1,9 @@
 package me.coley.cafedude.classfile.attribute;
 
 import me.coley.cafedude.classfile.behavior.CpAccessor;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpPackage;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 
 import java.util.List;
 import java.util.Set;
@@ -10,36 +13,36 @@ import java.util.Set;
  */
 public class ModulePackagesAttribute extends Attribute implements CpAccessor {
 
-	private List<Integer> packageIndexes;
+	private List<CpPackage> packages;
 
 	/**
-	 * @param nameIndex Name index in constant pool.
-	 * @param packageIndexes Indexes of packages in constant pool.
+	 * @param name Name index in constant pool.
+	 * @param packages Indexes of packages in constant pool.
 	 */
-	public ModulePackagesAttribute(int nameIndex, List<Integer> packageIndexes) {
-		super(nameIndex);
-		this.packageIndexes = packageIndexes;
+	public ModulePackagesAttribute(CpUtf8 name, List<CpPackage> packages) {
+		super(name);
+		this.packages = packages;
 	}
 
 	/**
 	 * @return Indexes of packages in constant pool.
 	 */
-	public List<Integer> getPackageIndexes() {
-		return packageIndexes;
+	public List<CpPackage> getPackages() {
+		return packages;
 	}
 
 	/**
-	 * @param packageIndexes New indexes of packages in constant
+	 * @param packages New indexes of packages in constant
 	 * 					 pool.
 	 */
-	public void setPackageIndexes(List<Integer> packageIndexes) {
-		this.packageIndexes = packageIndexes;
+	public void setPackages(List<CpPackage> packages) {
+		this.packages = packages;
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = super.cpAccesses();
-		set.addAll(packageIndexes);
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = super.cpAccesses();
+		set.addAll(packages);
 		return set;
 	}
 
@@ -47,6 +50,6 @@ public class ModulePackagesAttribute extends Attribute implements CpAccessor {
 	public int computeInternalLength() {
 		// U2: numPackages
 		// U2: packageIndex * numPackages
-		return 2 + (packageIndexes.size() * 2);
+		return 2 + (packages.size() * 2);
 	}
 }

@@ -1,6 +1,7 @@
 package me.coley.cafedude.tree.visitor.writer;
 
 import me.coley.cafedude.classfile.annotation.*;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.tree.Constant;
 import me.coley.cafedude.tree.visitor.AnnotationArrayVisitor;
 import me.coley.cafedude.tree.visitor.AnnotationVisitor;
@@ -12,10 +13,10 @@ import java.util.function.Consumer;
 public class AnnotationWriter implements AnnotationVisitor {
 
 	private final Symbols symbols;
-	private final Map<Integer, ElementValue> values = new HashMap<>();
-	private final Consumer<Map<Integer, ElementValue>> callback;
+	private final Map<CpUtf8, ElementValue> values = new HashMap<>();
+	private final Consumer<Map<CpUtf8, ElementValue>> callback;
 
-	public AnnotationWriter(Symbols symbols, Consumer<Map<Integer, ElementValue>> callback) {
+	public AnnotationWriter(Symbols symbols, Consumer<Map<CpUtf8, ElementValue>> callback) {
 		this.callback = callback;
 		this.symbols = symbols;
 	}

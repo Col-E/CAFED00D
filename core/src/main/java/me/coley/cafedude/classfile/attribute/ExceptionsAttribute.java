@@ -1,5 +1,9 @@
 package me.coley.cafedude.classfile.attribute;
 
+import me.coley.cafedude.classfile.constant.CpClass;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
+
 import java.util.List;
 import java.util.Set;
 
@@ -9,46 +13,46 @@ import java.util.Set;
  * @author JCWasmx86
  */
 public class ExceptionsAttribute extends Attribute {
-	private List<Integer> exceptionIndexTable;
+	private List<CpClass> exceptionTable;
 
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		Name index in constant pool.
-	 * @param exceptionIndexTable
+	 * @param exceptionTable
 	 * 		Indices into the constant pool representing all checked exceptions
 	 * 		that may be thrown by this method.
 	 */
-	public ExceptionsAttribute(int nameIndex, List<Integer> exceptionIndexTable) {
-		super(nameIndex);
-		this.exceptionIndexTable = exceptionIndexTable;
+	public ExceptionsAttribute(CpUtf8 name, List<CpClass> exceptionTable) {
+		super(name);
+		this.exceptionTable = exceptionTable;
 	}
 
 	/**
 	 * @return Exception index table.
 	 */
-	public List<Integer> getExceptionIndexTable() {
-		return exceptionIndexTable;
+	public List<CpClass> getExceptionTable() {
+		return exceptionTable;
 	}
 
 	/**
-	 * @param exceptionIndexTable
+	 * @param exceptionTable
 	 * 		Indices into the constant pool representing all checked exceptions
 	 * 		that may be thrown by this method.
 	 */
-	public void setExceptionIndexTable(List<Integer> exceptionIndexTable) {
-		this.exceptionIndexTable = exceptionIndexTable;
+	public void setExceptionTable(List<CpClass> exceptionTable) {
+		this.exceptionTable = exceptionTable;
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = super.cpAccesses();
-		set.addAll(getExceptionIndexTable());
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = super.cpAccesses();
+		set.addAll(getExceptionTable());
 		return set;
 	}
 
 	@Override
 	public int computeInternalLength() {
 		// Multiplying with two, as each index has two bytes.
-		return 2 + exceptionIndexTable.size() * 2;
+		return 2 + exceptionTable.size() * 2;
 	}
 }

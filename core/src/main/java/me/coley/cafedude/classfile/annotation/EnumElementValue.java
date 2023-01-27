@@ -1,5 +1,9 @@
 package me.coley.cafedude.classfile.annotation;
 
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
+
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -9,53 +13,53 @@ import java.util.TreeSet;
  * @author Matt Coley
  */
 public class EnumElementValue extends ElementValue {
-	private int typeIndex;
-	private int nameIndex;
+	private CpUtf8 type;
+	private CpUtf8 name;
 
 	/**
 	 * @param tag
 	 * 		ASCII tag representation, must be {@code e}.
-	 * @param typeIndex
+	 * @param type
 	 * 		Index of enum type descriptor constant.
-	 * @param nameIndex
+	 * @param name
 	 * 		Index of enum value name constant.
 	 */
-	public EnumElementValue(char tag, int typeIndex, int nameIndex) {
+	public EnumElementValue(char tag, CpUtf8 type, CpUtf8 name) {
 		super(tag);
 		if (tag != 'e')
 			throw new IllegalArgumentException("UTF8 element value must have 'e' tag");
-		this.typeIndex = typeIndex;
-		this.nameIndex = nameIndex;
+		this.type = type;
+		this.name = name;
 	}
 
 	/**
 	 * @return Index of enum type descriptor constant.
 	 */
-	public int getTypeIndex() {
-		return typeIndex;
+	public CpUtf8 getType() {
+		return type;
 	}
 
 	/**
-	 * @param typeIndex
+	 * @param type
 	 * 		Index of enum type descriptor constant.
 	 */
-	public void setTypeIndex(int typeIndex) {
-		this.typeIndex = typeIndex;
+	public void setType(CpUtf8 type) {
+		this.type = type;
 	}
 
 	/**
 	 * @return Index of enum value name constant.
 	 */
-	public int getNameIndex() {
-		return nameIndex;
+	public CpUtf8 getName() {
+		return name;
 	}
 
 	/**
-	 * @param nameIndex
+	 * @param name
 	 * 		Index of enum value name constant.
 	 */
-	public void setNameIndex(int nameIndex) {
-		this.nameIndex = nameIndex;
+	public void setName(CpUtf8 name) {
+		this.name = name;
 	}
 
 	/**
@@ -67,10 +71,10 @@ public class EnumElementValue extends ElementValue {
 	}
 
 	@Override
-	public Set<Integer> cpAccesses() {
-		Set<Integer> set = new TreeSet<>();
-		set.add(getNameIndex());
-		set.add(getTypeIndex());
+	public Set<CpEntry> cpAccesses() {
+		Set<CpEntry> set = new HashSet<>();
+		set.add(name);
+		set.add(type);
 		return set;
 	}
 

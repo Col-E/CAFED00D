@@ -5,7 +5,7 @@ package me.coley.cafedude.classfile.constant;
  *
  * @author Matt Coley
  */
-public class CpUtf8 extends ConstPoolEntry {
+public class CpUtf8 extends CpEntry {
 	private String text;
 
 	/**
