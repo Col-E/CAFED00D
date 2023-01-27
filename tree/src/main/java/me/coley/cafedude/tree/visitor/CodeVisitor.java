@@ -304,14 +304,13 @@ public interface CodeVisitor {
 	/**
 	 * Visit a LDC instruction which pushes the constant operand onto the stack.
 	 *
-	 * @param opcode
 	 * @param constant constant to push onto the stack. The type of the constant can be all types of
 	 *                 {@link Constant.Type}.
 	 * @see Constant
 	 */
-	default void visitLdcInsn(int opcode, Constant constant) {
+	default void visitLdcInsn(Constant constant) {
 		CodeVisitor cv = codeDelegate();
-		if (cv != null) cv.visitLdcInsn(opcode, constant);
+		if (cv != null) cv.visitLdcInsn(constant);
 	}
 
 	/**
