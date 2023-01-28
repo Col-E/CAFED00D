@@ -55,15 +55,25 @@ public class Insn {
 		return "insn(" + opcode + ")";
 	}
 
+	/**
+	 * @return a new {@link Insn} for {@link Opcodes#NOP}.
+	 */
 	public static Insn nop() {
 		return new Insn(InsnKind.NOP, Opcodes.NOP);
 	}
 
+	/**
+	 * @param opcode {@link Opcodes#MONITORENTER} or {@link Opcodes#MONITOREXIT}.
+	 * @return a new {@link Insn} for {@link Opcodes#MONITORENTER} or {@link Opcodes#MONITOREXIT}.
+	 */
 	@MagicConstant(intValues = {Opcodes.MONITORENTER, Opcodes.MONITOREXIT})
 	public static Insn monitor(int opcode) {
 		return new Insn(InsnKind.MONITOR, opcode);
 	}
 
+	/**
+	 * @return a new {@link Insn} for {@link Opcodes#ATHROW}.
+	 */
 	public static Insn athrow() {
 		return new Insn(InsnKind.THROW, Opcodes.ATHROW);
 	}
