@@ -22,6 +22,7 @@ public enum InsnKind {
 	TABLE_SWITCH,
 	TYPE,
 	VAR,
+	LABEL,
 	UNKNOWN;
 
 }

@@ -61,4 +61,9 @@ public class VarInsn extends Insn {
 		// u1 index
 		return 2;
 	}
+
+	@Override
+	public String toString() {
+		return super.toString() + "(" + index + ")";
+	}
 }

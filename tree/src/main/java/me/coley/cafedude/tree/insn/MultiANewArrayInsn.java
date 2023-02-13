@@ -62,4 +62,9 @@ public class MultiANewArrayInsn extends Insn {
 		// u1 dimensions
 		return 4;
 	}
+
+	@Override
+	public String toString() {
+		return super.toString() + "(" + owner + ", " + dimensions + ")";
+	}
 }

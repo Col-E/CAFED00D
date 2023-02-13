@@ -87,4 +87,9 @@ public class FieldInsn extends Insn {
 		// u2 index
 		return 3;
 	}
+
+	@Override
+	public String toString() {
+		return super.toString() + "(" + owner + "." + name + descriptor.getDescriptor() + ")";
+	}
 }

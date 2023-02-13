@@ -47,4 +47,9 @@ public class IntInsn extends Insn {
 		// s1 operand
 		return 2;
 	}
+
+	@Override
+	public String toString() {
+		return super.toString() + "(" + operand + ")";
+	}
 }

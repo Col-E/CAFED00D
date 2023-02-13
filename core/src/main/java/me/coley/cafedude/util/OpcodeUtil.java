@@ -21,6 +21,7 @@ public class OpcodeUtil {
 	 * 		   {@code null} if the opcode is invalid.
 	 */
 	public static @Nullable String getOpcodeName(int opcode) {
+		if(opcode < 0 || opcode >= names.length) return null;
 		return names[opcode];
 	}
 

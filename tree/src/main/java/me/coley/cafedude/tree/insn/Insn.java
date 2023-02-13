@@ -1,6 +1,7 @@
 package me.coley.cafedude.tree.insn;
 
 import me.coley.cafedude.classfile.instruction.Opcodes;
+import me.coley.cafedude.util.OpcodeUtil;
 import org.intellij.lang.annotations.MagicConstant;
 
 /**
@@ -13,6 +14,8 @@ import org.intellij.lang.annotations.MagicConstant;
  * </ul>
  */
 public class Insn {
+
+	protected static final int LABEL_INSN_OPCODE = -1;
 
 	private final int opcode;
 	private final InsnKind kind;
@@ -52,7 +55,7 @@ public class Insn {
 
 	@Override
 	public String toString() {
-		return "insn(" + opcode + ")";
+		return OpcodeUtil.getOpcodeName(opcode);
 	}
 
 	/**
@@ -63,11 +66,12 @@ public class Insn {
 	}
 
 	/**
-	 * @param opcode {@link Opcodes#MONITORENTER} or {@link Opcodes#MONITOREXIT}.
+	 * @param opcode
+	 * 		Opcode for the instruction.
+	 *
 	 * @return a new {@link Insn} for {@link Opcodes#MONITORENTER} or {@link Opcodes#MONITOREXIT}.
 	 */
-	@MagicConstant(intValues = {Opcodes.MONITORENTER, Opcodes.MONITOREXIT})
-	public static Insn monitor(int opcode) {
+	public static Insn monitor(@MagicConstant(intValues = {Opcodes.MONITORENTER, Opcodes.MONITOREXIT}) int opcode) {
 		return new Insn(InsnKind.MONITOR, opcode);
 	}
 

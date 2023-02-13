@@ -72,4 +72,11 @@ public class Label {
 		return offset != -1;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null || getClass() != obj.getClass()) return false;
+		Label label = (Label) obj;
+		return offset == label.offset;
+	}
 }

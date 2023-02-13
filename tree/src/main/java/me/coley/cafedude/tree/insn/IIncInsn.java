@@ -62,4 +62,9 @@ public class IIncInsn extends Insn {
 		// u1 increment
 		return 3;
 	}
+
+	@Override
+	public String toString() {
+		return super.toString() + "(" + index + ", " + increment + ")";
+	}
 }

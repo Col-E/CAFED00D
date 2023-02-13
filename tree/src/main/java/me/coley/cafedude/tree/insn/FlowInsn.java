@@ -63,4 +63,9 @@ public class FlowInsn extends Insn {
 		// u2 label offset
 		return 3;
 	}
+
+	@Override
+	public String toString() {
+		return super.toString() + "(" + label.getOffset() + ")";
+	}
 }

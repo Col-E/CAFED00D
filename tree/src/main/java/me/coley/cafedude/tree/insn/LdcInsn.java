@@ -12,6 +12,10 @@ public class LdcInsn extends Insn {
 
 	private Constant constant;
 
+	public LdcInsn(Constant constant) {
+		this(Opcodes.LDC, constant);
+	}
+
 	/**
 	 * @param opcode
 	 * 		Instruction opcode.

@@ -49,4 +49,9 @@ public class TypeInsn extends Insn {
 		// u2 descriptor
 		return 3;
 	}
+
+	@Override
+	public String toString() {
+		return super.toString() + "(" + descriptor + ")";
+	}
 }
