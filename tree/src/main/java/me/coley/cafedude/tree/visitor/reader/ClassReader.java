@@ -49,7 +49,7 @@ public class ClassReader {
 	 * @param visitor
 	 * 			Visitor to accept.
 	 */
-	public void accept(ClassVisitor visitor) {
+	public void accept(ClassVisitor visitor) throws InvalidClassException {
 		LabelTransformer transformer = new LabelTransformer(classFile);
 		transformer.transform();
 		List<CpClass> interfaces = classFile.getInterfaceClasses();

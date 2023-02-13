@@ -1,5 +1,6 @@
 package me.coley.cafedude.tree.visitor;
 
+import me.coley.cafedude.InvalidCodeException;
 import me.coley.cafedude.classfile.Descriptor;
 import me.coley.cafedude.classfile.instruction.Opcodes;
 import me.coley.cafedude.tree.Constant;
@@ -7,6 +8,7 @@ import me.coley.cafedude.tree.Handle;
 import me.coley.cafedude.tree.Label;
 import me.coley.cafedude.tree.frame.Frame;
 import me.coley.cafedude.tree.frame.Value;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -296,7 +298,7 @@ public interface CodeVisitor {
 	 * @param label
 	 * 			label to jump to.
 	 */
-	default void visitFlowInsn(int opcode, Label label) {
+	default void visitFlowInsn(int opcode, @NotNull Label label) {
 		CodeVisitor cv = codeDelegate();
 		if (cv != null) cv.visitFlowInsn(opcode, label);
 	}
@@ -410,7 +412,7 @@ public interface CodeVisitor {
 	/**
 	 * Visit the end of the code.
 	 */
-	default void visitCodeEnd() {
+	default void visitCodeEnd() throws InvalidCodeException {
 		CodeVisitor cv = codeDelegate();
 		if (cv != null) cv.visitCodeEnd();
 	}

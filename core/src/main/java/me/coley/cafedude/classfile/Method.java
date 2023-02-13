@@ -27,9 +27,9 @@ public class Method extends ClassMember {
 	 * @param access
 	 * 		Method access flags.
 	 * @param name
-	 * 		Index of name UTF in pool.
-	 * @param typeIndex
-	 * 		Index of descriptor UTF in pool.
+	 * 		Name UTF in pool.
+	 * @param type
+	 * 		Type UTF in pool.
 	 */
 	public Method(List<Attribute> attributes, int access, CpUtf8 name, CpUtf8 type) {
 		super(attributes, access, name, type);
@@ -55,5 +55,26 @@ public class Method extends ClassMember {
 			set.addAll(attribute.cpAccesses());
 		}
 		return set;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Method other = (Method) obj;
+		if (getAccess() != other.getAccess())
+			return false;
+		if (getName() == null) {
+			if (other.getName() != null)
+				return false;
+		} else if (!getName().equals(other.getName()))
+			return false;
+		if (getType() == null) {
+			return other.getType() == null;
+		} else return getType().equals(other.getType());
 	}
 }

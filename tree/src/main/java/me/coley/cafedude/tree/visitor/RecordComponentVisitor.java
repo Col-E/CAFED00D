@@ -21,6 +21,18 @@ public interface RecordComponentVisitor extends DeclarationVisitor {
 		return recordComponentDelegate();
 	}
 
+	@Override
+	@Deprecated
+	default void visitSynthetic(boolean synthetic) {
+		throw new UnsupportedOperationException("Synthetic flag not supported for record components");
+	}
+
+	@Override
+	@Deprecated
+	default void visitDeprecated(boolean deprecated) {
+		throw new UnsupportedOperationException("Deprecated flag not supported for record components");
+	}
+
 	/**
 	 * End of the record component.
 	 */

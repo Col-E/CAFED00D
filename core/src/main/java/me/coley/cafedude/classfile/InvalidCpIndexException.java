@@ -18,4 +18,11 @@ public class InvalidCpIndexException extends IndexOutOfBoundsException {
 		return index;
 	}
 
+	@Override
+	public String toString() {
+		return "InvalidCpIndexException{" +
+				"pool=" + pool +
+				", index=" + index +
+				'}';
+	}
 }

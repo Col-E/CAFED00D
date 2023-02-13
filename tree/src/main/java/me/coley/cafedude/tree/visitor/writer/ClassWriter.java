@@ -10,6 +10,7 @@ import me.coley.cafedude.io.ClassBuilder;
 import me.coley.cafedude.io.ClassFileWriter;
 import me.coley.cafedude.tree.visitor.*;
 import me.coley.cafedude.util.Optional;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -43,13 +44,13 @@ public class ClassWriter extends DeclarationWriter implements ClassVisitor {
 	}
 
 	@Override
-	public MethodVisitor visitMethod(String name, int access, Descriptor descriptor) {
+	public @NotNull MethodVisitor visitMethod(String name, int access, Descriptor descriptor) {
 		return new MethodWriter(symbols, access, symbols.newUtf8(name), symbols.newUtf8(descriptor.getDescriptor()),
 				builder::addMethod);
 	}
 
 	@Override
-	public FieldVisitor visitField(String name, int access, Descriptor descriptor) {
+	public @NotNull FieldVisitor visitField(String name, int access, Descriptor descriptor) {
 		return new FieldWriter(symbols, access, symbols.newUtf8(name), symbols.newUtf8(descriptor.getDescriptor()),
 				builder::addField);
 	}

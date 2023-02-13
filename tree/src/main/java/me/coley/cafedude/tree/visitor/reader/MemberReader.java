@@ -1,8 +1,9 @@
 package me.coley.cafedude.tree.visitor.reader;
 
+import me.coley.cafedude.InvalidClassException;
+import me.coley.cafedude.InvalidCodeException;
 import me.coley.cafedude.classfile.ClassFile;
 import me.coley.cafedude.classfile.ClassMember;
-import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.classfile.Method;
 import me.coley.cafedude.classfile.annotation.Annotation;
 import me.coley.cafedude.classfile.annotation.TypeAnnotation;
@@ -42,8 +43,6 @@ public class MemberReader {
 	 * 		Visitor to visit with.
 	 * @param member
 	 * 		Member to visit.
-	 * @param pool
-	 * 		Constant pool to use for resolving.
 	 */
 	static void visitDeclaration(DeclarationVisitor visitor, AttributeHolder member) {
 		AnnotationsAttribute annotations = member.getAttribute(AnnotationsAttribute.class);
@@ -71,7 +70,7 @@ public class MemberReader {
 		visitor.visitSynthetic(member.getAttribute(SyntheticAttribute.class) != null);
 	}
 
-	void visitMethod(MethodVisitor mv, AttributeHolder member) {
+	void visitMethod(MethodVisitor mv, AttributeHolder member) throws InvalidClassException {
 		if(mv == null) return;
 		visitDeclaration(mv, member);
 		visitCode(mv.visitCode(), (Method) member);
@@ -121,7 +120,7 @@ public class MemberReader {
 		fv.visitFieldEnd();
 	}
 
-	private void visitCode(CodeVisitor cv, Method method) {
+	private void visitCode(CodeVisitor cv, Method method) throws InvalidCodeException {
 		if(cv == null) return; // skip code
 		CodeAttribute code = method.getAttribute(CodeAttribute.class);
 		if(code == null) return; // skip code

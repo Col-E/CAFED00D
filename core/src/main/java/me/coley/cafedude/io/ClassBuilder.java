@@ -1,5 +1,6 @@
 package me.coley.cafedude.io;
 
+import me.coley.cafedude.InvalidClassException;
 import me.coley.cafedude.classfile.ClassFile;
 import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.classfile.Field;
@@ -117,7 +118,7 @@ public class ClassBuilder {
 	}
 
 	/**
-	 * @param interfaceIndex
+	 * @param interfaceEntry
 	 * 		CP index of an interface type for the class.
 	 */
 	public void addInterface(CpClass interfaceEntry) {
@@ -179,7 +180,12 @@ public class ClassBuilder {
 	/**
 	 * @return Build it!
 	 */
-	public ClassFile build() {
+	public ClassFile build() throws InvalidClassException {
+		if(thisClass == null)
+			throw new InvalidClassException("Missing this class");
+		for(CpClass iface : interfaces)
+			if(iface == null)
+				throw new InvalidClassException("Missing interface");
 		return new ClassFile(
 				versionMinor, versionMajor,
 				pool,
