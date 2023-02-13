@@ -8,6 +8,7 @@ import java.util.List;
  * @author xDark
  */
 public class TableSwitchInstruction extends BasicInstruction {
+	private int padding;
 	private int dflt;
 	private int low;
 	private int high;
@@ -23,7 +24,7 @@ public class TableSwitchInstruction extends BasicInstruction {
 	 * @param offsets
 	 * 		Branch offsets.
 	 */
-	public TableSwitchInstruction(int dflt, int low, int high, List<Integer> offsets) {
+	public TableSwitchInstruction(int padding, int dflt, int low, int high, List<Integer> offsets) {
 		super(Opcodes.TABLESWITCH);
 		this.dflt = dflt;
 		this.low = low;
@@ -125,6 +126,6 @@ public class TableSwitchInstruction extends BasicInstruction {
 
 	@Override
 	public int computeSize() {
-		return 1 + 3 + 4 + 4 + 4 + offsets.size() * 4; // opcode + padding + default + low + high + offsets
+		return 1 + padding + 4 + 4 + 4 + offsets.size() * 4; // opcode + padding + default + low + high + offsets
 	}
 }

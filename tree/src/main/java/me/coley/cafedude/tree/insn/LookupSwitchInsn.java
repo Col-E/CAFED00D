@@ -11,6 +11,7 @@ import java.util.List;
  */
 public class LookupSwitchInsn extends Insn {
 
+	private int padding;
 	private List<Integer> keys;
 	private List<Label> labels;
 	private Label defaultLabel;
@@ -73,6 +74,21 @@ public class LookupSwitchInsn extends Insn {
 		this.defaultLabel = defaultLabel;
 	}
 
+	/**
+	 * @return Padding of the switch.
+	 */
+	public int getPadding() {
+		return padding;
+	}
+
+	/**
+	 * @param padding
+	 * 		Padding of the switch.
+	 */
+	public void setPadding(int padding) {
+		this.padding = padding;
+	}
+
 	@Override
 	public int size() {
 		// u1 opcode
@@ -80,6 +96,18 @@ public class LookupSwitchInsn extends Insn {
 		// u4 default
 		// u4 npairs
 		// { u4 key, u4 offset } npairs times
-		return 1 + 4 + 4 + 4 + (keys.size() * 8);
+		return 1 + padding + 4 + 4 + (keys.size() * 8);
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("lookupswitch([").append(padding).append("]) (\n");
+		sb.append("  default: ").append(defaultLabel.getOffset()).append("\n");
+		for (int i = 0; i < keys.size(); i++) {
+			sb.append("  ").append(keys.get(i)).append(" -> ").append(labels.get(i).getOffset()).append("\n");
+		}
+		sb.append(")");
+		return sb.toString();
 	}
 }

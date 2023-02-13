@@ -8,6 +8,7 @@ import java.util.List;
  * @author xDark
  */
 public class LookupSwitchInstruction extends BasicInstruction {
+	private int padding;
 	private int dflt;
 	private List<Integer> keys;
 	private List<Integer> offsets;
@@ -20,11 +21,12 @@ public class LookupSwitchInstruction extends BasicInstruction {
 	 * @param offsets
 	 * 		Branch offsets.
 	 */
-	public LookupSwitchInstruction(int dflt, List<Integer> keys, List<Integer> offsets) {
+	public LookupSwitchInstruction(int padding, int dflt, List<Integer> keys, List<Integer> offsets) {
 		super(Opcodes.LOOKUPSWITCH);
 		this.dflt = dflt;
 		this.keys = keys;
 		this.offsets = offsets;
+		this.padding = padding;
 	}
 
 	/**
@@ -102,6 +104,6 @@ public class LookupSwitchInstruction extends BasicInstruction {
 
 	@Override
 	public int computeSize() {
-		return 1 + 3 + 4 + 4 + 4 * keys.size() + 4 * offsets.size(); // padding + default + npairs + pairs
+		return 1 + padding + 4 + 4 + 4 * keys.size() + 4 * offsets.size();
 	}
 }

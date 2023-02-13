@@ -11,6 +11,7 @@ import java.util.List;
  */
 public class TableSwitchInsn extends Insn {
 
+	private int padding;
 	private int min;
 	private int max;
 	private List<Label> labels;
@@ -94,14 +95,34 @@ public class TableSwitchInsn extends Insn {
 		this.max = max;
 	}
 
+	/**
+	 * @return Padding of the switch.
+	 */
+	public int getPadding() {
+		return padding;
+	}
+
+	/**
+	 * @param padding
+	 * 		Padding of the switch.
+	 */
+	public void setPadding(int padding) {
+		this.padding = padding;
+	}
+
 	@Override
 	public int size() {
 		// u1 opcode
-		// u1 padding
+		// u? padding
 		// u4 default
 		// u4 low
 		// u4 high
 		// u4 * (high - low + 1)
-		return 1 + 3 + 4 + 4 + 4 + labels.size() * 4;
+		return 1 + padding + 4 + 4 + 4 + labels.size() * 4;
+	}
+
+	@Override
+	public String toString() {
+		return super.toString() + "(" + min + ", " + max + ", " + labels + ", " + defaultLabel + ")";
 	}
 }

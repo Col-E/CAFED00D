@@ -268,6 +268,7 @@ public class InstructionReader {
 					int pos = buffer.position();
 					// Skip padding.
 					buffer.position(pos + (4 - pos & 3));
+					int padding = buffer.position() - pos;
 					int dflt = buffer.getInt();
 					int low = buffer.getInt();
 					int high = buffer.getInt();
@@ -276,13 +277,14 @@ public class InstructionReader {
 					for (int i = 0; i < count; i++) {
 						offsets.add(buffer.getInt());
 					}
-					instructions.add(new TableSwitchInstruction(dflt, low, high, offsets));
+					instructions.add(new TableSwitchInstruction(padding, dflt, low, high, offsets));
 					break;
 				}
 				case LOOKUPSWITCH: {
 					int pos = buffer.position();
 					// Skip padding.
 					buffer.position(pos + (4 - pos & 3));
+					int padding = buffer.position() - pos;
 					int dflt = buffer.getInt();
 					int keyCount = buffer.getInt();
 					List<Integer> keys = new ArrayList<>(keyCount);
@@ -291,7 +293,7 @@ public class InstructionReader {
 						keys.add(buffer.getInt());
 						offsets.add(buffer.getInt());
 					}
-					instructions.add(new LookupSwitchInstruction(dflt, keys, offsets));
+					instructions.add(new LookupSwitchInstruction(padding, dflt, keys, offsets));
 					break;
 				}
 				case IRETURN:
