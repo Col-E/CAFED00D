@@ -5,3 +5,4 @@ target/*
 /target/
 /core/target/
 /tree/target
+/tree/test-results/

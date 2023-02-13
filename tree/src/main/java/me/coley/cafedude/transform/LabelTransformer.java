@@ -4,6 +4,7 @@ import me.coley.cafedude.classfile.ClassFile;
 import me.coley.cafedude.classfile.Method;
 import me.coley.cafedude.classfile.attribute.CodeAttribute;
 import me.coley.cafedude.classfile.attribute.LineNumberTableAttribute;
+import me.coley.cafedude.classfile.attribute.LocalVariableTableAttribute;
 import me.coley.cafedude.classfile.instruction.Instruction;
 import me.coley.cafedude.classfile.instruction.IntOperandInstruction;
 import me.coley.cafedude.classfile.instruction.LookupSwitchInstruction;
@@ -36,16 +37,18 @@ public class LabelTransformer extends Transformer {
 
 	@Override
 	public void transform() {
-		InstructionReader reader = new InstructionReader(new IllegalRewritingInstructionsReader(pool));
 		for (Method method : clazz.getMethods()) {
 			CodeAttribute ca = method.getAttribute(CodeAttribute.class);
 
 			if (ca != null) {
 				LineNumberTableAttribute lnta = ca.getAttribute(LineNumberTableAttribute.class);
-				List<Instruction> insns = reader.read(ca.getCode(), pool);
+				LocalVariableTableAttribute lvta = ca.getAttribute(LocalVariableTableAttribute.class);
+				List<Instruction> insns = ca.getInstructions();
 				// populate maps
 				TreeMap<Integer, Label> labels = new TreeMap<>();
 				TreeMap<Integer, Instruction> instructions = new TreeMap<>();
+
+				labels.put(0, new Label(0)); // start label
 
 				for (CodeAttribute.ExceptionTableEntry exceptionTableEntry : ca.getExceptionTable()) {
 					int start = exceptionTableEntry.getStartPc();
@@ -69,39 +72,26 @@ public class LabelTransformer extends Transformer {
 						IntOperandInstruction ioi = (IntOperandInstruction) insn;
 						int offset = ioi.getOperand();
 						int target = pos + offset;
-						if (!labels.containsKey(target)) {
-							labels.put(target, new Label(target));
-						}
+						labels.computeIfAbsent(target, Label::new);
 					} else if(opcode == TABLESWITCH) {
 						TableSwitchInstruction tsi = (TableSwitchInstruction) insn;
 						List<Integer> offsets = tsi.getOffsets();
 						for (int offset : offsets) {
-							int target = pos + offset;
-							if (!labels.containsKey(target)) {
-								labels.put(target, new Label(target));
-							}
+							labels.computeIfAbsent(pos + offset, Label::new);
 						}
-						int defaultTarget = pos + tsi.getDefault();
-						if (!labels.containsKey(defaultTarget)) {
-							labels.put(defaultTarget, new Label(defaultTarget));
-						}
+						labels.computeIfAbsent(pos + tsi.getDefault(), Label::new);
 					} else if(opcode == LOOKUPSWITCH) {
 						LookupSwitchInstruction lsi = (LookupSwitchInstruction) insn;
 						List<Integer> offsets = lsi.getOffsets();
 						for (int offset : offsets) {
-							int target = pos + offset;
-							if (!labels.containsKey(target)) {
-								labels.put(target, new Label(target));
-							}
+							labels.computeIfAbsent(pos + offset, Label::new);
 						}
-						int defaultTarget = pos + lsi.getDefault();
-						if (!labels.containsKey(defaultTarget)) {
-							labels.put(defaultTarget, new Label(defaultTarget));
-						}
+						labels.computeIfAbsent(pos + lsi.getDefault(), Label::new);
 					}
 					instructions.put(pos, insn);
 					pos += insn.computeSize();
 				}
+				labels.put(pos, new Label(pos)); // end label
 				// add lines to labels
 				if(lnta != null) {
 					for (LineNumberTableAttribute.LineEntry entry : lnta.getEntries()) {
@@ -109,11 +99,21 @@ public class LabelTransformer extends Transformer {
 						lab.addLineNumber(entry.getLine());
 					}
 				}
+				// add local labels to labels
+				if(lvta != null) {
+					for (LocalVariableTableAttribute.VarEntry entry : lvta.getEntries()) {
+						int start = entry.getStartPc();
+						int end = entry.getStartPc() + entry.getLength();
+						labels.computeIfAbsent(start, Label::new);
+						labels.computeIfAbsent(end, Label::new);
+					}
+				}
 				this.labels.put(method, labels);
 				this.instructions.put(method, instructions);
 				// TODO: patch invalid offsets
 			}
 		}
+
 	}
 
 	/**

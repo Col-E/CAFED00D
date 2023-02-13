@@ -2,23 +2,23 @@ package me.coley.cafedude.tree.visitor;
 
 import me.coley.cafedude.classfile.Descriptor;
 import me.coley.cafedude.classfile.instruction.Opcodes;
-import me.coley.cafedude.tree.Constant;
-import me.coley.cafedude.tree.Handle;
-import me.coley.cafedude.tree.Label;
+import me.coley.cafedude.tree.*;
 import me.coley.cafedude.tree.insn.*;
-import me.coley.cafedude.util.OpcodeUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Visits code and converts it to a list of {@link Insn}s.
  */
-public class InsnConverter implements CodeVisitor {
+public class CodeDataVisitor implements CodeVisitor {
 
-	List<Insn> instructions = new ArrayList<>();
-	int offset = 0;
+	private final List<Insn> insns = new ArrayList<>();
+	private final List<Local> locals = new ArrayList<>();
+	private final List<ExceptionHandler> handlers = new ArrayList<>();
+	private int maxStack;
+	private int maxLocals;
 
 	@Override
 	public void visitNop() {
@@ -61,8 +61,7 @@ public class InsnConverter implements CodeVisitor {
 	}
 
 	@Override
-	public void visitFlowInsn(int opcode, Label label) {
-		checkLabel(label);
+	public void visitFlowInsn(int opcode, @NotNull Label label) {
 		add(new FlowInsn(opcode, label));
 	}
 
@@ -89,28 +88,16 @@ public class InsnConverter implements CodeVisitor {
 
 	@Override
 	public void visitLookupSwitchInsn(Label defaultLabel, int[] keys, Label... labels) {
-		checkLabel(defaultLabel);
-		List<Label> labelList = new ArrayList<>();
-		for(Label label : labels) {
-			checkLabel(label);
-			labelList.add(label);
-		}
 		List<Integer> keyList = new ArrayList<>();
 		for(int key : keys) {
 			keyList.add(key);
 		}
-		add(new LookupSwitchInsn(keyList, labelList, defaultLabel));
+		add(new LookupSwitchInsn(keyList, Arrays.asList(labels), defaultLabel));
 	}
 
 	@Override
 	public void visitTableSwitchInsn(int min, int max, Label defaultLabel, Label... labels) {
-		checkLabel(defaultLabel);
-		List<Label> labelList = new ArrayList<>();
-		for(Label label : labels) {
-			checkLabel(label);
-			labelList.add(label);
-		}
-		add(new TableSwitchInsn(min, max, labelList, defaultLabel));
+		add(new TableSwitchInsn(min, max, Arrays.asList(labels), defaultLabel));
 	}
 
 	@Override
@@ -140,21 +127,37 @@ public class InsnConverter implements CodeVisitor {
 
 	@Override
 	public void visitLabel(Label label) {
-		label.setOffset(offset);
+		add(new LabelInsn(label));
+	}
+
+	@Override
+	public void visitLocalVariable(int index, String name, Descriptor descriptor, @Nullable String signature, Label start, Label end) {
+		Local local = new Local(index);
+		local.setName(name);
+		local.setDesc(descriptor);
+		local.setSignature(signature);
+		local.setStart(start);
+		local.setEnd(end);
+		locals.add(local);
+	}
+
+	@Override
+	public void visitMaxs(int maxStack, int maxLocal) {
+		this.maxStack = maxStack;
+		this.maxLocals = maxLocal;
+	}
+
+	@Override
+	public void visitExceptionHandler(@Nullable String type, Label start, Label end, Label handler) {
+		handlers.add(new ExceptionHandler(type, start, end, handler));
+	}
+
+	public Code getCode() {
+		return new Code(insns, locals, handlers, maxStack, maxLocals);
 	}
 
 	void add(Insn insn) {
-		instructions.add(insn);
-		offset += insn.size();
+		insns.add(insn);
 	}
 
-	public List<Insn> getInstructions() {
-		return instructions;
-	}
-
-	private void checkLabel(Label label) {
-		if(!label.isResolved()) {
-			throw new IllegalStateException("Unresolved label: " + label);
-		}
-	}
 }

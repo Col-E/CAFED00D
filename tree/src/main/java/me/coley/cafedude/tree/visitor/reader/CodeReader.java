@@ -1,5 +1,6 @@
 package me.coley.cafedude.tree.visitor.reader;
 
+import me.coley.cafedude.InvalidCodeException;
 import me.coley.cafedude.classfile.ClassFile;
 import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.classfile.Descriptor;
@@ -34,14 +35,14 @@ public class CodeReader {
 	private final CodeVisitor cv;
 	private final CodeAttribute ca;
 	private final Method method;
-	private final Map<Integer, Label> labels;
-	private final Map<Integer, Instruction> instructions;
+	private final TreeMap<Integer, Label> labels;
+	private final TreeMap<Integer, Instruction> instructions;
 	private Stack<Value> stack = new Stack<>();
 	private final Stack<Value> locals = new Stack<>();
 	private static final Stack<Value> EMPTY = new Stack<>();
 
 	CodeReader(ClassFile clazz, CodeAttribute ca, CodeVisitor cv, Method method,
-			   Map<Integer, Label> labels, Map<Integer, Instruction> instructions) {
+			   TreeMap<Integer, Label> labels, TreeMap<Integer, Instruction> instructions) {
 		this.bsma = clazz.getAttribute(BootstrapMethodsAttribute.class);
 		this.lvta = ca.getAttribute(LocalVariableTableAttribute.class);
 		this.lvtta = ca.getAttribute(LocalVariableTypeTableAttribute.class);
@@ -54,7 +55,7 @@ public class CodeReader {
 	}
 
 
-	void accept() {
+	void accept() throws InvalidCodeException {
 		if (instructions == null) {
 			logger.warn("Method visited but no instructions present, Method=" + method.getName().getText());
 			return;
@@ -69,24 +70,29 @@ public class CodeReader {
 					labels.get(entry.getHandlerPc()));
 		}
 		Map<Integer, StackMapFrame> frames = getStackMapFrames();
-		for (Map.Entry<Integer, Instruction> entry : instructions.entrySet()) {
-			int insnPos = entry.getKey();
-			Label currentLabel = labels.get(insnPos);
+		int start = 0;
+		int end = 0;
+		// get last label in label map
+		if (!labels.isEmpty()) {
+			end = labels.lastKey();
+		}
+		for(int pos = start; pos < end; pos++) {
+			Label currentLabel = labels.get(pos);
 			if (currentLabel != null) {
 				cv.visitLabel(currentLabel);
 				for (Integer line : currentLabel.getLines()) {
 					cv.visitLineNumber(line, currentLabel);
 				}
 			}
-			StackMapFrame frame = frames.get(insnPos);
+			StackMapFrame frame = frames.get(pos);
 			if(frame != null) {
 				visitFrame(frame);
 			}
-			Instruction insn = entry.getValue();
+			Instruction insn = instructions.get(pos);
 			if (insn instanceof IntOperandInstruction) {
-				visitIntOpInsn((IntOperandInstruction) insn, insnPos);
+				visitIntOpInsn((IntOperandInstruction) insn, pos);
 			} else if(insn instanceof CpRefInstruction) {
-				visitCpRefInsn((CpRefInstruction) insn, insnPos);
+				visitCpRefInsn((CpRefInstruction) insn, pos);
 			}else if (insn instanceof IincInstruction) {
 				visitIincInsn((IincInstruction) insn);
 			} else if (insn instanceof MultiANewArrayInstruction) {
@@ -94,16 +100,16 @@ public class CodeReader {
 			} else if (insn instanceof WideInstruction) {
 				Instruction backing = ((WideInstruction) insn).getBacking();
 				if (backing instanceof IntOperandInstruction) {
-					visitIntOpInsn((IntOperandInstruction) backing, insnPos);
+					visitIntOpInsn((IntOperandInstruction) backing, pos);
 				} else if (backing instanceof IincInstruction) {
 					visitIincInsn((IincInstruction) backing);
 				}
 			} else if (insn instanceof LookupSwitchInstruction) {
-				visitLookupSwitchInsn((LookupSwitchInstruction) insn, insnPos);
+				visitLookupSwitchInsn((LookupSwitchInstruction) insn, pos);
 			} else if (insn instanceof TableSwitchInstruction) {
-				visitTableSwitchInsn((TableSwitchInstruction) insn, insnPos);
+				visitTableSwitchInsn((TableSwitchInstruction) insn, pos);
 			} else if (insn instanceof BasicInstruction) {
-				visitBasicInsn((BasicInstruction) insn, insnPos);
+				visitBasicInsn((BasicInstruction) insn, pos);
 			}
 		}
 		visitLocalVariables();
@@ -196,6 +202,9 @@ public class CodeReader {
 		} else if ((opcode >= IFEQ && opcode <= JSR) || (opcode >= IFNULL && opcode <= JSR_W)) {
 			int targetPos = pos + operand;
 			Label targetLabel = labels.get(targetPos);
+			if(targetLabel == null) {
+				throw new IllegalStateException("No label for target position: " + targetPos);
+			}
 			cv.visitFlowInsn(opcode, targetLabel);
 		} else {
 			throw new IllegalStateException("Unsupported opcode (integer operand): "
@@ -215,6 +224,8 @@ public class CodeReader {
 			String owner = fr.getClassRef().getName().getText();
 			String type = nt.getType().getText();
 			cv.visitFieldInsn(opcode, owner, name, Descriptor.from(type));
+		} else if (opcode == LDC || opcode == LDC_W || opcode == LDC2_W) {
+			cv.visitLdcInsn(ConstantUtil.from(cpr.getEntry()));
 		} else if (opcode == INVOKEVIRTUAL
 				|| opcode == INVOKESPECIAL
 				|| opcode == INVOKESTATIC
