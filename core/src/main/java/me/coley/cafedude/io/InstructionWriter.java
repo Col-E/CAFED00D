@@ -221,7 +221,6 @@ public class InstructionWriter {
 				case IFNONNULL:
 					buffer.putShort(((IntOperandInstruction) instruction).getOperand());
 					break;
-				case LDC:
 				case ILOAD:
 				case LLOAD:
 				case FLOAD:
@@ -235,6 +234,9 @@ public class InstructionWriter {
 				case RET:
 				case NEWARRAY:
 					buffer.put(((IntOperandInstruction) instruction).getOperand() & 0xFF);
+					break;
+				case LDC:
+					buffer.put(((CpRefInstruction) instruction).getEntry().getIndex() & 0xFF);
 					break;
 				case LDC_W:
 				case LDC2_W:
@@ -286,7 +288,8 @@ public class InstructionWriter {
 					}
 					break;
 				case INVOKEDYNAMIC:
-					buffer.putShort(((IntOperandInstruction) instruction).getOperand() & 0xFFFF);
+					CpRefInstruction ref = (CpRefInstruction) instruction;
+					buffer.putShort(ref.getEntry().getIndex() & 0xFFFF);
 					buffer.putShort(0);
 					break;
 				case WIDE:
