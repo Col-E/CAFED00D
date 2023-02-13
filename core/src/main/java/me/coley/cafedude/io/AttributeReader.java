@@ -17,6 +17,7 @@ import me.coley.cafedude.classfile.attribute.RecordAttribute.RecordComponent;
 import me.coley.cafedude.classfile.attribute.StackMapTableAttribute.StackMapFrame;
 import me.coley.cafedude.classfile.attribute.StackMapTableAttribute.TypeInfo;
 import me.coley.cafedude.classfile.constant.*;
+import me.coley.cafedude.classfile.instruction.Instruction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +45,7 @@ public class AttributeReader {
 	private final ConstPool cp;
 	// Attribute info
 	private final int expectedContentLength;
-	private CpUtf8 name;
+	private final CpUtf8 name;
 
 	/**
 	 * @param reader
@@ -619,7 +620,6 @@ public class AttributeReader {
 		int maxStack = -1;
 		int maxLocals = -1;
 		int codeLength = -1;
-		byte[] code = null;
 		List<ExceptionTableEntry> exceptions = new ArrayList<>();
 		List<Attribute> attributes = new ArrayList<>();
 		// Parse depending on class format version
@@ -635,8 +635,10 @@ public class AttributeReader {
 			codeLength = is.readInt();
 		}
 		// Read instructions
-		code = new byte[codeLength];
+		byte[] code = new byte[codeLength];
 		is.readFully(code);
+		InstructionReader reader = new InstructionReader(this.reader.fallbackReaderSupplier.get());
+		List<Instruction> instructions = reader.read(code, cp);
 		// Read exceptions
 		int numExceptions = is.readUnsignedShort();
 		for (int i = 0; i < numExceptions; i++)
@@ -644,11 +646,11 @@ public class AttributeReader {
 		// Read attributes
 		int numAttributes = is.readUnsignedShort();
 		for (int i = 0; i < numAttributes; i++) {
-			Attribute attr = new AttributeReader(reader, builder, is).readAttribute(AttributeContext.ATTRIBUTE);
+			Attribute attr = new AttributeReader(this.reader, builder, is).readAttribute(AttributeContext.ATTRIBUTE);
 			if (attr != null)
 				attributes.add(attr);
 		}
-		return new CodeAttribute(name, maxStack, maxLocals, code, exceptions, attributes);
+		return new CodeAttribute(name, maxStack, maxLocals, instructions, exceptions, attributes);
 	}
 
 	/**

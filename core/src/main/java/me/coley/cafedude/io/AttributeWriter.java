@@ -1,48 +1,25 @@
 package me.coley.cafedude.io;
 
+import me.coley.cafedude.InvalidClassException;
 import me.coley.cafedude.classfile.AttributeConstants;
 import me.coley.cafedude.classfile.ClassFile;
-import me.coley.cafedude.InvalidClassException;
-import me.coley.cafedude.classfile.attribute.AnnotationDefaultAttribute;
-import me.coley.cafedude.classfile.attribute.AnnotationsAttribute;
-import me.coley.cafedude.classfile.attribute.Attribute;
-import me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute;
+import me.coley.cafedude.classfile.attribute.*;
 import me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.BootstrapMethod;
-import me.coley.cafedude.classfile.attribute.CodeAttribute;
-import me.coley.cafedude.classfile.attribute.ConstantValueAttribute;
-import me.coley.cafedude.classfile.attribute.SourceDebugExtensionAttribute;
-import me.coley.cafedude.classfile.attribute.DefaultAttribute;
-import me.coley.cafedude.classfile.attribute.EnclosingMethodAttribute;
-import me.coley.cafedude.classfile.attribute.ExceptionsAttribute;
-import me.coley.cafedude.classfile.attribute.InnerClassesAttribute;
 import me.coley.cafedude.classfile.attribute.InnerClassesAttribute.InnerClass;
-import me.coley.cafedude.classfile.attribute.LineNumberTableAttribute;
 import me.coley.cafedude.classfile.attribute.LineNumberTableAttribute.LineEntry;
-import me.coley.cafedude.classfile.attribute.LocalVariableTableAttribute;
 import me.coley.cafedude.classfile.attribute.LocalVariableTableAttribute.VarEntry;
-import me.coley.cafedude.classfile.attribute.LocalVariableTypeTableAttribute;
 import me.coley.cafedude.classfile.attribute.LocalVariableTypeTableAttribute.VarTypeEntry;
-import me.coley.cafedude.classfile.attribute.ModuleAttribute;
 import me.coley.cafedude.classfile.attribute.ModuleAttribute.Exports;
 import me.coley.cafedude.classfile.attribute.ModuleAttribute.Opens;
 import me.coley.cafedude.classfile.attribute.ModuleAttribute.Provides;
 import me.coley.cafedude.classfile.attribute.ModuleAttribute.Requires;
-import me.coley.cafedude.classfile.attribute.NestHostAttribute;
-import me.coley.cafedude.classfile.attribute.NestMembersAttribute;
-import me.coley.cafedude.classfile.attribute.ParameterAnnotationsAttribute;
-import me.coley.cafedude.classfile.attribute.PermittedClassesAttribute;
-import me.coley.cafedude.classfile.attribute.RecordAttribute;
 import me.coley.cafedude.classfile.attribute.RecordAttribute.RecordComponent;
-import me.coley.cafedude.classfile.attribute.SignatureAttribute;
-import me.coley.cafedude.classfile.attribute.SourceFileAttribute;
-import me.coley.cafedude.classfile.attribute.StackMapTableAttribute;
 import me.coley.cafedude.classfile.attribute.StackMapTableAttribute.StackMapFrame;
 import me.coley.cafedude.classfile.attribute.StackMapTableAttribute.TypeInfo;
 import me.coley.cafedude.classfile.constant.CpClass;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpModule;
 import me.coley.cafedude.classfile.constant.CpUtf8;
-import me.coley.cafedude.util.Optional;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.ByteArrayOutputStream;
@@ -57,13 +34,15 @@ import java.io.IOException;
  * @author Matt Coley
  */
 public class AttributeWriter {
+	private final ClassFileWriter writer;
 	private final ClassFile clazz;
 
 	/**
 	 * @param clazz
 	 * 		Class to pull info from.
 	 */
-	public AttributeWriter(ClassFile clazz) {
+	public AttributeWriter(ClassFileWriter writer, ClassFile clazz) {
+		this.writer = writer;
 		this.clazz = clazz;
 	}
 
@@ -117,8 +96,10 @@ public class AttributeWriter {
 					CodeAttribute code = (CodeAttribute) attribute;
 					out.writeShort(code.getMaxStack());
 					out.writeShort(code.getMaxLocals());
-					out.writeInt(code.getCode().length);
-					out.write(code.getCode());
+					InstructionWriter instructionWriter = new InstructionWriter(writer.fallbackWriterSupplier.get());
+					byte[] codeBytes = instructionWriter.writeCode(code.getInstructions());
+					out.writeInt(codeBytes.length);
+					out.write(codeBytes);
 					out.writeShort(code.getExceptionTable().size());
 					for (CodeAttribute.ExceptionTableEntry tableEntry : code.getExceptionTable()) {
 						out.writeShort(tableEntry.getStartPc());

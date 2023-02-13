@@ -7,7 +7,7 @@ import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.classfile.instruction.Instruction;
 import me.coley.cafedude.io.AttributeContext;
-import me.coley.cafedude.io.InstructionReader;
+import me.coley.cafedude.io.InstructionWriter;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -22,7 +22,7 @@ import java.util.Set;
 public class CodeAttribute extends Attribute implements AttributeHolder {
 	private List<ExceptionTableEntry> exceptionTable;
 	private List<Attribute> attributes;
-	private byte[] code;
+	private List<Instruction> instructions;
 	private int maxStack;
 	private int maxLocals;
 
@@ -33,19 +33,19 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 	 * 		Maximum number of values on the stack in the method.
 	 * @param maxLocals
 	 * 		Maximum number of local variables used in the method.
-	 * @param code
+	 * @param instructions
 	 * 		Instruction code data.
 	 * @param exceptionTable
 	 * 		Exception table entries.
 	 * @param attributes
 	 * 		List of other attributes.
 	 */
-	public CodeAttribute(CpUtf8 name, int maxStack, int maxLocals, byte[] code,
+	public CodeAttribute(CpUtf8 name, int maxStack, int maxLocals, List<Instruction> instructions,
 						 List<ExceptionTableEntry> exceptionTable, List<Attribute> attributes) {
 		super(name);
 		this.maxStack = maxStack;
 		this.maxLocals = maxLocals;
-		this.code = code;
+		this.instructions = instructions;
 		this.exceptionTable = exceptionTable;
 		this.attributes = attributes;
 	}
@@ -53,16 +53,16 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 	/**
 	 * @return Instruction code data.
 	 */
-	public byte[] getCode() {
-		return code;
+	public List<Instruction> getInstructions() {
+		return instructions;
 	}
 
 	/**
-	 * @param code
+	 * @param instructions
 	 * 		New instruction code data.
 	 */
-	public void setCode(byte[] code) {
-		this.code = code;
+	public void setInstructions(List<Instruction> instructions) {
+		this.instructions = instructions;
 	}
 
 	/**
@@ -141,6 +141,11 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 			set.addAll(attribute.cpAccesses());
 		for (ExceptionTableEntry ex : getExceptionTable())
 			set.addAll(ex.cpAccesses());
+		for(Instruction instruction : instructions) {
+			if(instruction instanceof CpAccessor) {
+				set.addAll(((CpAccessor) instruction).cpAccesses());
+			}
+		}
 		return set;
 	}
 
@@ -152,7 +157,10 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 		// u4: code_length
 		// u1 * X: CODE
 		len += 4;
-		len += code.length;
+		int insnSize = 0;
+		for (Instruction instruction : instructions)
+			insnSize += instruction.computeSize();
+		len += insnSize;
 		// u2: exception_table_length
 		// u2 * 4 * X: EXCEPTIONS
 		len += 2;

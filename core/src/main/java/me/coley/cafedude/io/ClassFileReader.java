@@ -7,9 +7,11 @@ import me.coley.cafedude.classfile.constant.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static me.coley.cafedude.classfile.ConstantPoolConstants.*;
 
@@ -27,6 +29,7 @@ public class ClassFileReader {
 	private boolean dropForwardVersioned = true;
 	private boolean dropEofAttributes = true;
 	private boolean dropDupeAnnotations = true;
+	protected Supplier<FallbackInstructionReader> fallbackReaderSupplier = FallbackInstructionReader::fail;
 
 	/**
 	 * @param code
@@ -278,9 +281,16 @@ public class ClassFileReader {
 		int numAttributes = is.readUnsignedShort();
 		List<Attribute> attributes = new ArrayList<>();
 		for (int i = 0; i < numAttributes; i++) {
-			Attribute attr = new AttributeReader(this, builder, is).readAttribute(AttributeContext.FIELD);
-			if (attr != null)
-				attributes.add(attr);
+			try {
+				Attribute attr = new AttributeReader(this, builder, is).readAttribute(AttributeContext.FIELD);
+				if (attr != null)
+					attributes.add(attr);
+			} catch (EOFException e) {
+				if(doDropEofAttributes()) {
+					logger.debug("Dropping attribute " + i + " of field: " + name.getText()
+							+ " due to EOF: " + e.getMessage());
+				}
+			}
 		}
 		return new Field(attributes, access, name, type);
 	}

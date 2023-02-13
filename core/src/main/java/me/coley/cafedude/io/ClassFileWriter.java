@@ -26,6 +26,7 @@ import me.coley.cafedude.classfile.constant.CpUtf8;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.function.Supplier;
 
 /**
  * Class file format writer.
@@ -37,6 +38,7 @@ import java.io.IOException;
 public class ClassFileWriter {
 	private DataOutputStream out;
 	private AttributeWriter attributeWriter;
+	protected Supplier<FallbackInstructionWriter> fallbackWriterSupplier = FallbackInstructionWriter::fail;
 
 	/**
 	 * @param clazz
@@ -51,7 +53,7 @@ public class ClassFileWriter {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try (DataOutputStream out = new DataOutputStream(baos)) {
 			this.out = out;
-			attributeWriter = new AttributeWriter(clazz);
+			attributeWriter = new AttributeWriter(this, clazz);
 			// Write magic header
 			out.writeInt(0xCAFEBABE);
 			// Version

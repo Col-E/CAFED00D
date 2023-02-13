@@ -1,68 +1,26 @@
 package me.coley.cafedude.transform;
 
-import me.coley.cafedude.classfile.AttributeConstants;
-import me.coley.cafedude.classfile.ClassFile;
-import me.coley.cafedude.classfile.ConstantPoolConstants;
-import me.coley.cafedude.classfile.Descriptor;
-import me.coley.cafedude.classfile.Field;
-import me.coley.cafedude.classfile.Method;
-import me.coley.cafedude.classfile.Modifiers;
-import me.coley.cafedude.classfile.annotation.Annotation;
-import me.coley.cafedude.classfile.annotation.ClassElementValue;
-import me.coley.cafedude.classfile.annotation.ElementValue;
-import me.coley.cafedude.classfile.annotation.EnumElementValue;
-import me.coley.cafedude.classfile.annotation.PrimitiveElementValue;
-import me.coley.cafedude.classfile.annotation.TargetInfo;
+import me.coley.cafedude.classfile.*;
+import me.coley.cafedude.classfile.annotation.*;
 import me.coley.cafedude.classfile.annotation.TargetInfo.CatchTargetInfo;
 import me.coley.cafedude.classfile.annotation.TargetInfo.SuperTypeTargetInfo;
-import me.coley.cafedude.classfile.annotation.TypeAnnotation;
-import me.coley.cafedude.classfile.annotation.Utf8ElementValue;
-import me.coley.cafedude.classfile.attribute.AnnotationDefaultAttribute;
-import me.coley.cafedude.classfile.attribute.AnnotationsAttribute;
-import me.coley.cafedude.classfile.attribute.Attribute;
-import me.coley.cafedude.classfile.attribute.AttributeContexts;
-import me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute;
+import me.coley.cafedude.classfile.attribute.*;
 import me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.BootstrapMethod;
-import me.coley.cafedude.classfile.attribute.CodeAttribute;
 import me.coley.cafedude.classfile.attribute.CodeAttribute.ExceptionTableEntry;
-import me.coley.cafedude.classfile.attribute.ConstantValueAttribute;
-import me.coley.cafedude.classfile.attribute.DefaultAttribute;
-import me.coley.cafedude.classfile.attribute.EnclosingMethodAttribute;
-import me.coley.cafedude.classfile.attribute.ExceptionsAttribute;
-import me.coley.cafedude.classfile.attribute.InnerClassesAttribute;
 import me.coley.cafedude.classfile.attribute.InnerClassesAttribute.InnerClass;
-import me.coley.cafedude.classfile.attribute.LocalVariableTableAttribute;
 import me.coley.cafedude.classfile.attribute.LocalVariableTableAttribute.VarEntry;
-import me.coley.cafedude.classfile.attribute.LocalVariableTypeTableAttribute;
 import me.coley.cafedude.classfile.attribute.LocalVariableTypeTableAttribute.VarTypeEntry;
-import me.coley.cafedude.classfile.attribute.ModuleAttribute;
-import me.coley.cafedude.classfile.attribute.ModuleAttribute.Exports;
-import me.coley.cafedude.classfile.attribute.ModuleAttribute.Opens;
-import me.coley.cafedude.classfile.attribute.ModuleAttribute.Provides;
 import me.coley.cafedude.classfile.attribute.ModuleAttribute.Requires;
-import me.coley.cafedude.classfile.attribute.NestHostAttribute;
-import me.coley.cafedude.classfile.attribute.NestMembersAttribute;
-import me.coley.cafedude.classfile.attribute.ParameterAnnotationsAttribute;
-import me.coley.cafedude.classfile.attribute.PermittedClassesAttribute;
-import me.coley.cafedude.classfile.attribute.RecordAttribute;
 import me.coley.cafedude.classfile.attribute.RecordAttribute.RecordComponent;
-import me.coley.cafedude.classfile.attribute.SignatureAttribute;
-import me.coley.cafedude.classfile.attribute.SourceFileAttribute;
 import me.coley.cafedude.classfile.behavior.AttributeHolder;
-import me.coley.cafedude.classfile.constant.*;
-import me.coley.cafedude.classfile.instruction.Instruction;
+import me.coley.cafedude.classfile.constant.CpClass;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.io.AttributeContext;
-import me.coley.cafedude.io.InstructionReader;
-import me.coley.cafedude.io.InstructionWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 import static me.coley.cafedude.classfile.AttributeConstants.*;
@@ -89,30 +47,6 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	@Override
 	public void transform() {
 		logger.info("Transforming '{}'", clazz.getName());
-		// Patch illegal instructions.
-		// This must be done first because we are rewriting constant pool below.
-		IllegalRewritingInstructionsReader fallbackReader = new IllegalRewritingInstructionsReader(pool);
-		InstructionReader reader = new InstructionReader(fallbackReader);
-		InstructionWriter writer = new InstructionWriter();
-		for (Method method : clazz.getMethods()) {
-			if (Modifiers.has(method.getAccess(), Modifiers.ACC_ABSTRACT))
-				continue;
-			Optional<Attribute> codeAttribute = method.getAttributes().stream()
-					.filter(attribute -> attribute instanceof CodeAttribute)
-					.findFirst();
-			// Code found, check if we rewrite anything.
-			if (codeAttribute.isPresent()) {
-				// Reset flag
-				fallbackReader.rewritten = false;
-				// Read the code attribute and see if we found any illegal instructions.
-				CodeAttribute code = (CodeAttribute) codeAttribute.get();
-				List<Instruction> instructions = reader.read(code.getCode(), pool);
-				if (fallbackReader.rewritten) {
-					// Update code with rewritten instructions.
-					code.setCode(writer.writeCode(instructions));
-				}
-			}
-		}
 		// Record existing CP refs.
 		Set<CpEntry> cpAccesses = clazz.cpAccesses();
 		// Strip attributes that are not valid.
