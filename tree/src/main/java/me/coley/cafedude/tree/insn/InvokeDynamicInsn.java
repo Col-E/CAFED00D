@@ -107,4 +107,17 @@ public class InvokeDynamicInsn extends Insn {
 		// BootstrapMethods attribute
 		return 5;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("invokedynamic(").append('\n');
+		sb.append("  ").append(bootstrapMethod).append('\n');
+		sb.append("  ").append(name).append(' ').append(descriptor.getDescriptor()).append('\n');
+		for (Constant constant : bootstrapArguments) {
+			sb.append("  ").append(constant).append('\n');
+		}
+		sb.append(')');
+		return sb.toString();
+	}
 }

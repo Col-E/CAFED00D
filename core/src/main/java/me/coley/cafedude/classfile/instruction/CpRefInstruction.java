@@ -29,6 +29,13 @@ public class CpRefInstruction extends BasicInstruction implements CpAccessor {
 	}
 
 	@Override
+	public int computeSize() {
+		int opcode = getOpcode();
+		if(opcode == Opcodes.LDC) return 1 + 1; // 1 byte opcode + 1 byte index
+		else return 1 + 2; // 1 byte opcode + 2 byte index
+	}
+
+	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof CpRefInstruction)) return false;
