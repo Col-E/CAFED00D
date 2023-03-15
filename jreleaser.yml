@@ -1,0 +1,31 @@
+project:
+  name: cafedude
+  description: Obfuscation resilent Java class reader/writer.
+  longDescription: Obfuscation resilent Java class reader/writer.
+  links:
+    homepage: https://github.com/Col-E/CAFED00D
+  authors:
+    - Matt Coley
+  license: MIT
+  inceptionYear: 2020
+  stereotype: none
+  java:
+    version: 11
+    groupId: me.coley
+    artifactId: cafedude
+
+release:
+  github:
+    overwrite: true
+    tagName: '{{projectVersion}}'
+    changelog:
+      formatted: ALWAYS
+      preset: conventional-commits
+      contributors:
+        format: '- {{contributorName}}{{#contributorUsernameAsLink}} ({{.}}){{/contributorUsernameAsLink}}'
+
+distributions:
+  dist:
+    type: SINGLE_JAR
+    artifacts:
+      - path: target/{{projectName}}-{{projectVersion}}.jar
