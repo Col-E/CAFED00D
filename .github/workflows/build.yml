@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  checks: write
+  contents: write
+  pull-requests: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        # Alternative for testing on multiple platforms. Ubuntu runs the quickest with the latest JVM.
+        #   os: [ubuntu-latest, windows-latest, macos-latest]
+        #   java-version: [11, 17]
+        os: [ ubuntu-latest ]
+        java-version: [ 17 ]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Required depth for JReleaser
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: adopt-hotspot
+          java-version: ${{ matrix.java-version }}
+      
+      # Run tests & build artifact
+      - name: Run tests & build release
+        run: ./mvnw package
+      
+      # Upload test results
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v2.3.1
+        if: always()
+        with:
+          name: Event File
+          retention-days: 21
+          path: |
+            **/TEST-*
+            **/hs_err_pid*
+
+      # Set JReleaser version to the project version: "var_to_set=$(command_to_run)" >> sink
+      #  - For maven:  echo "JRELEASER_PROJECT_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+      #  - For gradle: echo "JRELEASER_PROJECT_VERSION=$(./gradlew properties | grep -Po '(?<=version: ).*')" >> $GITHUB_ENV
+      - name: Extract project version to environment variable
+        run: echo "JRELEASER_PROJECT_VERSION=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
+      # Check if a tag exists that matches the current project version.
+      # Write the existence state to the step output 'tagExists'.
+      - name: 'Check: package version has corrosponding git tag'
+        id: tagged
+        shell: bash
+        run: git show-ref --tags --verify --quiet -- "refs/tags/${{ env.JRELEASER_PROJECT_VERSION }}" && echo "tagExists=1" >> $GITHUB_OUTPUT || echo "tagExists=0" >> $GITHUB_OUTPUT
+      
+      # Make release with JReleaser, only running when the project version does not exist as a tag on the repository.
+      - name: Release
+        if: steps.tagged.outputs.tagExists == 0
+        uses: jreleaser/release-action@v2
+        with:
+          arguments: full-release
+        env:
+          JRELEASER_PROJECT_VERSION: ${{ env.JRELEASER_PROJECT_VERSION }}
+          JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      # Upload JRelease debug log
+      - name: JReleaser output
+        if: steps.tagged.outputs.tagExists == 0
+        uses: actions/upload-artifact@v3
+        with:
+          name: jreleaser-release
+          path: |
+            out/jreleaser/trace.log
+            out/jreleaser/output.properties
+
+  # Taken from: https://github.com/EnricoMi/publish-unit-test-result-action/blob/v1.20/README.md#support-fork-repositories-and-dependabot-branches
+  #  - Required for test-results to be published
+  event_file:
+    name: "Event File"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: Event File
+          path: ${{ github.event_path }}
