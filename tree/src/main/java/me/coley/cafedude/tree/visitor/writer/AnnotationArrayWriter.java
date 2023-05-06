@@ -4,14 +4,13 @@ import me.coley.cafedude.classfile.annotation.*;
 import me.coley.cafedude.tree.Constant;
 import me.coley.cafedude.tree.visitor.AnnotationArrayVisitor;
 import me.coley.cafedude.tree.visitor.AnnotationVisitor;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 public class AnnotationArrayWriter implements AnnotationArrayVisitor {
-
 	private final Symbols symbols;
 	private final Consumer<List<ElementValue>> callback;
 
@@ -39,8 +38,9 @@ public class AnnotationArrayWriter implements AnnotationArrayVisitor {
 		});
 	}
 
+	@Nullable
 	@Override
-	public @Nullable AnnotationArrayVisitor visitSubArray() {
+	public AnnotationArrayVisitor visitSubArray() {
 		return new AnnotationArrayWriter(symbols, array -> {
 			this.array.add(new ArrayElementValue('[', array));
 		});

@@ -1,6 +1,5 @@
 package me.coley.cafedude.io;
 
-import me.coley.cafedude.InvalidClassException;
 import me.coley.cafedude.classfile.AttributeConstants;
 import me.coley.cafedude.classfile.attribute.*;
 import me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.BootstrapMethod;
@@ -19,8 +18,8 @@ import me.coley.cafedude.classfile.constant.CpClass;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpModule;
 import me.coley.cafedude.classfile.constant.CpUtf8;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -53,10 +52,8 @@ public class AttributeWriter {
 	 *
 	 * @throws IOException
 	 * 		When the stream cannot be written to.
-	 * @throws InvalidClassException
-	 * 		When the class cannot be written.
 	 */
-	public byte[] writeAttribute(Attribute attribute) throws IOException, InvalidClassException {
+	public byte[] writeAttribute(Attribute attribute) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(baos);
 		if (attribute instanceof DefaultAttribute) {
@@ -66,11 +63,11 @@ public class AttributeWriter {
 			out.write(dflt.getData());
 		} else {
 			CpUtf8 cpName = attribute.getName();
-			if (cpName == null)
-				throw new InvalidClassException("Attribute name index does not point to CP_UTF8");
+
 			// Write common attribute bits
 			out.writeShort(cpName.getIndex());
 			out.writeInt(attribute.computeInternalLength());
+
 			// Write specific bits.
 			// Note: Unlike reading, writing is quite streamline and doesn't require many variable declarations
 			//   so I don't think its super necessary to break these into separate methods.

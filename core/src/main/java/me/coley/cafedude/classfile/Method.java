@@ -8,6 +8,7 @@ import me.coley.cafedude.io.AttributeContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Set;
 
@@ -34,6 +35,7 @@ public class Method extends ClassMember {
 		super(attributes, access, name, type);
 	}
 
+	@Nonnull
 	@Override
 	public AttributeContext getHolderType() {
 		return AttributeContext.METHOD;

@@ -8,8 +8,8 @@ import me.coley.cafedude.classfile.annotation.TypePath;
 import me.coley.cafedude.classfile.attribute.*;
 import me.coley.cafedude.tree.visitor.AnnotationVisitor;
 import me.coley.cafedude.tree.visitor.DeclarationVisitor;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,8 +31,9 @@ public class DeclarationWriter implements DeclarationVisitor {
 		return null;
 	}
 
+	@Nullable
 	@Override
-	public @Nullable AnnotationVisitor visitAnnotation(String type, boolean visible) {
+	public AnnotationVisitor visitAnnotation(String type, boolean visible) {
 		return new AnnotationWriter(symbols, values -> {
 			Annotation annotation = new Annotation(symbols.newUtf8(type), values);
 			if(visible)
@@ -42,8 +43,9 @@ public class DeclarationWriter implements DeclarationVisitor {
 		});
 	}
 
+	@Nullable
 	@Override
-	public @Nullable AnnotationVisitor visitTypeAnnotation(String type, TargetInfo target, TypePath path,
+	public AnnotationVisitor visitTypeAnnotation(String type, TargetInfo target, TypePath path,
 														   boolean visible) {
 		return new AnnotationWriter(symbols, values -> {
 			// copy values over to type annotation

@@ -7,8 +7,9 @@ import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.classfile.instruction.Instruction;
 import me.coley.cafedude.io.AttributeContext;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -109,13 +110,15 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 		this.exceptionTable = exceptionTable;
 	}
 
+	@Nonnull
 	@Override
 	public List<Attribute> getAttributes() {
 		return attributes;
 	}
 
+	@Nullable
 	@Override
-	public <T extends Attribute> @Nullable T getAttribute(Class<T> type) {
+	public <T extends Attribute>  T getAttribute(Class<T> type) {
 		for (Attribute attribute : attributes) {
 			if (type.isInstance(attribute))
 				return type.cast(attribute);
@@ -124,10 +127,11 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 	}
 
 	@Override
-	public void setAttributes(List<Attribute> attributes) {
+	public void setAttributes(@Nonnull List<Attribute> attributes) {
 		this.attributes = attributes;
 	}
 
+	@Nonnull
 	@Override
 	public AttributeContext getHolderType() {
 		return AttributeContext.ATTRIBUTE;

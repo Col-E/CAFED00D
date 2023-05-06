@@ -1,7 +1,8 @@
 package me.coley.cafedude.tree.visitor;
 
 import me.coley.cafedude.tree.Constant;
-import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nullable;
 
 /**
  * Visitor for visiting field information.

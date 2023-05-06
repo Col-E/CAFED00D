@@ -1,7 +1,8 @@
 package me.coley.cafedude.classfile.constant;
 
 import me.coley.cafedude.io.ClassFileReader;
-import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nonnull;
 
 /**
  * Placeholders to be used in {@link ClassFileReader} when constructing {@link CpEntry} values
@@ -17,7 +18,7 @@ public class Placeholders {
 	 */
 	public static final CpUtf8 UTF8 = new CpUtf8("") {
 		@Override
-		public void setText(@NotNull String text) {
+		public void setText(@Nonnull String text) {
 			throw new IllegalStateException(EDIT_MESSAGE);
 		}
 
@@ -42,7 +43,7 @@ public class Placeholders {
 		}
 
 		@Override
-		public void setName(@NotNull CpUtf8 name) {
+		public void setName(@Nonnull CpUtf8 name) {
 			throw new IllegalStateException(EDIT_MESSAGE);
 		}
 
@@ -66,12 +67,12 @@ public class Placeholders {
 		}
 
 		@Override
-		public void setName(@NotNull CpUtf8 name) {
+		public void setName(@Nonnull CpUtf8 name) {
 			throw new IllegalStateException(EDIT_MESSAGE);
 		}
 
 		@Override
-		public void setType(@NotNull CpUtf8 type) {
+		public void setType(@Nonnull CpUtf8 type) {
 			throw new IllegalStateException(EDIT_MESSAGE);
 		}
 	};
@@ -85,12 +86,12 @@ public class Placeholders {
 		}
 
 		@Override
-		public void setClassRef(@NotNull CpClass classRef) {
+		public void setClassRef(@Nonnull CpClass classRef) {
 			throw new IllegalStateException(EDIT_MESSAGE);
 		}
 
 		@Override
-		public void setNameType(@NotNull CpNameType nameType) {
+		public void setNameType(@Nonnull CpNameType nameType) {
 			throw new IllegalStateException(EDIT_MESSAGE);
 		}
 

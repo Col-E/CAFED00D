@@ -3,6 +3,7 @@ package me.coley.cafedude.classfile.attribute;
 import me.coley.cafedude.classfile.AttributeConstants;
 import me.coley.cafedude.io.AttributeContext;
 
+import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.EnumSet;
 
@@ -22,7 +23,8 @@ public class AttributeContexts implements AttributeConstants {
 	 * @return Allowed locations for attribute.
 	 * If the attribute's allowed locations are unknown, then {@code -1}.
 	 */
-	public static Collection<AttributeContext> getAllowedContexts(String attributeName) {
+	@Nonnull
+	public static Collection<AttributeContext> getAllowedContexts(@Nonnull String attributeName) {
 		switch (attributeName) {
 			case BOOTSTRAP_METHODS:
 			case ENCLOSING_METHOD:

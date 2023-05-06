@@ -2,6 +2,7 @@ package me.coley.cafedude.classfile.behavior;
 
 import me.coley.cafedude.classfile.constant.CpEntry;
 
+import javax.annotation.Nonnull;
 import java.util.Set;
 
 /**
@@ -13,5 +14,6 @@ public interface CpAccessor {
 	/**
 	 * @return Indices accessed.
 	 */
+	@Nonnull
 	Set<CpEntry> cpAccesses();
 }

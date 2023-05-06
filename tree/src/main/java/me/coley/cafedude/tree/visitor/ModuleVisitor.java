@@ -1,6 +1,6 @@
 package me.coley.cafedude.tree.visitor;
 
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 
 /**
  * Visitor for visiting module information.

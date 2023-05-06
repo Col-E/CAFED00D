@@ -4,7 +4,8 @@ import me.coley.cafedude.classfile.annotation.Annotation;
 import me.coley.cafedude.classfile.annotation.TargetInfo;
 import me.coley.cafedude.classfile.annotation.TypeAnnotation;
 import me.coley.cafedude.classfile.annotation.TypePath;
-import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nullable;
 
 /**
  * Visitor for visiting generic declaration information.

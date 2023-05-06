@@ -21,6 +21,7 @@ import me.coley.cafedude.classfile.instruction.Instruction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -116,7 +117,7 @@ public class AttributeReader {
 		}
 	}
 
-
+	@Nullable
 	private Attribute read(AttributeContext context) throws IOException {
 		// Check for illegally inserted attributes from future versions
 		if (reader.doDropForwardVersioned()) {

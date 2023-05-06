@@ -4,6 +4,8 @@ import me.coley.cafedude.classfile.AnnotationConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+
 import static me.coley.cafedude.classfile.AnnotationConstants.*;
 
 /**
@@ -22,6 +24,7 @@ public enum AttributeContext {
 	 *
 	 * @return Where the type annotation <i>(That contains the given target type value)</i> is located.
 	 */
+	@Nullable
 	public static AttributeContext fromAnnotationTargetType(int targetType) {
 		switch (targetType) {
 			case PARAMETER_OF_CLASS_OR_INTERFACE:

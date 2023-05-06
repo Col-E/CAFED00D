@@ -4,6 +4,7 @@ import me.coley.cafedude.classfile.attribute.Attribute;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.io.AttributeContext;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
@@ -26,6 +27,7 @@ public class Field extends ClassMember {
 		super(attributes, access, name, type);
 	}
 
+	@Nonnull
 	@Override
 	public AttributeContext getHolderType() {
 		return AttributeContext.FIELD;

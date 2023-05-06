@@ -8,8 +8,8 @@ import me.coley.cafedude.tree.Constant;
 import me.coley.cafedude.tree.visitor.AnnotationArrayVisitor;
 import me.coley.cafedude.tree.visitor.AnnotationDefaultVisitor;
 import me.coley.cafedude.tree.visitor.AnnotationVisitor;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
 public class AnnotationDefaultWriter implements AnnotationDefaultVisitor {
@@ -27,16 +27,18 @@ public class AnnotationDefaultWriter implements AnnotationDefaultVisitor {
 		callback.accept(symbols.newElementValue(value));
 	}
 
+	@Nullable
 	@Override
-	public @Nullable AnnotationVisitor visitDefaultAnnotation(String type) {
+	public AnnotationVisitor visitDefaultAnnotation(String type) {
 		return new AnnotationWriter(symbols, ev -> {
 			Annotation annotation = new Annotation(symbols.newUtf8(type), ev);
 			callback.accept(new AnnotationElementValue('@', annotation));
 		});
 	}
 
+	@Nullable
 	@Override
-	public @Nullable AnnotationArrayVisitor visitDefaultArray() {
+	public AnnotationArrayVisitor visitDefaultArray() {
 		return new AnnotationArrayWriter(symbols, elements -> {
 			callback.accept(new ArrayElementValue('[', elements));
 		});

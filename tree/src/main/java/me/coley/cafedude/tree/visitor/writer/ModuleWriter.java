@@ -11,8 +11,8 @@ import me.coley.cafedude.classfile.constant.CpPackage;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.tree.visitor.ModuleVisitor;
 import me.coley.cafedude.util.Optional;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;

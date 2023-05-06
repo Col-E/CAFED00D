@@ -1,7 +1,6 @@
 package me.coley.cafedude.tree.visitor;
 
 import me.coley.cafedude.classfile.Descriptor;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Visitor for accepting class members and attributes.

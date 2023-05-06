@@ -4,6 +4,7 @@ import me.coley.cafedude.classfile.annotation.ElementValue;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
 import java.util.Set;
 
 /**
@@ -16,12 +17,12 @@ public class AnnotationDefaultAttribute extends Attribute {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param elementValue
 	 * 		Value of the annotation type element represented by the {@code method_info} structure
 	 * 		enclosing this attribute.
 	 */
-	public AnnotationDefaultAttribute(CpUtf8 name, ElementValue elementValue) {
+	public AnnotationDefaultAttribute(@Nonnull CpUtf8 name, @Nonnull ElementValue elementValue) {
 		super(name);
 		this.elementValue = elementValue;
 	}
@@ -30,6 +31,7 @@ public class AnnotationDefaultAttribute extends Attribute {
 	 * @return Value of the annotation type element represented by the {@code method_info} structure
 	 * enclosing this attribute.
 	 */
+	@Nonnull
 	public ElementValue getElementValue() {
 		return elementValue;
 	}

@@ -5,8 +5,9 @@ import me.coley.cafedude.classfile.behavior.CpAccessor;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.io.AttributeContext;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,6 +31,7 @@ public class RecordAttribute extends Attribute {
 		this.components = components;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = super.cpAccesses();
@@ -48,6 +50,7 @@ public class RecordAttribute extends Attribute {
 	/**
 	 * @return Record components <i>(fields)</i>.
 	 */
+	@Nonnull
 	public List<RecordComponent> getComponents() {
 		return components;
 	}
@@ -56,7 +59,7 @@ public class RecordAttribute extends Attribute {
 	 * @param components
 	 * 		New record components <i>(fields)</i>.
 	 */
-	public void setComponents(List<RecordComponent> components) {
+	public void setComponents(@Nonnull List<RecordComponent> components) {
 		this.components = components;
 	}
 
@@ -76,7 +79,7 @@ public class RecordAttribute extends Attribute {
 		 * @param attributes
 		 * 		Attributes of the record field.
 		 */
-		public RecordComponent(CpUtf8 name, CpUtf8 desc, List<Attribute> attributes) {
+		public RecordComponent(@Nonnull CpUtf8 name,@Nonnull  CpUtf8 desc, @Nonnull List<Attribute> attributes) {
 			this.name = name;
 			this.desc = desc;
 			this.attributes = attributes;
@@ -84,7 +87,7 @@ public class RecordAttribute extends Attribute {
 
 		/**
 		 * @return Index of name of component.
-		 */
+		 */@Nonnull
 		public CpUtf8 getName() {
 			return name;
 		}
@@ -93,13 +96,13 @@ public class RecordAttribute extends Attribute {
 		 * @param name
 		 * 		New index of name of component.
 		 */
-		public void setName(CpUtf8 name) {
+		public void setName(@Nonnull CpUtf8 name) {
 			this.name = name;
 		}
 
 		/**
 		 * @return Index of field descriptor of component.
-		 */
+		 */@Nonnull
 		public CpUtf8 getDesc() {
 			return desc;
 		}
@@ -108,13 +111,14 @@ public class RecordAttribute extends Attribute {
 		 * @param descIndex
 		 * 		New index of field descriptor of component.
 		 */
-		public void setDesc(CpUtf8 desc) {
+		public void setDesc(@Nonnull CpUtf8 desc) {
 			this.desc = desc;
 		}
 
 		/**
 		 * @return Attributes of the record field.
 		 */
+		@Nonnull
 		public List<Attribute> getAttributes() {
 			return attributes;
 		}
@@ -128,10 +132,11 @@ public class RecordAttribute extends Attribute {
 		 * @param attributes
 		 * 		New attributes of the record field.
 		 */
-		public void setAttributes(List<Attribute> attributes) {
+		public void setAttributes(@Nonnull List<Attribute> attributes) {
 			this.attributes = attributes;
 		}
 
+		@Nonnull
 		@Override
 		public AttributeContext getHolderType() {
 			return AttributeContext.RECORD_COMPONENT;

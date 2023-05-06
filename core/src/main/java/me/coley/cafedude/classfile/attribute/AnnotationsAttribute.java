@@ -4,6 +4,7 @@ import me.coley.cafedude.classfile.annotation.Annotation;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Set;
 
@@ -22,13 +23,13 @@ public class AnnotationsAttribute extends Attribute {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param annotations
 	 * 		List of annotations.
 	 * @param visible
 	 * 		Whether the annotations are visible at runtime.
 	 */
-	public AnnotationsAttribute(CpUtf8 name, List<Annotation> annotations, boolean visible) {
+	public AnnotationsAttribute(@Nonnull CpUtf8 name, @Nonnull List<Annotation> annotations, boolean visible) {
 		super(name);
 		this.annotations = annotations;
 		this.visible = visible;
@@ -37,6 +38,7 @@ public class AnnotationsAttribute extends Attribute {
 	/**
 	 * @return List of annotations.
 	 */
+	@Nonnull
 	public List<Annotation> getAnnotations() {
 		return annotations;
 	}
@@ -45,7 +47,7 @@ public class AnnotationsAttribute extends Attribute {
 	 * @param annotations
 	 * 		List of annotations.
 	 */
-	public void setAnnotations(List<Annotation> annotations) {
+	public void setAnnotations(@Nonnull List<Annotation> annotations) {
 		this.annotations = annotations;
 	}
 
@@ -64,6 +66,7 @@ public class AnnotationsAttribute extends Attribute {
 		this.visible = visible;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = super.cpAccesses();

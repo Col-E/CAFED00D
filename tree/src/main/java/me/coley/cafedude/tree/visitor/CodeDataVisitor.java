@@ -4,9 +4,9 @@ import me.coley.cafedude.classfile.Descriptor;
 import me.coley.cafedude.classfile.instruction.Opcodes;
 import me.coley.cafedude.tree.*;
 import me.coley.cafedude.tree.insn.*;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -61,7 +61,7 @@ public class CodeDataVisitor implements CodeVisitor {
 	}
 
 	@Override
-	public void visitFlowInsn(int opcode, @NotNull Label label) {
+	public void visitFlowInsn(int opcode, @Nonnull Label label) {
 		add(new FlowInsn(opcode, label));
 	}
 

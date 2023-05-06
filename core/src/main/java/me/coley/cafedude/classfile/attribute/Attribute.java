@@ -4,6 +4,7 @@ import me.coley.cafedude.classfile.behavior.CpAccessor;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -17,15 +18,16 @@ public abstract class Attribute implements CpAccessor {
 
 	/**
 	 * @param name
-	 * 		Name in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 */
-	public Attribute(CpUtf8 name) {
+	public Attribute(@Nonnull CpUtf8 name) {
 		this.name = name;
 	}
 
 	/**
-	 * @return Name in constant pool.
+	 * @return Constant pool entry holding the attribute name.
 	 */
+	@Nonnull
 	public CpUtf8 getName() {
 		return name;
 	}
@@ -49,6 +51,7 @@ public abstract class Attribute implements CpAccessor {
 		return 6 + computeInternalLength();
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = new HashSet<>();

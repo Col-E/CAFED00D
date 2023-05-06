@@ -6,6 +6,7 @@ import me.coley.cafedude.classfile.behavior.CpAccessor;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 
 /**
@@ -81,13 +82,14 @@ public abstract class ClassMember implements AttributeHolder, CpAccessor {
 		this.type = type;
 	}
 
+	@Nonnull
 	@Override
 	public List<Attribute> getAttributes() {
 		return attributes;
 	}
 
 	@Override
-	public void setAttributes(List<Attribute> attributes) {
+	public void setAttributes(@Nonnull List<Attribute> attributes) {
 		this.attributes = attributes;
 	}
 
