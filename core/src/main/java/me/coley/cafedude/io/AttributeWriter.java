@@ -2,7 +2,6 @@ package me.coley.cafedude.io;
 
 import me.coley.cafedude.InvalidClassException;
 import me.coley.cafedude.classfile.AttributeConstants;
-import me.coley.cafedude.classfile.ClassFile;
 import me.coley.cafedude.classfile.attribute.*;
 import me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.BootstrapMethod;
 import me.coley.cafedude.classfile.attribute.InnerClassesAttribute.InnerClass;
@@ -35,15 +34,13 @@ import java.io.IOException;
  */
 public class AttributeWriter {
 	private final ClassFileWriter writer;
-	private final ClassFile clazz;
 
 	/**
-	 * @param clazz
-	 * 		Class to pull info from.
+	 * @param writer
+	 * 		Parent class writier.
 	 */
-	public AttributeWriter(ClassFileWriter writer, ClassFile clazz) {
+	public AttributeWriter(ClassFileWriter writer) {
 		this.writer = writer;
-		this.clazz = clazz;
 	}
 
 	/**
@@ -90,8 +87,6 @@ public class AttributeWriter {
 						}
 					}
 					break;
-				case AttributeConstants.CHARACTER_RANGE_TABLE:
-					break;
 				case AttributeConstants.CODE:
 					CodeAttribute code = (CodeAttribute) attribute;
 					out.writeShort(code.getMaxStack());
@@ -113,11 +108,6 @@ public class AttributeWriter {
 					break;
 				case AttributeConstants.CONSTANT_VALUE:
 					out.writeShort(((ConstantValueAttribute) attribute).getConstantValue().getIndex());
-					break;
-				case AttributeConstants.COMPILATION_ID:
-					break;
-				case AttributeConstants.DEPRECATED:
-				case AttributeConstants.SYNTHETIC:
 					break;
 				case AttributeConstants.ENCLOSING_METHOD:
 					EnclosingMethodAttribute enclosingMethodAttribute = (EnclosingMethodAttribute) attribute;
@@ -171,8 +161,6 @@ public class AttributeWriter {
 						out.writeShort(entry.getIndex());
 					}
 					break;
-				case AttributeConstants.METHOD_PARAMETERS:
-					break;
 				case AttributeConstants.MODULE:
 					ModuleAttribute moduleAttribute = (ModuleAttribute) attribute;
 					out.writeShort(moduleAttribute.getModule().getIndex());
@@ -217,16 +205,6 @@ public class AttributeWriter {
 						for (CpClass i : provides.getWith())
 							out.writeShort(i.getIndex());
 					}
-					break;
-				case AttributeConstants.MODULE_HASHES:
-					break;
-				case AttributeConstants.MODULE_MAIN_CLASS:
-					break;
-				case AttributeConstants.MODULE_PACKAGES:
-					break;
-				case AttributeConstants.MODULE_RESOLUTION:
-					break;
-				case AttributeConstants.MODULE_TARGET:
 					break;
 				case AttributeConstants.NEST_HOST:
 					NestHostAttribute nestHost = (NestHostAttribute) attribute;
@@ -284,13 +262,22 @@ public class AttributeWriter {
 					SourceFileAttribute sourceFileAttribute = (SourceFileAttribute) attribute;
 					out.writeShort(sourceFileAttribute.getSourceFilename().getIndex());
 					break;
-				case AttributeConstants.SOURCE_ID:
-					break;
 				case AttributeConstants.STACK_MAP_TABLE:
 					StackMapTableAttribute stackMapTable =
 							(StackMapTableAttribute) attribute;
 					writeStackMapTable(out, stackMapTable);
 					break;
+				case AttributeConstants.SOURCE_ID:
+				case AttributeConstants.MODULE_HASHES:
+				case AttributeConstants.MODULE_MAIN_CLASS:
+				case AttributeConstants.MODULE_PACKAGES:
+				case AttributeConstants.MODULE_RESOLUTION:
+				case AttributeConstants.MODULE_TARGET:
+				case AttributeConstants.METHOD_PARAMETERS:
+				case AttributeConstants.CHARACTER_RANGE_TABLE:
+				case AttributeConstants.COMPILATION_ID:
+				case AttributeConstants.DEPRECATED:
+				case AttributeConstants.SYNTHETIC:
 				default:
 					break;
 			}
@@ -299,11 +286,11 @@ public class AttributeWriter {
 	}
 
 	private int orZero(@Nullable CpEntry entry) {
-		if(entry == null) return 0;
+		if (entry == null) return 0;
 		return entry.getIndex();
 	}
 
-	private void writeVerificationType(DataOutputStream out, StackMapTableAttribute.TypeInfo type)throws IOException {
+	private void writeVerificationType(DataOutputStream out, StackMapTableAttribute.TypeInfo type) throws IOException {
 		out.writeByte(type.getTag());
 		if (type instanceof StackMapTableAttribute.ObjectVariableInfo) {
 			StackMapTableAttribute.ObjectVariableInfo objVar =

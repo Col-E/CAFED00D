@@ -2,6 +2,7 @@ package me.coley.cafedude.classfile.constant;
 
 import me.coley.cafedude.classfile.ConstantPoolConstants;
 
+import javax.annotation.Nonnull;
 import java.util.Objects;
 
 /**
@@ -24,7 +25,7 @@ public abstract class ConstRef extends CpEntry {
 	 * @param nameType
 	 * 		Index of field/method {@link CpNameType name and descriptor} in pool.
 	 */
-	public ConstRef(int type, CpClass classRef, CpNameType nameType) {
+	public ConstRef(int type, @Nonnull CpClass classRef, @Nonnull CpNameType nameType) {
 		super(type);
 		this.classRef = classRef;
 		this.nameType = nameType;
@@ -33,6 +34,7 @@ public abstract class ConstRef extends CpEntry {
 	/**
 	 * @return Index of reference {@link CpClass defining class} in pool.
 	 */
+	@Nonnull
 	public CpClass getClassRef() {
 		return classRef;
 	}
@@ -41,13 +43,14 @@ public abstract class ConstRef extends CpEntry {
 	 * @param classRef
 	 * 		New index of reference {@link CpClass defining class} in pool.
 	 */
-	public void setClassRef(CpClass classRef) {
+	public void setClassRef(@Nonnull CpClass classRef) {
 		this.classRef = classRef;
 	}
 
 	/**
 	 * @return Index of field/method {@link CpNameType name and descriptor} in pool.
 	 */
+	@Nonnull
 	public CpNameType getNameType() {
 		return nameType;
 	}
@@ -56,7 +59,7 @@ public abstract class ConstRef extends CpEntry {
 	 * @param nameType
 	 * 		New index of field/method {@link CpNameType name and descriptor} in pool.
 	 */
-	public void setNameType(CpNameType nameType) {
+	public void setNameType(@Nonnull CpNameType nameType) {
 		this.nameType = nameType;
 	}
 

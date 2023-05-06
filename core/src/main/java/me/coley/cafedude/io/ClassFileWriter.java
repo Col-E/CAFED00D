@@ -53,37 +53,47 @@ public class ClassFileWriter {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try (DataOutputStream out = new DataOutputStream(baos)) {
 			this.out = out;
-			attributeWriter = new AttributeWriter(this, clazz);
+			attributeWriter = new AttributeWriter(this);
+
 			// Write magic header
 			out.writeInt(0xCAFEBABE);
+
 			// Version
 			out.writeShort(clazz.getVersionMinor());
 			out.writeShort(clazz.getVersionMajor());
+
 			// Constant pool
 			out.writeShort(clazz.getPool().size() + 1);
 			for (CpEntry entry : clazz.getPool())
 				writeCpEntry(entry);
+
 			// Flags
 			out.writeShort(clazz.getAccess());
+
 			// This/super classes
 			out.writeShort(clazz.getThisClass().getIndex());
 			out.writeShort(clazz.getSuperClass().getIndex());
+
 			// Interfaces
 			out.writeShort(clazz.getInterfaceClasses().size());
 			for (CpClass interfaceEntry : clazz.getInterfaceClasses())
 				out.writeShort(interfaceEntry.getIndex());
+
 			// Fields
 			out.writeShort(clazz.getFields().size());
 			for (Field field : clazz.getFields())
 				writeField(field);
+
 			// Methods
 			out.writeShort(clazz.getMethods().size());
 			for (Method method : clazz.getMethods())
 				writeMethod(method);
+
 			// Attributes
 			out.writeShort(clazz.getAttributes().size());
 			for (Attribute attribute : clazz.getAttributes())
 				writeAttribute(attribute);
+
 			return baos.toByteArray();
 		} catch (IOException ex) {
 			throw new InvalidClassException(ex);

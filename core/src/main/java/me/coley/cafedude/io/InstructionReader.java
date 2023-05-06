@@ -6,6 +6,7 @@ import me.coley.cafedude.classfile.constant.CpClass;
 import me.coley.cafedude.classfile.constant.CpInvokeDynamic;
 import me.coley.cafedude.classfile.instruction.*;
 
+import javax.annotation.Nonnull;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,8 +14,7 @@ import java.util.List;
 import static me.coley.cafedude.classfile.instruction.Opcodes.*;
 
 /**
- * Reads code attribute into meaningful
- * instructions.
+ * Reads code attribute into meaningful instructions.
  *
  * @author xDark
  */
@@ -25,13 +25,12 @@ public class InstructionReader {
 	 * @param fallbackReader
 	 * 		Fallback instruction reader.
 	 */
-	public InstructionReader(FallbackInstructionReader fallbackReader) {
+	public InstructionReader(@Nonnull FallbackInstructionReader fallbackReader) {
 		this.fallbackReader = fallbackReader;
 	}
 
 	/**
-	 * Instruction reader that will use
-	 * fail-fast fallback reader.
+	 * Instruction reader that will use fail-fast fallback reader.
 	 */
 	public InstructionReader() {
 		this(FallbackInstructionReader.fail());
@@ -41,7 +40,7 @@ public class InstructionReader {
 	 * @param code
 	 * 		Code data.
 	 *
-	 * @return a list of instructions.
+	 * @return List of instructions.
 	 */
 	@SuppressWarnings("DuplicateBranchesInSwitch")
 	public List<Instruction> read(byte[] code, ConstPool pool) {

@@ -1,5 +1,6 @@
 package me.coley.cafedude.classfile.constant;
 
+import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.classfile.ConstantPoolConstants;
 
 /**
@@ -47,14 +48,15 @@ public abstract class CpEntry implements ConstantPoolConstants {
 	}
 
 	/**
-	 * @return if in a constant pool.
+	 * @return {@code true} when the index has been computed.
+	 * This is only done after insertion into a {@link ConstPool}.
 	 */
 	public boolean isInPool() {
 		return index > 0;
 	}
 
 	/**
-	 * @return {@code true} if constant uses two pool entries.
+	 * @return {@code true} when constant uses two pool entries.
 	 */
 	public boolean isWide() {
 		return false;

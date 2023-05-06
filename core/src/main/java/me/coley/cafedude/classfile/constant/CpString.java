@@ -1,7 +1,9 @@
 package me.coley.cafedude.classfile.constant;
 
+import javax.annotation.Nonnull;
+
 /**
- * String pool entry. Points to an UTF constant.
+ * String pool entry. Points to a UTF constant.
  *
  * @author Matt Coley
  */
@@ -10,25 +12,26 @@ public class CpString extends CpEntry {
 
 	/**
 	 * @param string
-	 * 		Index of UTF string in pool.
+	 * 		Constant pool entry holding the string content.
 	 */
-	public CpString(CpUtf8 string) {
+	public CpString(@Nonnull CpUtf8 string) {
 		super(STRING);
 		this.string = string;
 	}
 
 	/**
-	 * @return Index of UTF string in pool.
+	 * @return Constant pool entry holding the string content.
 	 */
+	@Nonnull
 	public CpUtf8 getString() {
 		return string;
 	}
 
 	/**
 	 * @param string
-	 * 		New index of UTF string in pool.
+	 * 		New constant pool entry holding the string content.
 	 */
-	public void setString(CpUtf8 string) {
+	public void setString(@Nonnull CpUtf8 string) {
 		this.string = string;
 	}
 }

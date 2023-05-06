@@ -93,7 +93,7 @@ public class AttributeReader {
 			}
 			return attribute;
 		} catch (InvalidCpIndexException cpIndexException) {
-			if(name != null) {
+			if (name != null) {
 				logger.debug("Invalid '{}' on {}, invalid constant pool index: {}", name.getText(), context.name(),
 						cpIndexException.getIndex());
 			} else {
@@ -116,8 +116,8 @@ public class AttributeReader {
 		}
 	}
 
+
 	private Attribute read(AttributeContext context) throws IOException {
-		ConstPool pool = builder.getPool();
 		// Check for illegally inserted attributes from future versions
 		if (reader.doDropForwardVersioned()) {
 			int introducedAt = AttributeVersions.getIntroducedVersion(name.getText());
@@ -308,7 +308,9 @@ public class AttributeReader {
 
 	/**
 	 * @return MethodParametersAttribute attribute.
-	 * @throws IOException When the stream is unexpectedly closed or ends.
+	 *
+	 * @throws IOException
+	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	private MethodParametersAttribute readMethodParameters() throws IOException {
 		List<MethodParametersAttribute.Parameter> entries = new ArrayList<>();
@@ -389,7 +391,9 @@ public class AttributeReader {
 
 	/**
 	 * @return ModuleMainClassAttribute attribute.
-	 * @throws IOException When the stream is unexpectedly closed or ends.
+	 *
+	 * @throws IOException
+	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	private ModuleMainClassAttribute readModuleMainClass() throws IOException {
 		return new ModuleMainClassAttribute(name, (CpClass) cp.get(is.readUnsignedShort()));
@@ -397,7 +401,9 @@ public class AttributeReader {
 
 	/**
 	 * @return ModulePackagesAttribute attribute.
-	 * @throws IOException When the stream is unexpectedly closed or ends.
+	 *
+	 * @throws IOException
+	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	private ModulePackagesAttribute readModulePackages() throws IOException {
 		List<CpPackage> packages = new ArrayList<>();
@@ -800,6 +806,7 @@ public class AttributeReader {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public <T extends CpEntry> T orNull(int index) {
 		return index == 0 ? null : (T) cp.get(index);
 	}

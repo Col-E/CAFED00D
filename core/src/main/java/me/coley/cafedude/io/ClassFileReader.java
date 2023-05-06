@@ -132,47 +132,47 @@ public class ClassFileReader {
 				return new CpDouble(is.readDouble());
 			case STRING:
 				is.readUnsignedShort();
-				return new CpString(null);
+				return new CpString(Placeholders.UTF8);
 			case CLASS:
 				is.readUnsignedShort();
-				return new CpClass(null);
+				return new CpClass(Placeholders.UTF8);
 			case FIELD_REF:
 				is.readUnsignedShort();
 				is.readUnsignedShort();
-				return new CpFieldRef(null, null);
+				return new CpFieldRef(Placeholders.CLASS, Placeholders.NAME_TYPE);
 			case METHOD_REF:
 				is.readUnsignedShort();
 				is.readUnsignedShort();
-				return new CpMethodRef(null, null);
+				return new CpMethodRef(Placeholders.CLASS, Placeholders.NAME_TYPE);
 			case INTERFACE_METHOD_REF:
 				is.readUnsignedShort();
 				is.readUnsignedShort();
-				return new CpInterfaceMethodRef(null, null);
+				return new CpInterfaceMethodRef(Placeholders.CLASS, Placeholders.NAME_TYPE);
 			case NAME_TYPE:
 				is.readUnsignedShort();
 				is.readUnsignedShort();
-				return new CpNameType(null, null);
+				return new CpNameType(Placeholders.UTF8, Placeholders.UTF8);
 			case DYNAMIC:
 				int bsmIndex = is.readUnsignedShort();
 				is.readUnsignedShort();
-				return new CpDynamic(bsmIndex, null);
+				return new CpDynamic(bsmIndex, Placeholders.NAME_TYPE);
 			case METHOD_HANDLE:
 				byte refKind = is.readByte();
 				is.readUnsignedShort();
-				return new CpMethodHandle(refKind, null);
+				return new CpMethodHandle(refKind, Placeholders.CONST_REF);
 			case METHOD_TYPE:
 				is.readUnsignedShort();
-				return new CpMethodType(null);
+				return new CpMethodType(Placeholders.UTF8);
 			case INVOKE_DYNAMIC:
 				int bsmIndex2 = is.readUnsignedShort();
 				is.readUnsignedShort();
-				return new CpInvokeDynamic(bsmIndex2, null);
+				return new CpInvokeDynamic(bsmIndex2, Placeholders.NAME_TYPE);
 			case MODULE:
 				is.readUnsignedShort();
-				return new CpModule(null);
+				return new CpModule(Placeholders.UTF8);
 			case PACKAGE:
 				is.readUnsignedShort();
-				return new CpPackage(null);
+				return new CpPackage(Placeholders.UTF8);
 			default:
 				throw new InvalidClassException("Unknown constant-pool tag: " + tag);
 		}

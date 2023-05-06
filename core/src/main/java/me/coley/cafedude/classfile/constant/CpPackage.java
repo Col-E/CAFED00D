@@ -1,5 +1,6 @@
 package me.coley.cafedude.classfile.constant;
 
+import javax.annotation.Nonnull;
 import java.util.Objects;
 
 /**
@@ -12,25 +13,26 @@ public class CpPackage extends CpEntry {
 
 	/**
 	 * @param packageName
-	 * 		Index of package name UTF in pool.
+	 * 		Constant pool entry holding the package name.
 	 */
-	public CpPackage(CpUtf8 packageName) {
+	public CpPackage(@Nonnull CpUtf8 packageName) {
 		super(PACKAGE);
 		this.packageName = packageName;
 	}
 
 	/**
-	 * @return Index of package name UTF in pool.
+	 * @return Constant pool entry holding the package name.
 	 */
+	@Nonnull
 	public CpUtf8 getPackageName() {
 		return packageName;
 	}
 
 	/**
 	 * @param packageName
-	 * 		New index of package name UTF in pool.
+	 * 		New constant pool entry holding the package name.
 	 */
-	public void setPackageName(CpUtf8 packageName) {
+	public void setPackageName(@Nonnull CpUtf8 packageName) {
 		this.packageName = packageName;
 	}
 

@@ -1,5 +1,6 @@
 package me.coley.cafedude.classfile.constant;
 
+import javax.annotation.Nonnull;
 import java.util.Objects;
 
 /**
@@ -11,10 +12,10 @@ public class CpClass extends CpEntry {
 	private CpUtf8 name;
 
 	/**
-	 * @param index
-	 * 		Index of class name UTF in pool.
+	 * @param name
+	 * 		Constant pool entry holding the class name.
 	 */
-	public CpClass(CpUtf8 name) {
+	public CpClass(@Nonnull CpUtf8 name) {
 		super(CLASS);
 		this.name = name;
 	}
@@ -22,6 +23,7 @@ public class CpClass extends CpEntry {
 	/**
 	 * @return Index of class name UTF in pool.
 	 */
+	@Nonnull
 	public CpUtf8 getName() {
 		return name;
 	}
@@ -30,7 +32,7 @@ public class CpClass extends CpEntry {
 	 * @param name
 	 * 		New index of class name UTF in pool.
 	 */
-	public void setName(CpUtf8 name) {
+	public void setName(@Nonnull CpUtf8 name) {
 		this.name = name;
 	}
 
