@@ -1,5 +1,7 @@
 package me.coley.cafedude.classfile.annotation;
 
+import javax.annotation.Nonnull;
+
 /**
  * Indicates purpose of the associated {@link TypePathElement}.
  *
@@ -30,6 +32,7 @@ public enum TypePathKind {
 	 *
 	 * @return Enum kind instance.
 	 */
+	@Nonnull
 	public static TypePathKind fromValue(int value) {
 		switch (value) {
 			case 0:

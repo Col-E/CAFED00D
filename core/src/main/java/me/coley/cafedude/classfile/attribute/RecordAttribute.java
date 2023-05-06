@@ -26,7 +26,7 @@ public class RecordAttribute extends Attribute {
 	 * @param components
 	 * 		Record components <i>(fields)</i>.
 	 */
-	public RecordAttribute(CpUtf8 name, List<RecordComponent> components) {
+	public RecordAttribute(@Nonnull CpUtf8 name, @Nonnull List<RecordComponent> components) {
 		super(name);
 		this.components = components;
 	}
@@ -79,7 +79,7 @@ public class RecordAttribute extends Attribute {
 		 * @param attributes
 		 * 		Attributes of the record field.
 		 */
-		public RecordComponent(@Nonnull CpUtf8 name,@Nonnull  CpUtf8 desc, @Nonnull List<Attribute> attributes) {
+		public RecordComponent(@Nonnull CpUtf8 name, @Nonnull CpUtf8 desc, @Nonnull List<Attribute> attributes) {
 			this.name = name;
 			this.desc = desc;
 			this.attributes = attributes;
@@ -87,7 +87,8 @@ public class RecordAttribute extends Attribute {
 
 		/**
 		 * @return Index of name of component.
-		 */@Nonnull
+		 */
+		@Nonnull
 		public CpUtf8 getName() {
 			return name;
 		}
@@ -102,7 +103,8 @@ public class RecordAttribute extends Attribute {
 
 		/**
 		 * @return Index of field descriptor of component.
-		 */@Nonnull
+		 */
+		@Nonnull
 		public CpUtf8 getDesc() {
 			return desc;
 		}
@@ -142,6 +144,7 @@ public class RecordAttribute extends Attribute {
 			return AttributeContext.RECORD_COMPONENT;
 		}
 
+		@Nonnull
 		@Override
 		public Set<CpEntry> cpAccesses() {
 			Set<CpEntry> set = new HashSet<>();

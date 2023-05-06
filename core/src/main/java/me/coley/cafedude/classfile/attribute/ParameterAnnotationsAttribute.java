@@ -4,6 +4,7 @@ import me.coley.cafedude.classfile.annotation.Annotation;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,7 +30,8 @@ public class ParameterAnnotationsAttribute extends Attribute {
 	 * @param visible
 	 * 		Whether the annotations are visible at runtime.
 	 */
-	public ParameterAnnotationsAttribute(CpUtf8 name, Map<Integer, List<Annotation>> parameterAnnotations,
+	public ParameterAnnotationsAttribute(@Nonnull CpUtf8 name,
+										 @Nonnull Map<Integer, List<Annotation>> parameterAnnotations,
 										 boolean visible) {
 		super(name);
 		this.parameterAnnotations = parameterAnnotations;
@@ -39,6 +41,7 @@ public class ParameterAnnotationsAttribute extends Attribute {
 	/**
 	 * @return Map of parameter indices to their list of attributes.
 	 */
+	@Nonnull
 	public Map<Integer, List<Annotation>> getParameterAnnotations() {
 		return parameterAnnotations;
 	}
@@ -47,7 +50,7 @@ public class ParameterAnnotationsAttribute extends Attribute {
 	 * @param parameterAnnotations
 	 * 		Map of parameter indices to their list of attributes.
 	 */
-	public void setParameterAnnotations(Map<Integer, List<Annotation>> parameterAnnotations) {
+	public void setParameterAnnotations(@Nonnull Map<Integer, List<Annotation>> parameterAnnotations) {
 		this.parameterAnnotations = parameterAnnotations;
 	}
 
@@ -60,12 +63,13 @@ public class ParameterAnnotationsAttribute extends Attribute {
 
 	/**
 	 * @param visible
-	 * 		{@code true} if the annotations are visible at runtime.
+	 *        {@code true} if the annotations are visible at runtime.
 	 */
 	public void setVisible(boolean visible) {
 		this.visible = visible;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = super.cpAccesses();

@@ -40,8 +40,8 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 	 * @param attributes
 	 * 		List of other attributes.
 	 */
-	public CodeAttribute(CpUtf8 name, int maxStack, int maxLocals, List<Instruction> instructions,
-						 List<ExceptionTableEntry> exceptionTable, List<Attribute> attributes) {
+	public CodeAttribute(@Nonnull CpUtf8 name, int maxStack, int maxLocals, @Nonnull List<Instruction> instructions,
+						 @Nonnull List<ExceptionTableEntry> exceptionTable, @Nonnull List<Attribute> attributes) {
 		super(name);
 		this.maxStack = maxStack;
 		this.maxLocals = maxLocals;
@@ -53,6 +53,7 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 	/**
 	 * @return Instruction code data.
 	 */
+	@Nonnull
 	public List<Instruction> getInstructions() {
 		return instructions;
 	}
@@ -61,7 +62,7 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 	 * @param instructions
 	 * 		New instruction code data.
 	 */
-	public void setInstructions(List<Instruction> instructions) {
+	public void setInstructions(@Nonnull List<Instruction> instructions) {
 		this.instructions = instructions;
 	}
 
@@ -98,6 +99,7 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 	/**
 	 * @return Exception table entries.
 	 */
+	@Nonnull
 	public List<ExceptionTableEntry> getExceptionTable() {
 		return exceptionTable;
 	}
@@ -106,7 +108,7 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 	 * @param exceptionTable
 	 * 		New exception table entries.
 	 */
-	public void setExceptionTable(List<ExceptionTableEntry> exceptionTable) {
+	public void setExceptionTable(@Nonnull List<ExceptionTableEntry> exceptionTable) {
 		this.exceptionTable = exceptionTable;
 	}
 
@@ -118,7 +120,7 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 
 	@Nullable
 	@Override
-	public <T extends Attribute>  T getAttribute(Class<T> type) {
+	public <T extends Attribute> T getAttribute(@Nonnull Class<T> type) {
 		for (Attribute attribute : attributes) {
 			if (type.isInstance(attribute))
 				return type.cast(attribute);
@@ -137,6 +139,7 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 		return AttributeContext.ATTRIBUTE;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = super.cpAccesses();
@@ -144,8 +147,8 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 			set.addAll(attribute.cpAccesses());
 		for (ExceptionTableEntry ex : getExceptionTable())
 			set.addAll(ex.cpAccesses());
-		for(Instruction instruction : instructions) {
-			if(instruction instanceof CpAccessor) {
+		for (Instruction instruction : instructions) {
+			if (instruction instanceof CpAccessor) {
 				set.addAll(((CpAccessor) instruction).cpAccesses());
 			}
 		}
@@ -264,6 +267,7 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 			this.catchType = catchType;
 		}
 
+		@Nonnull
 		@Override
 		public Set<CpEntry> cpAccesses() {
 			return Collections.singleton(getCatchType());

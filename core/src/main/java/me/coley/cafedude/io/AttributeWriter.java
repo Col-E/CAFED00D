@@ -292,11 +292,11 @@ public class AttributeWriter {
 		if (type instanceof StackMapTableAttribute.ObjectVariableInfo) {
 			StackMapTableAttribute.ObjectVariableInfo objVar =
 					(StackMapTableAttribute.ObjectVariableInfo) type;
-			out.writeShort(objVar.classEntry.getIndex());
+			out.writeShort(objVar.getClassEntry().getIndex());
 		} else if (type instanceof StackMapTableAttribute.UninitializedVariableInfo) {
 			StackMapTableAttribute.UninitializedVariableInfo uninitVar =
 					(StackMapTableAttribute.UninitializedVariableInfo) type;
-			out.writeShort(uninitVar.offset);
+			out.writeShort(uninitVar.getOffset());
 		}
 	}
 
@@ -307,37 +307,37 @@ public class AttributeWriter {
 			if (frame instanceof StackMapTableAttribute.SameLocalsOneStackItem) {
 				StackMapTableAttribute.SameLocalsOneStackItem sameLocals =
 						(StackMapTableAttribute.SameLocalsOneStackItem) frame;
-				writeVerificationType(out, sameLocals.stack);
+				writeVerificationType(out, sameLocals.getStack());
 			} else if (frame instanceof StackMapTableAttribute.SameLocalsOneStackItemExtended) {
 				StackMapTableAttribute.SameLocalsOneStackItemExtended sameLocals =
 						(StackMapTableAttribute.SameLocalsOneStackItemExtended) frame;
-				out.writeShort(sameLocals.offsetDelta);
-				writeVerificationType(out, sameLocals.stack);
+				out.writeShort(sameLocals.getOffsetDelta());
+				writeVerificationType(out, sameLocals.getStack());
 			} else if (frame instanceof StackMapTableAttribute.ChopFrame) {
 				StackMapTableAttribute.ChopFrame chopFrame =
 						(StackMapTableAttribute.ChopFrame) frame;
-				out.writeShort(chopFrame.offsetDelta);
+				out.writeShort(chopFrame.getOffsetDelta());
 			} else if (frame instanceof StackMapTableAttribute.SameFrameExtended) {
 				StackMapTableAttribute.SameFrameExtended sameFrame =
 						(StackMapTableAttribute.SameFrameExtended) frame;
-				out.writeShort(sameFrame.offsetDelta);
+				out.writeShort(sameFrame.getOffsetDelta());
 			} else if (frame instanceof StackMapTableAttribute.AppendFrame) {
 				StackMapTableAttribute.AppendFrame appendFrame =
 						(StackMapTableAttribute.AppendFrame) frame;
-				out.writeShort(appendFrame.offsetDelta);
-				for (TypeInfo type : appendFrame.additionalLocals) {
+				out.writeShort(appendFrame.getOffsetDelta());
+				for (TypeInfo type : appendFrame.getAdditionalLocals()) {
 					writeVerificationType(out, type);
 				}
 			} else if (frame instanceof StackMapTableAttribute.FullFrame) {
 				StackMapTableAttribute.FullFrame fullFrame =
 						(StackMapTableAttribute.FullFrame) frame;
-				out.writeShort(fullFrame.offsetDelta);
-				out.writeShort(fullFrame.locals.size());
-				for (TypeInfo type : fullFrame.locals) {
+				out.writeShort(fullFrame.getOffsetDelta());
+				out.writeShort(fullFrame.getLocals().size());
+				for (TypeInfo type : fullFrame.getLocals()) {
 					writeVerificationType(out, type);
 				}
-				out.writeShort(fullFrame.stack.size());
-				for (TypeInfo type : fullFrame.stack) {
+				out.writeShort(fullFrame.getStack().size());
+				for (TypeInfo type : fullFrame.getStack()) {
 					writeVerificationType(out, type);
 				}
 			}

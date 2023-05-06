@@ -5,6 +5,7 @@ import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpMethodHandle;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -23,11 +24,12 @@ public class BootstrapMethodsAttribute extends Attribute {
 	 * @param bootstrapMethods
 	 * 		List of boostrap methods <i>(ref + args)</i>.
 	 */
-	public BootstrapMethodsAttribute(CpUtf8 name, List<BootstrapMethod> bootstrapMethods) {
+	public BootstrapMethodsAttribute(@Nonnull CpUtf8 name, @Nonnull List<BootstrapMethod> bootstrapMethods) {
 		super(name);
 		this.bootstrapMethods = bootstrapMethods;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = super.cpAccesses();
@@ -44,6 +46,7 @@ public class BootstrapMethodsAttribute extends Attribute {
 	/**
 	 * @return List of boostrap methods.
 	 */
+	@Nonnull
 	public List<BootstrapMethod> getBootstrapMethods() {
 		return bootstrapMethods;
 	}
@@ -52,7 +55,7 @@ public class BootstrapMethodsAttribute extends Attribute {
 	 * @param bootstrapMethods
 	 * 		New list of boostrap methods.
 	 */
-	public void setBootstrapMethods(List<BootstrapMethod> bootstrapMethods) {
+	public void setBootstrapMethods(@Nonnull List<BootstrapMethod> bootstrapMethods) {
 		this.bootstrapMethods = bootstrapMethods;
 	}
 
@@ -66,16 +69,17 @@ public class BootstrapMethodsAttribute extends Attribute {
 		private List<CpEntry> args;
 
 		/**
-		 * @param bsmMethodref
+		 * @param bsmMethodRef
 		 * 		Constant pool entry of method reference, {@link CpMethodHandle}.
 		 * @param args
 		 * 		List of arguments as indices of constant pool items.
 		 */
-		public BootstrapMethod(CpMethodHandle bsmMethodref, List<CpEntry> args) {
-			this.bsmMethodref = bsmMethodref;
+		public BootstrapMethod(@Nonnull CpMethodHandle bsmMethodRef, @Nonnull List<CpEntry> args) {
+			this.bsmMethodref = bsmMethodRef;
 			this.args = args;
 		}
 
+		@Nonnull
 		@Override
 		public Set<CpEntry> cpAccesses() {
 			Set<CpEntry> set = new HashSet<>();
@@ -87,22 +91,24 @@ public class BootstrapMethodsAttribute extends Attribute {
 		/**
 		 * @return Constant pool index of method reference, {@link CpMethodHandle}.
 		 */
+		@Nonnull
 		public CpMethodHandle getBsmMethodref() {
 			return bsmMethodref;
 		}
 
 		/**
-		 * @param bsmMethodref
+		 * @param bsmMethodRef
 		 * 		New constant pool index of method reference, {@link CpMethodHandle}.
 		 */
-		public void setBsmMethodref(CpMethodHandle bsmMethodref) {
-			this.bsmMethodref = bsmMethodref;
+		public void setBsmMethodRef(@Nonnull CpMethodHandle bsmMethodRef) {
+			this.bsmMethodref = bsmMethodRef;
 		}
 
 		/**
 		 * @return List of arguments to the {@link #getBsmMethodref() bootstrap method}
 		 * as indices of constant pool items.
 		 */
+		@Nonnull
 		public List<CpEntry> getArgs() {
 			return args;
 		}
@@ -111,7 +117,7 @@ public class BootstrapMethodsAttribute extends Attribute {
 		 * @param args
 		 * 		New list of arguments to the {@link #getBsmMethodref() bootstrap method}.
 		 */
-		public void setArgs(List<CpEntry> args) {
+		public void setArgs(@Nonnull List<CpEntry> args) {
 			this.args = args;
 		}
 

@@ -1,5 +1,7 @@
 package me.coley.cafedude.classfile.annotation;
 
+import javax.annotation.Nonnull;
+
 /**
  * Type path item.
  *
@@ -15,7 +17,7 @@ public class TypePathElement {
 	 * @param argIndex
 	 * 		Which type argument of a parameterized type is annotated.
 	 */
-	public TypePathElement(TypePathKind kind, int argIndex) {
+	public TypePathElement(@Nonnull TypePathKind kind, int argIndex) {
 		this.kind = kind;
 		// Argument indices only allowed for type argument kinds
 		if (kind != TypePathKind.TYPE_ARGUMENT && argIndex != 0)
@@ -27,6 +29,7 @@ public class TypePathElement {
 	/**
 	 * @return Indicator of purpose of the element.
 	 */
+	@Nonnull
 	public TypePathKind getKind() {
 		return kind;
 	}

@@ -3,6 +3,7 @@ package me.coley.cafedude.classfile.instruction;
 import me.coley.cafedude.classfile.behavior.CpAccessor;
 import me.coley.cafedude.classfile.constant.CpEntry;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Set;
 
@@ -53,6 +54,7 @@ public class CpRefInstruction extends BasicInstruction implements CpAccessor {
 		return result;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		return Collections.singleton(entry);

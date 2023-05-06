@@ -305,16 +305,16 @@ public class CodeReader {
 		} else if (frame instanceof SameLocalsOneStackItem) {
 			SameLocalsOneStackItem slo = (SameLocalsOneStackItem) frame;
 			stack = new Stack<>();
-			stack.push(toValue(slo.stack));
+			stack.push(toValue(slo.getStack()));
 			kind = Frame.SAME1;
 		} else if (frame instanceof SameLocalsOneStackItemExtended) {
 			SameLocalsOneStackItemExtended slo = (SameLocalsOneStackItemExtended) frame;
 			stack = new Stack<>();
-			stack.push(toValue(slo.stack));
+			stack.push(toValue(slo.getStack()));
 			kind = Frame.SAME1;
 		} else if (frame instanceof ChopFrame) {
 			ChopFrame cf = (ChopFrame) frame;
-			argument = cf.absentVariables;
+			argument = cf.getAbsentVariables();
 			for(int i = 0; i < argument; i++) {
 				locals.pop();
 			}
@@ -322,18 +322,18 @@ public class CodeReader {
 			kind = Frame.CHOP;
 		} else if (frame instanceof AppendFrame) {
 			AppendFrame af = (AppendFrame) frame;
-			argument = af.additionalLocals.size();
-			for (TypeInfo local : af.additionalLocals) {
+			argument = af.getAdditionalLocals().size();
+			for (TypeInfo local : af.getAdditionalLocals()) {
 				locals.push(toValue(local));
 			}
 			stack = EMPTY;
 			kind = Frame.APPEND;
 		} else if (frame instanceof FullFrame) {
 			FullFrame ff = (FullFrame) frame;
-			for(TypeInfo local : ff.locals) {
+			for(TypeInfo local : ff.getLocals()) {
 				locals.push(toValue(local));
 			}
-			for(TypeInfo stackItem : ff.stack) {
+			for(TypeInfo stackItem : ff.getStack()) {
 				stack.push(toValue(stackItem));
 			}
 		} else {
@@ -354,10 +354,10 @@ public class CodeReader {
 				return new PrimitiveValue(typeInfo.getTag());
 			case ITEM_OBJECT:
 				ObjectVariableInfo objectInfo = (ObjectVariableInfo) typeInfo;
-				return new ObjectValue(objectInfo.classEntry.getName().getText());
+				return new ObjectValue(objectInfo.getClassEntry().getName().getText());
 			case ITEM_UNINITIALIZED:
 				UninitializedVariableInfo uninitializedInfo = (UninitializedVariableInfo) typeInfo;
-				return new UninitializedValue(labels.computeIfAbsent(uninitializedInfo.offset, Label::new));
+				return new UninitializedValue(labels.computeIfAbsent(uninitializedInfo.getOffset(), Label::new));
 			default:
 				throw new IllegalArgumentException("Unknown verification type tag " + typeInfo.getTag());
 		}
@@ -371,9 +371,9 @@ public class CodeReader {
 		int offset = -1;
 		for (StackMapFrame frame : smta.getFrames()) {
 			if(offset == -1) {
-				offset = frame.offsetDelta;
+				offset = frame.getOffsetDelta();
 			} else {
-				offset += frame.offsetDelta + 1;
+				offset += frame.getOffsetDelta() + 1;
 			}
 			frames.put(offset, frame);
 		}

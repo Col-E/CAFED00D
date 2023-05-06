@@ -4,6 +4,7 @@ import me.coley.cafedude.classfile.behavior.CpAccessor;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,14 +13,15 @@ import java.util.Set;
  * Method parameters attribute.
  */
 public class MethodParametersAttribute extends Attribute {
-
 	private List<Parameter> parameters;
 
 	/**
-	 * @param name Name index in constant pool.
-	 * @param parameters Parameters.
+	 * @param name
+	 * 		Name index in constant pool.
+	 * @param parameters
+	 * 		Parameters.
 	 */
-	public MethodParametersAttribute(CpUtf8 name, List<Parameter> parameters) {
+	public MethodParametersAttribute(@Nonnull CpUtf8 name, @Nonnull List<Parameter> parameters) {
 		super(name);
 		this.parameters = parameters;
 	}
@@ -27,17 +29,20 @@ public class MethodParametersAttribute extends Attribute {
 	/**
 	 * @return Parameters.
 	 */
+	@Nonnull
 	public List<Parameter> getParameters() {
 		return parameters;
 	}
 
 	/**
-	 * @param parameters New parameters.
+	 * @param parameters
+	 * 		New parameters.
 	 */
-	public void setParameters(List<Parameter> parameters) {
+	public void setParameters(@Nonnull List<Parameter> parameters) {
 		this.parameters = parameters;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = super.cpAccesses();
@@ -57,15 +62,16 @@ public class MethodParametersAttribute extends Attribute {
 	 * Method parameter.
 	 */
 	public static class Parameter implements CpAccessor {
-
 		private int accessFlags;
 		private CpUtf8 name;
 
 		/**
-		 * @param accessFlags Access flags.
-		 * @param name Name index in constant pool.
+		 * @param accessFlags
+		 * 		Access flags.
+		 * @param name
+		 * 		Name index in constant pool.
 		 */
-		public Parameter(int accessFlags, CpUtf8 name) {
+		public Parameter(int accessFlags, @Nonnull CpUtf8 name) {
 			this.accessFlags = accessFlags;
 			this.name = name;
 		}
@@ -78,7 +84,8 @@ public class MethodParametersAttribute extends Attribute {
 		}
 
 		/**
-		 * @param accessFlags New access flags.
+		 * @param accessFlags
+		 * 		New access flags.
 		 */
 		public void setAccessFlags(int accessFlags) {
 			this.accessFlags = accessFlags;
@@ -87,24 +94,25 @@ public class MethodParametersAttribute extends Attribute {
 		/**
 		 * @return Name index in constant pool.
 		 */
+		@Nonnull
 		public CpUtf8 getName() {
 			return name;
 		}
 
 		/**
-		 * @param name New name index in constant pool.
+		 * @param name
+		 * 		New name index in constant pool.
 		 */
-		public void setName(CpUtf8 name) {
+		public void setName(@Nonnull CpUtf8 name) {
 			this.name = name;
 		}
 
+		@Nonnull
 		@Override
 		public Set<CpEntry> cpAccesses() {
 			Set<CpEntry> set = new HashSet<>();
 			set.add(name);
 			return set;
 		}
-
 	}
-
 }

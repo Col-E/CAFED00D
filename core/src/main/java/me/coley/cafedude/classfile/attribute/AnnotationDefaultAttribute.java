@@ -36,6 +36,7 @@ public class AnnotationDefaultAttribute extends Attribute {
 		return elementValue;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = super.cpAccesses();

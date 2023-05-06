@@ -2,6 +2,8 @@ package me.coley.cafedude.classfile.attribute;
 
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
+
 /**
  * Synthetic marker attribute.
  *
@@ -12,7 +14,7 @@ public class SyntheticAttribute extends Attribute {
 	 * @param name
 	 * 		Name index in constant pool.
 	 */
-	public SyntheticAttribute(CpUtf8 name) {
+	public SyntheticAttribute(@Nonnull CpUtf8 name) {
 		super(name);
 	}
 

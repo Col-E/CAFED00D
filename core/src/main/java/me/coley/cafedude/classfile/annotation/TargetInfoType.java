@@ -2,6 +2,8 @@ package me.coley.cafedude.classfile.annotation;
 
 import me.coley.cafedude.classfile.AnnotationConstants;
 
+import javax.annotation.Nonnull;
+
 /**
  * Target information denoting which type in a declaration or expression is annotated.
  *
@@ -27,6 +29,7 @@ public enum TargetInfoType implements AnnotationConstants {
 	 *
 	 * @return Target info type based on the value.
 	 */
+	@Nonnull
 	public static TargetInfoType fromTargetType(int type) {
 		switch (type) {
 			case PARAMETER_OF_CLASS_OR_INTERFACE:

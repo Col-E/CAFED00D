@@ -3,6 +3,7 @@ package me.coley.cafedude.classfile.attribute;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
 import java.util.Set;
 
 /**
@@ -19,7 +20,7 @@ public class SourceFileAttribute extends Attribute {
 	 * @param sourceFilename
 	 * 		UTF8 index in constant pool of the source file name.
 	 */
-	public SourceFileAttribute(CpUtf8 name, CpUtf8 sourceFilename) {
+	public SourceFileAttribute(@Nonnull CpUtf8 name, @Nonnull CpUtf8 sourceFilename) {
 		super(name);
 		this.sourceFilename = sourceFilename;
 	}
@@ -27,6 +28,7 @@ public class SourceFileAttribute extends Attribute {
 	/**
 	 * @return UTF8 index in constant pool of the source file name.
 	 */
+	@Nonnull
 	public CpUtf8 getSourceFilename() {
 		return sourceFilename;
 	}
@@ -35,10 +37,11 @@ public class SourceFileAttribute extends Attribute {
 	 * @param sourceFilename
 	 * 		UTF8 index in constant pool of the source file name.
 	 */
-	public void setSourceFilename(CpUtf8 sourceFilename) {
+	public void setSourceFilename(@Nonnull CpUtf8 sourceFilename) {
 		this.sourceFilename = sourceFilename;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = super.cpAccesses();

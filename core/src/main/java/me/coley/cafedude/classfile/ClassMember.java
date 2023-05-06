@@ -103,6 +103,7 @@ public abstract class ClassMember implements AttributeHolder, CpAccessor {
 		return null;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = new HashSet<>();

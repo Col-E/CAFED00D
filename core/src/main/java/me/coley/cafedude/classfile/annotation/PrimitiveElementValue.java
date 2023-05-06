@@ -2,6 +2,7 @@ package me.coley.cafedude.classfile.annotation;
 
 import me.coley.cafedude.classfile.constant.CpEntry;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Set;
 
@@ -19,7 +20,7 @@ public class PrimitiveElementValue extends ElementValue {
 	 * @param value
 	 * 		Index of primitive value constant.
 	 */
-	public PrimitiveElementValue(char tag, CpEntry value) {
+	public PrimitiveElementValue(char tag, @Nonnull CpEntry value) {
 		super(tag);
 		this.value = value;
 	}
@@ -27,6 +28,7 @@ public class PrimitiveElementValue extends ElementValue {
 	/**
 	 * @return Index of primitive value constant.
 	 */
+	@Nonnull
 	public CpEntry getValue() {
 		return value;
 	}
@@ -35,7 +37,7 @@ public class PrimitiveElementValue extends ElementValue {
 	 * @param value
 	 * 		Index of primitive value constant.
 	 */
-	public void setValue(CpEntry value) {
+	public void setValue(@Nonnull CpEntry value) {
 		this.value = value;
 	}
 
@@ -47,6 +49,7 @@ public class PrimitiveElementValue extends ElementValue {
 		return super.getTag();
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		return Collections.singleton(value);

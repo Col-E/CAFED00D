@@ -2,6 +2,7 @@ package me.coley.cafedude.classfile.attribute;
 
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
@@ -18,7 +19,7 @@ public class LineNumberTableAttribute extends Attribute {
 	 * @param entries
 	 * 		Line number table entries.
 	 */
-	public LineNumberTableAttribute(CpUtf8 name, List<LineEntry> entries) {
+	public LineNumberTableAttribute(@Nonnull CpUtf8 name, @Nonnull List<LineEntry> entries) {
 		super(name);
 		this.entries = entries;
 	}
@@ -33,6 +34,7 @@ public class LineNumberTableAttribute extends Attribute {
 	/**
 	 * @return Table entries.
 	 */
+	@Nonnull
 	public List<LineEntry> getEntries() {
 		return entries;
 	}
@@ -41,7 +43,7 @@ public class LineNumberTableAttribute extends Attribute {
 	 * @param entries
 	 * 		New table entries.
 	 */
-	public void setEntries(List<LineEntry> entries) {
+	public void setEntries(@Nonnull List<LineEntry> entries) {
 		this.entries = entries;
 	}
 

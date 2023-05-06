@@ -3,6 +3,7 @@ package me.coley.cafedude.classfile.annotation;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Set;
 
@@ -20,7 +21,7 @@ public class ClassElementValue extends ElementValue {
 	 * @param classEntry
 	 * 		Index of class constant.
 	 */
-	public ClassElementValue(char tag, CpUtf8 classEntry) {
+	public ClassElementValue(char tag, @Nonnull CpUtf8 classEntry) {
 		super(tag);
 		if (tag != 'c')
 			throw new IllegalArgumentException("Class element value must have 'c' tag");
@@ -30,6 +31,7 @@ public class ClassElementValue extends ElementValue {
 	/**
 	 * @return Index of a class's descriptor.
 	 */
+	@Nonnull
 	public CpUtf8 getClassEntry() {
 		return classEntry;
 	}
@@ -38,7 +40,7 @@ public class ClassElementValue extends ElementValue {
 	 * @param classEntry
 	 * 		Index of a class's descriptor.
 	 */
-	public void setClassEntry(CpUtf8 classEntry) {
+	public void setClassEntry(@Nonnull CpUtf8 classEntry) {
 		this.classEntry = classEntry;
 	}
 
@@ -50,6 +52,7 @@ public class ClassElementValue extends ElementValue {
 		return super.getTag();
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		return Collections.singleton(classEntry);

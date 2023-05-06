@@ -5,6 +5,7 @@ import me.coley.cafedude.classfile.attribute.LocalVariableTableAttribute;
 import me.coley.cafedude.classfile.behavior.CpAccessor;
 import me.coley.cafedude.classfile.constant.CpEntry;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -24,7 +25,7 @@ public abstract class TargetInfo implements CpAccessor {
 	 * @param targetType
 	 * 		Target type, the {@code target_type} of a {@code type_annotation}
 	 */
-	protected TargetInfo(TargetInfoType targetTypeKind, int targetType) {
+	protected TargetInfo(@Nonnull TargetInfoType targetTypeKind, int targetType) {
 		this.targetTypeKind = targetTypeKind;
 		this.targetType = targetType;
 	}
@@ -32,6 +33,7 @@ public abstract class TargetInfo implements CpAccessor {
 	/**
 	 * @return Info type, indicating the union layout. Abstraction of {@link #targetType}.
 	 */
+	@Nonnull
 	public TargetInfoType getTargetTypeKind() {
 		return targetTypeKind;
 	}
@@ -43,6 +45,7 @@ public abstract class TargetInfo implements CpAccessor {
 		return targetType;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		return Collections.emptySet();

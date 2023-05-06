@@ -1,5 +1,6 @@
 package me.coley.cafedude.classfile.annotation;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 // TODO: Validate that my understanding of the path length matches reality
@@ -40,13 +41,14 @@ public class TypePath {
 	 * @param path
 	 * 		Path elements.
 	 */
-	public TypePath(List<TypePathElement> path) {
+	public TypePath(@Nonnull List<TypePathElement> path) {
 		this.path = path;
 	}
 
 	/**
 	 * @return Path elements.
 	 */
+	@Nonnull
 	public List<TypePathElement> getPath() {
 		return path;
 	}

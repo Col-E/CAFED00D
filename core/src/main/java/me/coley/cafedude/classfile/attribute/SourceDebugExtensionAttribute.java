@@ -2,6 +2,8 @@ package me.coley.cafedude.classfile.attribute;
 
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
+
 /**
  * Source debug extension attribute. The contained data has no internal value to the JVM.
  *
@@ -16,14 +18,14 @@ public class SourceDebugExtensionAttribute extends Attribute {
 	 * @param debugExtension
 	 * 		Extension data stored in attribute.
 	 */
-	public SourceDebugExtensionAttribute(CpUtf8 name, byte[] debugExtension) {
+	public SourceDebugExtensionAttribute(@Nonnull CpUtf8 name,@Nonnull byte[] debugExtension) {
 		super(name);
 		this.debugExtension = debugExtension;
 	}
 
 	/**
 	 * @return Extension data stored in attribute.
-	 */
+	 */@Nonnull
 	public byte[] getDebugExtension() {
 		return debugExtension;
 	}
@@ -32,7 +34,7 @@ public class SourceDebugExtensionAttribute extends Attribute {
 	 * @param debugExtension
 	 * 		New extension data stored in attribute.
 	 */
-	public void setDebugExtension(byte[] debugExtension) {
+	public void setDebugExtension(@Nonnull byte[] debugExtension) {
 		this.debugExtension = debugExtension;
 	}
 

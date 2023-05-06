@@ -2,6 +2,7 @@ package me.coley.cafedude.classfile.annotation;
 
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
 import java.util.Map;
 
 /**
@@ -23,7 +24,8 @@ public class TypeAnnotation extends Annotation {
 	 * @param typePath
 	 * 		Information about which part of the type is annotated.
 	 */
-	public TypeAnnotation(CpUtf8 typeIndex, Map<CpUtf8, ElementValue> values, TargetInfo targetInfo, TypePath typePath) {
+	public TypeAnnotation(@Nonnull CpUtf8 typeIndex, @Nonnull Map<CpUtf8, ElementValue> values,
+						  @Nonnull TargetInfo targetInfo, @Nonnull TypePath typePath) {
 		super(typeIndex, values);
 		this.targetInfo = targetInfo;
 		this.typePath = typePath;
@@ -32,6 +34,7 @@ public class TypeAnnotation extends Annotation {
 	/**
 	 * @return Information about where the annotation is applied.
 	 */
+	@Nonnull
 	public TargetInfo getTargetInfo() {
 		return targetInfo;
 	}
@@ -39,6 +42,7 @@ public class TypeAnnotation extends Annotation {
 	/**
 	 * @return Information about which part of the type is annotated.
 	 */
+	@Nonnull
 	public TypePath getTypePath() {
 		return typePath;
 	}

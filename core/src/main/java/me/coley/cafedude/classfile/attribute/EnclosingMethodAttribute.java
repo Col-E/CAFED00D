@@ -1,7 +1,11 @@
 package me.coley.cafedude.classfile.attribute;
 
-import me.coley.cafedude.classfile.constant.*;
+import me.coley.cafedude.classfile.constant.CpClass;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpNameType;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
 import java.util.Set;
 
 /**
@@ -21,9 +25,9 @@ public class EnclosingMethodAttribute extends Attribute {
 	 * 		the declaration of the current class.
 	 * @param methodEntry
 	 * 		Used for anonymous classes e.g. in a method or constructor. If not, it is
-	 * 		{@code null}.
+	 *        {@code null}.
 	 */
-	public EnclosingMethodAttribute(CpUtf8 name, CpClass classEntry, CpNameType methodEntry) {
+	public EnclosingMethodAttribute(@Nonnull CpUtf8 name, @Nonnull CpClass classEntry, @Nonnull CpNameType methodEntry) {
 		super(name);
 		this.classEntry = classEntry;
 		this.methodEntry = methodEntry;
@@ -32,6 +36,7 @@ public class EnclosingMethodAttribute extends Attribute {
 	/**
 	 * @return Class index of the enclosing class.
 	 */
+	@Nonnull
 	public CpClass getClassEntry() {
 		return classEntry;
 	}
@@ -39,6 +44,7 @@ public class EnclosingMethodAttribute extends Attribute {
 	/**
 	 * @return Index of the enclosing method.
 	 */
+	@Nonnull
 	public CpNameType getMethodEntry() {
 		return methodEntry;
 	}
@@ -47,7 +53,7 @@ public class EnclosingMethodAttribute extends Attribute {
 	 * @param classEntry
 	 * 		Set the enclosing class index.
 	 */
-	public void setClassEntry(CpClass classEntry) {
+	public void setClassEntry(@Nonnull CpClass classEntry) {
 		this.classEntry = classEntry;
 	}
 
@@ -55,10 +61,11 @@ public class EnclosingMethodAttribute extends Attribute {
 	 * @param methodEntry
 	 * 		Set the enclosing method index.
 	 */
-	public void setMethodEntry(CpNameType methodEntry) {
+	public void setMethodEntry(@Nonnull CpNameType methodEntry) {
 		this.methodEntry = methodEntry;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = super.cpAccesses();

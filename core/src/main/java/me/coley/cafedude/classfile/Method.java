@@ -41,6 +41,7 @@ public class Method extends ClassMember {
 		return AttributeContext.METHOD;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = super.cpAccesses();

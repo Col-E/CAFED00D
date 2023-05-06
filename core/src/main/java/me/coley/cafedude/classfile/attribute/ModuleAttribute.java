@@ -3,6 +3,7 @@ package me.coley.cafedude.classfile.attribute;
 import me.coley.cafedude.classfile.behavior.CpAccessor;
 import me.coley.cafedude.classfile.constant.*;
 
+import javax.annotation.Nonnull;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,10 +46,10 @@ public class ModuleAttribute extends Attribute {
 	 * @param provides
 	 * 		The {@link Provides} items.
 	 */
-	public ModuleAttribute(CpUtf8 name, CpModule module, int flags, CpUtf8 version,
-						   List<Requires> requires, List<Exports> exports,
-						   List<Opens> opens, List<CpClass> uses,
-						   List<Provides> provides) {
+	public ModuleAttribute(@Nonnull CpUtf8 name, @Nonnull CpModule module, int flags, @Nonnull CpUtf8 version,
+						   @Nonnull List<Requires> requires, @Nonnull List<Exports> exports,
+						   @Nonnull List<Opens> opens, @Nonnull List<CpClass> uses,
+						   @Nonnull List<Provides> provides) {
 		super(name);
 		this.module = module;
 		this.flags = flags;
@@ -63,6 +64,7 @@ public class ModuleAttribute extends Attribute {
 	/**
 	 * @return Constant pool index of {@link CpModule module}.
 	 */
+	@Nonnull
 	public CpModule getModule() {
 		return module;
 	}
@@ -71,7 +73,7 @@ public class ModuleAttribute extends Attribute {
 	 * @param module
 	 * 		New module index.
 	 */
-	public void setModule(CpModule module) {
+	public void setModule(@Nonnull CpModule module) {
 		this.module = module;
 	}
 
@@ -96,6 +98,7 @@ public class ModuleAttribute extends Attribute {
 	/**
 	 * @return Index in constant pool of module {@link CpUtf8 version string}, or {@code 0} if no version info.
 	 */
+	@Nonnull
 	public CpUtf8 getVersion() {
 		return version;
 	}
@@ -104,13 +107,14 @@ public class ModuleAttribute extends Attribute {
 	 * @param version
 	 * 		New version index.
 	 */
-	public void setVersion(CpUtf8 version) {
+	public void setVersion(@Nonnull CpUtf8 version) {
 		this.version = version;
 	}
 
 	/**
 	 * @return The {@link Requires} items.
 	 */
+	@Nonnull
 	public List<Requires> getRequires() {
 		return requires;
 	}
@@ -119,13 +123,14 @@ public class ModuleAttribute extends Attribute {
 	 * @param requires
 	 * 		New require items.
 	 */
-	public void setRequires(List<Requires> requires) {
+	public void setRequires(@Nonnull List<Requires> requires) {
 		this.requires = requires;
 	}
 
 	/**
 	 * @return The {@link Exports} items.
 	 */
+	@Nonnull
 	public List<Exports> getExports() {
 		return exports;
 	}
@@ -134,13 +139,14 @@ public class ModuleAttribute extends Attribute {
 	 * @param exports
 	 * 		New exports items.
 	 */
-	public void setExports(List<Exports> exports) {
+	public void setExports(@Nonnull List<Exports> exports) {
 		this.exports = exports;
 	}
 
 	/**
 	 * @return The {@link Opens} items.
 	 */
+	@Nonnull
 	public List<Opens> getOpens() {
 		return opens;
 	}
@@ -149,7 +155,7 @@ public class ModuleAttribute extends Attribute {
 	 * @param opens
 	 * 		New opens items.
 	 */
-	public void setOpens(List<Opens> opens) {
+	public void setOpens(@Nonnull List<Opens> opens) {
 		this.opens = opens;
 	}
 
@@ -157,6 +163,7 @@ public class ModuleAttribute extends Attribute {
 	 * @return The uses list. Constant pool indices of {@link CpClass service interfaces classes} discoverable
 	 * by using {@code ServiceLoader}.
 	 */
+	@Nonnull
 	public List<CpClass> getUses() {
 		return uses;
 	}
@@ -165,13 +172,14 @@ public class ModuleAttribute extends Attribute {
 	 * @param uses
 	 * 		New uses list.
 	 */
-	public void setUses(List<CpClass> uses) {
+	public void setUses(@Nonnull List<CpClass> uses) {
 		this.uses = uses;
 	}
 
 	/**
 	 * @return The {@link Provides} items.
 	 */
+	@Nonnull
 	public List<Provides> getProvides() {
 		return provides;
 	}
@@ -180,10 +188,11 @@ public class ModuleAttribute extends Attribute {
 	 * @param provides
 	 * 		The {@link Provides} items.
 	 */
-	public void setProvides(List<Provides> provides) {
+	public void setProvides(@Nonnull List<Provides> provides) {
 		this.provides = provides;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = super.cpAccesses();
@@ -237,7 +246,7 @@ public class ModuleAttribute extends Attribute {
 		 * 		Index in constant pool of required module {@link CpUtf8 version string},
 		 * 		or {@code null} if no version info.
 		 */
-		public Requires(CpModule module, int flags, CpUtf8 version) {
+		public Requires(@Nonnull CpModule module, int flags, @Nonnull CpUtf8 version) {
 			this.module = module;
 			this.flags = flags;
 			this.version = version;
@@ -246,6 +255,7 @@ public class ModuleAttribute extends Attribute {
 		/**
 		 * @return Constant pool index of {@link CpModule required module}.
 		 */
+		@Nonnull
 		public CpModule getModule() {
 			return module;
 		}
@@ -254,7 +264,7 @@ public class ModuleAttribute extends Attribute {
 		 * @param module
 		 * 		New required module index.
 		 */
-		public void setModule(CpModule module) {
+		public void setModule(@Nonnull CpModule module) {
 			this.module = module;
 		}
 
@@ -285,6 +295,7 @@ public class ModuleAttribute extends Attribute {
 		 * @return Index in constant pool of required module {@link CpUtf8 version string},
 		 * or {@code 0} if no version info.
 		 */
+		@Nonnull
 		public CpUtf8 getVersion() {
 			return version;
 		}
@@ -293,10 +304,11 @@ public class ModuleAttribute extends Attribute {
 		 * @param version
 		 * 		New required module version index.
 		 */
-		public void setVersion(CpUtf8 version) {
+		public void setVersion(@Nonnull CpUtf8 version) {
 			this.version = version;
 		}
 
+		@Nonnull
 		@Override
 		public Set<CpEntry> cpAccesses() {
 			Set<CpEntry> set = new HashSet<>();
@@ -326,7 +338,7 @@ public class ModuleAttribute extends Attribute {
 		 * @param to
 		 * 		Constant pool indices of {@link CpModule modules} the {@link #getPackageEntry() package} exports to.
 		 */
-		public Exports(CpPackage packageEntry, int flags, List<CpModule> to) {
+		public Exports(@Nonnull CpPackage packageEntry, int flags, @Nonnull List<CpModule> to) {
 			this.packageEntry = packageEntry;
 			this.flags = flags;
 			this.to = to;
@@ -335,6 +347,7 @@ public class ModuleAttribute extends Attribute {
 		/**
 		 * @return Constant pool index of a {@link CpPackage package}.
 		 */
+		@Nonnull
 		public CpPackage getPackageEntry() {
 			return packageEntry;
 		}
@@ -343,7 +356,7 @@ public class ModuleAttribute extends Attribute {
 		 * @param packageEntry
 		 * 		New package cp index.
 		 */
-		public void setPackageEntry(CpPackage packageEntry) {
+		public void setPackageEntry(@Nonnull CpPackage packageEntry) {
 			this.packageEntry = packageEntry;
 		}
 
@@ -367,6 +380,7 @@ public class ModuleAttribute extends Attribute {
 		/**
 		 * @return Constant pool indices of {@link CpModule modules} the {@link #getPackageEntry() package} exports to.
 		 */
+		@Nonnull
 		public List<CpModule> getTo() {
 			return to;
 		}
@@ -375,7 +389,7 @@ public class ModuleAttribute extends Attribute {
 		 * @param toIndex
 		 * 		New opened module indices.
 		 */
-		public void setTo(List<CpModule> toIndex) {
+		public void setTo(@Nonnull List<CpModule> toIndex) {
 			this.to = toIndex;
 		}
 
@@ -387,6 +401,7 @@ public class ModuleAttribute extends Attribute {
 			return 6 + 2 * to.size();
 		}
 
+		@Nonnull
 		@Override
 		public Set<CpEntry> cpAccesses() {
 			Set<CpEntry> set = new HashSet<>();
@@ -416,7 +431,7 @@ public class ModuleAttribute extends Attribute {
 		 * @param to
 		 * 		Constant pool indices of {@link CpModule modules} the {@link #getPackageEntry()} is open to.
 		 */
-		public Opens(CpPackage packageEntry, int flags, List<CpModule> to) {
+		public Opens(@Nonnull CpPackage packageEntry, int flags, @Nonnull List<CpModule> to) {
 			this.packageEntry = packageEntry;
 			this.flags = flags;
 			this.to = to;
@@ -425,6 +440,7 @@ public class ModuleAttribute extends Attribute {
 		/**
 		 * @return Constant pool index of a {@link CpPackage package}.
 		 */
+		@Nonnull
 		public CpPackage getPackageEntry() {
 			return packageEntry;
 		}
@@ -433,7 +449,7 @@ public class ModuleAttribute extends Attribute {
 		 * @param packageEntry
 		 * 		New package cp index.
 		 */
-		public void setPackageEntry(CpPackage packageEntry) {
+		public void setPackageEntry(@Nonnull CpPackage packageEntry) {
 			this.packageEntry = packageEntry;
 		}
 
@@ -457,6 +473,7 @@ public class ModuleAttribute extends Attribute {
 		/**
 		 * @return Constant pool indices of {@link CpModule modules} the {@link #getPackageEntry() package} is open to.
 		 */
+		@Nonnull
 		public List<CpModule> getTo() {
 			return to;
 		}
@@ -465,7 +482,7 @@ public class ModuleAttribute extends Attribute {
 		 * @param toIndex
 		 * 		New opened module indices.
 		 */
-		public void setTo(List<CpModule> toIndex) {
+		public void setTo(@Nonnull List<CpModule> toIndex) {
 			this.to = toIndex;
 		}
 
@@ -477,6 +494,7 @@ public class ModuleAttribute extends Attribute {
 			return 6 + 2 * to.size();
 		}
 
+		@Nonnull
 		@Override
 		public Set<CpEntry> cpAccesses() {
 			Set<CpEntry> set = new HashSet<>();
@@ -502,7 +520,7 @@ public class ModuleAttribute extends Attribute {
 		 * 		Constant pool indices of {@link CpClass classes} that are implementations of
 		 *        {@link #getModule() the service interface}.
 		 */
-		public Provides(CpClass module, List<CpClass> with) {
+		public Provides(@Nonnull CpClass module, @Nonnull List<CpClass> with) {
 			this.module = module;
 			this.with = with;
 		}
@@ -510,6 +528,7 @@ public class ModuleAttribute extends Attribute {
 		/**
 		 * @return Constant pool index of {@link CpClass class} of a service interface.
 		 */
+		@Nonnull
 		public CpClass getModule() {
 			return module;
 		}
@@ -518,7 +537,7 @@ public class ModuleAttribute extends Attribute {
 		 * @param module
 		 * 		New service interface index.
 		 */
-		public void setModule(CpClass module) {
+		public void setModule(@Nonnull CpClass module) {
 			this.module = module;
 		}
 
@@ -526,6 +545,7 @@ public class ModuleAttribute extends Attribute {
 		 * @return Constant pool indices of {@link CpClass classes} that are implementations of
 		 * {@link #getModule() the service interface}.
 		 */
+		@Nonnull
 		public List<CpClass> getWith() {
 			return with;
 		}
@@ -534,7 +554,7 @@ public class ModuleAttribute extends Attribute {
 		 * @param with
 		 * 		New implementation indices.
 		 */
-		public void setWith(List<CpClass> with) {
+		public void setWith(@Nonnull List<CpClass> with) {
 			this.with = with;
 		}
 
@@ -546,6 +566,7 @@ public class ModuleAttribute extends Attribute {
 			return 4 + 2 * with.size();
 		}
 
+		@Nonnull
 		@Override
 		public Set<CpEntry> cpAccesses() {
 			Set<CpEntry> set = new HashSet<>();

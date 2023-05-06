@@ -4,6 +4,7 @@ import me.coley.cafedude.classfile.behavior.CpAccessor;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,11 +23,12 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 	 * @param entries
 	 * 		Variable type table entries.
 	 */
-	public LocalVariableTypeTableAttribute(CpUtf8 name, List<VarTypeEntry> entries) {
+	public LocalVariableTypeTableAttribute(@Nonnull CpUtf8 name, @Nonnull List<VarTypeEntry> entries) {
 		super(name);
 		this.entries = entries;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = super.cpAccesses();
@@ -51,6 +53,7 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 	/**
 	 * @return Table entries.
 	 */
+	@Nonnull
 	public List<VarTypeEntry> getEntries() {
 		return entries;
 	}
@@ -59,7 +62,7 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 	 * @param entries
 	 * 		New ta+ble entries.
 	 */
-	public void setEntries(List<VarTypeEntry> entries) {
+	public void setEntries(@Nonnull List<VarTypeEntry> entries) {
 		this.entries = entries;
 	}
 
@@ -85,7 +88,7 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 		 * @param index
 		 * 		Variable index.
 		 */
-		public VarTypeEntry(int startPc, int length, CpUtf8 name, CpUtf8 signature, int index) {
+		public VarTypeEntry(int startPc, int length, @Nonnull CpUtf8 name, @Nonnull CpUtf8 signature, int index) {
 			this.startPc = startPc;
 			this.length = length;
 			this.name = name;
@@ -110,6 +113,7 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 		/**
 		 * @return CP UTF8 name index.
 		 */
+		@Nonnull
 		public CpUtf8 getName() {
 			return name;
 		}
@@ -117,6 +121,7 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 		/**
 		 * @return CP UTF8 signature index.
 		 */
+		@Nonnull
 		public CpUtf8 getSignature() {
 			return signature;
 		}
@@ -128,6 +133,7 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 			return index;
 		}
 
+		@Nonnull
 		@Override
 		public Set<CpEntry> cpAccesses() {
 			Set<CpEntry> set = new HashSet<>();

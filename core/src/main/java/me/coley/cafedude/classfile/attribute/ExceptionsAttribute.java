@@ -4,6 +4,7 @@ import me.coley.cafedude.classfile.constant.CpClass;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Set;
 
@@ -22,7 +23,7 @@ public class ExceptionsAttribute extends Attribute {
 	 * 		Indices into the constant pool representing all checked exceptions
 	 * 		that may be thrown by this method.
 	 */
-	public ExceptionsAttribute(CpUtf8 name, List<CpClass> exceptionTable) {
+	public ExceptionsAttribute(@Nonnull CpUtf8 name, @Nonnull List<CpClass> exceptionTable) {
 		super(name);
 		this.exceptionTable = exceptionTable;
 	}
@@ -30,6 +31,7 @@ public class ExceptionsAttribute extends Attribute {
 	/**
 	 * @return Exception index table.
 	 */
+	@Nonnull
 	public List<CpClass> getExceptionTable() {
 		return exceptionTable;
 	}
@@ -39,10 +41,11 @@ public class ExceptionsAttribute extends Attribute {
 	 * 		Indices into the constant pool representing all checked exceptions
 	 * 		that may be thrown by this method.
 	 */
-	public void setExceptionTable(List<CpClass> exceptionTable) {
+	public void setExceptionTable(@Nonnull List<CpClass> exceptionTable) {
 		this.exceptionTable = exceptionTable;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = super.cpAccesses();

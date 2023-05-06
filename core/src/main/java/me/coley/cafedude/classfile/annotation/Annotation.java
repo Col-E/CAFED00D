@@ -6,6 +6,7 @@ import me.coley.cafedude.classfile.behavior.CpAccessor;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -33,7 +34,7 @@ public class Annotation implements CpAccessor {
 	 * @param values
 	 * 		Annotation key-value pairs. Keys point to UTF8 constants.
 	 */
-	public Annotation(CpUtf8 type, Map<CpUtf8, ElementValue> values) {
+	public Annotation(@Nonnull CpUtf8 type, @Nonnull Map<CpUtf8, ElementValue> values) {
 		this.type = type;
 		this.values = values;
 	}
@@ -41,6 +42,7 @@ public class Annotation implements CpAccessor {
 	/**
 	 * @return Annotation descriptor index.
 	 */
+	@Nonnull
 	public CpUtf8 getType() {
 		return type;
 	}
@@ -52,10 +54,12 @@ public class Annotation implements CpAccessor {
 	 *
 	 * @see ElementValue Values.
 	 */
+	@Nonnull
 	public Map<CpUtf8, ElementValue> getValues() {
 		return values;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = new HashSet<>();
