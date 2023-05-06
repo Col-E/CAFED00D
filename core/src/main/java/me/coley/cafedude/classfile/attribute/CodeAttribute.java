@@ -7,7 +7,6 @@ import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.classfile.instruction.Instruction;
 import me.coley.cafedude.io.AttributeContext;
-import me.coley.cafedude.io.InstructionWriter;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;

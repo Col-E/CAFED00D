@@ -1,13 +1,10 @@
 package me.coley.cafedude.classfile.annotation;
 
-import me.coley.cafedude.classfile.constant.CpClass;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Class element value.

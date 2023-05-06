@@ -1,6 +1,5 @@
 package me.coley.cafedude.tree.visitor.reader;
 
-import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.classfile.annotation.*;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.tree.visitor.AnnotationArrayVisitor;

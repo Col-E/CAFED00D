@@ -2,7 +2,6 @@ package me.coley.cafedude.tree.visitor.reader;
 
 import me.coley.cafedude.InvalidCodeException;
 import me.coley.cafedude.classfile.ClassFile;
-import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.classfile.Descriptor;
 import me.coley.cafedude.classfile.Method;
 import me.coley.cafedude.classfile.attribute.*;

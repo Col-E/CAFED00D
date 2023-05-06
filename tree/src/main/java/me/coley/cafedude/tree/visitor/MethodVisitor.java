@@ -1,7 +1,5 @@
 package me.coley.cafedude.tree.visitor;
 
-import me.coley.cafedude.classfile.annotation.ElementValue;
-import me.coley.cafedude.tree.Constant;
 import org.jetbrains.annotations.Nullable;
 
 /**

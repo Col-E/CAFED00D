@@ -4,7 +4,6 @@ import me.coley.cafedude.classfile.constant.CpEntry;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Nested annotation element value.

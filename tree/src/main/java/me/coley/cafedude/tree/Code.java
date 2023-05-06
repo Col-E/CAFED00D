@@ -3,7 +3,6 @@ package me.coley.cafedude.tree;
 import me.coley.cafedude.tree.insn.Insn;
 
 import java.util.List;
-import java.util.Map;
 
 public class Code {
 

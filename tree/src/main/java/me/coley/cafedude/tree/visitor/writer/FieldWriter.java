@@ -2,14 +2,11 @@ package me.coley.cafedude.tree.visitor.writer;
 
 import me.coley.cafedude.classfile.AttributeConstants;
 import me.coley.cafedude.classfile.Field;
-import me.coley.cafedude.classfile.attribute.Attribute;
 import me.coley.cafedude.classfile.attribute.ConstantValueAttribute;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.tree.Constant;
 import me.coley.cafedude.tree.visitor.FieldVisitor;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
 
 public class FieldWriter extends DeclarationWriter implements FieldVisitor {

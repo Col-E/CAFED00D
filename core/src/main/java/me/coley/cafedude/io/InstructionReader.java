@@ -3,7 +3,6 @@ package me.coley.cafedude.io;
 import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.classfile.constant.ConstRef;
 import me.coley.cafedude.classfile.constant.CpClass;
-import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpInvokeDynamic;
 import me.coley.cafedude.classfile.instruction.*;
 

@@ -5,7 +5,6 @@ import me.coley.cafedude.classfile.constant.CpUtf8;
 
 import java.util.Collections;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * UTF8 string element value.

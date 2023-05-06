@@ -3,9 +3,7 @@ package me.coley.cafedude.classfile.annotation;
 import me.coley.cafedude.classfile.constant.CpEntry;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Primitive value element value.

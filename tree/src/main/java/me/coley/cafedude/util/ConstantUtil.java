@@ -1,6 +1,5 @@
 package me.coley.cafedude.util;
 
-import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.classfile.Descriptor;
 import me.coley.cafedude.classfile.annotation.ClassElementValue;
 import me.coley.cafedude.classfile.annotation.ElementValue;

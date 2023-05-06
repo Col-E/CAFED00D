@@ -8,7 +8,6 @@ import me.coley.cafedude.classfile.constant.CpUtf8;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Attribute describing the inner classes of a class.

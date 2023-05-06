@@ -9,7 +9,6 @@ import me.coley.cafedude.classfile.instruction.Instruction;
 import me.coley.cafedude.classfile.instruction.IntOperandInstruction;
 import me.coley.cafedude.classfile.instruction.LookupSwitchInstruction;
 import me.coley.cafedude.classfile.instruction.TableSwitchInstruction;
-import me.coley.cafedude.io.InstructionReader;
 import me.coley.cafedude.tree.Label;
 
 import java.util.HashMap;
@@ -18,7 +17,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import static me.coley.cafedude.classfile.instruction.Opcodes.*;
-import static me.coley.cafedude.classfile.instruction.Opcodes.JSR_W;
 
 /**
  * Label transformer for converting instruction offsets to labels.

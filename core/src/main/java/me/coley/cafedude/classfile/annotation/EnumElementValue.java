@@ -5,7 +5,6 @@ import me.coley.cafedude.classfile.constant.CpUtf8;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Enum element value.
