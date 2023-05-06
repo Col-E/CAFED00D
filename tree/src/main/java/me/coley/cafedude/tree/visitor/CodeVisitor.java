@@ -8,8 +8,9 @@ import me.coley.cafedude.tree.Handle;
 import me.coley.cafedude.tree.Label;
 import me.coley.cafedude.tree.frame.Frame;
 import me.coley.cafedude.tree.frame.Value;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Visitor to visit the various instructions of a method.
@@ -298,7 +299,7 @@ public interface CodeVisitor {
 	 * @param label
 	 * 			label to jump to.
 	 */
-	default void visitFlowInsn(int opcode, @NotNull Label label) {
+	default void visitFlowInsn(int opcode, @Nonnull Label label) {
 		CodeVisitor cv = codeDelegate();
 		if (cv != null) cv.visitFlowInsn(opcode, label);
 	}
