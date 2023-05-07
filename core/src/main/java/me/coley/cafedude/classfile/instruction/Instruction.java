@@ -34,8 +34,7 @@ public abstract class Instruction {
 	}
 
 	/**
-	 * Get the size of this instruction
-	 * @return size of this instruction
+	 * @return Size of this instruction.
 	 */
 	public int computeSize() {
 		return 1; // opcode

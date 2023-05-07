@@ -141,6 +141,12 @@ public class TableSwitchInstruction extends BasicInstruction {
 
 	@Override
 	public int computeSize() {
-		return 1 + padding + 4 + 4 + 4 + offsets.size() * 4; // opcode + padding + default + low + high + offsets
+		// u1: opcode
+		// ??: padding
+		// u4: default
+		// u4: low
+		// u4: high
+		// u4[]: offsets
+		return 1 + padding + 4 + 4 + 4 + offsets.size() * 4;
 	}
 }

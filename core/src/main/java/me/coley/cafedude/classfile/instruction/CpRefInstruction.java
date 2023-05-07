@@ -45,8 +45,13 @@ public class CpRefInstruction extends BasicInstruction implements CpAccessor {
 	@Override
 	public int computeSize() {
 		int opcode = getOpcode();
-		if (opcode == Opcodes.LDC) return 1 + 1; // 1 byte opcode + 1 byte index
-		else return 1 + 2; // 1 byte opcode + 2 byte index
+
+		// LDC only has one byte as its argument size
+		// But LDC_W and all other constant pool referencing instructions use shorts (two bytes)
+		if (opcode == Opcodes.LDC)
+			return 1 + 1; // 1 byte opcode + 1 byte index
+
+		return 1 + 2; // 1 byte opcode + 2 byte index
 	}
 
 	@Override

@@ -61,6 +61,13 @@ public class MultiANewArrayInstruction extends BasicInstruction implements CpAcc
 	}
 
 	@Override
+	public int computeSize() {
+		// u1: opcode
+		// u2: array class type index
+		return 3;
+	}
+
+	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof MultiANewArrayInstruction)) return false;

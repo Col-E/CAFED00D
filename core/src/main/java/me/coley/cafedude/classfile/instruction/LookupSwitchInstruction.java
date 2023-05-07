@@ -106,6 +106,12 @@ public class LookupSwitchInstruction extends BasicInstruction {
 
 	@Override
 	public int computeSize() {
+		// u1: opcode
+		// ??: padding
+		// u4: default
+		// u4: npairs
+		// u4[]: keys
+		// u4[]: offsets
 		return 1 + padding + 4 + 4 + 4 * keys.size() + 4 * offsets.size();
 	}
 }
