@@ -71,8 +71,9 @@ public class ClassFileWriter {
 			out.writeShort(clazz.getAccess());
 
 			// This/super classes
+			CpClass superClass = clazz.getSuperClass();
 			out.writeShort(clazz.getThisClass().getIndex());
-			out.writeShort(clazz.getSuperClass().getIndex());
+			out.writeShort(superClass == null ? 0 : superClass.getIndex());
 
 			// Interfaces
 			out.writeShort(clazz.getInterfaceClasses().size());

@@ -237,6 +237,8 @@ public class ConstPool implements List<CpEntry> {
 	@Override
 	public CpEntry get(int index) {
 		try {
+			if (index == 0)
+				return null;
 			return backing.get(cpToInternal(index));
 		} catch (IndexOutOfBoundsException e) {
 			throw new InvalidCpIndexException(this, index);

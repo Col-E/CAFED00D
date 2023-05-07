@@ -7,6 +7,7 @@ import me.coley.cafedude.classfile.constant.CpClass;
 import me.coley.cafedude.classfile.constant.Placeholders;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -116,7 +117,7 @@ public class ClassBuilder {
 	 * @param superClass
 	 * 		Constant pool entry holding the super-type's class type.
 	 */
-	public void setSuperClass(@Nonnull CpClass superClass) {
+	public void setSuperClass(@Nullable CpClass superClass) {
 		this.superClass = superClass;
 	}
 

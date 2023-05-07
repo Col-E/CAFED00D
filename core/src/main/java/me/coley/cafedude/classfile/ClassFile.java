@@ -225,7 +225,7 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	/**
 	 * @return Constant pool entry holding the super class type.
 	 */
-	@Nonnull
+	@Nullable
 	public CpClass getSuperClass() {
 		return superClass;
 	}
@@ -280,7 +280,9 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = new HashSet<>();
 		set.add(getThisClass());
-		set.add(getSuperClass());
+		CpClass superClass = getSuperClass();
+		if (superClass != null)
+			set.add(superClass);
 		set.addAll(getInterfaceClasses());
 		for (Attribute attribute : getAttributes())
 			set.addAll(attribute.cpAccesses());
