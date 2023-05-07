@@ -203,8 +203,6 @@ public class CodeConverter implements Opcodes {
 				return new IntOperandInstruction(opcode, intInsn.getOperand());
 			}
 			case LOOKUP_SWITCH: {
-				// allign to 4 bytes
-				int padding = 4 - (state.offset + 1) & 3;
 				LookupSwitchInsn lsi = (LookupSwitchInsn) insn;
 				checkLabel(lsi.getDefaultLabel(), insn, state);
 				int defaultOffset = lsi.getDefaultLabel().getOffset() - state.offset;
@@ -213,11 +211,11 @@ public class CodeConverter implements Opcodes {
 				for (Label label : lsi.getLabels()) {
 					offsets.add(label.getOffset() - state.offset);
 				}
-				return new LookupSwitchInstruction(padding, defaultOffset, keys, offsets);
+				LookupSwitchInstruction lswitch = new LookupSwitchInstruction(defaultOffset, keys, offsets);
+				lswitch.notifyStartPosition(state.offset); // TODO: Mirror the correct offset from the current state
+				return lswitch;
 			}
 			case TABLE_SWITCH: {
-				// allign to 4 bytes
-				int padding = 4 - (state.offset + 1) & 3;
 				TableSwitchInsn tsi = (TableSwitchInsn) insn;
 				checkLabel(tsi.getDefaultLabel(), insn, state);
 				int defaultOffset = tsi.getDefaultLabel().getOffset() - state.offset;
@@ -227,7 +225,9 @@ public class CodeConverter implements Opcodes {
 				for (Label label : tsi.getLabels()) {
 					offsets.add(label.getOffset() - state.offset);
 				}
-				return new TableSwitchInstruction(defaultOffset, low, high, offsets);
+				TableSwitchInstruction tswitch = new TableSwitchInstruction(defaultOffset, low, high, offsets);
+				tswitch.notifyStartPosition(state.offset); // TODO: Mirror the correct offset from the current state
+				return tswitch;
 			}
 			case INVOKE_DYNAMIC: {
 				InvokeDynamicInsn idi = (InvokeDynamicInsn) insn;
