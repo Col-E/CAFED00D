@@ -8,7 +8,7 @@ import java.util.List;
  * @author xDark
  */
 public class TableSwitchInstruction extends BasicInstruction {
-	private int padding;
+	private int padding = -1;
 	private int dflt;
 	private int low;
 	private int high;
@@ -152,6 +152,8 @@ public class TableSwitchInstruction extends BasicInstruction {
 
 	@Override
 	public int computeSize() {
+		if (padding < 0)
+			throw new IllegalStateException("Padding size not computed!");
 		// u1: opcode
 		// ??: padding
 		// u4: default

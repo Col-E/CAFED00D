@@ -8,7 +8,7 @@ import java.util.List;
  * @author xDark
  */
 public class LookupSwitchInstruction extends BasicInstruction {
-	private int padding;
+	private int padding = -1;
 	private int dflt;
 	private List<Integer> keys;
 	private List<Integer> offsets;
@@ -129,6 +129,8 @@ public class LookupSwitchInstruction extends BasicInstruction {
 
 	@Override
 	public int computeSize() {
+		if (padding < 0)
+			throw new IllegalStateException("Padding size not computed!");
 		// u1: opcode
 		// ??: padding
 		// u4: default
