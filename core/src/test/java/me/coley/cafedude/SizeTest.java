@@ -24,9 +24,9 @@ public class SizeTest implements Opcodes {
 
 		@Test
 		void testMultiANewArrayInstruction() {
-			// Size is 3 bytes (opcode + cp_index)
+			// Size is 4 bytes (opcode + cp_index + dims)
 			MultiANewArrayInstruction instruction = new MultiANewArrayInstruction(Placeholders.CLASS, 0);
-			assertEquals(3, instruction.computeSize());
+			assertEquals(4, instruction.computeSize());
 		}
 
 		@Test

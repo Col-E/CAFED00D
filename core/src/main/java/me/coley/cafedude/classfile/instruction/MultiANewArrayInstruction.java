@@ -64,7 +64,8 @@ public class MultiANewArrayInstruction extends BasicInstruction implements CpAcc
 	public int computeSize() {
 		// u1: opcode
 		// u2: array class type index
-		return 3;
+		// u1: dims
+		return 4;
 	}
 
 	@Override
