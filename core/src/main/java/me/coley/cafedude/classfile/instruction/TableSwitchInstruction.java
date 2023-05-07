@@ -24,7 +24,7 @@ public class TableSwitchInstruction extends BasicInstruction {
 	 * @param offsets
 	 * 		Branch offsets.
 	 */
-	public TableSwitchInstruction(int padding, int dflt, int low, int high, List<Integer> offsets) {
+	public TableSwitchInstruction(int dflt, int low, int high, List<Integer> offsets) {
 		super(Opcodes.TABLESWITCH);
 		this.dflt = dflt;
 		this.low = low;
@@ -98,6 +98,21 @@ public class TableSwitchInstruction extends BasicInstruction {
 	 */
 	public void setOffsets(List<Integer> offsets) {
 		this.offsets = offsets;
+	}
+
+	/**
+	 * @return Padding of the switch.
+	 */
+	public int getPadding() {
+		return padding;
+	}
+
+	/**
+	 * @param padding
+	 * 		Padding of the switch.
+	 */
+	public void setPadding(int padding) {
+		this.padding = padding;
 	}
 
 	@Override

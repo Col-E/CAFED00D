@@ -18,14 +18,15 @@ public class SourceDebugExtensionAttribute extends Attribute {
 	 * @param debugExtension
 	 * 		Extension data stored in attribute.
 	 */
-	public SourceDebugExtensionAttribute(@Nonnull CpUtf8 name,@Nonnull byte[] debugExtension) {
+	public SourceDebugExtensionAttribute(@Nonnull CpUtf8 name, @Nonnull byte[] debugExtension) {
 		super(name);
 		this.debugExtension = debugExtension;
 	}
 
 	/**
 	 * @return Extension data stored in attribute.
-	 */@Nonnull
+	 */
+	@Nonnull
 	public byte[] getDebugExtension() {
 		return debugExtension;
 	}

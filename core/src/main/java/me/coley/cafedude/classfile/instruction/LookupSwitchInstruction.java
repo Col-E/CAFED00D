@@ -14,6 +14,8 @@ public class LookupSwitchInstruction extends BasicInstruction {
 	private List<Integer> offsets;
 
 	/**
+	 * @param padding
+	 * 		Switches in the JVM must be aligned, this is the number of bytes in pattern required to be aligned.
 	 * @param dflt
 	 * 		Default branch offset.
 	 * @param keys

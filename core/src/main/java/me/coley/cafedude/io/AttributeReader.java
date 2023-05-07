@@ -317,7 +317,7 @@ public class AttributeReader {
 		List<MethodParametersAttribute.Parameter> entries = new ArrayList<>();
 		int count = is.readUnsignedByte();
 		for (int i = 0; i < count; i++) {
-			CpUtf8 name = orNull(is.readUnsignedShort());
+			CpUtf8 name = orNullInCp(is.readUnsignedShort());
 			int accessFlags = is.readUnsignedShort();
 			entries.add(new MethodParametersAttribute.Parameter(accessFlags, name));
 		}
@@ -330,43 +330,52 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nullable
 	private ModuleAttribute readModule() throws IOException {
 		CpModule module = (CpModule) cp.get(is.readUnsignedShort());
+		if (module == null)
+			return null;
 		int flags = is.readUnsignedShort();
-		CpUtf8 version = orNull(is.readUnsignedShort());
+		CpUtf8 version = orNullInCp(is.readUnsignedShort());
 		List<Requires> requires = new ArrayList<>();
 		int count = is.readUnsignedShort();
 		for (int i = 0; i < count; i++) {
 			CpModule reqModule = (CpModule) cp.get(is.readUnsignedShort());
-			int reqFlags = is.readUnsignedShort();
-			CpUtf8 reqVersion = orNull(is.readUnsignedShort());
-			requires.add(new Requires(reqModule, reqFlags, reqVersion));
+			if (reqModule != null) {
+				int reqFlags = is.readUnsignedShort();
+				CpUtf8 reqVersion = orNullInCp(is.readUnsignedShort());
+				requires.add(new Requires(reqModule, reqFlags, reqVersion));
+			}
 		}
 		List<Exports> exports = new ArrayList<>();
 		count = is.readUnsignedShort();
 		for (int i = 0; i < count; i++) {
 			CpPackage expPackage = (CpPackage) cp.get(is.readUnsignedShort());
-			int expFlags = is.readUnsignedShort();
-			int expCount = is.readUnsignedShort();
-			List<CpModule> expModules = new ArrayList<>();
-			for (int j = 0; j < expCount; j++) {
-				CpModule expModule = (CpModule) cp.get(is.readUnsignedShort());
-				expModules.add(expModule);
+			if (expPackage != null) {
+				int expFlags = is.readUnsignedShort();
+				int expCount = is.readUnsignedShort();
+				List<CpModule> expModules = new ArrayList<>();
+				for (int j = 0; j < expCount; j++) {
+					CpModule expModule = (CpModule) cp.get(is.readUnsignedShort());
+					expModules.add(expModule);
+				}
+				exports.add(new Exports(expPackage, expFlags, expModules));
 			}
-			exports.add(new Exports(expPackage, expFlags, expModules));
 		}
 		List<Opens> opens = new ArrayList<>();
 		count = is.readUnsignedShort();
 		for (int i = 0; i < count; i++) {
 			CpPackage openPackage = (CpPackage) cp.get(is.readUnsignedShort());
-			int openFlags = is.readUnsignedShort();
-			int openCount = is.readUnsignedShort();
-			List<CpModule> openModules = new ArrayList<>();
-			for (int j = 0; j < openCount; j++) {
-				CpModule openModule = (CpModule) cp.get(is.readUnsignedShort());
-				openModules.add(openModule);
+			if (openPackage != null) {
+				int openFlags = is.readUnsignedShort();
+				int openCount = is.readUnsignedShort();
+				List<CpModule> openModules = new ArrayList<>();
+				for (int j = 0; j < openCount; j++) {
+					CpModule openModule = (CpModule) cp.get(is.readUnsignedShort());
+					openModules.add(openModule);
+				}
+				opens.add(new Opens(openPackage, openFlags, openModules));
 			}
-			opens.add(new Opens(openPackage, openFlags, openModules));
 		}
 		List<CpClass> uses = new ArrayList<>();
 		count = is.readUnsignedShort();
@@ -378,13 +387,15 @@ public class AttributeReader {
 		count = is.readUnsignedShort();
 		for (int i = 0; i < count; i++) {
 			CpClass service = (CpClass) cp.get(is.readUnsignedShort());
-			int prvCount = is.readUnsignedShort();
-			List<CpClass> providers = new ArrayList<>();
-			for (int j = 0; j < prvCount; j++) {
-				CpClass provider = (CpClass) cp.get(is.readUnsignedShort());
-				providers.add(provider);
+			if (service != null) {
+				int prvCount = is.readUnsignedShort();
+				List<CpClass> providers = new ArrayList<>();
+				for (int j = 0; j < prvCount; j++) {
+					CpClass provider = (CpClass) cp.get(is.readUnsignedShort());
+					providers.add(provider);
+				}
+				provides.add(new Provides(service, providers));
 			}
-			provides.add(new Provides(service, providers));
 		}
 		return new ModuleAttribute(name, module, flags, version,
 				requires, exports, opens, uses, provides);
@@ -445,7 +456,7 @@ public class AttributeReader {
 	 */
 	private EnclosingMethodAttribute readEnclosingMethod() throws IOException {
 		CpClass enclosingClass = (CpClass) cp.get(is.readUnsignedShort());
-		CpNameType enclosingMethod = orNull(is.readUnsignedShort());
+		CpNameType enclosingMethod = orNullInCp(is.readUnsignedShort());
 		return new EnclosingMethodAttribute(name, enclosingClass, enclosingMethod);
 	}
 
@@ -475,8 +486,8 @@ public class AttributeReader {
 		List<InnerClass> innerClasses = new ArrayList<>();
 		for (int i = 0; i < numberOfInnerClasses; i++) {
 			CpClass innerClass = (CpClass) cp.get(is.readUnsignedShort());
-			CpClass outerClass = orNull(is.readUnsignedShort());
-			CpUtf8 innerName = orNull(is.readUnsignedShort());
+			CpClass outerClass = orNullInCp(is.readUnsignedShort());
+			CpUtf8 innerName = orNullInCp(is.readUnsignedShort());
 			int innerClassAccessFlags = is.readUnsignedShort();
 			innerClasses.add(new InnerClass(innerClass, outerClass, innerName, innerClassAccessFlags));
 		}
@@ -671,7 +682,7 @@ public class AttributeReader {
 				is.readUnsignedShort(),
 				is.readUnsignedShort(),
 				is.readUnsignedShort(),
-				orNull(is.readUnsignedShort())
+				orNullInCp(is.readUnsignedShort())
 		);
 	}
 
@@ -807,8 +818,10 @@ public class AttributeReader {
 		}
 	}
 
+	@Nullable
 	@SuppressWarnings("unchecked")
-	public <T extends CpEntry> T orNull(int index) {
+	private <T extends CpEntry> T orNullInCp(int index) {
+		// If the index is 0, that's an edge case where we want to use 'null'
 		return index == 0 ? null : (T) cp.get(index);
 	}
 }

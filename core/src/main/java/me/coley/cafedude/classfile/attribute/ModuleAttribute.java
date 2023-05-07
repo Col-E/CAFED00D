@@ -246,7 +246,7 @@ public class ModuleAttribute extends Attribute {
 		 * @param version
 		 * 		Constant pool entry holding the module version utf8, or {@code null} if no version info.
 		 */
-		public Requires(@Nonnull CpModule module, int flags, @Nonnull CpUtf8 version) {
+		public Requires(@Nonnull CpModule module, int flags, @Nullable CpUtf8 version) {
 			this.module = module;
 			this.flags = flags;
 			this.version = version;
@@ -294,7 +294,7 @@ public class ModuleAttribute extends Attribute {
 		/**
 		 * @return Constant pool entry holding the module version utf8, or {@code null} if no version info.
 		 */
-		@Nonnull
+		@Nullable
 		public CpUtf8 getVersion() {
 			return version;
 		}
@@ -303,7 +303,7 @@ public class ModuleAttribute extends Attribute {
 		 * @param version
 		 * 		New constant pool entry holding the module version utf8, or {@code null} if no version info.
 		 */
-		public void setVersion(@Nonnull CpUtf8 version) {
+		public void setVersion(@Nullable CpUtf8 version) {
 			this.version = version;
 		}
 
@@ -336,7 +336,7 @@ public class ModuleAttribute extends Attribute {
 		 *        {@code ACC_MANDATED} if it was implicitly declared in the module source code.
 		 * @param to
 		 * 		Constant pool entries holding the {@link CpModule modules} the
-		 * 		{@link #getPackageEntry() package} exports to.
+		 *        {@link #getPackageEntry() package} exports to.
 		 */
 		public Exports(@Nonnull CpPackage packageEntry, int flags, @Nonnull List<CpModule> to) {
 			this.packageEntry = packageEntry;
@@ -389,7 +389,7 @@ public class ModuleAttribute extends Attribute {
 		/**
 		 * @param toIndex
 		 * 		New constant pool entries holding the {@link CpModule modules} the
-		 * 		{@link #getPackageEntry() package} exports to.
+		 *        {@link #getPackageEntry() package} exports to.
 		 */
 		public void setTo(@Nonnull List<CpModule> toIndex) {
 			this.to = toIndex;
@@ -432,7 +432,7 @@ public class ModuleAttribute extends Attribute {
 		 *        {@code ACC_MANDATED} if it was implicitly declared in the module source code.
 		 * @param to
 		 * 		Constant pool entries holding the {@link CpModule modules} the
-		 * 		{@link #getPackageEntry() package} exports to.
+		 *        {@link #getPackageEntry() package} exports to.
 		 */
 		public Opens(@Nonnull CpPackage packageEntry, int flags, @Nonnull List<CpModule> to) {
 			this.packageEntry = packageEntry;
@@ -474,7 +474,8 @@ public class ModuleAttribute extends Attribute {
 		}
 
 		/**
-		 * @return Constant pool entries holding the {@link CpModule modules} the {@link #getPackageEntry() package} exports to.
+		 * @return Constant pool entries holding the {@link CpModule modules} the
+		 * {@link #getPackageEntry() package} exports to.
 		 */
 		@Nonnull
 		public List<CpModule> getTo() {
@@ -484,7 +485,7 @@ public class ModuleAttribute extends Attribute {
 		/**
 		 * @param toIndex
 		 * 		New constant pool entries holding the {@link CpModule modules} the
-		 * 		{@link #getPackageEntry() package} exports to.
+		 *        {@link #getPackageEntry() package} exports to.
 		 */
 		public void setTo(@Nonnull List<CpModule> toIndex) {
 			this.to = toIndex;

@@ -1,12 +1,16 @@
 package me.coley.cafedude.io;
 
-import me.coley.cafedude.classfile.*;
 import me.coley.cafedude.InvalidClassException;
+import me.coley.cafedude.classfile.ClassFile;
+import me.coley.cafedude.classfile.ConstPool;
+import me.coley.cafedude.classfile.Field;
+import me.coley.cafedude.classfile.Method;
 import me.coley.cafedude.classfile.attribute.Attribute;
 import me.coley.cafedude.classfile.constant.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,21 +44,26 @@ public class ClassFileReader {
 	 * @throws InvalidClassException
 	 * 		When some class reading exception occurs.
 	 */
-	public ClassFile read(byte[] code) throws InvalidClassException {
+	@Nonnull
+	public ClassFile read(@Nonnull byte[] code) throws InvalidClassException {
 		ClassBuilder builder = new ClassBuilder();
 		try {
 			try (IndexableByteStream is = new IndexableByteStream(code)) {
 				this.is = is;
+
 				// Read magic header
 				if (is.readInt() != 0xCAFEBABE)
 					throw new InvalidClassException("Does not start with 0xCAFEBABE");
+
 				// Version
 				builder.setVersionMinor(is.readUnsignedShort());
 				builder.setVersionMajor(is.readUnsignedShort());
+
 				// Constant pool
 				int numConstants = is.readUnsignedShort();
 				int start = is.getIndex();
 				ConstPool constPool = builder.getPool();
+
 				// first pass
 				for (int i = 1; i < numConstants; i++) {
 					CpEntry entry = readPoolEntryBasic();
@@ -63,9 +72,11 @@ public class ClassFileReader {
 						i++;
 					}
 				}
+
 				// rewind
 				int diff = is.getIndex() - start;
 				is.reset(diff);
+
 				// second pass
 				for (int i = 1; i < numConstants; i++) {
 					CpEntry entry = constPool.get(i);
@@ -74,23 +85,29 @@ public class ClassFileReader {
 						i++;
 					}
 				}
+
 				// Flags
 				builder.setAccess(is.readUnsignedShort());
+
 				// This/super classes
 				builder.setThisClass((CpClass) constPool.get(is.readUnsignedShort()));
 				builder.setSuperClass((CpClass) constPool.get(is.readUnsignedShort()));
+
 				// Interfaces
 				int numInterfaces = is.readUnsignedShort();
 				for (int i = 0; i < numInterfaces; i++)
 					builder.addInterface((CpClass) constPool.get(is.readUnsignedShort()));
+
 				// Fields
 				int numFields = is.readUnsignedShort();
 				for (int i = 0; i < numFields; i++)
 					builder.addField(readField(builder));
+
 				// Methods
 				int numMethods = is.readUnsignedShort();
 				for (int i = 0; i < numMethods; i++)
 					builder.addMethod(readMethod(builder));
+
 				// Attributes
 				int numAttributes = is.readUnsignedShort();
 				for (int i = 0; i < numAttributes; i++) {
@@ -117,6 +134,7 @@ public class ClassFileReader {
 	 * @throws InvalidClassException
 	 * 		An unknown attribute is present.
 	 */
+	@Nonnull
 	private CpEntry readPoolEntryBasic() throws IOException, InvalidClassException {
 		int tag = is.readUnsignedByte();
 		switch (tag) {
@@ -178,11 +196,11 @@ public class ClassFileReader {
 		}
 	}
 
-	private void readPoolEntryResolve(ConstPool constPool, CpEntry entry) throws IOException, InvalidClassException {
+	private void readPoolEntryResolve(@Nonnull ConstPool constPool, @Nonnull CpEntry entry)
+			throws IOException, InvalidClassException {
 		int tag = entry.getTag();
-		if(tag != is.readUnsignedByte()) {
+		if (tag != is.readUnsignedByte())
 			throw new InvalidClassException("Constant pool tag mismatch");
-		}
 		switch (tag) {
 			case UTF8:
 				is.readUTF();
@@ -262,6 +280,8 @@ public class ClassFileReader {
 				pkg.setPackageName(name);
 				break;
 			}
+			default:
+				throw new IOException("Unknown CP tag: " + tag);
 		}
 	}
 
@@ -274,7 +294,8 @@ public class ClassFileReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
-	private Field readField(ClassBuilder builder) throws IOException {
+	@Nonnull
+	private Field readField(@Nonnull ClassBuilder builder) throws IOException {
 		int access = is.readUnsignedShort();
 		CpUtf8 name = (CpUtf8) builder.getPool().get(is.readUnsignedShort());
 		CpUtf8 type = (CpUtf8) builder.getPool().get(is.readUnsignedShort());
@@ -286,7 +307,7 @@ public class ClassFileReader {
 				if (attr != null)
 					attributes.add(attr);
 			} catch (EOFException e) {
-				if(doDropEofAttributes()) {
+				if (doDropEofAttributes()) {
 					logger.debug("Dropping attribute " + i + " of field: " + name.getText()
 							+ " due to EOF: " + e.getMessage());
 				}
@@ -304,7 +325,8 @@ public class ClassFileReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
-	private Method readMethod(ClassBuilder builder) throws IOException {
+	@Nonnull
+	private Method readMethod(@Nonnull ClassBuilder builder) throws IOException {
 		int access = is.readUnsignedShort();
 		CpUtf8 name = (CpUtf8) builder.getPool().get(is.readUnsignedShort());
 		CpUtf8 type = (CpUtf8) builder.getPool().get(is.readUnsignedShort());

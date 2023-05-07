@@ -27,15 +27,16 @@ public class NestHostAttribute extends Attribute {
 	}
 
 	/**
-	 * @return Class index in constant pool of class that is the nest host of the current class.
-	 */@Nonnull
+	 * @return Constant pool entry holding the host class type.
+	 */
+	@Nonnull
 	public CpClass getHostClass() {
 		return hostClass;
 	}
 
 	/**
-	 * @param hostClassIndex
-	 * 		New class index in constant pool of class that is the nest host of the current class.
+	 * @param hostClass
+	 * 		New constant pool entry holding the host class type.
 	 */
 	public void setHostClass(@Nonnull CpClass hostClass) {
 		this.hostClass = hostClass;

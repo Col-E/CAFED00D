@@ -13,26 +13,39 @@ import java.util.Set;
  * @author Justus Garbe
  */
 public class CpRefInstruction extends BasicInstruction implements CpAccessor {
-
 	private CpEntry entry;
 
-	public CpRefInstruction(int opcode, CpEntry entry) {
+	/**
+	 * @param opcode
+	 * 		Instruction opcode.
+	 * @param entry
+	 * 		Constant pool entry to reference.
+	 */
+	public CpRefInstruction(int opcode, @Nonnull CpEntry entry) {
 		super(opcode);
 		this.entry = entry;
 	}
 
+	/**
+	 * @return Constant pool entry to reference.
+	 */
+	@Nonnull
 	public CpEntry getEntry() {
 		return entry;
 	}
 
-	public void setEntry(CpEntry entry) {
+	/**
+	 * @param entry
+	 * 		New constant pool entry to reference.
+	 */
+	public void setEntry(@Nonnull CpEntry entry) {
 		this.entry = entry;
 	}
 
 	@Override
 	public int computeSize() {
 		int opcode = getOpcode();
-		if(opcode == Opcodes.LDC) return 1 + 1; // 1 byte opcode + 1 byte index
+		if (opcode == Opcodes.LDC) return 1 + 1; // 1 byte opcode + 1 byte index
 		else return 1 + 2; // 1 byte opcode + 2 byte index
 	}
 

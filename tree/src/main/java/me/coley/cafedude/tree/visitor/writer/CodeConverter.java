@@ -227,7 +227,7 @@ public class CodeConverter implements Opcodes {
 				for (Label label : tsi.getLabels()) {
 					offsets.add(label.getOffset() - state.offset);
 				}
-				return new TableSwitchInstruction(padding, defaultOffset, low, high, offsets);
+				return new TableSwitchInstruction(defaultOffset, low, high, offsets);
 			}
 			case INVOKE_DYNAMIC: {
 				InvokeDynamicInsn idi = (InvokeDynamicInsn) insn;

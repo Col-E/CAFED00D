@@ -39,11 +39,14 @@ public class InstructionReader {
 	/**
 	 * @param code
 	 * 		Code data.
+	 * @param pool
+	 * 		Constant pool to pull data from.
 	 *
 	 * @return List of instructions.
 	 */
+	@Nonnull
 	@SuppressWarnings("DuplicateBranchesInSwitch")
-	public List<Instruction> read(byte[] code, ConstPool pool) {
+	public List<Instruction> read(@Nonnull byte[] code, @Nonnull ConstPool pool) {
 		List<Instruction> instructions = new ArrayList<>();
 		ByteBuffer buffer = ByteBuffer.wrap(code);
 		FallbackInstructionReader fallbackReader = this.fallbackReader;
@@ -275,7 +278,7 @@ public class InstructionReader {
 					for (int i = 0; i < count; i++) {
 						offsets.add(buffer.getInt());
 					}
-					instructions.add(new TableSwitchInstruction(padding, dflt, low, high, offsets));
+					instructions.add(new TableSwitchInstruction(dflt, low, high, offsets));
 					break;
 				}
 				case LOOKUPSWITCH: {
