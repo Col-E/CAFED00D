@@ -1,15 +1,20 @@
 package me.coley.cafedude.tree.visitor;
 
 import me.coley.cafedude.tree.Constant;
-import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Visitor for visiting annotation array information.
+ *
+ * @author Justus Garbe
  */
 public interface AnnotationArrayVisitor {
 
 	/**
 	 * Return the delegate visitor for pass through implementations.
+	 *
 	 * @return Delegate visitor.
 	 */
 	@Nullable
@@ -22,9 +27,10 @@ public interface AnnotationArrayVisitor {
 	 *
 	 * @param value
 	 * 		Element value.
+	 *
 	 * @see Constant
 	 */
-	default void visitArrayValue(Constant value) {
+	default void visitArrayValue(@Nonnull Constant value) {
 		AnnotationArrayVisitor delegate = arrayDelegate();
 		if (delegate != null) delegate.visitArrayValue(value);
 	}
@@ -37,7 +43,7 @@ public interface AnnotationArrayVisitor {
 	 * @param name
 	 * 		Enum name.
 	 */
-	default void visitArrayEnum(String type, String name) {
+	default void visitArrayEnum(@Nonnull String type, @Nonnull String name) {
 		AnnotationArrayVisitor delegate = arrayDelegate();
 		if (delegate != null) delegate.visitArrayEnum(type, name);
 	}
@@ -47,10 +53,11 @@ public interface AnnotationArrayVisitor {
 	 *
 	 * @param type
 	 * 		Annotation type.
+	 *
 	 * @return Visitor for visiting the annotation.
 	 */
 	@Nullable
-	default AnnotationVisitor visitArrayAnnotation(String type) {
+	default AnnotationVisitor visitArrayAnnotation(@Nonnull String type) {
 		AnnotationArrayVisitor delegate = arrayDelegate();
 		if (delegate != null) return delegate.visitArrayAnnotation(type);
 		return null;

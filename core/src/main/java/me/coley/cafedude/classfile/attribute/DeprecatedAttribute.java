@@ -2,6 +2,8 @@ package me.coley.cafedude.classfile.attribute;
 
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
+
 /**
  * Deprecation marker attribute.
  *
@@ -10,9 +12,9 @@ import me.coley.cafedude.classfile.constant.CpUtf8;
 public class DeprecatedAttribute extends Attribute {
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 */
-	public DeprecatedAttribute(CpUtf8 name) {
+	public DeprecatedAttribute(@Nonnull CpUtf8 name) {
 		super(name);
 	}
 

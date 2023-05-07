@@ -11,14 +11,19 @@ import me.coley.cafedude.tree.visitor.AnnotationVisitor;
 import me.coley.cafedude.tree.visitor.CodeVisitor;
 import me.coley.cafedude.tree.visitor.MethodVisitor;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+/**
+ * Method visitor for writing back to a {@link Method}.
+ *
+ * @author Justus Garbe
+ */
 public class MethodWriter extends DeclarationWriter implements MethodVisitor {
-
 	private final List<Attribute> attributes = new ArrayList<>();
 	private final List<CpClass> exceptions = new ArrayList<>();
 	private final List<MethodParametersAttribute.Parameter> parameters = new ArrayList<>();
@@ -34,19 +39,19 @@ public class MethodWriter extends DeclarationWriter implements MethodVisitor {
 	}
 
 	@Override
-	public void visitThrows(String type) {
+	public void visitThrows(@Nonnull String type) {
 		exceptions.add(symbols.newClass(type));
 	}
 
 	@Override
-	public void visitParameter(String name, int access) {
+	public void visitParameter(@Nonnull String name, int access) {
 		parameters.add(new MethodParametersAttribute.Parameter(
 				access,
 				symbols.newUtf8(name)));
 	}
 
 	@Override
-	public AnnotationVisitor visitParameterAnnotation(int parameter, String type, boolean visible) {
+	public AnnotationVisitor visitParameterAnnotation(int parameter, @Nonnull String type, boolean visible) {
 		return new AnnotationWriter(symbols, values -> {
 			Annotation annotation = new Annotation(symbols.newUtf8(type), values);
 			Map<Integer, List<Annotation>> map = visible ? visibleParameterAnnotations : invisibleParameterAnnotations;
@@ -54,11 +59,13 @@ public class MethodWriter extends DeclarationWriter implements MethodVisitor {
 		});
 	}
 
+	@Nonnull
 	@Override
 	public CodeVisitor visitCode() {
 		return new CodeWriter(symbols, attributes::add);
 	}
 
+	@Nonnull
 	@Override
 	public AnnotationDefaultVisitor visitAnnotationDefault() {
 		return new AnnotationDefaultWriter(symbols, value -> {
@@ -71,23 +78,23 @@ public class MethodWriter extends DeclarationWriter implements MethodVisitor {
 	@Override
 	public void visitMethodEnd() {
 		super.visitDeclarationEnd();
-		if(!exceptions.isEmpty()) {
+		if (!exceptions.isEmpty()) {
 			attributes.add(new ExceptionsAttribute(
 					symbols.newUtf8(AttributeConstants.EXCEPTIONS),
 					exceptions));
 		}
-		if(!parameters.isEmpty()) {
+		if (!parameters.isEmpty()) {
 			attributes.add(new MethodParametersAttribute(
 					symbols.newUtf8(AttributeConstants.METHOD_PARAMETERS),
 					parameters));
 		}
-		if(!visibleParameterAnnotations.isEmpty()) {
+		if (!visibleParameterAnnotations.isEmpty()) {
 			attributes.add(new ParameterAnnotationsAttribute(
 					symbols.newUtf8(AttributeConstants.RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS),
 					visibleParameterAnnotations,
 					true));
 		}
-		if(!invisibleParameterAnnotations.isEmpty()) {
+		if (!invisibleParameterAnnotations.isEmpty()) {
 			attributes.add(new ParameterAnnotationsAttribute(
 					symbols.newUtf8(AttributeConstants.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS),
 					invisibleParameterAnnotations,

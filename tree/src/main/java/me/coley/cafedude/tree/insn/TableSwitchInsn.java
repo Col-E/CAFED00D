@@ -3,14 +3,16 @@ package me.coley.cafedude.tree.insn;
 import me.coley.cafedude.classfile.instruction.Opcodes;
 import me.coley.cafedude.tree.Label;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
  * Instruction for the {@link Opcodes#TABLESWITCH} instruction, which has a default offset and a list of offsets.
+ *
+ * @author Justus Garbe
  * @see Opcodes#TABLESWITCH
  */
 public class TableSwitchInsn extends Insn {
-
 	private int padding;
 	private int min;
 	private int max;
@@ -27,7 +29,7 @@ public class TableSwitchInsn extends Insn {
 	 * @param defaultLabel
 	 * 		Default offset of the switch.
 	 */
-	public TableSwitchInsn(int min, int max, List<Label> labels, Label defaultLabel) {
+	public TableSwitchInsn(int min, int max, @Nonnull List<Label> labels, @Nonnull Label defaultLabel) {
 		super(InsnKind.TABLE_SWITCH, Opcodes.TABLESWITCH);
 		this.labels = labels;
 		this.defaultLabel = defaultLabel;

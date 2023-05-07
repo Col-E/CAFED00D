@@ -3,6 +3,8 @@ package me.coley.cafedude.tree.insn;
 import me.coley.cafedude.classfile.Descriptor;
 import me.coley.cafedude.classfile.instruction.Opcodes;
 
+import javax.annotation.Nonnull;
+
 /**
  * Instruction which has a field descriptor operand.
  * Instructions that use this is:
@@ -12,9 +14,10 @@ import me.coley.cafedude.classfile.instruction.Opcodes;
  *     <li>{@link Opcodes#GETFIELD}</li>
  *     <li>{@link Opcodes#PUTFIELD}</li>
  * </ul>
+ *
+ * @author Justus Garbe
  */
 public class FieldInsn extends Insn {
-
 	private String owner;
 	private String name;
 	private Descriptor descriptor;
@@ -29,7 +32,7 @@ public class FieldInsn extends Insn {
 	 * @param descriptor
 	 * 		Descriptor of the field.
 	 */
-	public FieldInsn(int opcode, String owner, String name, Descriptor descriptor) {
+	public FieldInsn(int opcode, @Nonnull String owner, @Nonnull String name, @Nonnull Descriptor descriptor) {
 		super(InsnKind.FIELD, opcode);
 		this.owner = owner;
 		this.name = name;
@@ -39,6 +42,7 @@ public class FieldInsn extends Insn {
 	/**
 	 * @return Owner of the field.
 	 */
+	@Nonnull
 	public String getOwner() {
 		return owner;
 	}
@@ -47,13 +51,14 @@ public class FieldInsn extends Insn {
 	 * @param owner
 	 * 		Owner of the field.
 	 */
-	public void setOwner(String owner) {
+	public void setOwner(@Nonnull String owner) {
 		this.owner = owner;
 	}
 
 	/**
 	 * @return Name of the field.
 	 */
+	@Nonnull
 	public String getName() {
 		return name;
 	}
@@ -62,13 +67,14 @@ public class FieldInsn extends Insn {
 	 * @param name
 	 * 		Name of the field.
 	 */
-	public void setName(String name) {
+	public void setName(@Nonnull String name) {
 		this.name = name;
 	}
 
 	/**
 	 * @return Descriptor of the field.
 	 */
+	@Nonnull
 	public Descriptor getDescriptor() {
 		return descriptor;
 	}
@@ -77,7 +83,7 @@ public class FieldInsn extends Insn {
 	 * @param descriptor
 	 * 		Descriptor of the field.
 	 */
-	public void setDescriptor(Descriptor descriptor) {
+	public void setDescriptor(@Nonnull Descriptor descriptor) {
 		this.descriptor = descriptor;
 	}
 

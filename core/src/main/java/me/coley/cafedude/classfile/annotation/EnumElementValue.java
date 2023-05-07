@@ -3,9 +3,9 @@ package me.coley.cafedude.classfile.annotation;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Enum element value.
@@ -20,11 +20,11 @@ public class EnumElementValue extends ElementValue {
 	 * @param tag
 	 * 		ASCII tag representation, must be {@code e}.
 	 * @param type
-	 * 		Index of enum type descriptor constant.
+	 * 		Constant pool entry holding the element's type.
 	 * @param name
-	 * 		Index of enum value name constant.
+	 * 		Constant pool entry holding the element's name.
 	 */
-	public EnumElementValue(char tag, CpUtf8 type, CpUtf8 name) {
+	public EnumElementValue(char tag, @Nonnull CpUtf8 type, @Nonnull CpUtf8 name) {
 		super(tag);
 		if (tag != 'e')
 			throw new IllegalArgumentException("UTF8 element value must have 'e' tag");
@@ -33,32 +33,34 @@ public class EnumElementValue extends ElementValue {
 	}
 
 	/**
-	 * @return Index of enum type descriptor constant.
+	 * @return Constant pool entry holding the element's type.
 	 */
+	@Nonnull
 	public CpUtf8 getType() {
 		return type;
 	}
 
 	/**
 	 * @param type
-	 * 		Index of enum type descriptor constant.
+	 * 		New constant pool entry holding the element's type.
 	 */
-	public void setType(CpUtf8 type) {
+	public void setType(@Nonnull CpUtf8 type) {
 		this.type = type;
 	}
 
 	/**
-	 * @return Index of enum value name constant.
+	 * @return Constant pool entry holding the element's name.
 	 */
+	@Nonnull
 	public CpUtf8 getName() {
 		return name;
 	}
 
 	/**
 	 * @param name
-	 * 		Index of enum value name constant.
+	 * 		New constant pool entry holding the element's name.
 	 */
-	public void setName(CpUtf8 name) {
+	public void setName(@Nonnull CpUtf8 name) {
 		this.name = name;
 	}
 
@@ -70,6 +72,7 @@ public class EnumElementValue extends ElementValue {
 		return super.getTag();
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = new HashSet<>();

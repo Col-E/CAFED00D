@@ -16,6 +16,8 @@ import me.coley.cafedude.classfile.instruction.Opcodes;
  *     <li>{@link Opcodes#DUP2_X2}</li>
  *     <li>{@link Opcodes#SWAP}</li>
  * </ul>
+ *
+ * @author Justus Garbe
  */
 public class StackInsn extends Insn {
 	/**

@@ -1,15 +1,20 @@
 package me.coley.cafedude.tree.visitor;
 
 import me.coley.cafedude.tree.Constant;
-import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Visitor for visiting the annotation attribute of any member.
+ *
+ * @author Justus Garbe
  */
 public interface AnnotationVisitor {
 
 	/**
 	 * Return the delegate visitor for pass through implementations.
+	 *
 	 * @return Delegate visitor.
 	 */
 	@Nullable
@@ -19,13 +24,15 @@ public interface AnnotationVisitor {
 
 	/**
 	 * Visit a annotation element value
+	 *
 	 * @param key
 	 * 		Element key.
 	 * @param value
 	 * 		Element value.
+	 *
 	 * @see Constant
 	 */
-	default void visitValue(String key, Constant value) {
+	default void visitValue(@Nonnull String key, @Nonnull Constant value) {
 		AnnotationVisitor delegate = annotationDelegate();
 		if (delegate != null) delegate.visitValue(key, value);
 	}
@@ -40,7 +47,7 @@ public interface AnnotationVisitor {
 	 * @param name
 	 * 		Enum name.
 	 */
-	default void visitEnum(String key, String type, String name) {
+	default void visitEnum(@Nonnull String key, @Nonnull String type, @Nonnull String name) {
 		AnnotationVisitor delegate = annotationDelegate();
 		if (delegate != null) delegate.visitEnum(key, type, name);
 	}
@@ -52,10 +59,11 @@ public interface AnnotationVisitor {
 	 * 		Element key.
 	 * @param type
 	 * 		Annotation type.
+	 *
 	 * @return Visitor for visiting the annotation.
 	 */
 	@Nullable
-	default AnnotationVisitor visitAnnotation(String key, String type) {
+	default AnnotationVisitor visitAnnotation(@Nonnull String key, @Nonnull String type) {
 		AnnotationVisitor delegate = annotationDelegate();
 		if (delegate != null) return delegate.visitAnnotation(key, type);
 		return null;
@@ -66,10 +74,11 @@ public interface AnnotationVisitor {
 	 *
 	 * @param key
 	 * 		Element key.
+	 *
 	 * @return Visitor for visiting the array.
 	 */
 	@Nullable
-	default AnnotationArrayVisitor visitArray(String key) {
+	default AnnotationArrayVisitor visitArray(@Nonnull String key) {
 		AnnotationVisitor delegate = annotationDelegate();
 		if (delegate != null) return delegate.visitArray(key);
 		return null;

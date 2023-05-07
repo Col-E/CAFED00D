@@ -1,5 +1,6 @@
 package me.coley.cafedude.classfile.constant;
 
+import javax.annotation.Nonnull;
 import java.util.Objects;
 
 /**
@@ -13,43 +14,45 @@ public class CpNameType extends CpEntry {
 
 	/**
 	 * @param name
-	 * 		Index of name UTF string in pool.
+	 * 		Constant pool entry holding the name.
 	 * @param type
-	 * 		Index of descriptor UTF string in pool.
+	 * 		Constant pool entry holding the type.
 	 */
-	public CpNameType(CpUtf8 name, CpUtf8 type) {
+	public CpNameType(@Nonnull CpUtf8 name, @Nonnull CpUtf8 type) {
 		super(NAME_TYPE);
 		this.name = name;
 		this.type = type;
 	}
 
 	/**
-	 * @return Index of name UTF string in pool.
+	 * @return Constant pool entry holding the name.
 	 */
+	@Nonnull
 	public CpUtf8 getName() {
 		return name;
 	}
 
 	/**
 	 * @param name
-	 * 		New index of name UTF string in pool.
+	 * 		New constant pool entry holding the name.
 	 */
-	public void setName(CpUtf8 name) {
+	public void setName(@Nonnull CpUtf8 name) {
 		this.name = name;
 	}
 
 	/**
-	 * @return Index of descriptor UTF string in pool.
+	 * @return Constant pool entry holding the type.
 	 */
+	@Nonnull
 	public CpUtf8 getType() {
 		return type;
 	}
 
 	/**
 	 * @param type
-	 * 		New index of descriptor UTF string in pool.
+	 * 		New constant pool entry holding the type.
 	 */
-	public void setType(CpUtf8 type) {
+	public void setType(@Nonnull CpUtf8 type) {
 		this.type = type;
 	}
 

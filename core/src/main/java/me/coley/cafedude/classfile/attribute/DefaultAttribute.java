@@ -2,6 +2,8 @@ package me.coley.cafedude.classfile.attribute;
 
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
+
 /**
  * An attribute implementation that is used as a default for any unhandled attribute type.
  *
@@ -12,11 +14,11 @@ public class DefaultAttribute extends Attribute {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param data
 	 * 		Literal data stored in attribute.
 	 */
-	public DefaultAttribute(CpUtf8 name, byte[] data) {
+	public DefaultAttribute(@Nonnull CpUtf8 name, @Nonnull byte[] data) {
 		super(name);
 		this.data = data;
 	}
@@ -24,6 +26,7 @@ public class DefaultAttribute extends Attribute {
 	/**
 	 * @return Literal data stored in attribute.
 	 */
+	@Nonnull
 	public byte[] getData() {
 		return data;
 	}
@@ -32,7 +35,7 @@ public class DefaultAttribute extends Attribute {
 	 * @param data
 	 * 		New literal data stored in attribute.
 	 */
-	public void setData(byte[] data) {
+	public void setData(@Nonnull byte[] data) {
 		this.data = data;
 	}
 

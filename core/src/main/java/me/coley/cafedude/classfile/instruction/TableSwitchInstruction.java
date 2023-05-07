@@ -24,7 +24,7 @@ public class TableSwitchInstruction extends BasicInstruction {
 	 * @param offsets
 	 * 		Branch offsets.
 	 */
-	public TableSwitchInstruction(int padding, int dflt, int low, int high, List<Integer> offsets) {
+	public TableSwitchInstruction(int dflt, int low, int high, List<Integer> offsets) {
 		super(Opcodes.TABLESWITCH);
 		this.dflt = dflt;
 		this.low = low;
@@ -100,6 +100,32 @@ public class TableSwitchInstruction extends BasicInstruction {
 		this.offsets = offsets;
 	}
 
+	/**
+	 * @return Padding of the switch.
+	 *
+	 * @see #notifyStartPosition(int)
+	 */
+	public int getPadding() {
+		return padding;
+	}
+
+	/**
+	 * Called to update the padding.
+	 *
+	 * @param position
+	 * 		The position where this instruction <i>(the opcode)</i> starts in the method code.
+	 */
+	public void notifyStartPosition(int position) {
+		// Padding must be updated such that the dflt offset starts at a multiple of 4
+		//
+		// 1: opcode
+		// 2: pad      2: opcode
+		// 3: pad      3: pad      3: opcode
+		// 4: pad      4: pad      4: pad     4: opcode
+		// 5: def      5: def      5: def     5: def
+		this.padding = 3 - ((position) & 3);
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -126,6 +152,12 @@ public class TableSwitchInstruction extends BasicInstruction {
 
 	@Override
 	public int computeSize() {
-		return 1 + padding + 4 + 4 + 4 + offsets.size() * 4; // opcode + padding + default + low + high + offsets
+		// u1: opcode
+		// ??: padding
+		// u4: default
+		// u4: low
+		// u4: high
+		// u4[]: offsets
+		return 1 + padding + 4 + 4 + 4 + offsets.size() * 4;
 	}
 }

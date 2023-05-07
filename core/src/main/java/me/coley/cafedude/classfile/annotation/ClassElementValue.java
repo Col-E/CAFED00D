@@ -1,13 +1,11 @@
 package me.coley.cafedude.classfile.annotation;
 
-import me.coley.cafedude.classfile.constant.CpClass;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Class element value.
@@ -21,9 +19,9 @@ public class ClassElementValue extends ElementValue {
 	 * @param tag
 	 * 		ASCII tag representation, must be {@code c}.
 	 * @param classEntry
-	 * 		Index of class constant.
+	 * 		Constant pool entry holding the class name.
 	 */
-	public ClassElementValue(char tag, CpUtf8 classEntry) {
+	public ClassElementValue(char tag, @Nonnull CpUtf8 classEntry) {
 		super(tag);
 		if (tag != 'c')
 			throw new IllegalArgumentException("Class element value must have 'c' tag");
@@ -31,17 +29,18 @@ public class ClassElementValue extends ElementValue {
 	}
 
 	/**
-	 * @return Index of a class's descriptor.
+	 * @return Constant pool entry holding the class name.
 	 */
+	@Nonnull
 	public CpUtf8 getClassEntry() {
 		return classEntry;
 	}
 
 	/**
 	 * @param classEntry
-	 * 		Index of a class's descriptor.
+	 * 		New constant pool entry holding the class name.
 	 */
-	public void setClassEntry(CpUtf8 classEntry) {
+	public void setClassEntry(@Nonnull CpUtf8 classEntry) {
 		this.classEntry = classEntry;
 	}
 
@@ -53,6 +52,7 @@ public class ClassElementValue extends ElementValue {
 		return super.getTag();
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		return Collections.singleton(classEntry);

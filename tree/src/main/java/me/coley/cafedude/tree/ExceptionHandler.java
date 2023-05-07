@@ -1,13 +1,16 @@
 package me.coley.cafedude.tree;
 
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Exception handler object.
+ *
+ * @author Justus Garbe
  */
 public class ExceptionHandler {
-
-	private final @Nullable String type;
+	@Nullable
+	private final String type;
 	private final Label start;
 	private final Label end;
 	private final Label handler;
@@ -16,13 +19,13 @@ public class ExceptionHandler {
 	 * @param type
 	 * 		Exception type.
 	 * @param start
-	 *      Start of handled region.
+	 * 		Start of handled region.
 	 * @param end
 	 * 		End of handled region.
 	 * @param handler
 	 * 		Handler label.
 	 */
-	public ExceptionHandler(@Nullable String type, Label start, Label end, Label handler) {
+	public ExceptionHandler(@Nullable String type, @Nonnull Label start, @Nonnull Label end, @Nonnull Label handler) {
 		this.type = type;
 		this.start = start;
 		this.end = end;
@@ -32,13 +35,15 @@ public class ExceptionHandler {
 	/**
 	 * @return Exception type.
 	 */
-	public @Nullable String getType() {
+	@Nullable
+	public String getType() {
 		return type;
 	}
 
 	/**
 	 * @return Start of handled region.
 	 */
+	@Nonnull
 	public Label getStart() {
 		return start;
 	}
@@ -46,6 +51,7 @@ public class ExceptionHandler {
 	/**
 	 * @return End of handled region.
 	 */
+	@Nonnull
 	public Label getEnd() {
 		return end;
 	}
@@ -53,6 +59,7 @@ public class ExceptionHandler {
 	/**
 	 * @return Handler label.
 	 */
+	@Nonnull
 	public Label getHandler() {
 		return handler;
 	}

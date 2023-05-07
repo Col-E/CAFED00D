@@ -10,68 +10,77 @@ import me.coley.cafedude.classfile.constant.*;
 import me.coley.cafedude.tree.Constant;
 import me.coley.cafedude.tree.Handle;
 
-public class Symbols {
+import javax.annotation.Nonnull;
 
+/**
+ * Helper for symbol creation.
+ *
+ * @author Justus Garbe
+ */
+public class Symbols {
 	protected final ConstPool pool;
 
-	public Symbols(ConstPool pool) {
+	public Symbols(@Nonnull ConstPool pool) {
 		this.pool = pool;
 	}
 
-	CpUtf8 newUtf8(String value) {
-		if(value == null)
-			return null;
+	CpUtf8 newUtf8(@Nonnull String value) {
 		return newSym(new CpUtf8(value));
 	}
 
-	CpClass newClass(String type) {
+	CpClass newClass(@Nonnull String type) {
 		return newSym(new CpClass(newUtf8(type)));
 	}
 
-	CpNameType newNameType(String name, Descriptor type) {
+	CpNameType newNameType(@Nonnull String name, @Nonnull Descriptor type) {
 		return newSym(new CpNameType(newUtf8(name), newUtf8(type.getDescriptor())));
 	}
 
-	CpFieldRef newField(String owner, String name, Descriptor type) {
+	CpFieldRef newField(@Nonnull String owner, @Nonnull String name, @Nonnull Descriptor type) {
 		return newSym(new CpFieldRef(newClass(owner), newNameType(name, type)));
 	}
 
-	CpMethodRef newMethod(String owner, String name, Descriptor type) {
+	CpMethodRef newMethod(@Nonnull String owner, @Nonnull String name, @Nonnull Descriptor type) {
 		return newSym(new CpMethodRef(newClass(owner), newNameType(name, type)));
 	}
 
-	CpInterfaceMethodRef newInterfaceMethod(String owner, String name, Descriptor type) {
+	CpInterfaceMethodRef newInterfaceMethod(@Nonnull String owner, @Nonnull String name, @Nonnull Descriptor type) {
 		return newSym(new CpInterfaceMethodRef(newClass(owner), newNameType(name, type)));
 	}
 
-	CpMethodHandle newHandle(Handle handle) {
+	CpMethodHandle newHandle(@Nonnull Handle handle) {
 		return newSym(new CpMethodHandle((byte) handle.getTag().ordinal(),
 				newMethod(handle.getOwner(), handle.getName(), handle.getDescriptor())));
 	}
 
-	CpInvokeDynamic newInvokeDynamic(int bootstrapMethodIndex, CpNameType nameAndTypeIndex) {
+	CpInvokeDynamic newInvokeDynamic(int bootstrapMethodIndex, @Nonnull CpNameType nameAndTypeIndex) {
 		return newSym(new CpInvokeDynamic(bootstrapMethodIndex, nameAndTypeIndex));
 	}
 
-	CpPackage newPackage(String exportPackage) {
+	CpPackage newPackage(@Nonnull String exportPackage) {
 		return newSym(new CpPackage(newUtf8(exportPackage)));
 	}
 
-	CpModule newModule(String module) {
+	CpModule newModule(@Nonnull String module) {
 		return newSym(new CpModule(newUtf8(module)));
 	}
 
+	@Nonnull
 	@SuppressWarnings("unchecked")
 	<T extends CpEntry> T newSym(T entry) {
 		int index = pool.indexOf(entry);
-		if(index != -1) { // no duplicate entries
-			return (T) pool.get(index);
+		if (index != -1) { // no duplicate entries
+			T value = (T) pool.get(index);
+			if (value == null)
+				throw new IllegalStateException("Symbol at index " + index + " was null");
+			return value;
 		}
 		pool.add(entry);
 		return entry;
 	}
 
-	CpEntry newConstant(Constant value) {
+	@Nonnull
+	CpEntry newConstant(@Nonnull Constant value) {
 		switch (value.getType()) {
 			case STRING:
 				return newSym(new CpString(newUtf8((String) value.getValue())));
@@ -113,10 +122,11 @@ public class Symbols {
 		throw new IllegalStateException("Unknown constant type: " + value.getType());
 	}
 
-	ElementValue newElementValue(Constant value) {
+	@Nonnull
+	ElementValue newElementValue(@Nonnull Constant value) {
 		char tag = ' ';
 		CpEntry entry;
-		if(value.getType().equals(Constant.Type.STRING))
+		if (value.getType().equals(Constant.Type.STRING))
 			// ElementValue requires UTF8 instead of String
 			entry = newUtf8((String) value.getValue());
 		else entry = newConstant(value);

@@ -2,31 +2,40 @@ package me.coley.cafedude.tree.visitor.reader;
 
 import me.coley.cafedude.InvalidCodeException;
 import me.coley.cafedude.classfile.ClassFile;
-import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.classfile.Descriptor;
 import me.coley.cafedude.classfile.Method;
 import me.coley.cafedude.classfile.attribute.*;
 import me.coley.cafedude.classfile.constant.*;
 import me.coley.cafedude.classfile.instruction.*;
+import me.coley.cafedude.tree.Code;
 import me.coley.cafedude.tree.Constant;
 import me.coley.cafedude.tree.Handle;
 import me.coley.cafedude.tree.Label;
 import me.coley.cafedude.tree.frame.*;
+import me.coley.cafedude.tree.visitor.CodeDataVisitor;
 import me.coley.cafedude.tree.visitor.CodeVisitor;
+import me.coley.cafedude.tree.visitor.writer.CodeConverter;
 import me.coley.cafedude.util.ConstantUtil;
 import me.coley.cafedude.util.OpcodeUtil;
 import me.coley.cafedude.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 
 import static me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.BootstrapMethod;
 import static me.coley.cafedude.classfile.attribute.StackMapTableAttribute.*;
 import static me.coley.cafedude.classfile.instruction.Opcodes.*;
 
+/**
+ * Reader for a method's {@link CodeAttribute} to pass it along to a {@link CodeVisitor}.
+ *
+ * @author Justus Garbe
+ * @see CodeConverter Reverse of the process.
+ * @see CodeDataVisitor Visitor implementation to create a {@link Code} model.
+ */
 public class CodeReader {
-
 	private static final Logger logger = LoggerFactory.getLogger(CodeReader.class);
 	private final BootstrapMethodsAttribute bsma;
 	private final LocalVariableTableAttribute lvta;
@@ -41,8 +50,8 @@ public class CodeReader {
 	private final Stack<Value> locals = new Stack<>();
 	private static final Stack<Value> EMPTY = new Stack<>();
 
-	CodeReader(ClassFile clazz, CodeAttribute ca, CodeVisitor cv, Method method,
-			   TreeMap<Integer, Label> labels, TreeMap<Integer, Instruction> instructions) {
+	CodeReader(@Nonnull ClassFile clazz, @Nonnull CodeAttribute ca, @Nonnull CodeVisitor cv, @Nonnull Method method,
+			   @Nonnull TreeMap<Integer, Label> labels, @Nonnull TreeMap<Integer, Instruction> instructions) {
 		this.bsma = clazz.getAttribute(BootstrapMethodsAttribute.class);
 		this.lvta = ca.getAttribute(LocalVariableTableAttribute.class);
 		this.lvtta = ca.getAttribute(LocalVariableTypeTableAttribute.class);
@@ -53,7 +62,6 @@ public class CodeReader {
 		this.method = method;
 		this.instructions = instructions;
 	}
-
 
 	void accept() throws InvalidCodeException {
 		if (instructions == null) {
@@ -76,7 +84,7 @@ public class CodeReader {
 		if (!labels.isEmpty()) {
 			end = labels.lastKey();
 		}
-		for(int pos = start; pos < end; pos++) {
+		for (int pos = start; pos < end; pos++) {
 			Label currentLabel = labels.get(pos);
 			if (currentLabel != null) {
 				cv.visitLabel(currentLabel);
@@ -85,15 +93,15 @@ public class CodeReader {
 				}
 			}
 			StackMapFrame frame = frames.get(pos);
-			if(frame != null) {
+			if (frame != null) {
 				visitFrame(frame);
 			}
 			Instruction insn = instructions.get(pos);
 			if (insn instanceof IntOperandInstruction) {
 				visitIntOpInsn((IntOperandInstruction) insn, pos);
-			} else if(insn instanceof CpRefInstruction) {
+			} else if (insn instanceof CpRefInstruction) {
 				visitCpRefInsn((CpRefInstruction) insn, pos);
-			}else if (insn instanceof IincInstruction) {
+			} else if (insn instanceof IincInstruction) {
 				visitIincInsn((IincInstruction) insn);
 			} else if (insn instanceof MultiANewArrayInstruction) {
 				visitMultiANewArrayInsn((MultiANewArrayInstruction) insn);
@@ -117,33 +125,33 @@ public class CodeReader {
 		cv.visitCodeEnd();
 	}
 
-	private void visitBasicInsn(BasicInstruction insn, int pos) {
+	private void visitBasicInsn(@Nonnull BasicInstruction insn, int pos) {
 		int opcode = insn.getOpcode();
 		if (opcode >= ACONST_NULL && opcode <= DCONST_1) {
 			cv.visitConstantInsn(opcode);
-		} else if((opcode >= ILOAD_0 && opcode <= ALOAD_3)) {
+		} else if ((opcode >= ILOAD_0 && opcode <= ALOAD_3)) {
 			int base = opcode - ILOAD_0;
 			int var = base % 4;
 			int type = base / 4;
 			int op = ILOAD + type;
 			cv.visitVarInsn(op, var);
-		} else if((opcode >= ISTORE_0 && opcode <= ASTORE_3)) {
+		} else if ((opcode >= ISTORE_0 && opcode <= ASTORE_3)) {
 			int base = opcode - ISTORE_0;
 			int var = base % 4;
 			int type = base / 4;
 			int op = ISTORE + type;
 			cv.visitVarInsn(op, var);
-		} else if((opcode >= IASTORE && opcode <= SASTORE)
+		} else if ((opcode >= IASTORE && opcode <= SASTORE)
 				|| ((opcode >= IALOAD && opcode <= SALOAD))
 				|| opcode == ARRAYLENGTH) {
 			cv.visitArrayInsn(opcode);
-		} else if((opcode >= POP && opcode <= SWAP)) {
+		} else if ((opcode >= POP && opcode <= SWAP)) {
 			cv.visitStackInsn(opcode);
-		} else if((opcode >= IADD && opcode <= LXOR)
+		} else if ((opcode >= IADD && opcode <= LXOR)
 				|| (opcode >= I2L && opcode <= I2S)
 				|| (opcode >= LCMP && opcode <= DCMPG)) {
 			cv.visitArithmeticInsn(opcode);
-		} else if((opcode >= IRETURN && opcode <= RETURN)) {
+		} else if ((opcode >= IRETURN && opcode <= RETURN)) {
 			cv.visitReturnInsn(opcode);
 		} else {
 			switch (opcode) {
@@ -159,12 +167,12 @@ public class CodeReader {
 					break;
 				default:
 					throw new IllegalStateException("Unsupported opcode (no operand): "
-						+ OpcodeUtil.getOpcodeName(opcode) + " (" + opcode + ")" + " at " + pos);
+							+ OpcodeUtil.getOpcodeName(opcode) + " (" + opcode + ")" + " at " + pos);
 			}
 		}
 	}
 
-	private void visitLookupSwitchInsn(LookupSwitchInstruction insn, int pos) {
+	private void visitLookupSwitchInsn(@Nonnull LookupSwitchInstruction insn, int pos) {
 		List<Integer> keys = insn.getKeys();
 		List<Integer> offsets = insn.getOffsets();
 		int defaultOffset = insn.getDefault();
@@ -180,7 +188,7 @@ public class CodeReader {
 		cv.visitLookupSwitchInsn(defaultLabel, keysArr, labels);
 	}
 
-	private void visitTableSwitchInsn(TableSwitchInstruction insn, int pos) {
+	private void visitTableSwitchInsn(@Nonnull TableSwitchInstruction insn, int pos) {
 		int min = insn.getLow();
 		int max = insn.getHigh();
 		int defaultOffset = insn.getDefault();
@@ -192,7 +200,7 @@ public class CodeReader {
 		cv.visitTableSwitchInsn(min, max, defaultLabel, labels);
 	}
 
-	private void visitIntOpInsn(IntOperandInstruction ioi, int pos) {
+	private void visitIntOpInsn(@Nonnull IntOperandInstruction ioi, int pos) {
 		int operand = ioi.getOperand();
 		int opcode = ioi.getOpcode();
 		if (opcode == BIPUSH || opcode == SIPUSH || opcode == NEWARRAY || opcode == RET) {
@@ -202,7 +210,7 @@ public class CodeReader {
 		} else if ((opcode >= IFEQ && opcode <= JSR) || (opcode >= IFNULL && opcode <= JSR_W)) {
 			int targetPos = pos + operand;
 			Label targetLabel = labels.get(targetPos);
-			if(targetLabel == null) {
+			if (targetLabel == null) {
 				throw new IllegalStateException("No label for target position: " + targetPos);
 			}
 			cv.visitFlowInsn(opcode, targetLabel);
@@ -212,7 +220,7 @@ public class CodeReader {
 		}
 	}
 
-	private void visitCpRefInsn(CpRefInstruction cpr, int pos) {
+	private void visitCpRefInsn(@Nonnull CpRefInstruction cpr, int pos) {
 		int opcode = cpr.getOpcode();
 		if (opcode == NEW || opcode == ANEWARRAY || opcode == CHECKCAST || opcode == INSTANCEOF) {
 			CpClass cc = (CpClass) cpr.getEntry();
@@ -237,7 +245,7 @@ public class CodeReader {
 			String type = nt.getType().getText();
 			cv.visitMethodInsn(opcode, owner, name, Descriptor.from(type));
 		} else if (opcode == INVOKEDYNAMIC) {
-			if(bsma == null) {
+			if (bsma == null) {
 				throw new IllegalStateException(
 						"INVOKEDYNAMIC instruction found, but no BootstrapMethodsAttribute present " +
 								"at " + pos);
@@ -247,7 +255,7 @@ public class CodeReader {
 			String name = nt.getName().getText();
 			String type = nt.getType().getText();
 			BootstrapMethod bsm = bsma.getBootstrapMethods().get(id.getBsmIndex());
-			CpMethodHandle mh = bsm.getBsmMethodref();
+			CpMethodHandle mh = bsm.getBsmMethodRef();
 			ConstRef mr = mh.getReference();
 			CpNameType bsmnt = mr.getNameType();
 			String bsmName = bsmnt.getName().getText();
@@ -266,11 +274,11 @@ public class CodeReader {
 		}
 	}
 
-	private void visitIincInsn(IincInstruction iinc) {
+	private void visitIincInsn(@Nonnull IincInstruction iinc) {
 		cv.visitIIncInsn(iinc.getVar(), iinc.getIncrement());
 	}
 
-	private void visitMultiANewArrayInsn(MultiANewArrayInstruction manai) {
+	private void visitMultiANewArrayInsn(@Nonnull MultiANewArrayInstruction manai) {
 		cv.visitMultiANewArrayInsn(manai.getDescriptor().getName().getText(), manai.getDimensions());
 	}
 
@@ -279,13 +287,13 @@ public class CodeReader {
 		if (lvtta != null) {
 			varTypes = lvtta.getEntries();
 		}
-		if(lvta != null) {
+		if (lvta != null) {
 			for (LocalVariableTableAttribute.VarEntry entry : lvta.getEntries()) {
 				String name = entry.getName().getText();
 				Descriptor desc = Descriptor.from(entry.getDesc().getText());
 				String signature = null;
 				for (LocalVariableTypeTableAttribute.VarTypeEntry varType : varTypes) {
-					if(varType.getIndex() == entry.getIndex() && varType.getStartPc() == entry.getStartPc()) {
+					if (varType.getIndex() == entry.getIndex() && varType.getStartPc() == entry.getStartPc()) {
 						signature = varType.getSignature().getText();
 						break;
 					}
@@ -297,7 +305,7 @@ public class CodeReader {
 		}
 	}
 
-	private void visitFrame(StackMapFrame frame) {
+	private void visitFrame(@Nonnull StackMapFrame frame) {
 		int kind = Frame.FULL;
 		int argument = 0;
 		if (frame instanceof SameFrame || frame instanceof SameFrameExtended) {
@@ -306,35 +314,35 @@ public class CodeReader {
 		} else if (frame instanceof SameLocalsOneStackItem) {
 			SameLocalsOneStackItem slo = (SameLocalsOneStackItem) frame;
 			stack = new Stack<>();
-			stack.push(toValue(slo.stack));
+			stack.push(toValue(slo.getStack()));
 			kind = Frame.SAME1;
 		} else if (frame instanceof SameLocalsOneStackItemExtended) {
 			SameLocalsOneStackItemExtended slo = (SameLocalsOneStackItemExtended) frame;
 			stack = new Stack<>();
-			stack.push(toValue(slo.stack));
+			stack.push(toValue(slo.getStack()));
 			kind = Frame.SAME1;
 		} else if (frame instanceof ChopFrame) {
 			ChopFrame cf = (ChopFrame) frame;
-			argument = cf.absentVariables;
-			for(int i = 0; i < argument; i++) {
+			argument = cf.getAbsentVariables();
+			for (int i = 0; i < argument; i++) {
 				locals.pop();
 			}
 			stack = EMPTY;
 			kind = Frame.CHOP;
 		} else if (frame instanceof AppendFrame) {
 			AppendFrame af = (AppendFrame) frame;
-			argument = af.additionalLocals.size();
-			for (TypeInfo local : af.additionalLocals) {
+			argument = af.getAdditionalLocals().size();
+			for (TypeInfo local : af.getAdditionalLocals()) {
 				locals.push(toValue(local));
 			}
 			stack = EMPTY;
 			kind = Frame.APPEND;
 		} else if (frame instanceof FullFrame) {
 			FullFrame ff = (FullFrame) frame;
-			for(TypeInfo local : ff.locals) {
+			for (TypeInfo local : ff.getLocals()) {
 				locals.push(toValue(local));
 			}
-			for(TypeInfo stackItem : ff.stack) {
+			for (TypeInfo stackItem : ff.getStack()) {
 				stack.push(toValue(stackItem));
 			}
 		} else {
@@ -343,7 +351,8 @@ public class CodeReader {
 		cv.visitFrame(kind, stack.toArray(new Value[0]), locals.toArray(new Value[0]), argument);
 	}
 
-	private Value toValue(TypeInfo typeInfo) {
+	@Nonnull
+	private Value toValue(@Nonnull TypeInfo typeInfo) {
 		switch (typeInfo.getTag()) {
 			case ITEM_TOP:
 			case ITEM_INTEGER:
@@ -355,15 +364,16 @@ public class CodeReader {
 				return new PrimitiveValue(typeInfo.getTag());
 			case ITEM_OBJECT:
 				ObjectVariableInfo objectInfo = (ObjectVariableInfo) typeInfo;
-				return new ObjectValue(objectInfo.classEntry.getName().getText());
+				return new ObjectValue(objectInfo.getClassEntry().getName().getText());
 			case ITEM_UNINITIALIZED:
 				UninitializedVariableInfo uninitializedInfo = (UninitializedVariableInfo) typeInfo;
-				return new UninitializedValue(labels.computeIfAbsent(uninitializedInfo.offset, Label::new));
+				return new UninitializedValue(labels.computeIfAbsent(uninitializedInfo.getOffset(), Label::new));
 			default:
 				throw new IllegalArgumentException("Unknown verification type tag " + typeInfo.getTag());
 		}
 	}
 
+	@Nonnull
 	private Map<Integer, StackMapFrame> getStackMapFrames() {
 		if (smta == null) {
 			return Collections.emptyMap();
@@ -371,14 +381,13 @@ public class CodeReader {
 		Map<Integer, StackMapFrame> frames = new HashMap<>();
 		int offset = -1;
 		for (StackMapFrame frame : smta.getFrames()) {
-			if(offset == -1) {
-				offset = frame.offsetDelta;
+			if (offset == -1) {
+				offset = frame.getOffsetDelta();
 			} else {
-				offset += frame.offsetDelta + 1;
+				offset += frame.getOffsetDelta() + 1;
 			}
 			frames.put(offset, frame);
 		}
 		return frames;
 	}
-
 }

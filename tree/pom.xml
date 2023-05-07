@@ -8,18 +8,18 @@
     <url>https://github.com/Col-E/CAFED00D/</url>
     <version>${revision}</version>
     <name>CAFED00D-Tree</name>
-    
+
     <parent>
-    	<groupId>me.coley</groupId>
-    	<artifactId>cafedude</artifactId>
-    	<version>${revision}</version>
+        <groupId>me.coley</groupId>
+        <artifactId>cafedude</artifactId>
+        <version>${revision}</version>
     </parent>
 
     <dependencies>
-        	<dependency>
-        		<groupId>me.coley</groupId>
-        		<artifactId>cafedude-core</artifactId>
-        		<version>${revision}</version>
-        	</dependency>
+        <dependency>
+            <groupId>me.coley</groupId>
+            <artifactId>cafedude-core</artifactId>
+            <version>${revision}</version>
+        </dependency>
     </dependencies>
 </project>

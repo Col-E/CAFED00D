@@ -22,11 +22,12 @@ import me.coley.cafedude.tree.visitor.writer.CodeWriter;
  * {@link CodeReader} will convert all XLOAD_N and XSTORE_N instructions to XLOAD and XSTORE with respective
  * operand values. <br>
  * {@link CodeWriter} will convert them to XLOAD_N and XSTORE_N instructions if possible.
+ *
+ * @author Justus Garbe
  * @see Opcodes#ILOAD_0
  * @see Opcodes#ISTORE_0
  */
 public class VarInsn extends Insn {
-
 	private int index;
 
 	/**

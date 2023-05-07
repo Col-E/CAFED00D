@@ -10,16 +10,20 @@ import me.coley.cafedude.io.ClassBuilder;
 import me.coley.cafedude.io.ClassFileWriter;
 import me.coley.cafedude.tree.visitor.*;
 import me.coley.cafedude.util.Optional;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
 import static me.coley.cafedude.classfile.attribute.InnerClassesAttribute.InnerClass;
 
+/**
+ * Class visitor implementation for writing back to a {@link ClassFile}.
+ *
+ * @author Justus Garbe
+ */
 public class ClassWriter extends DeclarationWriter implements ClassVisitor {
-
 	final ClassBuilder builder;
 	private final List<InnerClass> innerClasses = new ArrayList<>();
 	private final List<RecordAttribute.RecordComponent> recordComponents = new ArrayList<>();
@@ -34,7 +38,7 @@ public class ClassWriter extends DeclarationWriter implements ClassVisitor {
 	}
 
 	@Override
-	public void visitClass(String name, int access, String superName, String... interfaces) {
+	public void visitClass(@Nonnull String name, int access, @Nonnull String superName, String... interfaces) {
 		builder.setThisClass(symbols.newClass(name));
 		builder.setAccess(access);
 		builder.setSuperClass(symbols.newClass(superName));
@@ -43,20 +47,23 @@ public class ClassWriter extends DeclarationWriter implements ClassVisitor {
 		}
 	}
 
+	@Nonnull
 	@Override
-	public @NotNull MethodVisitor visitMethod(String name, int access, Descriptor descriptor) {
+	public MethodVisitor visitMethod(@Nonnull String name, int access, @Nonnull Descriptor descriptor) {
 		return new MethodWriter(symbols, access, symbols.newUtf8(name), symbols.newUtf8(descriptor.getDescriptor()),
 				builder::addMethod);
 	}
 
+	@Nonnull
 	@Override
-	public @NotNull FieldVisitor visitField(String name, int access, Descriptor descriptor) {
+	public FieldVisitor visitField(@Nonnull String name, int access, @Nonnull Descriptor descriptor) {
 		return new FieldWriter(symbols, access, symbols.newUtf8(name), symbols.newUtf8(descriptor.getDescriptor()),
 				builder::addField);
 	}
 
 	@Override
-	public void visitOuterClass(String owner, @Nullable String name, @Nullable Descriptor descriptor) {
+	@SuppressWarnings("DataFlowIssue")
+	public void visitOuterClass(@Nonnull String owner, @Nullable String name, @Nullable Descriptor descriptor) {
 		attributes.add(new EnclosingMethodAttribute(
 				symbols.newUtf8(AttributeConstants.ENCLOSING_METHOD),
 				symbols.newClass(owner),
@@ -73,7 +80,7 @@ public class ClassWriter extends DeclarationWriter implements ClassVisitor {
 	}
 
 	@Override
-	public void visitSource(@Nullable String source, byte @Nullable [] debug) {
+	public void visitSource(@Nullable String source, @Nullable byte[] debug) {
 		if (source != null) {
 			attributes.add(new SourceFileAttribute(
 					symbols.newUtf8(AttributeConstants.SOURCE_FILE),
@@ -87,13 +94,13 @@ public class ClassWriter extends DeclarationWriter implements ClassVisitor {
 	}
 
 	@Override
-	public ModuleVisitor visitModule(String name, int access, @Nullable String version) {
+	public ModuleVisitor visitModule(@Nonnull String name, int access, @Nullable String version) {
 		return new ModuleWriter(symbols, symbols.newModule(name), access, Optional.orNull(version, symbols::newUtf8),
 				attributes::addAll);
 	}
 
 	@Override
-	public RecordComponentVisitor visitRecordComponent(String name, Descriptor descriptor) {
+	public RecordComponentVisitor visitRecordComponent(@Nonnull String name, @Nonnull Descriptor descriptor) {
 		return new RecordComponentWriter(symbols, symbols.newUtf8(name), symbols.newUtf8(descriptor.getDescriptor()),
 				recordComponents::add);
 	}
@@ -101,12 +108,12 @@ public class ClassWriter extends DeclarationWriter implements ClassVisitor {
 	@Override
 	public void visitClassEnd() {
 		super.visitDeclarationEnd();
-		if(!innerClasses.isEmpty()) {
+		if (!innerClasses.isEmpty()) {
 			attributes.add(new InnerClassesAttribute(
 					symbols.newUtf8(AttributeConstants.INNER_CLASSES),
 					innerClasses));
 		}
-		if(!recordComponents.isEmpty()) {
+		if (!recordComponents.isEmpty()) {
 			attributes.add(new RecordAttribute(
 					symbols.newUtf8(AttributeConstants.RECORD),
 					recordComponents));

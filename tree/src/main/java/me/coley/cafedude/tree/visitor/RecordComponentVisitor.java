@@ -1,14 +1,17 @@
 package me.coley.cafedude.tree.visitor;
 
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 
 /**
  * Visitor for visiting record component information.
+ *
+ * @author Justus Garbe
  */
 public interface RecordComponentVisitor extends DeclarationVisitor {
 
 	/**
 	 * Return the delegate visitor for pass through implementations.
+	 *
 	 * @return Delegate visitor.
 	 */
 	@Nullable
@@ -38,6 +41,6 @@ public interface RecordComponentVisitor extends DeclarationVisitor {
 	 */
 	default void visitRecordComponentEnd() {
 		RecordComponentVisitor delegate = recordComponentDelegate();
-		if(delegate != null) delegate.visitRecordComponentEnd();
+		if (delegate != null) delegate.visitRecordComponentEnd();
 	}
 }

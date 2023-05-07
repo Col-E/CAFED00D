@@ -2,22 +2,26 @@ package me.coley.cafedude.tree;
 
 import me.coley.cafedude.classfile.Descriptor;
 
+import javax.annotation.Nonnull;
+
 /**
  * Constant object with type and value.
+ *
+ * @author Justus Garbe
  */
 public class Constant {
-
 	private final Type type;
 	private final Object value;
 
 	/**
 	 * Construct a constant.
+	 *
 	 * @param type
-	 * 			Type of constant.
+	 * 		Type of constant.
 	 * @param value
-	 * 			Value of constant.
+	 * 		Value of constant.
 	 */
-	public Constant(Type type, Object value) {
+	private Constant(@Nonnull Type type, @Nonnull Object value) {
 		this.type = type;
 		this.value = value;
 	}
@@ -29,8 +33,10 @@ public class Constant {
 	 *
 	 * @param value
 	 * 		Boolean value.
+	 *
 	 * @return Constant.
 	 */
+	@Nonnull
 	public static Constant of(boolean value) {
 		return new Constant(Type.BOOLEAN, value);
 	}
@@ -42,8 +48,10 @@ public class Constant {
 	 *
 	 * @param value
 	 * 		Byte value.
+	 *
 	 * @return Constant.
 	 */
+	@Nonnull
 	public static Constant of(byte value) {
 		return new Constant(Type.BYTE, value);
 	}
@@ -55,8 +63,10 @@ public class Constant {
 	 *
 	 * @param value
 	 * 		Char value.
+	 *
 	 * @return Constant.
 	 */
+	@Nonnull
 	public static Constant of(char value) {
 		return new Constant(Type.CHAR, value);
 	}
@@ -68,8 +78,10 @@ public class Constant {
 	 *
 	 * @param value
 	 * 		Short value.
+	 *
 	 * @return Constant.
 	 */
+	@Nonnull
 	public static Constant of(short value) {
 		return new Constant(Type.SHORT, value);
 	}
@@ -80,9 +92,11 @@ public class Constant {
 	 * Corresponds to {@code CpFloat}.
 	 *
 	 * @param value
-	 * 			Float value.
+	 * 		Float value.
+	 *
 	 * @return Constant.
 	 */
+	@Nonnull
 	public static Constant of(float value) {
 		return new Constant(Type.FLOAT, value);
 	}
@@ -93,9 +107,11 @@ public class Constant {
 	 * Corresponds to {@code CpDouble}.
 	 *
 	 * @param value
-	 * 			Double value.
+	 * 		Double value.
+	 *
 	 * @return Constant.
 	 */
+	@Nonnull
 	public static Constant of(double value) {
 		return new Constant(Type.DOUBLE, value);
 	}
@@ -106,9 +122,11 @@ public class Constant {
 	 * Corresponds to {@code CpLong}.
 	 *
 	 * @param value
-	 * 			Long value.
+	 * 		Long value.
+	 *
 	 * @return Constant.
 	 */
+	@Nonnull
 	public static Constant of(long value) {
 		return new Constant(Type.LONG, value);
 	}
@@ -119,9 +137,11 @@ public class Constant {
 	 * Corresponds to {@code CpInt}.
 	 *
 	 * @param value
-	 * 			Integer value.
+	 * 		Integer value.
+	 *
 	 * @return Constant.
 	 */
+	@Nonnull
 	public static Constant of(int value) {
 		return new Constant(Type.INT, value);
 	}
@@ -132,10 +152,12 @@ public class Constant {
 	 * Corresponds to {@code CpUtf8}.
 	 *
 	 * @param value
-	 * 			String value.
+	 * 		String value.
+	 *
 	 * @return Constant.
 	 */
-	public static Constant of(String value) {
+	@Nonnull
+	public static Constant of(@Nonnull String value) {
 		return new Constant(Type.STRING, value);
 	}
 
@@ -151,13 +173,17 @@ public class Constant {
 	 * Any other kind does not have a corresponding constant type.
 	 *
 	 * @param value
-	 * 			Descriptor value.
+	 * 		Descriptor value.
+	 *
 	 * @return Constant.
-	 * @throws IllegalArgumentException If the descriptor kind is not {@link Descriptor.Kind#OBJECT},
-	 * 			{@link Descriptor.Kind#ARRAY} or {@link Descriptor.Kind#METHOD}.
+	 *
+	 * @throws IllegalArgumentException
+	 * 		If the descriptor kind is not {@link Descriptor.Kind#OBJECT},
+	 *        {@link Descriptor.Kind#ARRAY} or {@link Descriptor.Kind#METHOD}.
 	 */
-	public static Constant of(Descriptor value) {
-		if(value.getKind() == Descriptor.Kind.OBJECT
+	@Nonnull
+	public static Constant of(@Nonnull Descriptor value) {
+		if (value.getKind() == Descriptor.Kind.OBJECT
 				|| value.getKind() == Descriptor.Kind.ARRAY
 				|| value.getKind() == Descriptor.Kind.METHOD) {
 			return new Constant(Type.DESCRIPTOR, value);
@@ -172,16 +198,19 @@ public class Constant {
 	 * Corresponds to {@code CpMethodHandle}.
 	 *
 	 * @param value
-	 * 			Handle value.
+	 * 		Handle value.
+	 *
 	 * @return Constant.
 	 */
-	public static Constant of(Handle value) {
+	@Nonnull
+	public static Constant of(@Nonnull Handle value) {
 		return new Constant(Type.HANDLE, value);
 	}
 
 	/**
 	 * @return Type of constant.
 	 */
+	@Nonnull
 	public Type getType() {
 		return type;
 	}
@@ -189,6 +218,7 @@ public class Constant {
 	/**
 	 * @return Value of constant.
 	 */
+	@Nonnull
 	public Object getValue() {
 		return value;
 	}
@@ -242,7 +272,5 @@ public class Constant {
 		 * {@link Handle}
 		 */
 		HANDLE
-
 	}
-
 }

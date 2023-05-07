@@ -1,15 +1,20 @@
 package me.coley.cafedude.tree.visitor;
 
 import me.coley.cafedude.tree.Constant;
-import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Visitor for visiting field information.
+ *
+ * @author Justus Garbe
  */
 public interface FieldVisitor extends DeclarationVisitor {
 
 	/**
 	 * Return the delegate visitor for pass through implementations.
+	 *
 	 * @return Delegate visitor.
 	 */
 	@Nullable
@@ -26,11 +31,11 @@ public interface FieldVisitor extends DeclarationVisitor {
 	 * Visit a field constant value.
 	 *
 	 * @param value
-	 * 			Constant value.
+	 * 		Constant value.
 	 */
-	default void visitConstantValue(Constant value) {
+	default void visitConstantValue(@Nonnull Constant value) {
 		FieldVisitor delegate = fieldDelegate();
-		if(delegate != null) delegate.visitConstantValue(value);
+		if (delegate != null) delegate.visitConstantValue(value);
 	}
 
 	/**
@@ -38,7 +43,7 @@ public interface FieldVisitor extends DeclarationVisitor {
 	 */
 	default void visitFieldEnd() {
 		FieldVisitor delegate = fieldDelegate();
-		if(delegate != null) delegate.visitFieldEnd();
+		if (delegate != null) delegate.visitFieldEnd();
 	}
 
 }

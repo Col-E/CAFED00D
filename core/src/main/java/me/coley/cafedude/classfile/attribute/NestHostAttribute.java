@@ -4,6 +4,7 @@ import me.coley.cafedude.classfile.constant.CpClass;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
 import java.util.Set;
 
 /**
@@ -16,30 +17,32 @@ public class NestHostAttribute extends Attribute {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
-	 * @param hostClassIndex
-	 * 		Class index in constant pool of class that is the nest host of the current class.
+	 * 		Constant pool entry holding the attribute name.
+	 * @param hostClass
+	 * 		Constant pool entry holding the host class type.
 	 */
-	public NestHostAttribute(CpUtf8 name, CpClass hostClass) {
+	public NestHostAttribute(@Nonnull CpUtf8 name, @Nonnull CpClass hostClass) {
 		super(name);
 		this.hostClass = hostClass;
 	}
 
 	/**
-	 * @return Class index in constant pool of class that is the nest host of the current class.
+	 * @return Constant pool entry holding the host class type.
 	 */
+	@Nonnull
 	public CpClass getHostClass() {
 		return hostClass;
 	}
 
 	/**
-	 * @param hostClassIndex
-	 * 		New class index in constant pool of class that is the nest host of the current class.
+	 * @param hostClass
+	 * 		New constant pool entry holding the host class type.
 	 */
-	public void setHostClass(CpClass hostClass) {
+	public void setHostClass(@Nonnull CpClass hostClass) {
 		this.hostClass = hostClass;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = super.cpAccesses();

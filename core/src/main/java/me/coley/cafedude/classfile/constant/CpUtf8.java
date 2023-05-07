@@ -1,5 +1,7 @@
 package me.coley.cafedude.classfile.constant;
 
+import javax.annotation.Nonnull;
+
 /**
  * UTF8 pool entry.
  *
@@ -14,7 +16,7 @@ public class CpUtf8 extends CpEntry {
 	 * @param text
 	 * 		Constant text.
 	 */
-	public CpUtf8(String text) {
+	public CpUtf8(@Nonnull String text) {
 		super(UTF8);
 		this.text = text;
 	}
@@ -22,6 +24,7 @@ public class CpUtf8 extends CpEntry {
 	/**
 	 * @return Constant text.
 	 */
+	@Nonnull
 	public String getText() {
 		return text;
 	}
@@ -30,7 +33,7 @@ public class CpUtf8 extends CpEntry {
 	 * @param text
 	 * 		New constant text.
 	 */
-	public void setText(String text) {
+	public void setText(@Nonnull String text) {
 		this.text = text;
 	}
 

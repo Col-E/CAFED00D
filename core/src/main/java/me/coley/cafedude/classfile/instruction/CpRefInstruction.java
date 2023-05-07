@@ -3,6 +3,7 @@ package me.coley.cafedude.classfile.instruction;
 import me.coley.cafedude.classfile.behavior.CpAccessor;
 import me.coley.cafedude.classfile.constant.CpEntry;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Set;
 
@@ -12,27 +13,50 @@ import java.util.Set;
  * @author Justus Garbe
  */
 public class CpRefInstruction extends BasicInstruction implements CpAccessor {
-
 	private CpEntry entry;
 
-	public CpRefInstruction(int opcode, CpEntry entry) {
+	/**
+	 * @param opcode
+	 * 		Instruction opcode.
+	 * @param entry
+	 * 		Constant pool entry to reference.
+	 */
+	public CpRefInstruction(int opcode, @Nonnull CpEntry entry) {
 		super(opcode);
 		this.entry = entry;
 	}
 
+	/**
+	 * @return Constant pool entry to reference.
+	 */
+	@Nonnull
 	public CpEntry getEntry() {
 		return entry;
 	}
 
-	public void setEntry(CpEntry entry) {
+	/**
+	 * @param entry
+	 * 		New constant pool entry to reference.
+	 */
+	public void setEntry(@Nonnull CpEntry entry) {
 		this.entry = entry;
 	}
 
 	@Override
 	public int computeSize() {
 		int opcode = getOpcode();
-		if(opcode == Opcodes.LDC) return 1 + 1; // 1 byte opcode + 1 byte index
-		else return 1 + 2; // 1 byte opcode + 2 byte index
+
+		// LDC only has one byte as its argument size
+		// But LDC_W and all other constant pool referencing instructions use shorts (two bytes)
+		if (opcode == Opcodes.LDC)
+			return 1 + 1; // 1 byte opcode + 1 byte index
+
+		// InvokeDynamic has two bytes of padding after it for some reason.
+		// See: jvms-6.5.invokedynamic
+		if (opcode == Opcodes.INVOKEDYNAMIC)
+			return 1 + 2 + 2; // 1 byte opcode + 2 byte index + 2 byte padding
+
+		return 1 + 2; // 1 byte opcode + 2 byte index
 	}
 
 	@Override
@@ -53,6 +77,7 @@ public class CpRefInstruction extends BasicInstruction implements CpAccessor {
 		return result;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		return Collections.singleton(entry);

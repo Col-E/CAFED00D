@@ -5,12 +5,12 @@ import me.coley.cafedude.classfile.behavior.CpAccessor;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.io.AttributeContext;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Permitted classes attribute.
@@ -22,15 +22,16 @@ public class RecordAttribute extends Attribute {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param components
 	 * 		Record components <i>(fields)</i>.
 	 */
-	public RecordAttribute(CpUtf8 name, List<RecordComponent> components) {
+	public RecordAttribute(@Nonnull CpUtf8 name, @Nonnull List<RecordComponent> components) {
 		super(name);
 		this.components = components;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = super.cpAccesses();
@@ -49,6 +50,7 @@ public class RecordAttribute extends Attribute {
 	/**
 	 * @return Record components <i>(fields)</i>.
 	 */
+	@Nonnull
 	public List<RecordComponent> getComponents() {
 		return components;
 	}
@@ -57,7 +59,7 @@ public class RecordAttribute extends Attribute {
 	 * @param components
 	 * 		New record components <i>(fields)</i>.
 	 */
-	public void setComponents(List<RecordComponent> components) {
+	public void setComponents(@Nonnull List<RecordComponent> components) {
 		this.components = components;
 	}
 
@@ -71,51 +73,54 @@ public class RecordAttribute extends Attribute {
 
 		/**
 		 * @param name
-		 * 		Entry of name of component.
+		 * 		Constant pool entry holding the component's name.
 		 * @param desc
-		 * 		Entry of field descriptor of component.
+		 * 		Constant pool entry holding the component's descriptor.
 		 * @param attributes
 		 * 		Attributes of the record field.
 		 */
-		public RecordComponent(CpUtf8 name, CpUtf8 desc, List<Attribute> attributes) {
+		public RecordComponent(@Nonnull CpUtf8 name, @Nonnull CpUtf8 desc, @Nonnull List<Attribute> attributes) {
 			this.name = name;
 			this.desc = desc;
 			this.attributes = attributes;
 		}
 
 		/**
-		 * @return Index of name of component.
+		 * @return Constant pool entry holding the component's name.
 		 */
+		@Nonnull
 		public CpUtf8 getName() {
 			return name;
 		}
 
 		/**
 		 * @param name
-		 * 		New index of name of component.
+		 * 		New constant pool entry holding the component's name.
 		 */
-		public void setName(CpUtf8 name) {
+		public void setName(@Nonnull CpUtf8 name) {
 			this.name = name;
 		}
 
 		/**
-		 * @return Index of field descriptor of component.
+		 * @return Constant pool entry holding the component's descriptor.
 		 */
+		@Nonnull
 		public CpUtf8 getDesc() {
 			return desc;
 		}
 
 		/**
-		 * @param descIndex
-		 * 		New index of field descriptor of component.
+		 * @param desc
+		 * 		New constant pool entry holding the component's descriptor.
 		 */
-		public void setDesc(CpUtf8 desc) {
+		public void setDesc(@Nonnull CpUtf8 desc) {
 			this.desc = desc;
 		}
 
 		/**
 		 * @return Attributes of the record field.
 		 */
+		@Nonnull
 		public List<Attribute> getAttributes() {
 			return attributes;
 		}
@@ -129,15 +134,17 @@ public class RecordAttribute extends Attribute {
 		 * @param attributes
 		 * 		New attributes of the record field.
 		 */
-		public void setAttributes(List<Attribute> attributes) {
+		public void setAttributes(@Nonnull List<Attribute> attributes) {
 			this.attributes = attributes;
 		}
 
+		@Nonnull
 		@Override
 		public AttributeContext getHolderType() {
 			return AttributeContext.RECORD_COMPONENT;
 		}
 
+		@Nonnull
 		@Override
 		public Set<CpEntry> cpAccesses() {
 			Set<CpEntry> set = new HashSet<>();
@@ -159,7 +166,5 @@ public class RecordAttribute extends Attribute {
 				len += attribute.computeCompleteLength();
 			return len;
 		}
-
-
 	}
 }

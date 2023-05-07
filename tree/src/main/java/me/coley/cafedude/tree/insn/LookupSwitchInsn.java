@@ -3,14 +3,16 @@ package me.coley.cafedude.tree.insn;
 import me.coley.cafedude.classfile.instruction.Opcodes;
 import me.coley.cafedude.tree.Label;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
  * Instruction for the {@link Opcodes#LOOKUPSWITCH} instruction, which has a default offset and a list of offsets.
+ *
+ * @author Justus Garbe
  * @see Opcodes#LOOKUPSWITCH
  */
 public class LookupSwitchInsn extends Insn {
-
 	private int padding;
 	private List<Integer> keys;
 	private List<Label> labels;
@@ -22,7 +24,7 @@ public class LookupSwitchInsn extends Insn {
 	 * @param defaultLabel
 	 * 		Default offset of the switch.
 	 */
-	public LookupSwitchInsn(List<Integer> keys, List<Label> labels, Label defaultLabel) {
+	public LookupSwitchInsn(@Nonnull List<Integer> keys, @Nonnull List<Label> labels, @Nonnull Label defaultLabel) {
 		super(InsnKind.LOOKUP_SWITCH, Opcodes.LOOKUPSWITCH);
 		this.keys = keys;
 		this.labels = labels;
@@ -32,6 +34,7 @@ public class LookupSwitchInsn extends Insn {
 	/**
 	 * @return Keys of the switch.
 	 */
+	@Nonnull
 	public List<Integer> getKeys() {
 		return keys;
 	}
@@ -40,13 +43,14 @@ public class LookupSwitchInsn extends Insn {
 	 * @param keys
 	 * 		Keys of the switch.
 	 */
-	public void setKeys(List<Integer> keys) {
+	public void setKeys(@Nonnull List<Integer> keys) {
 		this.keys = keys;
 	}
 
 	/**
 	 * @return Offsets of the switch.
 	 */
+	@Nonnull
 	public List<Label> getLabels() {
 		return labels;
 	}
@@ -55,13 +59,14 @@ public class LookupSwitchInsn extends Insn {
 	 * @param labels
 	 * 		Offsets of the switch.
 	 */
-	public void setLabels(List<Label> labels) {
+	public void setLabels(@Nonnull List<Label> labels) {
 		this.labels = labels;
 	}
 
 	/**
 	 * @return Default offset of the switch.
 	 */
+	@Nonnull
 	public Label getDefaultLabel() {
 		return defaultLabel;
 	}
@@ -70,7 +75,7 @@ public class LookupSwitchInsn extends Insn {
 	 * @param defaultLabel
 	 * 		Default offset of the switch.
 	 */
-	public void setDefaultLabel(Label defaultLabel) {
+	public void setDefaultLabel(@Nonnull Label defaultLabel) {
 		this.defaultLabel = defaultLabel;
 	}
 

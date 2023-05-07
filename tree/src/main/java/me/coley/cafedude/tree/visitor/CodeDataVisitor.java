@@ -4,16 +4,19 @@ import me.coley.cafedude.classfile.Descriptor;
 import me.coley.cafedude.classfile.instruction.Opcodes;
 import me.coley.cafedude.tree.*;
 import me.coley.cafedude.tree.insn.*;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Visits code and converts it to a list of {@link Insn}s.
+ *
+ * @author Justus Garbe
  */
 public class CodeDataVisitor implements CodeVisitor {
-
 	private final List<Insn> insns = new ArrayList<>();
 	private final List<Local> locals = new ArrayList<>();
 	private final List<ExceptionHandler> handlers = new ArrayList<>();
@@ -51,17 +54,17 @@ public class CodeDataVisitor implements CodeVisitor {
 	}
 
 	@Override
-	public void visitFieldInsn(int opcode, String owner, String name, Descriptor type) {
+	public void visitFieldInsn(int opcode, @Nonnull String owner, @Nonnull String name, @Nonnull Descriptor type) {
 		add(new FieldInsn(opcode, owner, name, type));
 	}
 
 	@Override
-	public void visitMethodInsn(int opcode, String owner, String name, Descriptor descriptor) {
+	public void visitMethodInsn(int opcode, @Nonnull String owner, @Nonnull String name, @Nonnull Descriptor descriptor) {
 		add(new MethodInsn(opcode, owner, name, descriptor));
 	}
 
 	@Override
-	public void visitFlowInsn(int opcode, @NotNull Label label) {
+	public void visitFlowInsn(int opcode, @Nonnull Label label) {
 		add(new FlowInsn(opcode, label));
 	}
 
@@ -76,32 +79,32 @@ public class CodeDataVisitor implements CodeVisitor {
 	}
 
 	@Override
-	public void visitInvokeDynamicInsn(String name, Descriptor descriptor, Handle bootstrapMethod, Constant... bootstrapArgs) {
+	public void visitInvokeDynamicInsn(@Nonnull String name, @Nonnull Descriptor descriptor, @Nonnull Handle bootstrapMethod, Constant... bootstrapArgs) {
 		add(new InvokeDynamicInsn(name, descriptor, bootstrapMethod, Arrays.asList(bootstrapArgs)));
 	}
 
 	@Override
-	public void visitLdcInsn(Constant constant) {
+	public void visitLdcInsn(@Nonnull Constant constant) {
 		add(new LdcInsn(Opcodes.LDC, constant)); // assume LDC here, index size is not known.
 		// Should be recalculated by writer
 	}
 
 	@Override
-	public void visitLookupSwitchInsn(Label defaultLabel, int[] keys, Label... labels) {
+	public void visitLookupSwitchInsn(@Nonnull Label defaultLabel, int[] keys, Label... labels) {
 		List<Integer> keyList = new ArrayList<>();
-		for(int key : keys) {
+		for (int key : keys) {
 			keyList.add(key);
 		}
 		add(new LookupSwitchInsn(keyList, Arrays.asList(labels), defaultLabel));
 	}
 
 	@Override
-	public void visitTableSwitchInsn(int min, int max, Label defaultLabel, Label... labels) {
+	public void visitTableSwitchInsn(int min, int max, @Nonnull Label defaultLabel, Label... labels) {
 		add(new TableSwitchInsn(min, max, Arrays.asList(labels), defaultLabel));
 	}
 
 	@Override
-	public void visitMultiANewArrayInsn(String type, int dimensions) {
+	public void visitMultiANewArrayInsn(@Nonnull String type, int dimensions) {
 		add(new MultiANewArrayInsn(type, dimensions));
 	}
 
@@ -116,7 +119,7 @@ public class CodeDataVisitor implements CodeVisitor {
 	}
 
 	@Override
-	public void visitTypeInsn(int opcode, String type) {
+	public void visitTypeInsn(int opcode, @Nonnull String type) {
 		add(new TypeInsn(opcode, Descriptor.from(type)));
 	}
 
@@ -126,18 +129,13 @@ public class CodeDataVisitor implements CodeVisitor {
 	}
 
 	@Override
-	public void visitLabel(Label label) {
+	public void visitLabel(@Nonnull Label label) {
 		add(new LabelInsn(label));
 	}
 
 	@Override
-	public void visitLocalVariable(int index, String name, Descriptor descriptor, @Nullable String signature, Label start, Label end) {
-		Local local = new Local(index);
-		local.setName(name);
-		local.setDesc(descriptor);
-		local.setSignature(signature);
-		local.setStart(start);
-		local.setEnd(end);
+	public void visitLocalVariable(int index, @Nonnull String name, @Nonnull Descriptor descriptor, @Nullable String signature, @Nonnull Label start, @Nonnull Label end) {
+		Local local = new Local(index, name, descriptor, signature,start,end);
 		locals.add(local);
 	}
 
@@ -148,7 +146,7 @@ public class CodeDataVisitor implements CodeVisitor {
 	}
 
 	@Override
-	public void visitExceptionHandler(@Nullable String type, Label start, Label end, Label handler) {
+	public void visitExceptionHandler(@Nullable String type, @Nonnull Label start, @Nonnull Label end, @Nonnull Label handler) {
 		handlers.add(new ExceptionHandler(type, start, end, handler));
 	}
 

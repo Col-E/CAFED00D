@@ -1,5 +1,6 @@
 package me.coley.cafedude.classfile.constant;
 
+import javax.annotation.Nonnull;
 import java.util.Objects;
 
 /**
@@ -15,11 +16,11 @@ public class CpMethodHandle extends CpEntry {
 	/**
 	 * @param kind
 	 * 		Byte indicating handle behavior.
-	 * @param referenceIndex
-	 * 		Index of handle's {@link ConstRef reference} in pool.
+	 * @param reference
+	 * 		Constant pool entry holding the method handle's {@link ConstRef reference}.
 	 * 		Reference type depends on the byte value.
 	 */
-	public CpMethodHandle(byte kind, ConstRef reference) {
+	public CpMethodHandle(byte kind, @Nonnull ConstRef reference) {
 		super(METHOD_HANDLE);
 		this.kind = kind;
 		this.reference = reference;
@@ -97,23 +98,23 @@ public class CpMethodHandle extends CpEntry {
 	}
 
 	/**
-	 * @return Index of handle's {@link ConstRef reference} in pool.
+	 * @return Constant pool entry holding the method handle's {@link ConstRef reference}.
 	 * Reference type depends on the byte value.
 	 *
 	 * @see #getKind()
 	 */
+	@Nonnull
 	public ConstRef getReference() {
 		return reference;
 	}
 
 	/**
 	 * @param reference
-	 * 		New index of handle's {@link ConstRef reference} in pool.
-	 * 		Reference type depends on the byte value.
+	 * 		New constant pool entry holding the method handle's {@link ConstRef reference}.
 	 *
 	 * @see #getKind()
 	 */
-	public void setReference(ConstRef reference) {
+	public void setReference(@Nonnull ConstRef reference) {
 		this.reference = reference;
 	}
 

@@ -4,8 +4,12 @@ import me.coley.cafedude.tree.Label;
 import me.coley.cafedude.tree.insn.Insn;
 import me.coley.cafedude.util.OpcodeUtil;
 
+/**
+ * Exception thrown for unresolved label references.
+ *
+ * @author Justus Garbe
+ */
 public class UnresolvedLabelException extends InvalidCodeException {
-
 	private final Label label;
 	private final int offset;
 	private final Insn instruction;
@@ -36,7 +40,4 @@ public class UnresolvedLabelException extends InvalidCodeException {
 	public Insn getInstruction() {
 		return instruction;
 	}
-
-
-
 }

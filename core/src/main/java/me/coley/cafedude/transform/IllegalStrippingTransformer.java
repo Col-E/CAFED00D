@@ -133,7 +133,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			case ANNOTATION_DEFAULT:
 				AnnotationDefaultAttribute annotationDefault = (AnnotationDefaultAttribute) attribute;
 				ElementValue elementValue = annotationDefault.getElementValue();
-				addElementValueValidation(holder, expectedTypeMasks, cpEntryValidators, elementValue);
+				addElementValueValidation(expectedTypeMasks, cpEntryValidators, elementValue);
 				break;
 			case NEST_HOST:
 				NestHostAttribute nestHost = (NestHostAttribute) attribute;
@@ -220,7 +220,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			case BOOTSTRAP_METHODS:
 				BootstrapMethodsAttribute bootstrapMethodsAttribute = (BootstrapMethodsAttribute) attribute;
 				for (BootstrapMethod bsm : bootstrapMethodsAttribute.getBootstrapMethods()) {
-					expectedTypeMasks.put(bsm.getBsmMethodref(), i -> i == METHOD_HANDLE);
+					expectedTypeMasks.put(bsm.getBsmMethodRef(), i -> i == METHOD_HANDLE);
 					// Arguments must be loadable types
 					for (CpEntry arg : bsm.getArgs()) {
 						expectedTypeMasks.put(arg, i ->
@@ -282,9 +282,11 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			// Referenced pool entry must be in pool range
 			//  - Yes, the CP doesn't start at 0, but there are special cases where it is allowed.
 			CpEntry cpEntry = entry.getKey();
+
 			// Referenced entry must match type
 			if (allow0Case && cpEntry == null)
 				continue; // skip edge case
+
 			// cpEntryValidators
 			if(cpEntry == null) {
 				logger.debug("Invalid '{}' attribute on {}, contains CP reference to null!",
@@ -315,7 +317,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		for (Map.Entry<CpUtf8, ElementValue> entry : anno.getValues().entrySet()) {
 			CpUtf8 elementTypeIndex = entry.getKey();
 			cpEntryValidators.put(elementTypeIndex, matchUtf8InternalName());
-			addElementValueValidation(holder, expectedTypeMasks, cpEntryValidators, entry.getValue());
+			addElementValueValidation(expectedTypeMasks, cpEntryValidators, entry.getValue());
 		}
 		if (anno instanceof TypeAnnotation) {
 			TypeAnnotation typeAnnotation = (TypeAnnotation) anno;
@@ -375,8 +377,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		}
 	}
 
-	private void addElementValueValidation(AttributeHolder holder,
-										   Map<CpEntry, Predicate<Integer>> expectedTypeMasks,
+	private void addElementValueValidation(Map<CpEntry, Predicate<Integer>> expectedTypeMasks,
 										   Map<CpEntry, Predicate<CpEntry>> cpEntryValidators,
 										   ElementValue elementValue) {
 		if (elementValue instanceof ClassElementValue) {
@@ -392,7 +393,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	}
 
 	private Predicate<CpEntry> matchClass() {
-		return e -> e instanceof CpClass && matchUtf8InternalName().test(pool.get(((CpClass) e).getIndex()));
+		return e -> e instanceof CpClass && matchUtf8InternalName().test(((CpClass) e).getName());
 	}
 
 	private Predicate<CpEntry> matchUtf8InternalName() {

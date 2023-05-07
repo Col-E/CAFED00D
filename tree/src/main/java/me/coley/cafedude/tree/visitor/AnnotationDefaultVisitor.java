@@ -1,8 +1,15 @@
 package me.coley.cafedude.tree.visitor;
 
 import me.coley.cafedude.tree.Constant;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+/**
+ * Visitor for visiting annotation default values.
+ *
+ * @author Justus Garbe
+ */
 public interface AnnotationDefaultVisitor {
 	/**
 	 * Return the delegate visitor for pass through implementations.
@@ -20,7 +27,7 @@ public interface AnnotationDefaultVisitor {
 	 * @param value
 	 * 		Default value.
 	 */
-	default void visitDefaultValue(Constant value) {
+	default void visitDefaultValue(@Nonnull Constant value) {
 		AnnotationDefaultVisitor delegate = annotationDefaultDelegate();
 		if (delegate != null) delegate.visitDefaultValue(value);
 	}
@@ -33,7 +40,7 @@ public interface AnnotationDefaultVisitor {
 	 * @param name
 	 * 		Enum name.
 	 */
-	default void visitDefaultEnum(String type, String name) {
+	default void visitDefaultEnum(@Nonnull String type, @Nonnull String name) {
 		AnnotationDefaultVisitor delegate = annotationDefaultDelegate();
 		if (delegate != null) delegate.visitDefaultEnum(type, name);
 	}
@@ -43,10 +50,11 @@ public interface AnnotationDefaultVisitor {
 	 *
 	 * @param type
 	 * 		Annotation type.
+	 *
 	 * @return Visitor for visiting the annotation.
 	 */
 	@Nullable
-	default AnnotationVisitor visitDefaultAnnotation(String type) {
+	default AnnotationVisitor visitDefaultAnnotation(@Nonnull String type) {
 		AnnotationDefaultVisitor delegate = annotationDefaultDelegate();
 		if (delegate != null) return delegate.visitDefaultAnnotation(type);
 		return null;

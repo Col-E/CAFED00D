@@ -4,6 +4,7 @@ import me.coley.cafedude.classfile.constant.CpClass;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Set;
 
@@ -17,11 +18,11 @@ public class PermittedClassesAttribute extends Attribute {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param classes
 	 * 		Indices of allowed {@code CP_CLASS} values.
 	 */
-	public PermittedClassesAttribute(CpUtf8 name, List<CpClass> classes) {
+	public PermittedClassesAttribute(@Nonnull CpUtf8 name, @Nonnull List<CpClass> classes) {
 		super(name);
 		this.classes = classes;
 	}
@@ -29,6 +30,7 @@ public class PermittedClassesAttribute extends Attribute {
 	/**
 	 * @return Indices of allowed {@code CP_CLASS} values.
 	 */
+	@Nonnull
 	public List<CpClass> getClasses() {
 		return classes;
 	}
@@ -37,10 +39,11 @@ public class PermittedClassesAttribute extends Attribute {
 	 * @param classes
 	 * 		New indices of allowed {@code CP_CLASS} values.
 	 */
-	public void setClasses(List<CpClass> classes) {
+	public void setClasses(@Nonnull List<CpClass> classes) {
 		this.classes = classes;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = super.cpAccesses();

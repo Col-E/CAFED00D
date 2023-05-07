@@ -3,10 +3,10 @@ package me.coley.cafedude.io;
 import me.coley.cafedude.classfile.ConstPool;
 import me.coley.cafedude.classfile.constant.ConstRef;
 import me.coley.cafedude.classfile.constant.CpClass;
-import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpInvokeDynamic;
 import me.coley.cafedude.classfile.instruction.*;
 
+import javax.annotation.Nonnull;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,8 +14,7 @@ import java.util.List;
 import static me.coley.cafedude.classfile.instruction.Opcodes.*;
 
 /**
- * Reads code attribute into meaningful
- * instructions.
+ * Reads code attribute into meaningful instructions.
  *
  * @author xDark
  */
@@ -26,13 +25,12 @@ public class InstructionReader {
 	 * @param fallbackReader
 	 * 		Fallback instruction reader.
 	 */
-	public InstructionReader(FallbackInstructionReader fallbackReader) {
+	public InstructionReader(@Nonnull FallbackInstructionReader fallbackReader) {
 		this.fallbackReader = fallbackReader;
 	}
 
 	/**
-	 * Instruction reader that will use
-	 * fail-fast fallback reader.
+	 * Instruction reader that will use fail-fast fallback reader.
 	 */
 	public InstructionReader() {
 		this(FallbackInstructionReader.fail());
@@ -41,11 +39,14 @@ public class InstructionReader {
 	/**
 	 * @param code
 	 * 		Code data.
+	 * @param pool
+	 * 		Constant pool to pull data from.
 	 *
-	 * @return a list of instructions.
+	 * @return List of instructions.
 	 */
+	@Nonnull
 	@SuppressWarnings("DuplicateBranchesInSwitch")
-	public List<Instruction> read(byte[] code, ConstPool pool) {
+	public List<Instruction> read(@Nonnull byte[] code, @Nonnull ConstPool pool) {
 		List<Instruction> instructions = new ArrayList<>();
 		ByteBuffer buffer = ByteBuffer.wrap(code);
 		FallbackInstructionReader fallbackReader = this.fallbackReader;
@@ -277,7 +278,9 @@ public class InstructionReader {
 					for (int i = 0; i < count; i++) {
 						offsets.add(buffer.getInt());
 					}
-					instructions.add(new TableSwitchInstruction(padding, dflt, low, high, offsets));
+					TableSwitchInstruction tswitch = new TableSwitchInstruction(dflt, low, high, offsets);
+					tswitch.notifyStartPosition(pos - 1); // Offset by 1 to accommodate for opcode
+					instructions.add(tswitch);
 					break;
 				}
 				case LOOKUPSWITCH: {
@@ -293,7 +296,9 @@ public class InstructionReader {
 						keys.add(buffer.getInt());
 						offsets.add(buffer.getInt());
 					}
-					instructions.add(new LookupSwitchInstruction(padding, dflt, keys, offsets));
+					LookupSwitchInstruction lswitch = new LookupSwitchInstruction(dflt, keys, offsets);
+					lswitch.notifyStartPosition(pos - 1); // Offset by 1 to accommodate for opcode
+					instructions.add(lswitch);
 					break;
 				}
 				case IRETURN:

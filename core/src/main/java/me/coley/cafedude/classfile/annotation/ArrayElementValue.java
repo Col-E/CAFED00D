@@ -2,10 +2,10 @@ package me.coley.cafedude.classfile.annotation;
 
 import me.coley.cafedude.classfile.constant.CpEntry;
 
+import javax.annotation.Nonnull;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Array element value.
@@ -21,7 +21,7 @@ public class ArrayElementValue extends ElementValue {
 	 * @param array
 	 * 		Array contents.
 	 */
-	public ArrayElementValue(char tag, List<ElementValue> array) {
+	public ArrayElementValue(char tag, @Nonnull List<ElementValue> array) {
 		super(tag);
 		if (tag != '[')
 			throw new IllegalArgumentException("Array element value must have '[' tag");
@@ -31,6 +31,7 @@ public class ArrayElementValue extends ElementValue {
 	/**
 	 * @return Array contents.
 	 */
+	@Nonnull
 	public List<ElementValue> getArray() {
 		return array;
 	}
@@ -39,7 +40,7 @@ public class ArrayElementValue extends ElementValue {
 	 * @param array
 	 * 		Array contents.
 	 */
-	public void setArray(List<ElementValue> array) {
+	public void setArray(@Nonnull List<ElementValue> array) {
 		this.array = array;
 	}
 
@@ -51,6 +52,7 @@ public class ArrayElementValue extends ElementValue {
 		return super.getTag();
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = new HashSet<>();

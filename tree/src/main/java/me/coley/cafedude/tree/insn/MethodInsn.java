@@ -3,6 +3,8 @@ package me.coley.cafedude.tree.insn;
 import me.coley.cafedude.classfile.Descriptor;
 import me.coley.cafedude.classfile.instruction.Opcodes;
 
+import javax.annotation.Nonnull;
+
 /**
  * Instruction which has a method descriptor operand.
  * Instructions that use this is:
@@ -12,10 +14,11 @@ import me.coley.cafedude.classfile.instruction.Opcodes;
  *     <li>{@link Opcodes#INVOKESTATIC}</li>
  *     <li>{@link Opcodes#INVOKEINTERFACE}</li>
  * </ul>
+ *
+ * @author Justus Garbe
  * @see me.coley.cafedude.tree.insn.InvokeDynamicInsn
  */
 public class MethodInsn extends Insn {
-
 	private String owner;
 	private String name;
 	private Descriptor descriptor;
@@ -30,7 +33,7 @@ public class MethodInsn extends Insn {
 	 * @param descriptor
 	 * 		Descriptor of the method.
 	 */
-	public MethodInsn(int opcode, String owner, String name, Descriptor descriptor) {
+	public MethodInsn(int opcode, @Nonnull String owner, @Nonnull String name, @Nonnull Descriptor descriptor) {
 		super(InsnKind.METHOD, opcode);
 		this.owner = owner;
 		this.name = name;
@@ -40,6 +43,7 @@ public class MethodInsn extends Insn {
 	/**
 	 * @return Owner of the method.
 	 */
+	@Nonnull
 	public String getOwner() {
 		return owner;
 	}
@@ -48,13 +52,14 @@ public class MethodInsn extends Insn {
 	 * @param owner
 	 * 		Owner of the method.
 	 */
-	public void setOwner(String owner) {
+	public void setOwner(@Nonnull String owner) {
 		this.owner = owner;
 	}
 
 	/**
 	 * @return Name of the method.
 	 */
+	@Nonnull
 	public String getName() {
 		return name;
 	}
@@ -63,13 +68,14 @@ public class MethodInsn extends Insn {
 	 * @param name
 	 * 		Name of the method.
 	 */
-	public void setName(String name) {
+	public void setName(@Nonnull String name) {
 		this.name = name;
 	}
 
 	/**
 	 * @return Descriptor of the method.
 	 */
+	@Nonnull
 	public Descriptor getDescriptor() {
 		return descriptor;
 	}
@@ -78,7 +84,7 @@ public class MethodInsn extends Insn {
 	 * @param descriptor
 	 * 		Descriptor of the method.
 	 */
-	public void setDescriptor(Descriptor descriptor) {
+	public void setDescriptor(@Nonnull Descriptor descriptor) {
 		this.descriptor = descriptor;
 	}
 

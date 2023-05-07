@@ -8,10 +8,18 @@
     <url>https://github.com/Col-E/CAFED00D/</url>
     <version>${revision}</version>
     <name>CAFED00D-Core</name>
-    
+
     <parent>
-    	<groupId>me.coley</groupId>
-    	<artifactId>cafedude</artifactId>
-    	<version>${revision}</version>
-    </parent>	
+        <groupId>me.coley</groupId>
+        <artifactId>cafedude</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+    </dependencies>
 </project>

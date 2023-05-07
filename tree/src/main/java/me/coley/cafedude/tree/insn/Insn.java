@@ -2,7 +2,8 @@ package me.coley.cafedude.tree.insn;
 
 import me.coley.cafedude.classfile.instruction.Opcodes;
 import me.coley.cafedude.util.OpcodeUtil;
-import org.intellij.lang.annotations.MagicConstant;
+
+import javax.annotation.Nonnull;
 
 /**
  * Ungrouped instruction. Instructions that use this are:
@@ -12,11 +13,11 @@ import org.intellij.lang.annotations.MagicConstant;
  *     <li>{@link Opcodes#MONITOREXIT}</li>
  *     <li>{@link Opcodes#ATHROW}</li>
  * </ul>
+ *
+ * @author Justus Garbe
  */
 public class Insn {
-
 	protected static final int LABEL_INSN_OPCODE = -1;
-
 	private final int opcode;
 	private final InsnKind kind;
 
@@ -26,7 +27,7 @@ public class Insn {
 	 * @param opcode
 	 * 		Instruction opcode.
 	 */
-	public Insn(InsnKind kind, int opcode) {
+	public Insn(@Nonnull InsnKind kind, int opcode) {
 		this.opcode = opcode;
 		this.kind = kind;
 	}
@@ -41,6 +42,7 @@ public class Insn {
 	/**
 	 * @return Instruction kind.
 	 */
+	@Nonnull
 	public InsnKind getKind() {
 		return kind;
 	}
@@ -61,6 +63,7 @@ public class Insn {
 	/**
 	 * @return a new {@link Insn} for {@link Opcodes#NOP}.
 	 */
+	@Nonnull
 	public static Insn nop() {
 		return new Insn(InsnKind.NOP, Opcodes.NOP);
 	}
@@ -71,13 +74,15 @@ public class Insn {
 	 *
 	 * @return a new {@link Insn} for {@link Opcodes#MONITORENTER} or {@link Opcodes#MONITOREXIT}.
 	 */
-	public static Insn monitor(@MagicConstant(intValues = {Opcodes.MONITORENTER, Opcodes.MONITOREXIT}) int opcode) {
+	@Nonnull
+	public static Insn monitor(int opcode) {
 		return new Insn(InsnKind.MONITOR, opcode);
 	}
 
 	/**
 	 * @return a new {@link Insn} for {@link Opcodes#ATHROW}.
 	 */
+	@Nonnull
 	public static Insn athrow() {
 		return new Insn(InsnKind.THROW, Opcodes.ATHROW);
 	}

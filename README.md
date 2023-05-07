@@ -1,4 +1,4 @@
-# CAFEDOOD [![Build Status](https://cloud.drone.io/api/badges/Col-E/CAFED00D/status.svg)](https://cloud.drone.io/Col-E/CAFED00D) [![](https://jitpack.io/v/Col-E/CAFED00D.svg)](https://jitpack.io/#Col-E/CAFED00D)
+# CAFEDOOD [![](https://jitpack.io/v/Col-E/CAFED00D.svg)](https://jitpack.io/#Col-E/CAFED00D) ![](https://github.com/Col-E/CAFED00D/actions/workflows/display_test_results.yml/badge.svg)
 
 Another class library with a focus on obfuscation support.
 

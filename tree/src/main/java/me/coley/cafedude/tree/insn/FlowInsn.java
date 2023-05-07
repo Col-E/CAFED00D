@@ -3,6 +3,8 @@ package me.coley.cafedude.tree.insn;
 import me.coley.cafedude.classfile.instruction.Opcodes;
 import me.coley.cafedude.tree.Label;
 
+import javax.annotation.Nonnull;
+
 /**
  * Instructions for flow control instructions with a single label operand.
  * Includes the following instructions:
@@ -26,9 +28,10 @@ import me.coley.cafedude.tree.Label;
  *     <li>{@link Opcodes#GOTO}</li>
  *     <li>{@link Opcodes#JSR}</li>
  * </ul>
+ *
+ * @author Justus Garbe
  */
 public class FlowInsn extends Insn {
-
 	private Label label;
 
 	/**
@@ -37,7 +40,7 @@ public class FlowInsn extends Insn {
 	 * @param label
 	 * 		Label of the instruction.
 	 */
-	public FlowInsn(int opcode, Label label) {
+	public FlowInsn(int opcode, @Nonnull Label label) {
 		super(InsnKind.FLOW, opcode);
 		this.label = label;
 	}
@@ -45,6 +48,7 @@ public class FlowInsn extends Insn {
 	/**
 	 * @return Label of the instruction.
 	 */
+	@Nonnull
 	public Label getLabel() {
 		return label;
 	}
@@ -53,7 +57,7 @@ public class FlowInsn extends Insn {
 	 * @param label
 	 * 		Label of the instruction.
 	 */
-	public void setLabel(Label label) {
+	public void setLabel(@Nonnull Label label) {
 		this.label = label;
 	}
 

@@ -3,6 +3,8 @@ package me.coley.cafedude.tree.insn;
 import me.coley.cafedude.classfile.Descriptor;
 import me.coley.cafedude.classfile.instruction.Opcodes;
 
+import javax.annotation.Nonnull;
+
 /**
  * Instruction which has type descriptor operand.
  * Instructions that use this is:
@@ -12,9 +14,10 @@ import me.coley.cafedude.classfile.instruction.Opcodes;
  *     <li>{@link Opcodes#CHECKCAST}</li>
  *     <li>{@link Opcodes#INSTANCEOF}</li>
  * </ul>
+ *
+ * @author Justus Garbe
  */
 public class TypeInsn extends Insn {
-
 	private Descriptor descriptor;
 
 	/**
@@ -23,7 +26,7 @@ public class TypeInsn extends Insn {
 	 * @param descriptor
 	 * 		Descriptor of the type.
 	 */
-	public TypeInsn(int opcode, Descriptor descriptor) {
+	public TypeInsn(int opcode, @Nonnull Descriptor descriptor) {
 		super(InsnKind.TYPE, opcode);
 		this.descriptor = descriptor;
 	}
@@ -31,6 +34,7 @@ public class TypeInsn extends Insn {
 	/**
 	 * @return Descriptor of the type.
 	 */
+	@Nonnull
 	public Descriptor getDescriptor() {
 		return descriptor;
 	}
@@ -39,7 +43,7 @@ public class TypeInsn extends Insn {
 	 * @param descriptor
 	 * 		Descriptor of the type.
 	 */
-	public void setDescriptor(Descriptor descriptor) {
+	public void setDescriptor(@Nonnull Descriptor descriptor) {
 		this.descriptor = descriptor;
 	}
 

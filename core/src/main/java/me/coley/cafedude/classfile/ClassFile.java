@@ -3,15 +3,15 @@ package me.coley.cafedude.classfile;
 import me.coley.cafedude.classfile.attribute.Attribute;
 import me.coley.cafedude.classfile.behavior.AttributeHolder;
 import me.coley.cafedude.classfile.behavior.CpAccessor;
-import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpClass;
-import me.coley.cafedude.classfile.constant.CpUtf8;
+import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.io.AttributeContext;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Class file format.
@@ -71,6 +71,7 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	/**
 	 * @return Class name.
 	 */
+	@Nonnull
 	public String getName() {
 		return thisClass.getName().getText();
 	}
@@ -78,6 +79,7 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	/**
 	 * @return Parent class name.
 	 */
+	@Nonnull
 	public String getSuperName() {
 		return superClass.getName().getText();
 	}
@@ -88,6 +90,7 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	 *
 	 * @return Constant pool value at index.
 	 */
+	@Nullable
 	public CpEntry getCp(int index) {
 		return pool.get(index);
 	}
@@ -98,35 +101,38 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	 * @param entry
 	 * 		New constant pool value at index.
 	 */
-	public void setCp(int index, CpEntry entry) {
+	public void setCp(int index, @Nonnull CpEntry entry) {
 		pool.set(index, entry);
 	}
 
 	/**
 	 * @return Pool entries.
 	 */
+	@Nonnull
 	public ConstPool getPool() {
 		return pool;
 	}
 
 	/**
-	 * @return Indices in pool for interfaces.
+	 * @return Constant pool entries holding the names of implemented interfaces.
 	 */
+	@Nonnull
 	public List<CpClass> getInterfaceClasses() {
 		return interfaceClasses;
 	}
 
 	/**
 	 * @param interfaceClasses
-	 * 		New indices in pool for interfaces.
+	 * 		New constant pool entries holding the names of implemented interfaces.
 	 */
-	public void setInterfaceClasses(List<CpClass> interfaceClasses) {
+	public void setInterfaceClasses(@Nonnull List<CpClass> interfaceClasses) {
 		this.interfaceClasses = interfaceClasses;
 	}
 
 	/**
 	 * @return Fields.
 	 */
+	@Nonnull
 	public List<Field> getFields() {
 		return fields;
 	}
@@ -135,13 +141,14 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	 * @param fields
 	 * 		New list of fields.
 	 */
-	public void setFields(List<Field> fields) {
+	public void setFields(@Nonnull List<Field> fields) {
 		this.fields = fields;
 	}
 
 	/**
 	 * @return Methods.
 	 */
+	@Nonnull
 	public List<Method> getMethods() {
 		return methods;
 	}
@@ -150,7 +157,7 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	 * @param methods
 	 * 		New list of methods.
 	 */
-	public void setMethods(List<Method> methods) {
+	public void setMethods(@Nonnull List<Method> methods) {
 		this.methods = methods;
 	}
 
@@ -200,45 +207,49 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	}
 
 	/**
-	 * @return Index in pool for the current class.
+	 * @return Constant pool entry holding the current class type.
 	 */
+	@Nonnull
 	public CpClass getThisClass() {
 		return thisClass;
 	}
 
 	/**
 	 * @param thisClass
-	 * 		Index in pool for the current class.
+	 * 		New constant pool entry holding the current class type.
 	 */
-	public void setThisClass(CpClass thisClass) {
+	public void setThisClass(@Nonnull CpClass thisClass) {
 		this.thisClass = thisClass;
 	}
 
 	/**
-	 * @return Index in pool for the super class.
+	 * @return Constant pool entry holding the super class type.
 	 */
+	@Nullable
 	public CpClass getSuperClass() {
 		return superClass;
 	}
 
 	/**
 	 * @param superClass
-	 * 		Index in pool for the super class.
+	 * 		New constant pool entry holding the super class type.
 	 */
-	public void setSuperClass(CpClass superClass) {
+	public void setSuperClass(@Nonnull CpClass superClass) {
 		this.superClass = superClass;
 	}
 
+	@Nonnull
 	@Override
 	public List<Attribute> getAttributes() {
 		return attributes;
 	}
 
 	@Override
-	public void setAttributes(List<Attribute> attributes) {
+	public void setAttributes(@Nonnull List<Attribute> attributes) {
 		this.attributes = attributes;
 	}
 
+	@Nonnull
 	@Override
 	public AttributeContext getHolderType() {
 		return AttributeContext.CLASS;
@@ -247,10 +258,14 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	/**
 	 * Get an attribute by class
 	 *
-	 * @param <T> The type of attribute to search for.
-	 * @param type The type of attribute to search for.
+	 * @param <T>
+	 * 		The type of attribute to search for.
+	 * @param type
+	 * 		The type of attribute to search for.
+	 *
 	 * @return The attribute, or null if not found.
 	 */
+	@Nullable
 	public <T extends Attribute> T getAttribute(Class<T> type) {
 		for (Attribute attribute : attributes) {
 			if (type.isInstance(attribute)) {
@@ -260,11 +275,14 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 		return null;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = new HashSet<>();
 		set.add(getThisClass());
-		set.add(getSuperClass());
+		CpClass superClass = getSuperClass();
+		if (superClass != null)
+			set.add(superClass);
 		set.addAll(getInterfaceClasses());
 		for (Attribute attribute : getAttributes())
 			set.addAll(attribute.cpAccesses());

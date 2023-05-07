@@ -2,9 +2,10 @@ package me.coley.cafedude.tree.frame;
 
 /**
  * Contains a string which represents the type of the value.
+ *
+ * @author Justus Garbe
  */
 public class ObjectValue extends Value {
-
 	private String type;
 
 	/**

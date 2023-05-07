@@ -5,15 +5,17 @@ import me.coley.cafedude.classfile.instruction.Opcodes;
 import me.coley.cafedude.tree.Constant;
 import me.coley.cafedude.tree.Handle;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
  * Instruction for the invoke-dynamic opcode which contains a handle to the bootstrap method,
  * the name and type of the method to be dynamically invoked, and zero or more extra arguments
+ *
+ * @author Justus Garbe
  * @see <a href="https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-6.html#jvms-6.5.invokedynamic">InvokeDynamic</a>
  */
 public class InvokeDynamicInsn extends Insn {
-
 	private String name;
 	private Descriptor descriptor;
 	private Handle bootstrapMethod;
@@ -29,8 +31,8 @@ public class InvokeDynamicInsn extends Insn {
 	 * @param bootstrapArguments
 	 * 		Zero or more extra arguments for the bootstrap method.
 	 */
-	public InvokeDynamicInsn(String name, Descriptor descriptor, Handle bootstrapMethod,
-							 List<Constant> bootstrapArguments) {
+	public InvokeDynamicInsn(@Nonnull String name, @Nonnull Descriptor descriptor, @Nonnull Handle bootstrapMethod,
+							 @Nonnull List<Constant> bootstrapArguments) {
 		super(InsnKind.INVOKE_DYNAMIC, Opcodes.INVOKEDYNAMIC);
 		this.name = name;
 		this.descriptor = descriptor;
@@ -41,6 +43,7 @@ public class InvokeDynamicInsn extends Insn {
 	/**
 	 * @return Name of the method.
 	 */
+	@Nonnull
 	public String getName() {
 		return name;
 	}
@@ -49,13 +52,14 @@ public class InvokeDynamicInsn extends Insn {
 	 * @param name
 	 * 		Name of the method.
 	 */
-	public void setName(String name) {
+	public void setName(@Nonnull String name) {
 		this.name = name;
 	}
 
 	/**
 	 * @return Descriptor of the method.
 	 */
+	@Nonnull
 	public Descriptor getDescriptor() {
 		return descriptor;
 	}
@@ -64,13 +68,14 @@ public class InvokeDynamicInsn extends Insn {
 	 * @param descriptor
 	 * 		Descriptor of the method.
 	 */
-	public void setDescriptor(Descriptor descriptor) {
+	public void setDescriptor(@Nonnull Descriptor descriptor) {
 		this.descriptor = descriptor;
 	}
 
 	/**
 	 * @return Handle to the bootstrap method.
 	 */
+	@Nonnull
 	public Handle getBootstrapMethod() {
 		return bootstrapMethod;
 	}
@@ -79,13 +84,14 @@ public class InvokeDynamicInsn extends Insn {
 	 * @param bootstrapMethod
 	 * 		Handle to the bootstrap method.
 	 */
-	public void setBootstrapMethod(Handle bootstrapMethod) {
+	public void setBootstrapMethod(@Nonnull Handle bootstrapMethod) {
 		this.bootstrapMethod = bootstrapMethod;
 	}
 
 	/**
 	 * @return Zero or more arguments for the bootstrap method.
 	 */
+	@Nonnull
 	public List<Constant> getBootstrapArguments() {
 		return bootstrapArguments;
 	}
@@ -94,7 +100,7 @@ public class InvokeDynamicInsn extends Insn {
 	 * @param bootstrapArguments
 	 * 		Zero or more extra arguments for the bootstrap method.
 	 */
-	public void setBootstrapArguments(List<Constant> bootstrapArguments) {
+	public void setBootstrapArguments(@Nonnull List<Constant> bootstrapArguments) {
 		this.bootstrapArguments = bootstrapArguments;
 	}
 

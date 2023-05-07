@@ -1,5 +1,6 @@
 package me.coley.cafedude.classfile.constant;
 
+import javax.annotation.Nonnull;
 import java.util.Objects;
 
 /**
@@ -12,25 +13,26 @@ public class CpMethodType extends CpEntry {
 
 	/**
 	 * @param descriptor
-	 * 		Index of method descriptor UTF in pool.
+	 * 		Constant pool entry holding the method's descriptor.
 	 */
-	public CpMethodType(CpUtf8 descriptor) {
+	public CpMethodType(@Nonnull CpUtf8 descriptor) {
 		super(METHOD_TYPE);
 		this.descriptor = descriptor;
 	}
 
 	/**
-	 * @return Index of method descriptor UTF in pool.
+	 * @return Constant pool entry holding the method's descriptor.
 	 */
+	@Nonnull
 	public CpUtf8 getDescriptor() {
 		return descriptor;
 	}
 
 	/**
 	 * @param descriptor
-	 * 		New index of method descriptor UTF in pool.
+	 * 		New constant pool entry holding the method's descriptor.
 	 */
-	public void setDescriptor(CpUtf8 descriptor) {
+	public void setDescriptor(@Nonnull CpUtf8 descriptor) {
 		this.descriptor = descriptor;
 	}
 

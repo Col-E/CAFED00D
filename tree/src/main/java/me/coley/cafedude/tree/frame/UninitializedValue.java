@@ -5,9 +5,10 @@ import me.coley.cafedude.tree.Label;
 /**
  * Contains a label which represents the offset of the instruction which created
  * the value.
+ *
+ * @author Justus Garbe
  */
 public class UninitializedValue extends Value {
-
 	private Label label;
 
 	/**

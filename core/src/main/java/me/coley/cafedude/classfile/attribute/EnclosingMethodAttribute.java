@@ -1,7 +1,12 @@
 package me.coley.cafedude.classfile.attribute;
 
-import me.coley.cafedude.classfile.constant.*;
+import me.coley.cafedude.classfile.constant.CpClass;
+import me.coley.cafedude.classfile.constant.CpEntry;
+import me.coley.cafedude.classfile.constant.CpNameType;
+import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Set;
 
 /**
@@ -15,50 +20,60 @@ public class EnclosingMethodAttribute extends Attribute {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param classEntry
-	 * 		Index into the constant pool representing the innermost class that encloses
-	 * 		the declaration of the current class.
+	 * 		Constant pool entry holding the enclosing class type.
 	 * @param methodEntry
-	 * 		Used for anonymous classes e.g. in a method or constructor. If not, it is
-	 * 		{@code null}.
+	 * 		Constant pool entry holding the enclosing method name and descriptor, if known.
+	 * 		May be {@code null}.
 	 */
-	public EnclosingMethodAttribute(CpUtf8 name, CpClass classEntry, CpNameType methodEntry) {
+	public EnclosingMethodAttribute(@Nonnull CpUtf8 name, @Nonnull CpClass classEntry,
+									@Nullable CpNameType methodEntry) {
 		super(name);
 		this.classEntry = classEntry;
 		this.methodEntry = methodEntry;
 	}
 
 	/**
-	 * @return Class index of the enclosing class.
+	 * @return Constant pool entry holding the enclosing class type.
 	 */
+	@Nonnull
 	public CpClass getClassEntry() {
 		return classEntry;
 	}
 
 	/**
-	 * @return Index of the enclosing method.
+	 * @return Constant pool entry holding the enclosing method name and descriptor, if known.
+	 * May be {@code null} if the containing method was a:
+	 * <ul>
+	 *     <li>Constructor</li>
+	 *     <li>Static initializer</li>
+	 *     <li>Instance field initializer <i>(Gets auto-generated into the constructor)</i></li>
+	 *     <li>static field initializer <i>(Gets auto-generated into the static initializer)</i></li>
+	 * </ul>
 	 */
+	@Nullable
 	public CpNameType getMethodEntry() {
 		return methodEntry;
 	}
 
 	/**
 	 * @param classEntry
-	 * 		Set the enclosing class index.
+	 * 		New constant pool entry holding the enclosing class type.
 	 */
-	public void setClassEntry(CpClass classEntry) {
+	public void setClassEntry(@Nonnull CpClass classEntry) {
 		this.classEntry = classEntry;
 	}
 
 	/**
 	 * @param methodEntry
-	 * 		Set the enclosing method index.
+	 * 		New constant pool entry holding the enclosing method name and descriptor, if known.
 	 */
-	public void setMethodEntry(CpNameType methodEntry) {
+	public void setMethodEntry(@Nullable CpNameType methodEntry) {
 		this.methodEntry = methodEntry;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = super.cpAccesses();

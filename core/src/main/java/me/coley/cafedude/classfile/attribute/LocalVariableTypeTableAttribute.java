@@ -4,10 +4,10 @@ import me.coley.cafedude.classfile.behavior.CpAccessor;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Variable generic/type table attribute.
@@ -19,15 +19,16 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param entries
 	 * 		Variable type table entries.
 	 */
-	public LocalVariableTypeTableAttribute(CpUtf8 name, List<VarTypeEntry> entries) {
+	public LocalVariableTypeTableAttribute(@Nonnull CpUtf8 name, @Nonnull List<VarTypeEntry> entries) {
 		super(name);
 		this.entries = entries;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = super.cpAccesses();
@@ -38,7 +39,7 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 
 	@Override
 	public int computeInternalLength() {
-		// u2: line_number_table_length
+		// u2: local_variable_type_table_length
 		// entry[
 		//   u2 start_pc;
 		//   u2 length;
@@ -52,15 +53,16 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 	/**
 	 * @return Table entries.
 	 */
+	@Nonnull
 	public List<VarTypeEntry> getEntries() {
 		return entries;
 	}
 
 	/**
 	 * @param entries
-	 * 		New ta+ble entries.
+	 * 		New table entries.
 	 */
-	public void setEntries(List<VarTypeEntry> entries) {
+	public void setEntries(@Nonnull List<VarTypeEntry> entries) {
 		this.entries = entries;
 	}
 
@@ -80,13 +82,13 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 		 * @param length
 		 * 		Bytecode length var spans across.
 		 * @param name
-		 * 		CP UTF8 name index.
-		 * @param signatureIndex
-		 * 		CP UTF8 signature index.
+		 * 		Constant pool entry holding the variable name.
+		 * @param signature
+		 * 		Constant pool entry holding the variable signature.
 		 * @param index
 		 * 		Variable index.
 		 */
-		public VarTypeEntry(int startPc, int length, CpUtf8 name, CpUtf8 signature, int index) {
+		public VarTypeEntry(int startPc, int length, @Nonnull CpUtf8 name, @Nonnull CpUtf8 signature, int index) {
 			this.startPc = startPc;
 			this.length = length;
 			this.name = name;
@@ -109,15 +111,17 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 		}
 
 		/**
-		 * @return CP UTF8 name index.
+		 * @return Constant pool entry holding the variable name.
 		 */
+		@Nonnull
 		public CpUtf8 getName() {
 			return name;
 		}
 
 		/**
-		 * @return CP UTF8 signature index.
+		 * @return Constant pool entry holding the variable signature.
 		 */
+		@Nonnull
 		public CpUtf8 getSignature() {
 			return signature;
 		}
@@ -129,6 +133,7 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 			return index;
 		}
 
+		@Nonnull
 		@Override
 		public Set<CpEntry> cpAccesses() {
 			Set<CpEntry> set = new HashSet<>();

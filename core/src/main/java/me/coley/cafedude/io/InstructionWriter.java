@@ -268,8 +268,8 @@ public class InstructionWriter {
 					buffer.putInt(tsw.getLow());
 					buffer.putInt(tsw.getHigh());
 					List<Integer> branches = tsw.getOffsets();
-					for (int i = 0, j = branches.size(); i < j; i++) {
-						buffer.putInt(branches.get(i));
+					for (Integer branch : branches) {
+						buffer.putInt(branch);
 					}
 					break;
 				}

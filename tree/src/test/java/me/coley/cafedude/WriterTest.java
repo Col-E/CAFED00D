@@ -5,7 +5,8 @@ import me.coley.cafedude.io.ClassFileReader;
 import me.coley.cafedude.tree.visitor.reader.ClassReader;
 import me.coley.cafedude.tree.visitor.writer.ClassWriter;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,11 +20,11 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class WriterTest {
-
-	@Test
-	public void testVisitClass() {
+	@ParameterizedTest
+	@MethodSource("supply")
+	public void testVisitClass(Path file) {
 		try {
-			byte[] code = Files.readAllBytes(Paths.get("src/test/resources/samples/normal/javac/ConfDisplay.class"));
+			byte[] code = Files.readAllBytes(file);
 			ClassFile classFile = new ClassFileReader().read(code);
 			ClassWriter writer = new ClassWriter(classFile.getVersionMajor(), classFile.getVersionMinor());
 			ClassReader reader = new ClassReader(classFile);
@@ -48,5 +49,4 @@ public class WriterTest {
 			throw new RuntimeException(e);
 		}
 	}
-
 }

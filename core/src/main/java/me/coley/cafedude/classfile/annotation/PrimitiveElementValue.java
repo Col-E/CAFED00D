@@ -2,10 +2,9 @@ package me.coley.cafedude.classfile.annotation;
 
 import me.coley.cafedude.classfile.constant.CpEntry;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Primitive value element value.
@@ -19,25 +18,26 @@ public class PrimitiveElementValue extends ElementValue {
 	 * @param tag
 	 * 		ASCII tag representation, indicating the type of primitive element value.
 	 * @param value
-	 * 		Index of primitive value constant.
+	 * 		Constant pool entry holding the primitive value constant.
 	 */
-	public PrimitiveElementValue(char tag, CpEntry value) {
+	public PrimitiveElementValue(char tag, @Nonnull CpEntry value) {
 		super(tag);
 		this.value = value;
 	}
 
 	/**
-	 * @return Index of primitive value constant.
+	 * @return Constant pool entry holding the primitive value constant.
 	 */
+	@Nonnull
 	public CpEntry getValue() {
 		return value;
 	}
 
 	/**
 	 * @param value
-	 * 		Index of primitive value constant.
+	 * 		New constant pool entry holding the primitive value constant.
 	 */
-	public void setValue(CpEntry value) {
+	public void setValue(@Nonnull CpEntry value) {
 		this.value = value;
 	}
 
@@ -49,6 +49,7 @@ public class PrimitiveElementValue extends ElementValue {
 		return super.getTag();
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		return Collections.singleton(value);

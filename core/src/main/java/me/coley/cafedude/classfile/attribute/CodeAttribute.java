@@ -7,9 +7,9 @@ import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.classfile.instruction.Instruction;
 import me.coley.cafedude.io.AttributeContext;
-import me.coley.cafedude.io.InstructionWriter;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +28,7 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param maxStack
 	 * 		Maximum number of values on the stack in the method.
 	 * @param maxLocals
@@ -40,8 +40,8 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 	 * @param attributes
 	 * 		List of other attributes.
 	 */
-	public CodeAttribute(CpUtf8 name, int maxStack, int maxLocals, List<Instruction> instructions,
-						 List<ExceptionTableEntry> exceptionTable, List<Attribute> attributes) {
+	public CodeAttribute(@Nonnull CpUtf8 name, int maxStack, int maxLocals, @Nonnull List<Instruction> instructions,
+						 @Nonnull List<ExceptionTableEntry> exceptionTable, @Nonnull List<Attribute> attributes) {
 		super(name);
 		this.maxStack = maxStack;
 		this.maxLocals = maxLocals;
@@ -53,6 +53,7 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 	/**
 	 * @return Instruction code data.
 	 */
+	@Nonnull
 	public List<Instruction> getInstructions() {
 		return instructions;
 	}
@@ -61,7 +62,7 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 	 * @param instructions
 	 * 		New instruction code data.
 	 */
-	public void setInstructions(List<Instruction> instructions) {
+	public void setInstructions(@Nonnull List<Instruction> instructions) {
 		this.instructions = instructions;
 	}
 
@@ -98,6 +99,7 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 	/**
 	 * @return Exception table entries.
 	 */
+	@Nonnull
 	public List<ExceptionTableEntry> getExceptionTable() {
 		return exceptionTable;
 	}
@@ -106,17 +108,19 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 	 * @param exceptionTable
 	 * 		New exception table entries.
 	 */
-	public void setExceptionTable(List<ExceptionTableEntry> exceptionTable) {
+	public void setExceptionTable(@Nonnull List<ExceptionTableEntry> exceptionTable) {
 		this.exceptionTable = exceptionTable;
 	}
 
+	@Nonnull
 	@Override
 	public List<Attribute> getAttributes() {
 		return attributes;
 	}
 
+	@Nullable
 	@Override
-	public <T extends Attribute> @Nullable T getAttribute(Class<T> type) {
+	public <T extends Attribute> T getAttribute(@Nonnull Class<T> type) {
 		for (Attribute attribute : attributes) {
 			if (type.isInstance(attribute))
 				return type.cast(attribute);
@@ -125,15 +129,17 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 	}
 
 	@Override
-	public void setAttributes(List<Attribute> attributes) {
+	public void setAttributes(@Nonnull List<Attribute> attributes) {
 		this.attributes = attributes;
 	}
 
+	@Nonnull
 	@Override
 	public AttributeContext getHolderType() {
 		return AttributeContext.ATTRIBUTE;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = super.cpAccesses();
@@ -141,8 +147,8 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 			set.addAll(attribute.cpAccesses());
 		for (ExceptionTableEntry ex : getExceptionTable())
 			set.addAll(ex.cpAccesses());
-		for(Instruction instruction : instructions) {
-			if(instruction instanceof CpAccessor) {
+		for (Instruction instruction : instructions) {
+			if (instruction instanceof CpAccessor) {
 				set.addAll(((CpAccessor) instruction).cpAccesses());
 			}
 		}
@@ -192,7 +198,7 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 		 * @param handlerPc
 		 * 		Instruction offset for start of catch handler range.
 		 * @param catchType
-		 * 		Index in constant pool of class type to catch.
+		 * 		Constant pool entry holding the exception class type.
 		 */
 		public ExceptionTableEntry(int startPc, int endPc, int handlerPc, CpClass catchType) {
 			this.startPc = startPc;
@@ -247,7 +253,7 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 		}
 
 		/**
-		 * @return Index in constant pool of class type to catch.
+		 * @return Constant pool entry holding the exception class type.
 		 */
 		public CpClass getCatchType() {
 			return catchType;
@@ -255,12 +261,13 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 
 		/**
 		 * @param catchType
-		 * 		Index in constant pool of class type to catch.
+		 * 		New constant pool entry holding the exception class type.
 		 */
 		public void setCatchType(CpClass catchType) {
 			this.catchType = catchType;
 		}
 
+		@Nonnull
 		@Override
 		public Set<CpEntry> cpAccesses() {
 			return Collections.singleton(getCatchType());

@@ -1,10 +1,5 @@
 package me.coley.cafedude.classfile.instruction;
 
-import me.coley.cafedude.classfile.behavior.CpAccessor;
-
-import java.util.Collections;
-import java.util.Set;
-
 /**
  * Instruction with a single int operand.
  *

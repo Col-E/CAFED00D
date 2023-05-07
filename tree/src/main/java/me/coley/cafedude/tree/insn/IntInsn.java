@@ -10,9 +10,10 @@ import me.coley.cafedude.classfile.instruction.Opcodes;
  *     <li>{@link Opcodes#SIPUSH}</li>
  *     <li>{@link Opcodes#NEWARRAY}</li>
  * </ul>
+ *
+ * @author Justus Garbe
  */
 public class IntInsn extends Insn {
-
 	protected int operand;
 
 	/**

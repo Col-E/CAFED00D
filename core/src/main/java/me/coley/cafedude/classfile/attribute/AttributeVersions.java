@@ -3,6 +3,8 @@ package me.coley.cafedude.classfile.attribute;
 import me.coley.cafedude.classfile.AttributeConstants;
 import me.coley.cafedude.classfile.VersionConstants;
 
+import javax.annotation.Nonnull;
+
 /**
  * Attribute relations to class file versions.
  *
@@ -19,7 +21,7 @@ public class AttributeVersions implements AttributeConstants, VersionConstants {
 	 * @return Java version attribute was introduced in.
 	 * If the attribute's introduction version is unknown, then {@code -1}.
 	 */
-	public static int getIntroducedVersion(String attributeName) {
+	public static int getIntroducedVersion(@Nonnull String attributeName) {
 		switch (attributeName) {
 			case CODE:
 			case CONSTANT_VALUE:

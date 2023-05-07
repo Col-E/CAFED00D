@@ -2,9 +2,9 @@ package me.coley.cafedude.classfile.annotation;
 
 import me.coley.cafedude.classfile.constant.CpEntry;
 
+import javax.annotation.Nonnull;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Nested annotation element value.
@@ -20,7 +20,7 @@ public class AnnotationElementValue extends ElementValue {
 	 * @param annotation
 	 * 		Nested annotation declaration.
 	 */
-	public AnnotationElementValue(char tag, Annotation annotation) {
+	public AnnotationElementValue(char tag, @Nonnull Annotation annotation) {
 		super(tag);
 		if (tag != '@')
 			throw new IllegalArgumentException("Annotation element value must have '@' tag");
@@ -30,6 +30,7 @@ public class AnnotationElementValue extends ElementValue {
 	/**
 	 * @return Nested annotation declaration.
 	 */
+	@Nonnull
 	public Annotation getAnnotation() {
 		return annotation;
 	}
@@ -38,7 +39,7 @@ public class AnnotationElementValue extends ElementValue {
 	 * @param annotation
 	 * 		Nested annotation declaration.
 	 */
-	public void setAnnotation(Annotation annotation) {
+	public void setAnnotation(@Nonnull Annotation annotation) {
 		this.annotation = annotation;
 	}
 
@@ -50,6 +51,7 @@ public class AnnotationElementValue extends ElementValue {
 		return super.getTag();
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		return new HashSet<>(annotation.cpAccesses());

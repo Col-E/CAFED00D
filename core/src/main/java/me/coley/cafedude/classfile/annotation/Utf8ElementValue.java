@@ -3,9 +3,9 @@ package me.coley.cafedude.classfile.annotation;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * UTF8 string element value.
@@ -19,9 +19,9 @@ public class Utf8ElementValue extends ElementValue {
 	 * @param tag
 	 * 		ASCII tag representation, must be {@code s}.
 	 * @param value
-	 * 		Index of utf8 constant.
+	 * 		Constant pool entry holding the element's text content.
 	 */
-	public Utf8ElementValue(char tag, CpUtf8 value) {
+	public Utf8ElementValue(char tag, @Nonnull CpUtf8 value) {
 		super(tag);
 		if (tag != 's')
 			throw new IllegalArgumentException("UTF8 element value must have 's' tag");
@@ -29,17 +29,18 @@ public class Utf8ElementValue extends ElementValue {
 	}
 
 	/**
-	 * @return Index of utf8 constant.
+	 * @return Constant pool entry holding the element's text content.
 	 */
+	@Nonnull
 	public CpUtf8 getValue() {
 		return value;
 	}
 
 	/**
-	 * @param utfIndex
-	 * 		Index of utf8 constant.
+	 * @param value
+	 * 		New constant pool entry holding the element's text content.
 	 */
-	public void setValue(CpUtf8 value) {
+	public void setValue(@Nonnull CpUtf8 value) {
 		this.value = value;
 	}
 
@@ -51,6 +52,7 @@ public class Utf8ElementValue extends ElementValue {
 		return super.getTag();
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		return Collections.singleton(value);

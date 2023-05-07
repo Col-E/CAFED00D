@@ -1,17 +1,10 @@
 package me.coley.cafedude.classfile;
 
 import me.coley.cafedude.classfile.constant.CpEntry;
-import me.coley.cafedude.classfile.constant.CpUtf8;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.*;
 
 /**
  * Constant pool wrapper.
@@ -22,65 +15,6 @@ public class ConstPool implements List<CpEntry> {
 	private final List<CpEntry> backing = new ArrayList<>();
 	private final SortedSet<Integer> wideIndices = new TreeSet<>();
 	private final Map<Integer, Integer> indexToWides = new HashMap<>();
-
-	/**
-	 * Insert an entry after the given index in the pool.
-	 *
-	 * @param index
-	 * 		CP index.
-	 * @param entry
-	 * 		Inserted pool entry value.
-	 */
-	public void insertAfter(int index, CpEntry entry) {
-		onInsert(index);
-		add(index, entry);
-	}
-
-	/**
-	 * Insert an entry befoire the given index in the pool.
-	 *
-	 * @param index
-	 * 		CP index.
-	 * @param entry
-	 * 		Inserted pool entry value.
-	 */
-	public void insertBefore(int index, CpEntry entry) {
-		onInsert(index - 1);
-		add(index - 1, entry);
-	}
-
-	/**
-	 * @param index
-	 * 		CP index of UTF8 constant.
-	 *
-	 * @return String value of constant.
-	 *
-	 * @throws IllegalArgumentException
-	 * 		When the index is not a UTF8 constant.
-	 */
-	public String getUtf(int index) {
-		CpEntry entry = get(index);
-		if (entry instanceof CpUtf8)
-			return ((CpUtf8) entry).getText();
-		throw new IllegalArgumentException("Index " + index + " not UTF8");
-	}
-
-	/**
-	 * @param index
-	 * 		CP index to check/
-	 * @param type
-	 * 		Type to assert.
-	 *
-	 * @return {@code true} when the entry at the index is the given type.
-	 */
-	public boolean isIndexOfType(int index, Class<? extends CpEntry> type) {
-		try {
-			CpEntry entry = get(index);
-			return type.isAssignableFrom(entry.getClass());
-		} catch (Throwable t) {
-			return false;
-		}
-	}
 
 	/**
 	 * CP indices are 1-indexed, so the indices must start at 1.
@@ -95,7 +29,7 @@ public class ConstPool implements List<CpEntry> {
 	 * @return Converted CP index.
 	 */
 	private int internalToCp(int index) {
-		if(index == -1)
+		if (index == -1)
 			return -1; // -1 is used when the index is not found in the CP.
 		// 0: Double --> 1
 		// 1: String --> 3 --
@@ -145,7 +79,7 @@ public class ConstPool implements List<CpEntry> {
 	 * @param location
 	 * 		Location added.
 	 */
-	private void onAdd(CpEntry cpEntry, int location) {
+	private void onAdd(@Nonnull CpEntry cpEntry, int location) {
 		int entrySize = cpEntry.isWide() ? 2 : 1;
 		// Need to push things over since something is being inserted.
 		// Shift everything >= location by +entrySize
@@ -169,7 +103,7 @@ public class ConstPool implements List<CpEntry> {
 	 * @param location
 	 * 		Location removed from.
 	 */
-	private void onRemove(CpEntry cpEntry, int location) {
+	private void onRemove(@Nonnull CpEntry cpEntry, int location) {
 		int entrySize = cpEntry.isWide() ? 2 : 1;
 		// Remove wide
 		if (cpEntry.isWide())
@@ -183,21 +117,6 @@ public class ConstPool implements List<CpEntry> {
 			tmp.forEach(i -> addWideIndex(i - entrySize));
 		}
 		cpEntry.setIndex(-1);
-	}
-
-	private void onInsert(int location) {
-		// Need to push things over since something is being inserted.
-		// update all indecies of all entries after this one.
-		for(int i = location; i < size(); i++) {
-			CpEntry entry = get(i);
-			get(i).setIndex(entry.getIndex() + 1);
-		}
-		// move all wide indices after this one.
-		SortedSet<Integer> larger = wideIndices.tailSet(location);
-		for (Integer integer : larger) {
-			wideIndices.remove(integer);
-			wideIndices.add(integer + 1);
-		}
 	}
 
 	private void addWideIndex(int i) {
@@ -218,20 +137,23 @@ public class ConstPool implements List<CpEntry> {
 	}
 
 	@Override
-	public boolean contains(Object o) {
+	public boolean contains(@Nonnull Object o) {
 		return backing.contains(o);
 	}
 
+	@Nonnull
 	@Override
 	public Iterator<CpEntry> iterator() {
 		return backing.iterator();
 	}
 
+	@Nonnull
 	@Override
 	public Object[] toArray() {
 		return backing.toArray(new CpEntry[0]);
 	}
 
+	@Nonnull
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T[] toArray(T[] a) {
@@ -239,17 +161,18 @@ public class ConstPool implements List<CpEntry> {
 	}
 
 	@Override
-	public boolean add(CpEntry cpEntry) {
+	public boolean add(@Nonnull CpEntry cpEntry) {
 		onAdd(cpEntry, backing.size());
 		return backing.add(cpEntry);
 	}
 
 	@Override
-	public void add(int index, CpEntry element) {
+	public void add(int index, @Nonnull CpEntry element) {
 		onAdd(element, index);
 		backing.add(cpToInternal(index), element);
 	}
 
+	@Nullable
 	@Override
 	public CpEntry remove(int index) {
 		CpEntry ret = backing.remove(cpToInternal(index));
@@ -269,26 +192,26 @@ public class ConstPool implements List<CpEntry> {
 	}
 
 	@Override
-	public boolean containsAll(Collection<?> c) {
-		return backing.containsAll(c);
+	public boolean containsAll(@Nonnull Collection<?> c) {
+		return new HashSet<>(backing).containsAll(c);
 	}
 
 	@Override
-	public boolean addAll(Collection<? extends CpEntry> c) {
+	public boolean addAll(@Nonnull Collection<? extends CpEntry> c) {
 		for (CpEntry cpEntry : c)
 			add(cpEntry);
 		return true;
 	}
 
 	@Override
-	public boolean addAll(int index, Collection<? extends CpEntry> c) {
+	public boolean addAll(int index, @Nonnull Collection<? extends CpEntry> c) {
 		for (CpEntry cpEntry : c)
 			add(index, cpEntry);
 		return true;
 	}
 
 	@Override
-	public boolean removeAll(Collection<?> c) {
+	public boolean removeAll(@Nonnull Collection<?> c) {
 		boolean ret = false;
 		for (Object o : c)
 			ret |= remove(o);
@@ -296,7 +219,7 @@ public class ConstPool implements List<CpEntry> {
 	}
 
 	@Override
-	public boolean retainAll(Collection<?> c) {
+	public boolean retainAll(@Nonnull Collection<?> c) {
 		boolean ret = false;
 		for (CpEntry o : this)
 			if (!c.contains(o))
@@ -310,17 +233,21 @@ public class ConstPool implements List<CpEntry> {
 		backing.clear();
 	}
 
+	@Nullable
 	@Override
 	public CpEntry get(int index) {
 		try {
+			if (index == 0)
+				return null;
 			return backing.get(cpToInternal(index));
 		} catch (IndexOutOfBoundsException e) {
 			throw new InvalidCpIndexException(this, index);
 		}
 	}
 
+	@Nullable
 	@Override
-	public CpEntry set(int index, CpEntry element) {
+	public CpEntry set(int index, @Nonnull CpEntry element) {
 		CpEntry ret = remove(index);
 		add(index, element);
 		return ret;
@@ -336,16 +263,19 @@ public class ConstPool implements List<CpEntry> {
 		return internalToCp(backing.lastIndexOf(o));
 	}
 
+	@Nonnull
 	@Override
 	public ListIterator<CpEntry> listIterator() {
 		return backing.listIterator();
 	}
 
+	@Nonnull
 	@Override
 	public ListIterator<CpEntry> listIterator(int index) {
 		return backing.listIterator(cpToInternal(index));
 	}
 
+	@Nonnull
 	@Override
 	public List<CpEntry> subList(int fromIndex, int toIndex) {
 		return backing.subList(cpToInternal(fromIndex), cpToInternal(toIndex));

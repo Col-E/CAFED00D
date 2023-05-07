@@ -1,13 +1,15 @@
 package me.coley.cafedude.tree;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Label to mark a position in the bytecode.
+ *
+ * @author Justus Garbe
  */
 public class Label {
-
 	private int offset;
 	private List<Integer> lines = new ArrayList<>();
 
@@ -54,6 +56,7 @@ public class Label {
 	/**
 	 * @return Line numbers associated with this label.
 	 */
+	@Nonnull
 	public List<Integer> getLines() {
 		return lines;
 	}
@@ -64,7 +67,7 @@ public class Label {
 	 * @param lines
 	 * 		Line numbers.
 	 */
-	public void setLines(List<Integer> lines) {
+	public void setLines(@Nonnull List<Integer> lines) {
 		this.lines = lines;
 	}
 

@@ -5,10 +5,11 @@ import me.coley.cafedude.classfile.constant.CpClass;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * Attribute describing the inner classes of a class.
@@ -20,11 +21,11 @@ public class InnerClassesAttribute extends Attribute {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param classes
 	 * 		All inner classes.
 	 */
-	public InnerClassesAttribute(CpUtf8 name, List<InnerClass> classes) {
+	public InnerClassesAttribute(@Nonnull CpUtf8 name, @Nonnull List<InnerClass> classes) {
 		super(name);
 		this.innerClasses = classes;
 	}
@@ -32,6 +33,7 @@ public class InnerClassesAttribute extends Attribute {
 	/**
 	 * @return The inner classes of this class.
 	 */
+	@Nonnull
 	public List<InnerClass> getInnerClasses() {
 		return innerClasses;
 	}
@@ -40,10 +42,11 @@ public class InnerClassesAttribute extends Attribute {
 	 * @param innerClasses
 	 * 		The new inner classes of this class.
 	 */
-	public void setInnerClasses(List<InnerClass> innerClasses) {
+	public void setInnerClasses(@Nonnull List<InnerClass> innerClasses) {
 		this.innerClasses = innerClasses;
 	}
 
+	@Nonnull
 	@Override
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = super.cpAccesses();
@@ -70,17 +73,19 @@ public class InnerClassesAttribute extends Attribute {
 
 		/**
 		 * @param innerClassInfo
-		 * 		Index into the constant pool describing this inner class.
+		 * 		Constant pool entry holding the type of this inner class.
 		 * @param outerClassInfo
-		 * 		Index into the constant pool describing the outer class. 0 if this
-		 * 		is a local or anonymous class.
+		 * 		Constant pool entry holding the type of the outer class.
+		 * 		<br>
+		 *        {@code null} if this is a local or anonymous class.
 		 * @param innerName
-		 * 		Index into the constant pool. At this index, the name of this inner class
-		 * 		will be specified. 0 if this class is anonymous.
+		 * 		Constant pool entry holding the type of the name of this inner class.
+		 * 		<br>
+		 *        {@code null} if this class is anonymous.
 		 * @param innerClassAccessFlags
 		 * 		Access flags of the inner class.
 		 */
-		public InnerClass(CpClass innerClassInfo, CpClass outerClassInfo, CpUtf8 innerName,
+		public InnerClass(@Nonnull CpClass innerClassInfo, @Nullable CpClass outerClassInfo, @Nullable CpUtf8 innerName,
 						  int innerClassAccessFlags) {
 			this.innerClassInfo = innerClassInfo;
 			this.outerClassInfo = outerClassInfo;
@@ -89,51 +94,58 @@ public class InnerClassesAttribute extends Attribute {
 		}
 
 		/**
-		 * @return Index into the constant pool describing this inner class.
+		 * @return Constant pool entry holding the type of this inner class.
 		 */
+		@Nonnull
 		public CpClass getInnerClassInfo() {
 			return innerClassInfo;
 		}
 
 		/**
 		 * @param innerClassInfo
-		 * 		New index into the constant pool describing this inner class.
+		 * 		New constant pool entry holding the type of this inner class.
 		 */
-		public void setInnerClassInfo(CpClass innerClassInfo) {
+		public void setInnerClassInfo(@Nonnull CpClass innerClassInfo) {
 			this.innerClassInfo = innerClassInfo;
 		}
 
 		/**
-		 * @return Index into the constant pool describing the outer class. 0 if this
-		 * is a local or anonymous class.
+		 * @return Constant pool entry holding the type of the outer class.
+		 * <br>
+		 * {@code null} if this is a local or anonymous class.
 		 */
+		@Nullable
 		public CpClass getOuterClassInfo() {
 			return outerClassInfo;
 		}
 
 		/**
 		 * @param outerClassInfo
-		 * 		New index into the constant pool describing the outer class. 0 if this
-		 * 		is a local or anonymous class.
+		 * 		Constant pool entry holding the type of the outer class.
+		 * 		<br>
+		 *        {@code null} if this is a local or anonymous class.
 		 */
-		public void setOuterClassInfo(CpClass outerClassInfo) {
+		public void setOuterClassInfo(@Nullable CpClass outerClassInfo) {
 			this.outerClassInfo = outerClassInfo;
 		}
 
 		/**
-		 * @return Index into the constant pool. At this index, the name of this inner class
-		 * will be specified. 0 if this class is anonymous.
+		 * @return Constant pool entry holding the type of the name of this inner class.
+		 * <br>
+		 * {@code null} if this class is anonymous.
 		 */
+		@Nullable
 		public CpUtf8 getInnerName() {
 			return innerName;
 		}
 
 		/**
 		 * @param innerName
-		 * 		New index into the constant pool. At this index, the name of this inner class
-		 * 		will be specified. 0 if this class is anonymous.
+		 * 		Constant pool entry holding the type of the name of this inner class.
+		 * 		<br>
+		 *        {@code null} if this class is anonymous.
 		 */
-		public void setInnerName(CpUtf8 innerName) {
+		public void setInnerName(@Nullable CpUtf8 innerName) {
 			this.innerName = innerName;
 		}
 
@@ -152,6 +164,7 @@ public class InnerClassesAttribute extends Attribute {
 			this.innerClassAccessFlags = innerClassAccessFlags;
 		}
 
+		@Nonnull
 		@Override
 		public Set<CpEntry> cpAccesses() {
 			Set<CpEntry> set = new HashSet<>();

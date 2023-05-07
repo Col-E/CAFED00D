@@ -1,8 +1,6 @@
 package me.coley.cafedude.io;
 
-import me.coley.cafedude.InvalidClassException;
 import me.coley.cafedude.classfile.AttributeConstants;
-import me.coley.cafedude.classfile.ClassFile;
 import me.coley.cafedude.classfile.attribute.*;
 import me.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.BootstrapMethod;
 import me.coley.cafedude.classfile.attribute.InnerClassesAttribute.InnerClass;
@@ -20,8 +18,8 @@ import me.coley.cafedude.classfile.constant.CpClass;
 import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpModule;
 import me.coley.cafedude.classfile.constant.CpUtf8;
-import org.jetbrains.annotations.Nullable;
 
+import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -35,15 +33,13 @@ import java.io.IOException;
  */
 public class AttributeWriter {
 	private final ClassFileWriter writer;
-	private final ClassFile clazz;
 
 	/**
-	 * @param clazz
-	 * 		Class to pull info from.
+	 * @param writer
+	 * 		Parent class writier.
 	 */
-	public AttributeWriter(ClassFileWriter writer, ClassFile clazz) {
+	public AttributeWriter(ClassFileWriter writer) {
 		this.writer = writer;
-		this.clazz = clazz;
 	}
 
 	/**
@@ -56,10 +52,8 @@ public class AttributeWriter {
 	 *
 	 * @throws IOException
 	 * 		When the stream cannot be written to.
-	 * @throws InvalidClassException
-	 * 		When the class cannot be written.
 	 */
-	public byte[] writeAttribute(Attribute attribute) throws IOException, InvalidClassException {
+	public byte[] writeAttribute(Attribute attribute) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(baos);
 		if (attribute instanceof DefaultAttribute) {
@@ -69,11 +63,11 @@ public class AttributeWriter {
 			out.write(dflt.getData());
 		} else {
 			CpUtf8 cpName = attribute.getName();
-			if (cpName == null)
-				throw new InvalidClassException("Attribute name index does not point to CP_UTF8");
+
 			// Write common attribute bits
 			out.writeShort(cpName.getIndex());
 			out.writeInt(attribute.computeInternalLength());
+
 			// Write specific bits.
 			// Note: Unlike reading, writing is quite streamline and doesn't require many variable declarations
 			//   so I don't think its super necessary to break these into separate methods.
@@ -83,14 +77,12 @@ public class AttributeWriter {
 					BootstrapMethodsAttribute bsms = (BootstrapMethodsAttribute) attribute;
 					out.writeShort(bsms.getBootstrapMethods().size());
 					for (BootstrapMethod bsm : bsms.getBootstrapMethods()) {
-						out.writeShort(bsm.getBsmMethodref().getIndex());
+						out.writeShort(bsm.getBsmMethodRef().getIndex());
 						out.writeShort(bsm.getArgs().size());
 						for (CpEntry arg : bsm.getArgs()) {
 							out.writeShort(arg.getIndex());
 						}
 					}
-					break;
-				case AttributeConstants.CHARACTER_RANGE_TABLE:
 					break;
 				case AttributeConstants.CODE:
 					CodeAttribute code = (CodeAttribute) attribute;
@@ -113,11 +105,6 @@ public class AttributeWriter {
 					break;
 				case AttributeConstants.CONSTANT_VALUE:
 					out.writeShort(((ConstantValueAttribute) attribute).getConstantValue().getIndex());
-					break;
-				case AttributeConstants.COMPILATION_ID:
-					break;
-				case AttributeConstants.DEPRECATED:
-				case AttributeConstants.SYNTHETIC:
 					break;
 				case AttributeConstants.ENCLOSING_METHOD:
 					EnclosingMethodAttribute enclosingMethodAttribute = (EnclosingMethodAttribute) attribute;
@@ -171,8 +158,6 @@ public class AttributeWriter {
 						out.writeShort(entry.getIndex());
 					}
 					break;
-				case AttributeConstants.METHOD_PARAMETERS:
-					break;
 				case AttributeConstants.MODULE:
 					ModuleAttribute moduleAttribute = (ModuleAttribute) attribute;
 					out.writeShort(moduleAttribute.getModule().getIndex());
@@ -217,16 +202,6 @@ public class AttributeWriter {
 						for (CpClass i : provides.getWith())
 							out.writeShort(i.getIndex());
 					}
-					break;
-				case AttributeConstants.MODULE_HASHES:
-					break;
-				case AttributeConstants.MODULE_MAIN_CLASS:
-					break;
-				case AttributeConstants.MODULE_PACKAGES:
-					break;
-				case AttributeConstants.MODULE_RESOLUTION:
-					break;
-				case AttributeConstants.MODULE_TARGET:
 					break;
 				case AttributeConstants.NEST_HOST:
 					NestHostAttribute nestHost = (NestHostAttribute) attribute;
@@ -284,13 +259,22 @@ public class AttributeWriter {
 					SourceFileAttribute sourceFileAttribute = (SourceFileAttribute) attribute;
 					out.writeShort(sourceFileAttribute.getSourceFilename().getIndex());
 					break;
-				case AttributeConstants.SOURCE_ID:
-					break;
 				case AttributeConstants.STACK_MAP_TABLE:
 					StackMapTableAttribute stackMapTable =
 							(StackMapTableAttribute) attribute;
 					writeStackMapTable(out, stackMapTable);
 					break;
+				case AttributeConstants.SOURCE_ID:
+				case AttributeConstants.MODULE_HASHES:
+				case AttributeConstants.MODULE_MAIN_CLASS:
+				case AttributeConstants.MODULE_PACKAGES:
+				case AttributeConstants.MODULE_RESOLUTION:
+				case AttributeConstants.MODULE_TARGET:
+				case AttributeConstants.METHOD_PARAMETERS:
+				case AttributeConstants.CHARACTER_RANGE_TABLE:
+				case AttributeConstants.COMPILATION_ID:
+				case AttributeConstants.DEPRECATED:
+				case AttributeConstants.SYNTHETIC:
 				default:
 					break;
 			}
@@ -299,20 +283,20 @@ public class AttributeWriter {
 	}
 
 	private int orZero(@Nullable CpEntry entry) {
-		if(entry == null) return 0;
+		if (entry == null) return 0;
 		return entry.getIndex();
 	}
 
-	private void writeVerificationType(DataOutputStream out, StackMapTableAttribute.TypeInfo type)throws IOException {
+	private void writeVerificationType(DataOutputStream out, StackMapTableAttribute.TypeInfo type) throws IOException {
 		out.writeByte(type.getTag());
 		if (type instanceof StackMapTableAttribute.ObjectVariableInfo) {
 			StackMapTableAttribute.ObjectVariableInfo objVar =
 					(StackMapTableAttribute.ObjectVariableInfo) type;
-			out.writeShort(objVar.classEntry.getIndex());
+			out.writeShort(objVar.getClassEntry().getIndex());
 		} else if (type instanceof StackMapTableAttribute.UninitializedVariableInfo) {
 			StackMapTableAttribute.UninitializedVariableInfo uninitVar =
 					(StackMapTableAttribute.UninitializedVariableInfo) type;
-			out.writeShort(uninitVar.offset);
+			out.writeShort(uninitVar.getOffset());
 		}
 	}
 
@@ -323,37 +307,37 @@ public class AttributeWriter {
 			if (frame instanceof StackMapTableAttribute.SameLocalsOneStackItem) {
 				StackMapTableAttribute.SameLocalsOneStackItem sameLocals =
 						(StackMapTableAttribute.SameLocalsOneStackItem) frame;
-				writeVerificationType(out, sameLocals.stack);
+				writeVerificationType(out, sameLocals.getStack());
 			} else if (frame instanceof StackMapTableAttribute.SameLocalsOneStackItemExtended) {
 				StackMapTableAttribute.SameLocalsOneStackItemExtended sameLocals =
 						(StackMapTableAttribute.SameLocalsOneStackItemExtended) frame;
-				out.writeShort(sameLocals.offsetDelta);
-				writeVerificationType(out, sameLocals.stack);
+				out.writeShort(sameLocals.getOffsetDelta());
+				writeVerificationType(out, sameLocals.getStack());
 			} else if (frame instanceof StackMapTableAttribute.ChopFrame) {
 				StackMapTableAttribute.ChopFrame chopFrame =
 						(StackMapTableAttribute.ChopFrame) frame;
-				out.writeShort(chopFrame.offsetDelta);
+				out.writeShort(chopFrame.getOffsetDelta());
 			} else if (frame instanceof StackMapTableAttribute.SameFrameExtended) {
 				StackMapTableAttribute.SameFrameExtended sameFrame =
 						(StackMapTableAttribute.SameFrameExtended) frame;
-				out.writeShort(sameFrame.offsetDelta);
+				out.writeShort(sameFrame.getOffsetDelta());
 			} else if (frame instanceof StackMapTableAttribute.AppendFrame) {
 				StackMapTableAttribute.AppendFrame appendFrame =
 						(StackMapTableAttribute.AppendFrame) frame;
-				out.writeShort(appendFrame.offsetDelta);
-				for (TypeInfo type : appendFrame.additionalLocals) {
+				out.writeShort(appendFrame.getOffsetDelta());
+				for (TypeInfo type : appendFrame.getAdditionalLocals()) {
 					writeVerificationType(out, type);
 				}
 			} else if (frame instanceof StackMapTableAttribute.FullFrame) {
 				StackMapTableAttribute.FullFrame fullFrame =
 						(StackMapTableAttribute.FullFrame) frame;
-				out.writeShort(fullFrame.offsetDelta);
-				out.writeShort(fullFrame.locals.size());
-				for (TypeInfo type : fullFrame.locals) {
+				out.writeShort(fullFrame.getOffsetDelta());
+				out.writeShort(fullFrame.getLocals().size());
+				for (TypeInfo type : fullFrame.getLocals()) {
 					writeVerificationType(out, type);
 				}
-				out.writeShort(fullFrame.stack.size());
-				for (TypeInfo type : fullFrame.stack) {
+				out.writeShort(fullFrame.getStack().size());
+				for (TypeInfo type : fullFrame.getStack()) {
 					writeVerificationType(out, type);
 				}
 			}
