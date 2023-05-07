@@ -39,7 +39,7 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 
 	@Override
 	public int computeInternalLength() {
-		// u2: line_number_table_length
+		// u2: local_variable_type_table_length
 		// entry[
 		//   u2 start_pc;
 		//   u2 length;
