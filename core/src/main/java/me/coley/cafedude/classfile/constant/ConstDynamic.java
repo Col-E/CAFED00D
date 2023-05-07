@@ -20,10 +20,11 @@ public abstract class ConstDynamic extends CpEntry {
 	 * @param bsmIndex
 	 * 		Index in the class's bootstrap method attribute-table.
 	 * @param nameType
-	 * 		Index of {@link CpNameType} in pool.
+	 * 		Constant pool entry holding the dynamic reference's {@link CpNameType name and descriptor}.
 	 */
 	public ConstDynamic(int type, int bsmIndex, @Nonnull CpNameType nameType) {
 		super(type);
+		// TODO: Instead of BsmIndex, create a BsmEntry type and use that?
 		this.bsmIndex = bsmIndex;
 		this.nameType = nameType;
 	}
@@ -44,7 +45,7 @@ public abstract class ConstDynamic extends CpEntry {
 	}
 
 	/**
-	 * @return Index of {@link CpNameType} in pool.
+	 * @return Constant pool entry holding the dynamic reference's {@link CpNameType name and descriptor}.
 	 */
 	@Nonnull
 	public CpNameType getNameType() {
@@ -53,7 +54,7 @@ public abstract class ConstDynamic extends CpEntry {
 
 	/**
 	 * @param nameType
-	 * 		New index of {@link CpNameType} in pool.
+	 * 		New constant pool entry holding the dynamic reference's {@link CpNameType name and descriptor}.
 	 */
 	public void setNameType(@Nonnull CpNameType nameType) {
 		this.nameType = nameType;
