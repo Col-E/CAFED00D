@@ -278,7 +278,9 @@ public class InstructionReader {
 					for (int i = 0; i < count; i++) {
 						offsets.add(buffer.getInt());
 					}
-					instructions.add(new TableSwitchInstruction(dflt, low, high, offsets));
+					TableSwitchInstruction tswitch = new TableSwitchInstruction(dflt, low, high, offsets);
+					tswitch.notifyStartPosition(pos - 1); // Offset by 1 to accommodate for opcode
+					instructions.add(tswitch);
 					break;
 				}
 				case LOOKUPSWITCH: {
@@ -294,7 +296,9 @@ public class InstructionReader {
 						keys.add(buffer.getInt());
 						offsets.add(buffer.getInt());
 					}
-					instructions.add(new LookupSwitchInstruction(padding, dflt, keys, offsets));
+					LookupSwitchInstruction lswitch = new LookupSwitchInstruction(dflt, keys, offsets);
+					lswitch.notifyStartPosition(pos - 1); // Offset by 1 to accommodate for opcode
+					instructions.add(lswitch);
 					break;
 				}
 				case IRETURN:

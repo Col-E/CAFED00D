@@ -14,8 +14,6 @@ public class LookupSwitchInstruction extends BasicInstruction {
 	private List<Integer> offsets;
 
 	/**
-	 * @param padding
-	 * 		Switches in the JVM must be aligned, this is the number of bytes in pattern required to be aligned.
 	 * @param dflt
 	 * 		Default branch offset.
 	 * @param keys
@@ -23,12 +21,11 @@ public class LookupSwitchInstruction extends BasicInstruction {
 	 * @param offsets
 	 * 		Branch offsets.
 	 */
-	public LookupSwitchInstruction(int padding, int dflt, List<Integer> keys, List<Integer> offsets) {
+	public LookupSwitchInstruction(int dflt, List<Integer> keys, List<Integer> offsets) {
 		super(Opcodes.LOOKUPSWITCH);
 		this.dflt = dflt;
 		this.keys = keys;
 		this.offsets = offsets;
-		this.padding = padding;
 	}
 
 	/**
@@ -80,6 +77,32 @@ public class LookupSwitchInstruction extends BasicInstruction {
 	 */
 	public void setOffsets(List<Integer> offsets) {
 		this.offsets = offsets;
+	}
+
+	/**
+	 * @return Padding of the switch.
+	 *
+	 * @see #notifyStartPosition(int)
+	 */
+	public int getPadding() {
+		return padding;
+	}
+
+	/**
+	 * Called to update the padding.
+	 *
+	 * @param position
+	 * 		The position where this instruction <i>(the opcode)</i> starts in the method code.
+	 */
+	public void notifyStartPosition(int position) {
+		// Padding must be updated such that the dflt offset starts at a multiple of 4
+		//
+		// 1: opcode
+		// 2: pad      2: opcode
+		// 3: pad      3: pad      3: opcode
+		// 4: pad      4: pad      4: pad     4: opcode
+		// 5: def      5: def      5: def     5: def
+		this.padding = 3 - ((position) & 3);
 	}
 
 	@Override

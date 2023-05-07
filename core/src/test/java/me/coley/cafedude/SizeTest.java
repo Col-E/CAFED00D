@@ -152,15 +152,21 @@ public class SizeTest implements Opcodes {
 		void testLookupSwitchInstruction() {
 			// Minimal case (empty switch) is 9 bytes:
 			//  opcode + default + npairs
-			LookupSwitchInstruction instruction = new LookupSwitchInstruction(0, 0, Collections.emptyList(), Collections.emptyList());
+			LookupSwitchInstruction instruction = new LookupSwitchInstruction(0, Collections.emptyList(), Collections.emptyList());
 			assertEquals(9, instruction.computeSize());
 
 			// Changing the padding will add to the total size
-			instruction = new LookupSwitchInstruction(1, 0, Collections.emptyList(), Collections.emptyList());
+			instruction.notifyStartPosition(0);
+			assertEquals(9 + 3, instruction.computeSize());
+			instruction.notifyStartPosition(1);
+			assertEquals(9 + 2, instruction.computeSize());
+			instruction.notifyStartPosition(2);
 			assertEquals(9 + 1, instruction.computeSize());
+			instruction.notifyStartPosition(3);
+			assertEquals(9, instruction.computeSize());
 
 			// Adding one pair entry should add 8 per entry
-			instruction = new LookupSwitchInstruction(0, 0, Collections.singletonList(1), Collections.singletonList(1));
+			instruction = new LookupSwitchInstruction(0, Collections.singletonList(1), Collections.singletonList(1));
 			assertEquals(9 + 8, instruction.computeSize());
 		}
 
@@ -172,9 +178,14 @@ public class SizeTest implements Opcodes {
 			assertEquals(13, instruction.computeSize());
 
 			// Changing the padding will add to the total size
-			instruction = new TableSwitchInstruction(0, 0, 0, Collections.emptyList());
-			instruction.setPadding(1);
+			instruction.notifyStartPosition(0);
+			assertEquals(13 + 3, instruction.computeSize());
+			instruction.notifyStartPosition(1);
+			assertEquals(13 + 2, instruction.computeSize());
+			instruction.notifyStartPosition(2);
 			assertEquals(13 + 1, instruction.computeSize());
+			instruction.notifyStartPosition(3);
+			assertEquals(13, instruction.computeSize());
 
 			// Adding one pair entry should add 4 per entry
 			instruction = new TableSwitchInstruction(0, 0, 0, Collections.singletonList(1));

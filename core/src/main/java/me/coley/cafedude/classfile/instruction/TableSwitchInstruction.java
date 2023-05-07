@@ -102,17 +102,28 @@ public class TableSwitchInstruction extends BasicInstruction {
 
 	/**
 	 * @return Padding of the switch.
+	 *
+	 * @see #notifyStartPosition(int)
 	 */
 	public int getPadding() {
 		return padding;
 	}
 
 	/**
-	 * @param padding
-	 * 		Padding of the switch.
+	 * Called to update the padding.
+	 *
+	 * @param position
+	 * 		The position where this instruction <i>(the opcode)</i> starts in the method code.
 	 */
-	public void setPadding(int padding) {
-		this.padding = padding;
+	public void notifyStartPosition(int position) {
+		// Padding must be updated such that the dflt offset starts at a multiple of 4
+		//
+		// 1: opcode
+		// 2: pad      2: opcode
+		// 3: pad      3: pad      3: opcode
+		// 4: pad      4: pad      4: pad     4: opcode
+		// 5: def      5: def      5: def     5: def
+		this.padding = 3 - ((position) & 3);
 	}
 
 	@Override
