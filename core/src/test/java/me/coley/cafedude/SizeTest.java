@@ -193,6 +193,8 @@ public class SizeTest implements Opcodes {
 		}
 	}
 
+	// TODO: Size tests for comparing against instruction write-back using InstructionWriter
+
 	// TODO: Size tests for other size-bound elements
 	//   @Nested class Attribute { }
 }
