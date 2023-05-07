@@ -84,7 +84,7 @@ public class CodeConverter implements Opcodes {
 					handler.getStart().getOffset(),
 					handler.getEnd().getOffset(),
 					handler.getHandler().getOffset(),
-					symbols.newClass(handler.getType())));
+					handler.getType() == null ? null : symbols.newClass(handler.getType())));
 		}
 		List<Attribute> attributes = new ArrayList<>();
 		if (!localVariables.isEmpty())

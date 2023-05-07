@@ -1,6 +1,6 @@
 package me.coley.cafedude.classfile;
 
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -241,7 +241,7 @@ public class Descriptor {
 		}
 	}
 
-	public static Descriptor from(@NotNull Class<?> clazz) {
+	public static Descriptor from(@Nonnull Class<?> clazz) {
 		String descriptor = clazz.toGenericString().replace('.', '/');
 		if (clazz.isArray()) {
 			return from(descriptor);
