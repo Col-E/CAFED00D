@@ -60,7 +60,7 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 
 	/**
 	 * @param entries
-	 * 		New ta+ble entries.
+	 * 		New table entries.
 	 */
 	public void setEntries(@Nonnull List<VarTypeEntry> entries) {
 		this.entries = entries;
@@ -82,9 +82,9 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 		 * @param length
 		 * 		Bytecode length var spans across.
 		 * @param name
-		 * 		CP UTF8 name index.
-		 * @param signatureIndex
-		 * 		CP UTF8 signature index.
+		 * 		Constant pool entry holding the variable name.
+		 * @param signature
+		 * 		Constant pool entry holding the variable signature.
 		 * @param index
 		 * 		Variable index.
 		 */
@@ -111,7 +111,7 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 		}
 
 		/**
-		 * @return CP UTF8 name index.
+		 * @return Constant pool entry holding the variable name.
 		 */
 		@Nonnull
 		public CpUtf8 getName() {
@@ -119,7 +119,7 @@ public class LocalVariableTypeTableAttribute extends Attribute {
 		}
 
 		/**
-		 * @return CP UTF8 signature index.
+		 * @return Constant pool entry holding the variable signature.
 		 */
 		@Nonnull
 		public CpUtf8 getSignature() {

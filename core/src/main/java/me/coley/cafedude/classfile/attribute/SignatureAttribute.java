@@ -18,7 +18,7 @@ public class SignatureAttribute extends Attribute {
 	 * @param name
 	 * 		Constant pool entry holding the attribute name.
 	 * @param signature
-	 * 		UTF8 index in constant pool of the signature.
+	 * 		Constant pool entry holding the signature content.
 	 */
 	public SignatureAttribute(@Nonnull CpUtf8 name, @Nonnull CpUtf8 signature) {
 		super(name);
@@ -26,7 +26,7 @@ public class SignatureAttribute extends Attribute {
 	}
 
 	/**
-	 * @return UTF8 index in constant pool of the signature.
+	 * @return Constant pool entry holding the signature content.
 	 */
 	@Nonnull
 	public CpUtf8 getSignature() {
@@ -35,7 +35,7 @@ public class SignatureAttribute extends Attribute {
 
 	/**
 	 * @param signature
-	 * 		UTF8 index in constant pool of the signature.
+	 * 		New constant pool entry holding the signature content.
 	 */
 	public void setSignature(@Nonnull CpUtf8 signature) {
 		this.signature = signature;

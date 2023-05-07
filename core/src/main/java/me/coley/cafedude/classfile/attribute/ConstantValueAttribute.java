@@ -18,7 +18,7 @@ public class ConstantValueAttribute extends Attribute {
 	 * @param name
 	 * 		Constant pool entry holding the attribute name.
 	 * @param constantValue
-	 * 		Index in the constant pool representing the value of this attribute.
+	 * 		Constant pool entry holding the constant value.
 	 */
 	public ConstantValueAttribute(@Nonnull CpUtf8 name, @Nonnull CpEntry constantValue) {
 		super(name);
@@ -39,15 +39,16 @@ public class ConstantValueAttribute extends Attribute {
 	}
 
 	/**
-	 * @return Index in the constant pool representing the value of this attribute.
-	 */@Nonnull
+	 * @return Constant pool entry holding the constant value.
+	 */
+	@Nonnull
 	public CpEntry getConstantValue() {
 		return constantValue;
 	}
 
 	/**
-	 * @param constantValueIndex
-	 * 		Index in the constant pool representing the value of this attribute.
+	 * @param constantValue
+	 * 		New constant pool entry holding the constant value.
 	 */
 	public void setConstantValueIndex(@Nonnull CpEntry constantValue) {
 		this.constantValue = constantValue;

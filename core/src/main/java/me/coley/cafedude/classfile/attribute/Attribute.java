@@ -28,7 +28,8 @@ public abstract class Attribute implements CpAccessor {
 		//  protected abstract String getExpectedAttributeName();
 		//  .
 		//  if (!name.getText().equals(getExpectedAttributeName()))
-		//  	throw new IllegalStateException("Attribute name for " + getExpectedAttributeName() + " was wrong: " + name.getText());
+		//  	throw new IllegalStateException("Attribute name for " + getExpectedAttributeName() +
+		//       " was wrong: " + name.getText());
 	}
 
 	/**

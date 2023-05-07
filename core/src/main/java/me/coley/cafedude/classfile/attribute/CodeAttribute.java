@@ -198,7 +198,7 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 		 * @param handlerPc
 		 * 		Instruction offset for start of catch handler range.
 		 * @param catchType
-		 * 		Index in constant pool of class type to catch.
+		 * 		Constant pool entry holding the exception class type.
 		 */
 		public ExceptionTableEntry(int startPc, int endPc, int handlerPc, CpClass catchType) {
 			this.startPc = startPc;
@@ -253,7 +253,7 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 		}
 
 		/**
-		 * @return Index in constant pool of class type to catch.
+		 * @return Constant pool entry holding the exception class type.
 		 */
 		public CpClass getCatchType() {
 			return catchType;
@@ -261,7 +261,7 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 
 		/**
 		 * @param catchType
-		 * 		Index in constant pool of class type to catch.
+		 * 		New constant pool entry holding the exception class type.
 		 */
 		public void setCatchType(CpClass catchType) {
 			this.catchType = catchType;

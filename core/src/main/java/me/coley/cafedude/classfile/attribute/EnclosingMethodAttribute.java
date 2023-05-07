@@ -27,7 +27,8 @@ public class EnclosingMethodAttribute extends Attribute {
 	 * 		Constant pool entry holding the enclosing method name and descriptor, if known.
 	 * 		May be {@code null}.
 	 */
-	public EnclosingMethodAttribute(@Nonnull CpUtf8 name, @Nonnull CpClass classEntry, @Nullable CpNameType methodEntry) {
+	public EnclosingMethodAttribute(@Nonnull CpUtf8 name, @Nonnull CpClass classEntry,
+									@Nullable CpNameType methodEntry) {
 		super(name);
 		this.classEntry = classEntry;
 		this.methodEntry = methodEntry;

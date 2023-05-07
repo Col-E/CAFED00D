@@ -18,7 +18,7 @@ public class SourceFileAttribute extends Attribute {
 	 * @param name
 	 * 		Constant pool entry holding the attribute name.
 	 * @param sourceFilename
-	 * 		UTF8 index in constant pool of the source file name.
+	 * 		Constant pool entry holding the source file name.
 	 */
 	public SourceFileAttribute(@Nonnull CpUtf8 name, @Nonnull CpUtf8 sourceFilename) {
 		super(name);
@@ -26,7 +26,7 @@ public class SourceFileAttribute extends Attribute {
 	}
 
 	/**
-	 * @return UTF8 index in constant pool of the source file name.
+	 * @return Constant pool entry holding the source file name.
 	 */
 	@Nonnull
 	public CpUtf8 getSourceFilename() {
@@ -35,7 +35,7 @@ public class SourceFileAttribute extends Attribute {
 
 	/**
 	 * @param sourceFilename
-	 * 		UTF8 index in constant pool of the source file name.
+	 * 		New constant pool entry holding the source file name.
 	 */
 	public void setSourceFilename(@Nonnull CpUtf8 sourceFilename) {
 		this.sourceFilename = sourceFilename;

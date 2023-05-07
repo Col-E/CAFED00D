@@ -335,7 +335,8 @@ public class ModuleAttribute extends Attribute {
 		 *        {@code ACC_SYNTHETIC} if it was not explicitly/implicitly declared in the module source code.
 		 *        {@code ACC_MANDATED} if it was implicitly declared in the module source code.
 		 * @param to
-		 * 		Constant pool entries holding the {@link CpModule modules} the {@link #getPackageEntry() package} exports to.
+		 * 		Constant pool entries holding the {@link CpModule modules} the
+		 * 		{@link #getPackageEntry() package} exports to.
 		 */
 		public Exports(@Nonnull CpPackage packageEntry, int flags, @Nonnull List<CpModule> to) {
 			this.packageEntry = packageEntry;
@@ -377,7 +378,8 @@ public class ModuleAttribute extends Attribute {
 		}
 
 		/**
-		 * @return Constant pool entries holding the {@link CpModule modules} the {@link #getPackageEntry() package} exports to.
+		 * @return Constant pool entries holding the {@link CpModule modules} the
+		 * {@link #getPackageEntry() package} exports to.
 		 */
 		@Nonnull
 		public List<CpModule> getTo() {
@@ -386,7 +388,8 @@ public class ModuleAttribute extends Attribute {
 
 		/**
 		 * @param toIndex
-		 * 		New constant pool entries holding the {@link CpModule modules} the {@link #getPackageEntry() package} exports to.
+		 * 		New constant pool entries holding the {@link CpModule modules} the
+		 * 		{@link #getPackageEntry() package} exports to.
 		 */
 		public void setTo(@Nonnull List<CpModule> toIndex) {
 			this.to = toIndex;
@@ -428,7 +431,8 @@ public class ModuleAttribute extends Attribute {
 		 *        {@code ACC_SYNTHETIC} if it was not explicitly/implicitly declared in the module source code.
 		 *        {@code ACC_MANDATED} if it was implicitly declared in the module source code.
 		 * @param to
-		 * 		Constant pool entries holding the {@link CpModule modules} the {@link #getPackageEntry() package} exports to.
+		 * 		Constant pool entries holding the {@link CpModule modules} the
+		 * 		{@link #getPackageEntry() package} exports to.
 		 */
 		public Opens(@Nonnull CpPackage packageEntry, int flags, @Nonnull List<CpModule> to) {
 			this.packageEntry = packageEntry;
@@ -479,7 +483,8 @@ public class ModuleAttribute extends Attribute {
 
 		/**
 		 * @param toIndex
-		 * 		New constant pool entries holding the {@link CpModule modules} the {@link #getPackageEntry() package} exports to.
+		 * 		New constant pool entries holding the {@link CpModule modules} the
+		 * 		{@link #getPackageEntry() package} exports to.
 		 */
 		public void setTo(@Nonnull List<CpModule> toIndex) {
 			this.to = toIndex;

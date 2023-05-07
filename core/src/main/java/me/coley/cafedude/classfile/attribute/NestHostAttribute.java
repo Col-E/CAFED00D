@@ -18,8 +18,8 @@ public class NestHostAttribute extends Attribute {
 	/**
 	 * @param name
 	 * 		Constant pool entry holding the attribute name.
-	 * @param hostClassIndex
-	 * 		Class index in constant pool of class that is the nest host of the current class.
+	 * @param hostClass
+	 * 		Constant pool entry holding the host class type.
 	 */
 	public NestHostAttribute(@Nonnull CpUtf8 name, @Nonnull CpClass hostClass) {
 		super(name);

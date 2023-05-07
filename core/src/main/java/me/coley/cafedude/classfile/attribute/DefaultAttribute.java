@@ -25,7 +25,8 @@ public class DefaultAttribute extends Attribute {
 
 	/**
 	 * @return Literal data stored in attribute.
-	 */@Nonnull
+	 */
+	@Nonnull
 	public byte[] getData() {
 		return data;
 	}
