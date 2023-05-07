@@ -52,7 +52,7 @@ public abstract class Attribute implements CpAccessor {
 	 *
 	 * @return Computed size for the complete attribute.
 	 */
-	public int computeCompleteLength() {
+	public final int computeCompleteLength() {
 		// u2: Name index
 		// u4: Attribute length
 		// ??: Internal length

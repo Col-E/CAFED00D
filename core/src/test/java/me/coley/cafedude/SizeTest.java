@@ -74,7 +74,6 @@ public class SizeTest implements Opcodes {
 					INVOKESPECIAL,
 					INVOKESTATIC,
 					INVOKEINTERFACE,
-					INVOKEDYNAMIC,
 					NEW,
 					ANEWARRAY,
 					CHECKCAST,
@@ -90,6 +89,10 @@ public class SizeTest implements Opcodes {
 			// Size is 2 bytes (opcode + operand)
 			CpRefInstruction instruction = new CpRefInstruction(LDC, Placeholders.CONST_REF);
 			assertEquals(2, instruction.computeSize());
+
+			// Size is 5 bytes (opcode + operand + padding)
+			instruction = new CpRefInstruction(INVOKEDYNAMIC, Placeholders.CONST_REF);
+			assertEquals(5, instruction.computeSize());
 		}
 
 		@Test
