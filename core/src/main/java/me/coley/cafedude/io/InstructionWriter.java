@@ -46,6 +46,8 @@ public class InstructionWriter {
 		GrowingByteBuffer buffer = new GrowingByteBuffer();
 		FallbackInstructionWriter fallbackWriter = this.fallbackWriter;
 		for (Instruction instruction : list) {
+			int expectedSize = instruction.computeSize();
+			int startPos = buffer.position();
 			int opcode = instruction.getOpcode();
 			buffer.put(opcode & 0xFF);
 			switch (opcode) {
@@ -261,8 +263,9 @@ public class InstructionWriter {
 					break;
 				}
 				case TABLESWITCH: {
-					int pos = buffer.position();
-					buffer.skip(4 - pos & 3);
+					// Automatic padding determination
+					//  - Pos +1 to accommodate for opcode
+					buffer.skip(4 - (startPos + 1) & 3);
 					TableSwitchInstruction tsw = (TableSwitchInstruction) instruction;
 					buffer.putInt(tsw.getDefault());
 					buffer.putInt(tsw.getLow());
@@ -274,8 +277,9 @@ public class InstructionWriter {
 					break;
 				}
 				case LOOKUPSWITCH:
-					int pos = buffer.position();
-					buffer.skip(4 - pos & 3);
+					// Automatic padding determination
+					//  - Pos +1 to accommodate for opcode
+					buffer.skip(4 - (startPos + 1) & 3);
 					LookupSwitchInstruction lsw = (LookupSwitchInstruction) instruction;
 					buffer.putInt(lsw.getDefault());
 					List<Integer> keys = lsw.getKeys();
@@ -328,6 +332,14 @@ public class InstructionWriter {
 					break;
 				default:
 					fallbackWriter.write(instruction, buffer);
+			}
+
+			// Verify the number of expected bytes written matches the number of bytes actually written.
+			int endPos = buffer.position();
+			int size = endPos - startPos;
+			if (size != expectedSize) {
+				throw new IllegalStateException("Instruction size expectation mismatch: " + instruction +
+						"\n - expected vs actual: " + expectedSize + " vs " + size);
 			}
 		}
 		ByteBuffer result = buffer.unwrap();

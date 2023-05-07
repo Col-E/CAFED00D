@@ -150,12 +150,8 @@ public class SizeTest implements Opcodes {
 
 		@Test
 		void testLookupSwitchInstruction() {
-			// Minimal case (empty switch) is 9 bytes:
-			//  opcode + default + npairs
+			// opcode + padding + default + min + max
 			LookupSwitchInstruction instruction = new LookupSwitchInstruction(0, Collections.emptyList(), Collections.emptyList());
-			assertEquals(9, instruction.computeSize());
-
-			// Changing the padding will add to the total size
 			instruction.notifyStartPosition(0);
 			assertEquals(9 + 3, instruction.computeSize());
 			instruction.notifyStartPosition(1);
@@ -167,17 +163,14 @@ public class SizeTest implements Opcodes {
 
 			// Adding one pair entry should add 8 per entry
 			instruction = new LookupSwitchInstruction(0, Collections.singletonList(1), Collections.singletonList(1));
+			instruction.notifyStartPosition(3);
 			assertEquals(9 + 8, instruction.computeSize());
 		}
 
 		@Test
 		void testTableSwitchInstruction() {
-			// Minimal case (empty switch) is 13 bytes:
-			// opcode + default + min + max
+			// opcode + padding + default + min + max
 			TableSwitchInstruction instruction = new TableSwitchInstruction(0, 0, 0, Collections.emptyList());
-			assertEquals(13, instruction.computeSize());
-
-			// Changing the padding will add to the total size
 			instruction.notifyStartPosition(0);
 			assertEquals(13 + 3, instruction.computeSize());
 			instruction.notifyStartPosition(1);
@@ -189,6 +182,7 @@ public class SizeTest implements Opcodes {
 
 			// Adding one pair entry should add 4 per entry
 			instruction = new TableSwitchInstruction(0, 0, 0, Collections.singletonList(1));
+			instruction.notifyStartPosition(3);
 			assertEquals(13 + 4, instruction.computeSize());
 		}
 	}
