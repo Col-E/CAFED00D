@@ -18,7 +18,7 @@ public class PrimitiveElementValue extends ElementValue {
 	 * @param tag
 	 * 		ASCII tag representation, indicating the type of primitive element value.
 	 * @param value
-	 * 		Index of primitive value constant.
+	 * 		Constant pool entry holding the primitive value constant.
 	 */
 	public PrimitiveElementValue(char tag, @Nonnull CpEntry value) {
 		super(tag);
@@ -26,7 +26,7 @@ public class PrimitiveElementValue extends ElementValue {
 	}
 
 	/**
-	 * @return Index of primitive value constant.
+	 * @return Constant pool entry holding the primitive value constant.
 	 */
 	@Nonnull
 	public CpEntry getValue() {
@@ -35,7 +35,7 @@ public class PrimitiveElementValue extends ElementValue {
 
 	/**
 	 * @param value
-	 * 		Index of primitive value constant.
+	 * 		New constant pool entry holding the primitive value constant.
 	 */
 	public void setValue(@Nonnull CpEntry value) {
 		this.value = value;

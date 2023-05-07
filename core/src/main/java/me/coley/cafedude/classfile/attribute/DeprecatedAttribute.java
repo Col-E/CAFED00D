@@ -12,7 +12,7 @@ import javax.annotation.Nonnull;
 public class DeprecatedAttribute extends Attribute {
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 */
 	public DeprecatedAttribute(@Nonnull CpUtf8 name) {
 		super(name);

@@ -101,7 +101,7 @@ public abstract class TargetInfo implements CpAccessor {
 		 * 		indicating the purpose of the {@code target_info}.
 		 * @param superTypeIndex
 		 * 		For {@code extends} index is 65535.
-		 * 		Otherwise the index indicates the interface index of the associated class.
+		 * 		Otherwise, the index indicates the interface index of the associated class.
 		 */
 		public SuperTypeTargetInfo(int targetType, int superTypeIndex) {
 			super(TargetInfoType.SUPERTYPE_TARGET, targetType);

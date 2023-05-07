@@ -17,7 +17,7 @@ public class NestHostAttribute extends Attribute {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param hostClassIndex
 	 * 		Class index in constant pool of class that is the nest host of the current class.
 	 */

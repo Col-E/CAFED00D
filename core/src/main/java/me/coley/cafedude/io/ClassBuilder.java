@@ -1,14 +1,12 @@
 package me.coley.cafedude.io;
 
 import me.coley.cafedude.InvalidClassException;
-import me.coley.cafedude.classfile.ClassFile;
-import me.coley.cafedude.classfile.ConstPool;
-import me.coley.cafedude.classfile.Field;
-import me.coley.cafedude.classfile.Method;
-import me.coley.cafedude.classfile.Modifiers;
+import me.coley.cafedude.classfile.*;
 import me.coley.cafedude.classfile.attribute.Attribute;
 import me.coley.cafedude.classfile.constant.CpClass;
+import me.coley.cafedude.classfile.constant.Placeholders;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,8 +26,8 @@ public class ClassBuilder {
 	private int versionMajor;
 	private int versionMinor;
 	private int access;
-	private CpClass thisClass;
-	private CpClass superClass;
+	private CpClass thisClass = Placeholders.CLASS;
+	private CpClass superClass = Placeholders.CLASS;
 
 	/**
 	 * @return {@code true} when the version pattern indicates a pre-java Oak class.
@@ -48,11 +46,16 @@ public class ClassBuilder {
 	/**
 	 * @return Class's constant pool.
 	 */
+	@Nonnull
 	public ConstPool getPool() {
 		return pool;
 	}
 
-	public void setConstPool(ConstPool pool) {
+	/**
+	 * @param pool
+	 * 		Class's constant pool.
+	 */
+	public void setConstPool(@Nonnull ConstPool pool) {
 		this.pool = pool;
 	}
 
@@ -103,25 +106,25 @@ public class ClassBuilder {
 
 	/**
 	 * @param thisClass
-	 * 		CP index of the current class's type.
+	 * 		Constant pool entry holding the current class's type.
 	 */
-	public void setThisClass(CpClass thisClass) {
+	public void setThisClass(@Nonnull CpClass thisClass) {
 		this.thisClass = thisClass;
 	}
 
 	/**
 	 * @param superClass
-	 * 		CP index of the parent super-class's type.
+	 * 		Constant pool entry holding the super-type's class type.
 	 */
-	public void setSuperClass(CpClass superClass) {
+	public void setSuperClass(@Nonnull CpClass superClass) {
 		this.superClass = superClass;
 	}
 
 	/**
 	 * @param interfaceEntry
-	 * 		CP index of an interface type for the class.
+	 * 		Constant pool entry holding an interface type to implement.
 	 */
-	public void addInterface(CpClass interfaceEntry) {
+	public void addInterface(@Nonnull CpClass interfaceEntry) {
 		interfaces.add(interfaceEntry);
 	}
 
@@ -129,7 +132,7 @@ public class ClassBuilder {
 	 * @param field
 	 * 		Field to add.
 	 */
-	public void addField(Field field) {
+	public void addField(@Nonnull Field field) {
 		fields.add(field);
 	}
 
@@ -137,7 +140,7 @@ public class ClassBuilder {
 	 * @param method
 	 * 		Method to add.
 	 */
-	public void addMethod(Method method) {
+	public void addMethod(@Nonnull Method method) {
 		methods.add(method);
 	}
 
@@ -145,34 +148,38 @@ public class ClassBuilder {
 	 * @param attribute
 	 * 		Attribute to add.
 	 */
-	public void addAttribute(Attribute attribute) {
+	public void addAttribute(@Nonnull Attribute attribute) {
 		attributes.add(attribute);
 	}
 
 	/**
-	 * @return list of interfaces.
+	 * @return List of interfaces implemented.
 	 */
+	@Nonnull
 	public List<CpClass> getInterfaces() {
 		return interfaces;
 	}
 
 	/**
-	 * @return list of fields.
+	 * @return List of declared fields.
 	 */
+	@Nonnull
 	public List<Field> getFields() {
 		return fields;
 	}
 
 	/**
-	 * @return list of methods.
+	 * @return List of declared methods.
 	 */
+	@Nonnull
 	public List<Method> getMethods() {
 		return methods;
 	}
 
 	/**
-	 * @return list of attributes.
+	 * @return List of attributes.
 	 */
+	@Nonnull
 	public List<Attribute> getAttributes() {
 		return attributes;
 	}
@@ -180,12 +187,11 @@ public class ClassBuilder {
 	/**
 	 * @return Build it!
 	 */
+	@Nonnull
 	public ClassFile build() throws InvalidClassException {
-		if(thisClass == null)
-			throw new InvalidClassException("Missing this class");
-		for(CpClass iface : interfaces)
-			if(iface == null)
-				throw new InvalidClassException("Missing interface");
+		for (CpClass iface : interfaces)
+			if (iface == null)
+				throw new InvalidClassException("Interface entry was null");
 		return new ClassFile(
 				versionMinor, versionMajor,
 				pool,

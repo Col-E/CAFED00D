@@ -22,7 +22,7 @@ public class RecordAttribute extends Attribute {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param components
 	 * 		Record components <i>(fields)</i>.
 	 */
@@ -73,9 +73,9 @@ public class RecordAttribute extends Attribute {
 
 		/**
 		 * @param name
-		 * 		Entry of name of component.
+		 * 		Constant pool entry holding the component's name.
 		 * @param desc
-		 * 		Entry of field descriptor of component.
+		 * 		Constant pool entry holding the component's descriptor.
 		 * @param attributes
 		 * 		Attributes of the record field.
 		 */
@@ -86,7 +86,7 @@ public class RecordAttribute extends Attribute {
 		}
 
 		/**
-		 * @return Index of name of component.
+		 * @return Constant pool entry holding the component's name.
 		 */
 		@Nonnull
 		public CpUtf8 getName() {
@@ -95,14 +95,14 @@ public class RecordAttribute extends Attribute {
 
 		/**
 		 * @param name
-		 * 		New index of name of component.
+		 * 		New constant pool entry holding the component's name.
 		 */
 		public void setName(@Nonnull CpUtf8 name) {
 			this.name = name;
 		}
 
 		/**
-		 * @return Index of field descriptor of component.
+		 * @return Constant pool entry holding the component's descriptor.
 		 */
 		@Nonnull
 		public CpUtf8 getDesc() {
@@ -110,8 +110,8 @@ public class RecordAttribute extends Attribute {
 		}
 
 		/**
-		 * @param descIndex
-		 * 		New index of field descriptor of component.
+		 * @param desc
+		 * 		New constant pool entry holding the component's descriptor.
 		 */
 		public void setDesc(@Nonnull CpUtf8 desc) {
 			this.desc = desc;
@@ -166,7 +166,5 @@ public class RecordAttribute extends Attribute {
 				len += attribute.computeCompleteLength();
 			return len;
 		}
-
-
 	}
 }

@@ -19,7 +19,7 @@ public class ModulePackagesAttribute extends Attribute implements CpAccessor {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param packages
 	 * 		Indexes of packages in constant pool.
 	 */

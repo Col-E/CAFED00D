@@ -16,8 +16,8 @@ public class CpMethodHandle extends CpEntry {
 	/**
 	 * @param kind
 	 * 		Byte indicating handle behavior.
-	 * @param referenceIndex
-	 * 		Index of handle's {@link ConstRef reference} in pool.
+	 * @param reference
+	 * 		Constant pool entry holding the method handle's {@link ConstRef reference}.
 	 * 		Reference type depends on the byte value.
 	 */
 	public CpMethodHandle(byte kind, @Nonnull ConstRef reference) {
@@ -98,8 +98,8 @@ public class CpMethodHandle extends CpEntry {
 	}
 
 	/**
-	 * @return Constant pool entry holding the handle's {@link ConstRef reference}.
-	 * Reference type implementation depends on the {@link #getKind() kind's byte value}.
+	 * @return Constant pool entry holding the method handle's {@link ConstRef reference}.
+	 * Reference type depends on the byte value.
 	 *
 	 * @see #getKind()
 	 */
@@ -110,7 +110,7 @@ public class CpMethodHandle extends CpEntry {
 
 	/**
 	 * @param reference
-	 * 		Constant pool entry holding the handle's {@link ConstRef reference}.
+	 * 		New constant pool entry holding the method handle's {@link ConstRef reference}.
 	 *
 	 * @see #getKind()
 	 */

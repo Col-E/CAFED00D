@@ -77,7 +77,7 @@ public class AttributeWriter {
 					BootstrapMethodsAttribute bsms = (BootstrapMethodsAttribute) attribute;
 					out.writeShort(bsms.getBootstrapMethods().size());
 					for (BootstrapMethod bsm : bsms.getBootstrapMethods()) {
-						out.writeShort(bsm.getBsmMethodref().getIndex());
+						out.writeShort(bsm.getBsmMethodRef().getIndex());
 						out.writeShort(bsm.getArgs().size());
 						for (CpEntry arg : bsm.getArgs()) {
 							out.writeShort(arg.getIndex());

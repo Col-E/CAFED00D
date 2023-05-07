@@ -246,7 +246,7 @@ public class CodeReader {
 			String name = nt.getName().getText();
 			String type = nt.getType().getText();
 			BootstrapMethod bsm = bsma.getBootstrapMethods().get(id.getBsmIndex());
-			CpMethodHandle mh = bsm.getBsmMethodref();
+			CpMethodHandle mh = bsm.getBsmMethodRef();
 			ConstRef mr = mh.getReference();
 			CpNameType bsmnt = mr.getNameType();
 			String bsmName = bsmnt.getName().getText();

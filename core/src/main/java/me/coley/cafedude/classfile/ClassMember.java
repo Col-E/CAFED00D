@@ -7,7 +7,10 @@ import me.coley.cafedude.classfile.constant.CpEntry;
 import me.coley.cafedude.classfile.constant.CpUtf8;
 
 import javax.annotation.Nonnull;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Base class member.
@@ -26,11 +29,11 @@ public abstract class ClassMember implements AttributeHolder, CpAccessor {
 	 * @param access
 	 * 		Member access flags.
 	 * @param name
-	 * 		Index of name UTF in pool.
+	 * 		Constant pool entry holding the name of the member.
 	 * @param type
-	 * 		Index of descriptor UTF in pool.
+	 * 		Constant pool entry holding the type of the member.
 	 */
-	public ClassMember(List<Attribute> attributes, int access, CpUtf8 name, CpUtf8 type) {
+	public ClassMember(@Nonnull List<Attribute> attributes, int access, @Nonnull CpUtf8 name, @Nonnull CpUtf8 type) {
 		this.attributes = attributes;
 		this.access = access;
 		this.name = name;
@@ -46,39 +49,41 @@ public abstract class ClassMember implements AttributeHolder, CpAccessor {
 
 	/**
 	 * @param access
-	 * 		New  member access flags.
+	 * 		New member access flags.
 	 */
 	public void setAccess(int access) {
 		this.access = access;
 	}
 
 	/**
-	 * @return Index of name UTF in pool.
+	 * @return Constant pool entry holding the name of the member.
 	 */
+	@Nonnull
 	public CpUtf8 getName() {
 		return name;
 	}
 
 	/**
 	 * @param name
-	 * 		New index of name UTF in pool.
+	 * 		New constant pool entry holding the name of the member.
 	 */
-	public void setName(CpUtf8 name) {
+	public void setName(@Nonnull CpUtf8 name) {
 		this.name = name;
 	}
 
 	/**
-	 * @return Index of descriptor UTF in pool.
+	 * @return Constant pool entry holding the type of the member.
 	 */
+	@Nonnull
 	public CpUtf8 getType() {
 		return type;
 	}
 
 	/**
 	 * @param type
-	 * 		New index of descriptor UTF in pool.
+	 * 		New constant pool entry holding the type of the member.
 	 */
-	public void setType(CpUtf8 type) {
+	public void setType(@Nonnull CpUtf8 type) {
 		this.type = type;
 	}
 
@@ -112,6 +117,19 @@ public abstract class ClassMember implements AttributeHolder, CpAccessor {
 		for (Attribute attribute : getAttributes())
 			set.addAll(attribute.cpAccesses());
 		return set;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		ClassMember that = (ClassMember) o;
+
+		if (access != that.access) return false;
+		if (!attributes.equals(that.attributes)) return false;
+		if (!name.equals(that.name)) return false;
+		return type.equals(that.type);
 	}
 
 	@Override

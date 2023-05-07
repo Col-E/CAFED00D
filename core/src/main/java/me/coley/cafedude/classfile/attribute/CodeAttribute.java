@@ -28,7 +28,7 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param maxStack
 	 * 		Maximum number of values on the stack in the method.
 	 * @param maxLocals

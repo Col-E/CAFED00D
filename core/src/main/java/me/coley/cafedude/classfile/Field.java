@@ -19,11 +19,11 @@ public class Field extends ClassMember {
 	 * @param access
 	 * 		Field access flags.
 	 * @param name
-	 * 		Index of name UTF in pool.
-	 * @param typeIndex
-	 * 		Index of descriptor UTF in pool.
+	 * 		Constant pool entry holding the field name.
+	 * @param type
+	 * 		Constant pool entry holding the field type.
 	 */
-	public Field(List<Attribute> attributes, int access, CpUtf8 name, CpUtf8 type) {
+	public Field(@Nonnull List<Attribute> attributes, int access, @Nonnull CpUtf8 name, @Nonnull CpUtf8 type) {
 		super(attributes, access, name, type);
 	}
 

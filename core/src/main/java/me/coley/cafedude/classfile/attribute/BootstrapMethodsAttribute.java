@@ -20,7 +20,7 @@ public class BootstrapMethodsAttribute extends Attribute {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param bootstrapMethods
 	 * 		List of boostrap methods <i>(ref + args)</i>.
 	 */
@@ -65,17 +65,17 @@ public class BootstrapMethodsAttribute extends Attribute {
 	 * @author Matt Coley
 	 */
 	public static class BootstrapMethod implements CpAccessor {
-		private CpMethodHandle bsmMethodref;
+		private CpMethodHandle bsmMethodRef;
 		private List<CpEntry> args;
 
 		/**
 		 * @param bsmMethodRef
-		 * 		Constant pool entry of method reference, {@link CpMethodHandle}.
+		 * 		Constant pool entry of the method reference.
 		 * @param args
 		 * 		List of arguments as indices of constant pool items.
 		 */
 		public BootstrapMethod(@Nonnull CpMethodHandle bsmMethodRef, @Nonnull List<CpEntry> args) {
-			this.bsmMethodref = bsmMethodRef;
+			this.bsmMethodRef = bsmMethodRef;
 			this.args = args;
 		}
 
@@ -83,29 +83,29 @@ public class BootstrapMethodsAttribute extends Attribute {
 		@Override
 		public Set<CpEntry> cpAccesses() {
 			Set<CpEntry> set = new HashSet<>();
-			set.add(getBsmMethodref());
+			set.add(getBsmMethodRef());
 			set.addAll(getArgs());
 			return set;
 		}
 
 		/**
-		 * @return Constant pool index of method reference, {@link CpMethodHandle}.
+		 * @return Constant pool entry of the method reference.
 		 */
 		@Nonnull
-		public CpMethodHandle getBsmMethodref() {
-			return bsmMethodref;
+		public CpMethodHandle getBsmMethodRef() {
+			return bsmMethodRef;
 		}
 
 		/**
 		 * @param bsmMethodRef
-		 * 		New constant pool index of method reference, {@link CpMethodHandle}.
+		 * 		New constant pool entry of the method reference.
 		 */
 		public void setBsmMethodRef(@Nonnull CpMethodHandle bsmMethodRef) {
-			this.bsmMethodref = bsmMethodRef;
+			this.bsmMethodRef = bsmMethodRef;
 		}
 
 		/**
-		 * @return List of arguments to the {@link #getBsmMethodref() bootstrap method}
+		 * @return List of arguments to the {@link #getBsmMethodRef() bootstrap method}
 		 * as indices of constant pool items.
 		 */
 		@Nonnull
@@ -115,7 +115,7 @@ public class BootstrapMethodsAttribute extends Attribute {
 
 		/**
 		 * @param args
-		 * 		New list of arguments to the {@link #getBsmMethodref() bootstrap method}.
+		 * 		New list of arguments to the {@link #getBsmMethodRef() bootstrap method}.
 		 */
 		public void setArgs(@Nonnull List<CpEntry> args) {
 			this.args = args;

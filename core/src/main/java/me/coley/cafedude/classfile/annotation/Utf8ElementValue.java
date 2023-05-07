@@ -19,7 +19,7 @@ public class Utf8ElementValue extends ElementValue {
 	 * @param tag
 	 * 		ASCII tag representation, must be {@code s}.
 	 * @param value
-	 * 		Index of utf8 constant.
+	 * 		Constant pool entry holding the element's text content.
 	 */
 	public Utf8ElementValue(char tag, @Nonnull CpUtf8 value) {
 		super(tag);
@@ -29,7 +29,7 @@ public class Utf8ElementValue extends ElementValue {
 	}
 
 	/**
-	 * @return Index of utf8 constant.
+	 * @return Constant pool entry holding the element's text content.
 	 */
 	@Nonnull
 	public CpUtf8 getValue() {
@@ -37,8 +37,8 @@ public class Utf8ElementValue extends ElementValue {
 	}
 
 	/**
-	 * @param utfIndex
-	 * 		Index of utf8 constant.
+	 * @param value
+	 * 		New constant pool entry holding the element's text content.
 	 */
 	public void setValue(@Nonnull CpUtf8 value) {
 		this.value = value;

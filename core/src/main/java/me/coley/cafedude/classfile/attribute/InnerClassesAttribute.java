@@ -20,7 +20,7 @@ public class InnerClassesAttribute extends Attribute {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param classes
 	 * 		All inner classes.
 	 */

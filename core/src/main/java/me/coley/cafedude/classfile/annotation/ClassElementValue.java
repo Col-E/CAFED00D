@@ -19,7 +19,7 @@ public class ClassElementValue extends ElementValue {
 	 * @param tag
 	 * 		ASCII tag representation, must be {@code c}.
 	 * @param classEntry
-	 * 		Index of class constant.
+	 * 		Constant pool entry holding the class name.
 	 */
 	public ClassElementValue(char tag, @Nonnull CpUtf8 classEntry) {
 		super(tag);
@@ -29,7 +29,7 @@ public class ClassElementValue extends ElementValue {
 	}
 
 	/**
-	 * @return Index of a class's descriptor.
+	 * @return Constant pool entry holding the class name.
 	 */
 	@Nonnull
 	public CpUtf8 getClassEntry() {
@@ -38,7 +38,7 @@ public class ClassElementValue extends ElementValue {
 
 	/**
 	 * @param classEntry
-	 * 		Index of a class's descriptor.
+	 * 		New constant pool entry holding the class name.
 	 */
 	public void setClassEntry(@Nonnull CpUtf8 classEntry) {
 		this.classEntry = classEntry;

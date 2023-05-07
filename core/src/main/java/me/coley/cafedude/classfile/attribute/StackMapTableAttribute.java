@@ -29,13 +29,13 @@ public class StackMapTableAttribute
 		extends Attribute
 		implements StackMapTableConstants {
 	/**
-	 * A list of this table's stack map frames.
+	 * List of this table's stack map frames.
 	 */
 	private List<StackMapFrame> frames;
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param frames
 	 * 		Stack map frames of a method.
 	 */
@@ -189,8 +189,8 @@ public class StackMapTableAttribute
 		private CpClass classEntry;
 
 		/**
-		 * @param classIndex
-		 * 		Index of the ClassConstant representing type of this variable.
+		 * @param classEntry
+		 * 		Constant pool entry holding the type of this variable.
 		 */
 		public ObjectVariableInfo(@Nonnull CpClass classEntry) {
 			this.classEntry = classEntry;
@@ -213,13 +213,18 @@ public class StackMapTableAttribute
 		}
 
 		/**
-		 * @return The index of the ClassConstant denoting the type of this variable.
-		 */	@Nonnull
+		 * @return Constant pool entry holding the type of this variable.
+		 */
+		@Nonnull
 		public CpClass getClassEntry() {
 			return classEntry;
 		}
 
-		public void setClassEntry(	@Nonnull CpClass classEntry) {
+		/**
+		 * @param classEntry
+		 * 		New constant pool entry holding the type of this variable.
+		 */
+		public void setClassEntry(@Nonnull CpClass classEntry) {
 			this.classEntry = classEntry;
 		}
 	}
@@ -258,13 +263,18 @@ public class StackMapTableAttribute
 		}
 
 		/**
-		 * Indicates the offset in the code of the new instruction that created
-		 * the object being stored in the location.
+		 * @return The offset in the code of the new instruction that
+		 * created the object being stored in the location.
 		 */
 		public int getOffset() {
 			return offset;
 		}
 
+		/**
+		 * @param offset
+		 * 		New offset in the code of the new instruction that
+		 * 		created the object being stored in the location.
+		 */
 		public void setOffset(int offset) {
 			this.offset = offset;
 		}
@@ -338,12 +348,16 @@ public class StackMapTableAttribute
 		}
 
 		/**
-		 * The offset delta of this frame.
+		 * @return The offset delta of this frame.
 		 */
 		public int getOffsetDelta() {
 			return offsetDelta;
 		}
 
+		/**
+		 * @param offsetDelta
+		 * 		New offset delta of this frame.
+		 */
 		public void setOffsetDelta(int offsetDelta) {
 			this.offsetDelta = offsetDelta;
 		}
@@ -387,7 +401,7 @@ public class StackMapTableAttribute
 		 * @param stack
 		 * 		The singular stack item.
 		 */
-		public SameLocalsOneStackItem(int offsetDelta,@Nonnull  TypeInfo stack) {
+		public SameLocalsOneStackItem(int offsetDelta, @Nonnull TypeInfo stack) {
 			super(offsetDelta);
 			this.stack = stack;
 		}
@@ -416,13 +430,18 @@ public class StackMapTableAttribute
 		}
 
 		/**
-		 * The singular stack item.
+		 * @return The singular stack item.
 		 */
+		@Nonnull
 		public TypeInfo getStack() {
 			return stack;
 		}
 
-		public void setStack(TypeInfo stack) {
+		/**
+		 * @param stack
+		 * 		New singular stack item.
+		 */
+		public void setStack(@Nonnull TypeInfo stack) {
 			this.stack = stack;
 		}
 	}
@@ -469,13 +488,18 @@ public class StackMapTableAttribute
 		}
 
 		/**
-		 * The singular stack item.
+		 * @return The singular stack item.
 		 */
+		@Nonnull
 		public TypeInfo getStack() {
 			return stack;
 		}
 
-		public void setStack(TypeInfo stack) {
+		/**
+		 * @param stack
+		 * 		New singular stack item.
+		 */
+		public void setStack(@Nonnull TypeInfo stack) {
 			this.stack = stack;
 		}
 	}
@@ -520,12 +544,16 @@ public class StackMapTableAttribute
 		}
 
 		/**
-		 * The number of the last local variables that are now absent.
+		 * @return The number of the last local variables that are now absent.
 		 */
 		public int getAbsentVariables() {
 			return absentVariables;
 		}
 
+		/**
+		 * @param absentVariables
+		 * 		New number of the last local variables that are now absent.
+		 */
 		public void setAbsentVariables(int absentVariables) {
 			this.absentVariables = absentVariables;
 		}
@@ -613,13 +641,18 @@ public class StackMapTableAttribute
 		}
 
 		/**
-		 * Additional locals defined in the current frame.
+		 * @return Additional locals defined in the current frame.
 		 */
+		@Nonnull
 		public List<TypeInfo> getAdditionalLocals() {
 			return additionalLocals;
 		}
 
-		public void setAdditionalLocals(List<TypeInfo> additionalLocals) {
+		/**
+		 * @param additionalLocals
+		 * 		New additional locals defined in the current frame.
+		 */
+		public void setAdditionalLocals(@Nonnull List<TypeInfo> additionalLocals) {
 			this.additionalLocals = additionalLocals;
 		}
 	}
@@ -639,7 +672,7 @@ public class StackMapTableAttribute
 		 * @param stack
 		 * 		The types of the current frame's stack.
 		 */
-		public FullFrame(int offsetDelta, @Nonnull List<TypeInfo> locals,@Nonnull  List<TypeInfo> stack) {
+		public FullFrame(int offsetDelta, @Nonnull List<TypeInfo> locals, @Nonnull List<TypeInfo> stack) {
 			super(offsetDelta);
 			this.locals = locals;
 			this.stack = stack;
@@ -687,24 +720,34 @@ public class StackMapTableAttribute
 		}
 
 		/**
-		 * The local variable types of the current frame.
+		 * @return The local variable types of the current frame.
 		 */
+		@Nonnull
 		public List<TypeInfo> getLocals() {
 			return locals;
 		}
 
-		public void setLocals(List<TypeInfo> locals) {
+		/**
+		 * @param locals
+		 * 		New local variable types of the current frame.
+		 */
+		public void setLocals(@Nonnull List<TypeInfo> locals) {
 			this.locals = locals;
 		}
 
 		/**
-		 * The types of the current frame's stack.
+		 * @return The types of the current frame's stack.
 		 */
+		@Nonnull
 		public List<TypeInfo> getStack() {
 			return stack;
 		}
 
-		public void setStack(List<TypeInfo> stack) {
+		/**
+		 * @param stack
+		 * 		New types of the current frame's stack.
+		 */
+		public void setStack(@Nonnull List<TypeInfo> stack) {
 			this.stack = stack;
 		}
 	}

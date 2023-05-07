@@ -20,9 +20,9 @@ public class EnumElementValue extends ElementValue {
 	 * @param tag
 	 * 		ASCII tag representation, must be {@code e}.
 	 * @param type
-	 * 		Index of enum type descriptor constant.
+	 * 		Constant pool entry holding the element's type.
 	 * @param name
-	 * 		Index of enum value name constant.
+	 * 		Constant pool entry holding the element's name.
 	 */
 	public EnumElementValue(char tag, @Nonnull CpUtf8 type, @Nonnull CpUtf8 name) {
 		super(tag);
@@ -33,7 +33,7 @@ public class EnumElementValue extends ElementValue {
 	}
 
 	/**
-	 * @return Index of enum type descriptor constant.
+	 * @return Constant pool entry holding the element's type.
 	 */
 	@Nonnull
 	public CpUtf8 getType() {
@@ -42,14 +42,14 @@ public class EnumElementValue extends ElementValue {
 
 	/**
 	 * @param type
-	 * 		Index of enum type descriptor constant.
+	 * 		New constant pool entry holding the element's type.
 	 */
 	public void setType(@Nonnull CpUtf8 type) {
 		this.type = type;
 	}
 
 	/**
-	 * @return Index of enum value name constant.
+	 * @return Constant pool entry holding the element's name.
 	 */
 	@Nonnull
 	public CpUtf8 getName() {
@@ -58,7 +58,7 @@ public class EnumElementValue extends ElementValue {
 
 	/**
 	 * @param name
-	 * 		Index of enum value name constant.
+	 * 		New constant pool entry holding the element's name.
 	 */
 	public void setName(@Nonnull CpUtf8 name) {
 		this.name = name;

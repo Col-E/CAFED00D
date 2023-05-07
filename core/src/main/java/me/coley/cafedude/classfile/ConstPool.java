@@ -3,6 +3,7 @@ package me.coley.cafedude.classfile;
 import me.coley.cafedude.classfile.constant.CpEntry;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -28,7 +29,7 @@ public class ConstPool implements List<CpEntry> {
 	 * @return Converted CP index.
 	 */
 	private int internalToCp(int index) {
-		if(index == -1)
+		if (index == -1)
 			return -1; // -1 is used when the index is not found in the CP.
 		// 0: Double --> 1
 		// 1: String --> 3 --
@@ -78,7 +79,7 @@ public class ConstPool implements List<CpEntry> {
 	 * @param location
 	 * 		Location added.
 	 */
-	private void onAdd(CpEntry cpEntry, int location) {
+	private void onAdd(@Nonnull CpEntry cpEntry, int location) {
 		int entrySize = cpEntry.isWide() ? 2 : 1;
 		// Need to push things over since something is being inserted.
 		// Shift everything >= location by +entrySize
@@ -102,7 +103,7 @@ public class ConstPool implements List<CpEntry> {
 	 * @param location
 	 * 		Location removed from.
 	 */
-	private void onRemove(CpEntry cpEntry, int location) {
+	private void onRemove(@Nonnull CpEntry cpEntry, int location) {
 		int entrySize = cpEntry.isWide() ? 2 : 1;
 		// Remove wide
 		if (cpEntry.isWide())
@@ -136,20 +137,23 @@ public class ConstPool implements List<CpEntry> {
 	}
 
 	@Override
-	public boolean contains(Object o) {
+	public boolean contains(@Nonnull Object o) {
 		return backing.contains(o);
 	}
 
+	@Nonnull
 	@Override
 	public Iterator<CpEntry> iterator() {
 		return backing.iterator();
 	}
 
+	@Nonnull
 	@Override
 	public Object[] toArray() {
 		return backing.toArray(new CpEntry[0]);
 	}
 
+	@Nonnull
 	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T[] toArray(T[] a) {
@@ -157,17 +161,18 @@ public class ConstPool implements List<CpEntry> {
 	}
 
 	@Override
-	public boolean add(CpEntry cpEntry) {
+	public boolean add(@Nonnull CpEntry cpEntry) {
 		onAdd(cpEntry, backing.size());
 		return backing.add(cpEntry);
 	}
 
 	@Override
-	public void add(int index, CpEntry element) {
+	public void add(int index, @Nonnull CpEntry element) {
 		onAdd(element, index);
 		backing.add(cpToInternal(index), element);
 	}
 
+	@Nullable
 	@Override
 	public CpEntry remove(int index) {
 		CpEntry ret = backing.remove(cpToInternal(index));
@@ -192,21 +197,21 @@ public class ConstPool implements List<CpEntry> {
 	}
 
 	@Override
-	public boolean addAll(Collection<? extends CpEntry> c) {
+	public boolean addAll(@Nonnull Collection<? extends CpEntry> c) {
 		for (CpEntry cpEntry : c)
 			add(cpEntry);
 		return true;
 	}
 
 	@Override
-	public boolean addAll(int index, Collection<? extends CpEntry> c) {
+	public boolean addAll(int index, @Nonnull Collection<? extends CpEntry> c) {
 		for (CpEntry cpEntry : c)
 			add(index, cpEntry);
 		return true;
 	}
 
 	@Override
-	public boolean removeAll(Collection<?> c) {
+	public boolean removeAll(@Nonnull Collection<?> c) {
 		boolean ret = false;
 		for (Object o : c)
 			ret |= remove(o);
@@ -214,7 +219,7 @@ public class ConstPool implements List<CpEntry> {
 	}
 
 	@Override
-	public boolean retainAll(Collection<?> c) {
+	public boolean retainAll(@Nonnull Collection<?> c) {
 		boolean ret = false;
 		for (CpEntry o : this)
 			if (!c.contains(o))
@@ -228,6 +233,7 @@ public class ConstPool implements List<CpEntry> {
 		backing.clear();
 	}
 
+	@Nullable
 	@Override
 	public CpEntry get(int index) {
 		try {
@@ -237,8 +243,9 @@ public class ConstPool implements List<CpEntry> {
 		}
 	}
 
+	@Nullable
 	@Override
-	public CpEntry set(int index, CpEntry element) {
+	public CpEntry set(int index, @Nonnull CpEntry element) {
 		CpEntry ret = remove(index);
 		add(index, element);
 		return ret;
@@ -254,16 +261,19 @@ public class ConstPool implements List<CpEntry> {
 		return internalToCp(backing.lastIndexOf(o));
 	}
 
+	@Nonnull
 	@Override
 	public ListIterator<CpEntry> listIterator() {
 		return backing.listIterator();
 	}
 
+	@Nonnull
 	@Override
 	public ListIterator<CpEntry> listIterator(int index) {
 		return backing.listIterator(cpToInternal(index));
 	}
 
+	@Nonnull
 	@Override
 	public List<CpEntry> subList(int fromIndex, int toIndex) {
 		return backing.subList(cpToInternal(fromIndex), cpToInternal(toIndex));

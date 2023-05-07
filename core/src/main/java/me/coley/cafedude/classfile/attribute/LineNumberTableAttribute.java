@@ -15,7 +15,7 @@ public class LineNumberTableAttribute extends Attribute {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param entries
 	 * 		Line number table entries.
 	 */

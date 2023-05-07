@@ -18,7 +18,7 @@ public class PermittedClassesAttribute extends Attribute {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param classes
 	 * 		Indices of allowed {@code CP_CLASS} values.
 	 */

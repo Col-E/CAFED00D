@@ -18,7 +18,7 @@ public class NestMembersAttribute extends Attribute {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param memberClasses
 	 * 		Class indices in constant pool of class that are allowed to declare
 	 * 		nest membership of the nest hosted by the current class.

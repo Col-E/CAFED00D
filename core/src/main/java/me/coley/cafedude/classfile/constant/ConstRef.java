@@ -6,8 +6,8 @@ import javax.annotation.Nonnull;
 import java.util.Objects;
 
 /**
- * Base reference pool entry. Points to a reference's {@link CpClass defining class} in pool
- * and the reference's {@link CpNameType name and descriptor} in pool.
+ * Base reference pool entry. Points to a reference's {@link CpClass defining class}
+ * and the reference's {@link CpNameType name and descriptor}.
  *
  * @author Matt Coley
  */
@@ -21,9 +21,9 @@ public abstract class ConstRef extends CpEntry {
 	 * 		Must be {@link ConstantPoolConstants#FIELD_REF}, {@link ConstantPoolConstants#METHOD_REF},
 	 * 		or {@link ConstantPoolConstants#INTERFACE_METHOD_REF}.
 	 * @param classRef
-	 * 		Index of reference {@link CpClass defining class} in pool.
+	 * 		Constant pool entry holding the reference's {@link CpClass defining class}.
 	 * @param nameType
-	 * 		Index of field/method {@link CpNameType name and descriptor} in pool.
+	 * 		Constant pool entry holding the reference's {@link CpNameType name and descriptor}.
 	 */
 	public ConstRef(int type, @Nonnull CpClass classRef, @Nonnull CpNameType nameType) {
 		super(type);
@@ -32,7 +32,7 @@ public abstract class ConstRef extends CpEntry {
 	}
 
 	/**
-	 * @return Index of reference {@link CpClass defining class} in pool.
+	 * @return Constant pool entry holding the reference's {@link CpClass defining class}.
 	 */
 	@Nonnull
 	public CpClass getClassRef() {
@@ -41,14 +41,14 @@ public abstract class ConstRef extends CpEntry {
 
 	/**
 	 * @param classRef
-	 * 		New index of reference {@link CpClass defining class} in pool.
+	 * 		New constant pool entry holding the reference's {@link CpClass defining class}.
 	 */
 	public void setClassRef(@Nonnull CpClass classRef) {
 		this.classRef = classRef;
 	}
 
 	/**
-	 * @return Index of field/method {@link CpNameType name and descriptor} in pool.
+	 * @return Constant pool entry holding the reference's {@link CpNameType name and descriptor}.
 	 */
 	@Nonnull
 	public CpNameType getNameType() {
@@ -57,7 +57,7 @@ public abstract class ConstRef extends CpEntry {
 
 	/**
 	 * @param nameType
-	 * 		New index of field/method {@link CpNameType name and descriptor} in pool.
+	 * 		New constant pool entry holding the reference's {@link CpNameType name and descriptor}.
 	 */
 	public void setNameType(@Nonnull CpNameType nameType) {
 		this.nameType = nameType;
@@ -67,9 +67,11 @@ public abstract class ConstRef extends CpEntry {
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
+
 		ConstRef constRef = (ConstRef) o;
-		return classRef == constRef.classRef &&
-				nameType == constRef.nameType;
+
+		if (!classRef.equals(constRef.classRef)) return false;
+		return nameType.equals(constRef.nameType);
 	}
 
 	@Override

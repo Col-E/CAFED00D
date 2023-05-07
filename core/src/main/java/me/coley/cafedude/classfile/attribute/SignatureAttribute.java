@@ -16,7 +16,7 @@ public class SignatureAttribute extends Attribute {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param signature
 	 * 		UTF8 index in constant pool of the signature.
 	 */

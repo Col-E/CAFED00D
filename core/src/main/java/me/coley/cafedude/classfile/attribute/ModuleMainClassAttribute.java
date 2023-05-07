@@ -18,9 +18,9 @@ public class ModuleMainClassAttribute extends Attribute implements CpAccessor {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param mainClass
-	 * 		Index of main class in constant pool.
+	 * 		Constant pool entry holding the main class type.
 	 */
 	public ModuleMainClassAttribute(@Nonnull CpUtf8 name, @Nonnull CpClass mainClass) {
 		super(name);
@@ -28,7 +28,7 @@ public class ModuleMainClassAttribute extends Attribute implements CpAccessor {
 	}
 
 	/**
-	 * @return Index of main class in constant pool.
+	 * @return Constant pool entry holding the main class type.
 	 */
 	@Nonnull
 	public CpClass getMainClass() {
@@ -37,8 +37,7 @@ public class ModuleMainClassAttribute extends Attribute implements CpAccessor {
 
 	/**
 	 * @param mainClass
-	 * 		New index of main class in constant
-	 * 		pool.
+	 * 		New constant pool entry holding the main class type
 	 */
 	public void setMainClass(@Nonnull CpClass mainClass) {
 		this.mainClass = mainClass;

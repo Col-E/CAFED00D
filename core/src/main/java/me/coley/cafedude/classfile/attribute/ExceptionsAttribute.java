@@ -18,7 +18,7 @@ public class ExceptionsAttribute extends Attribute {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param exceptionTable
 	 * 		Indices into the constant pool representing all checked exceptions
 	 * 		that may be thrown by this method.

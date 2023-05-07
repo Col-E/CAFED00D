@@ -16,7 +16,7 @@ public class ConstantValueAttribute extends Attribute {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param constantValue
 	 * 		Index in the constant pool representing the value of this attribute.
 	 */

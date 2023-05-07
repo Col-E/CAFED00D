@@ -24,7 +24,7 @@ public class ParameterAnnotationsAttribute extends Attribute {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param parameterAnnotations
 	 * 		Map of parameter indices to their list of attributes.
 	 * @param visible

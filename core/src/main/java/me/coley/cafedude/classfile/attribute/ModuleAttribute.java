@@ -4,6 +4,7 @@ import me.coley.cafedude.classfile.behavior.CpAccessor;
 import me.coley.cafedude.classfile.constant.*;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,17 +25,17 @@ public class ModuleAttribute extends Attribute {
 	private List<Provides> provides;
 
 	/**
-	 * @param attrname
-	 * 		Name index in constant pool of attribute.
+	 * @param name
+	 * 		Constant pool entry holding the attribute name.
 	 * @param module
-	 * 		Constant pool index of {@link CpModule module name}.
+	 * 		Constant pool entry holding the {@link CpModule module name}.
 	 * @param flags
 	 * 		Module flags, see
 	 *        {@code ACC_OPEN / 0x0020},
 	 *        {@code ACC_SYNTHETIC / 0x1000}, and
 	 *        {@code ACC_MANDATED / 0x8000}
 	 * @param version
-	 * 		Index in constant pool of module version utf8, or 0 if no version info.
+	 * 		Constant pool entry holding the module version utf8, or {@code null} if no version info.
 	 * @param requires
 	 * 		The {@link Requires} items.
 	 * @param exports
@@ -46,7 +47,7 @@ public class ModuleAttribute extends Attribute {
 	 * @param provides
 	 * 		The {@link Provides} items.
 	 */
-	public ModuleAttribute(@Nonnull CpUtf8 name, @Nonnull CpModule module, int flags, @Nonnull CpUtf8 version,
+	public ModuleAttribute(@Nonnull CpUtf8 name, @Nonnull CpModule module, int flags, @Nullable CpUtf8 version,
 						   @Nonnull List<Requires> requires, @Nonnull List<Exports> exports,
 						   @Nonnull List<Opens> opens, @Nonnull List<CpClass> uses,
 						   @Nonnull List<Provides> provides) {
@@ -62,7 +63,7 @@ public class ModuleAttribute extends Attribute {
 	}
 
 	/**
-	 * @return Constant pool index of {@link CpModule module}.
+	 * @return Constant pool entry holding the {@link CpModule module name}.
 	 */
 	@Nonnull
 	public CpModule getModule() {
@@ -71,7 +72,7 @@ public class ModuleAttribute extends Attribute {
 
 	/**
 	 * @param module
-	 * 		New module index.
+	 * 		Constant pool entry holding the {@link CpModule module name}.
 	 */
 	public void setModule(@Nonnull CpModule module) {
 		this.module = module;
@@ -96,16 +97,16 @@ public class ModuleAttribute extends Attribute {
 	}
 
 	/**
-	 * @return Index in constant pool of module {@link CpUtf8 version string}, or {@code 0} if no version info.
+	 * @return Constant pool entry holding the module version utf8, or {@code null} if no version info.
 	 */
-	@Nonnull
+	@Nullable
 	public CpUtf8 getVersion() {
 		return version;
 	}
 
 	/**
 	 * @param version
-	 * 		New version index.
+	 * 		New constant pool entry holding the module version utf8, or {@code null} if no version info.
 	 */
 	public void setVersion(@Nonnull CpUtf8 version) {
 		this.version = version;
@@ -239,12 +240,11 @@ public class ModuleAttribute extends Attribute {
 
 		/**
 		 * @param module
-		 * 		Constant pool index of {@link CpModule required module}.
+		 * 		Constant pool entry holding the {@link CpModule required module}.
 		 * @param flags
 		 * 		Require flags, see {@link #getFlags()} for more info.
 		 * @param version
-		 * 		Index in constant pool of required module {@link CpUtf8 version string},
-		 * 		or {@code null} if no version info.
+		 * 		Constant pool entry holding the module version utf8, or {@code null} if no version info.
 		 */
 		public Requires(@Nonnull CpModule module, int flags, @Nonnull CpUtf8 version) {
 			this.module = module;
@@ -253,7 +253,7 @@ public class ModuleAttribute extends Attribute {
 		}
 
 		/**
-		 * @return Constant pool index of {@link CpModule required module}.
+		 * @return Constant pool entry holding the {@link CpModule required module}.
 		 */
 		@Nonnull
 		public CpModule getModule() {
@@ -262,7 +262,7 @@ public class ModuleAttribute extends Attribute {
 
 		/**
 		 * @param module
-		 * 		New required module index.
+		 * 		New constant pool entry holding the {@link CpModule required module}.
 		 */
 		public void setModule(@Nonnull CpModule module) {
 			this.module = module;
@@ -292,8 +292,7 @@ public class ModuleAttribute extends Attribute {
 		}
 
 		/**
-		 * @return Index in constant pool of required module {@link CpUtf8 version string},
-		 * or {@code 0} if no version info.
+		 * @return Constant pool entry holding the module version utf8, or {@code null} if no version info.
 		 */
 		@Nonnull
 		public CpUtf8 getVersion() {
@@ -302,7 +301,7 @@ public class ModuleAttribute extends Attribute {
 
 		/**
 		 * @param version
-		 * 		New required module version index.
+		 * 		New constant pool entry holding the module version utf8, or {@code null} if no version info.
 		 */
 		public void setVersion(@Nonnull CpUtf8 version) {
 			this.version = version;
@@ -330,13 +329,13 @@ public class ModuleAttribute extends Attribute {
 
 		/**
 		 * @param packageEntry
-		 * 		Constant pool index of a {@link CpPackage package}.
+		 * 		Constant pool entry holding the {@link CpPackage package name}.
 		 * @param flags
 		 * 		Export flags,
 		 *        {@code ACC_SYNTHETIC} if it was not explicitly/implicitly declared in the module source code.
 		 *        {@code ACC_MANDATED} if it was implicitly declared in the module source code.
 		 * @param to
-		 * 		Constant pool indices of {@link CpModule modules} the {@link #getPackageEntry() package} exports to.
+		 * 		Constant pool entries holding the {@link CpModule modules} the {@link #getPackageEntry() package} exports to.
 		 */
 		public Exports(@Nonnull CpPackage packageEntry, int flags, @Nonnull List<CpModule> to) {
 			this.packageEntry = packageEntry;
@@ -345,7 +344,7 @@ public class ModuleAttribute extends Attribute {
 		}
 
 		/**
-		 * @return Constant pool index of a {@link CpPackage package}.
+		 * @return Constant pool entry holding the {@link CpPackage package name}.
 		 */
 		@Nonnull
 		public CpPackage getPackageEntry() {
@@ -354,7 +353,7 @@ public class ModuleAttribute extends Attribute {
 
 		/**
 		 * @param packageEntry
-		 * 		New package cp index.
+		 * 		New constant pool entry holding the {@link CpPackage package name}.
 		 */
 		public void setPackageEntry(@Nonnull CpPackage packageEntry) {
 			this.packageEntry = packageEntry;
@@ -378,7 +377,7 @@ public class ModuleAttribute extends Attribute {
 		}
 
 		/**
-		 * @return Constant pool indices of {@link CpModule modules} the {@link #getPackageEntry() package} exports to.
+		 * @return Constant pool entries holding the {@link CpModule modules} the {@link #getPackageEntry() package} exports to.
 		 */
 		@Nonnull
 		public List<CpModule> getTo() {
@@ -387,7 +386,7 @@ public class ModuleAttribute extends Attribute {
 
 		/**
 		 * @param toIndex
-		 * 		New opened module indices.
+		 * 		New constant pool entries holding the {@link CpModule modules} the {@link #getPackageEntry() package} exports to.
 		 */
 		public void setTo(@Nonnull List<CpModule> toIndex) {
 			this.to = toIndex;
@@ -423,13 +422,13 @@ public class ModuleAttribute extends Attribute {
 
 		/**
 		 * @param packageEntry
-		 * 		Constant pool index of a {@link CpPackage package}.
+		 * 		Constant pool entry holding the {@link CpPackage package name}.
 		 * @param flags
 		 * 		Open flags,
 		 *        {@code ACC_SYNTHETIC} if it was not explicitly/implicitly declared in the module source code.
 		 *        {@code ACC_MANDATED} if it was implicitly declared in the module source code.
 		 * @param to
-		 * 		Constant pool indices of {@link CpModule modules} the {@link #getPackageEntry()} is open to.
+		 * 		Constant pool entries holding the {@link CpModule modules} the {@link #getPackageEntry() package} exports to.
 		 */
 		public Opens(@Nonnull CpPackage packageEntry, int flags, @Nonnull List<CpModule> to) {
 			this.packageEntry = packageEntry;
@@ -438,7 +437,7 @@ public class ModuleAttribute extends Attribute {
 		}
 
 		/**
-		 * @return Constant pool index of a {@link CpPackage package}.
+		 * @return Constant pool entry holding the {@link CpPackage package name}.
 		 */
 		@Nonnull
 		public CpPackage getPackageEntry() {
@@ -447,7 +446,7 @@ public class ModuleAttribute extends Attribute {
 
 		/**
 		 * @param packageEntry
-		 * 		New package cp index.
+		 * 		New constant pool entry holding the {@link CpPackage package name}.
 		 */
 		public void setPackageEntry(@Nonnull CpPackage packageEntry) {
 			this.packageEntry = packageEntry;
@@ -471,7 +470,7 @@ public class ModuleAttribute extends Attribute {
 		}
 
 		/**
-		 * @return Constant pool indices of {@link CpModule modules} the {@link #getPackageEntry() package} is open to.
+		 * @return Constant pool entries holding the {@link CpModule modules} the {@link #getPackageEntry() package} exports to.
 		 */
 		@Nonnull
 		public List<CpModule> getTo() {
@@ -480,7 +479,7 @@ public class ModuleAttribute extends Attribute {
 
 		/**
 		 * @param toIndex
-		 * 		New opened module indices.
+		 * 		New constant pool entries holding the {@link CpModule modules} the {@link #getPackageEntry() package} exports to.
 		 */
 		public void setTo(@Nonnull List<CpModule> toIndex) {
 			this.to = toIndex;
@@ -515,9 +514,9 @@ public class ModuleAttribute extends Attribute {
 
 		/**
 		 * @param module
-		 * 		Constant pool index of {@link CpClass class} of a service interface.
+		 * 		Constant pool entry holding the {@link CpClass class} of a service interface.
 		 * @param with
-		 * 		Constant pool indices of {@link CpClass classes} that are implementations of
+		 * 		Constant pool entries of {@link CpClass classes} that are implementations of
 		 *        {@link #getModule() the service interface}.
 		 */
 		public Provides(@Nonnull CpClass module, @Nonnull List<CpClass> with) {
@@ -526,7 +525,7 @@ public class ModuleAttribute extends Attribute {
 		}
 
 		/**
-		 * @return Constant pool index of {@link CpClass class} of a service interface.
+		 * @return Constant pool entry holding the {@link CpClass class} of a service interface.
 		 */
 		@Nonnull
 		public CpClass getModule() {
@@ -535,14 +534,14 @@ public class ModuleAttribute extends Attribute {
 
 		/**
 		 * @param module
-		 * 		New service interface index.
+		 * 		New constant pool entry holding the {@link CpClass class} of a service interface.
 		 */
 		public void setModule(@Nonnull CpClass module) {
 			this.module = module;
 		}
 
 		/**
-		 * @return Constant pool indices of {@link CpClass classes} that are implementations of
+		 * @return Constant pool entries of {@link CpClass classes} that are implementations of
 		 * {@link #getModule() the service interface}.
 		 */
 		@Nonnull

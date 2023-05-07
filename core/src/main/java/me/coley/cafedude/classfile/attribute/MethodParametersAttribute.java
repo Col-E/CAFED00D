@@ -17,7 +17,7 @@ public class MethodParametersAttribute extends Attribute {
 
 	/**
 	 * @param name
-	 * 		Name index in constant pool.
+	 * 		Constant pool entry holding the attribute name.
 	 * @param parameters
 	 * 		Parameters.
 	 */
@@ -69,7 +69,7 @@ public class MethodParametersAttribute extends Attribute {
 		 * @param accessFlags
 		 * 		Access flags.
 		 * @param name
-		 * 		Name index in constant pool.
+		 * 		Constant pool entry holding the parameter's name.
 		 */
 		public Parameter(int accessFlags, @Nonnull CpUtf8 name) {
 			this.accessFlags = accessFlags;
@@ -92,7 +92,7 @@ public class MethodParametersAttribute extends Attribute {
 		}
 
 		/**
-		 * @return Name index in constant pool.
+		 * @return Constant pool entry holding the parameter's name.
 		 */
 		@Nonnull
 		public CpUtf8 getName() {
@@ -101,7 +101,7 @@ public class MethodParametersAttribute extends Attribute {
 
 		/**
 		 * @param name
-		 * 		New name index in constant pool.
+		 * 		New constant pool entry holding the parameter's name.
 		 */
 		public void setName(@Nonnull CpUtf8 name) {
 			this.name = name;

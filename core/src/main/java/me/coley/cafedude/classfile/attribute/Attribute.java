@@ -22,6 +22,13 @@ public abstract class Attribute implements CpAccessor {
 	 */
 	public Attribute(@Nonnull CpUtf8 name) {
 		this.name = name;
+
+		// TODO: Now that we are passing Cp refs around, we should validate the name matches expected constants
+		//  .
+		//  protected abstract String getExpectedAttributeName();
+		//  .
+		//  if (!name.getText().equals(getExpectedAttributeName()))
+		//  	throw new IllegalStateException("Attribute name for " + getExpectedAttributeName() + " was wrong: " + name.getText());
 	}
 
 	/**

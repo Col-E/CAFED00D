@@ -3,8 +3,8 @@ package me.coley.cafedude.classfile.constant;
 import javax.annotation.Nonnull;
 
 /**
- * Field reference pool entry. Points to a reference's {@link CpClass defining class} in pool
- * and the reference's {@link CpNameType name and descriptor} in pool.
+ * Field reference pool entry. Points to a reference's {@link CpClass defining class}
+ * and the reference's {@link CpNameType name and descriptor}.
  *
  * @author Matt Coley
  */
