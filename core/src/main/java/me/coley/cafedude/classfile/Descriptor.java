@@ -1,5 +1,7 @@
 package me.coley.cafedude.classfile;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -236,6 +238,36 @@ public class Descriptor {
 				} else {
 					return new Descriptor(Kind.ILLEGAL, desc);
 				}
+		}
+	}
+
+	public static Descriptor from(@NotNull Class<?> clazz) {
+		String descriptor = clazz.toGenericString().replace('.', '/');
+		if (clazz.isArray()) {
+			return from(descriptor);
+		} else if (clazz.isPrimitive()) {
+			switch (descriptor) {
+				case "void":
+					return VOID;
+				case "boolean":
+					return BOOLEAN;
+				case "byte":
+					return BYTE;
+				case "char":
+					return CHAR;
+				case "int":
+					return INT;
+				case "float":
+					return FLOAT;
+				case "double":
+					return DOUBLE;
+				case "long":
+					return LONG;
+				default:
+					throw new IllegalArgumentException("Unknown primitive type: " + descriptor);
+			}
+		} else {
+			return from("L" + descriptor + ";");
 		}
 	}
 
