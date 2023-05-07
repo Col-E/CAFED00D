@@ -393,7 +393,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	}
 
 	private Predicate<CpEntry> matchClass() {
-		return e -> e instanceof CpClass && matchUtf8InternalName().test(pool.get(((CpClass) e).getIndex()));
+		return e -> e instanceof CpClass && matchUtf8InternalName().test(((CpClass) e).getName());
 	}
 
 	private Predicate<CpEntry> matchUtf8InternalName() {

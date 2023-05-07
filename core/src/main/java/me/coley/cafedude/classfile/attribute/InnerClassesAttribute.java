@@ -25,7 +25,7 @@ public class InnerClassesAttribute extends Attribute {
 	 * @param classes
 	 * 		All inner classes.
 	 */
-	public InnerClassesAttribute(CpUtf8 name, List<InnerClass> classes) {
+	public InnerClassesAttribute(@Nonnull CpUtf8 name, @Nonnull List<InnerClass> classes) {
 		super(name);
 		this.innerClasses = classes;
 	}
@@ -33,6 +33,7 @@ public class InnerClassesAttribute extends Attribute {
 	/**
 	 * @return The inner classes of this class.
 	 */
+	@Nonnull
 	public List<InnerClass> getInnerClasses() {
 		return innerClasses;
 	}
@@ -41,7 +42,7 @@ public class InnerClassesAttribute extends Attribute {
 	 * @param innerClasses
 	 * 		The new inner classes of this class.
 	 */
-	public void setInnerClasses(List<InnerClass> innerClasses) {
+	public void setInnerClasses(@Nonnull List<InnerClass> innerClasses) {
 		this.innerClasses = innerClasses;
 	}
 
