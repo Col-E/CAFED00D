@@ -2,9 +2,10 @@ package me.coley.cafedude.tree.frame;
 
 /**
  * Frame representing a single state of stack and locals.
+ *
+ * @author Justus Garbe
  */
 public class Frame {
-
 	/**
 	 * Full frame information. Full stack and locals are given
 	 */

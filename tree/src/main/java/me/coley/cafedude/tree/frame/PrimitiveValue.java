@@ -12,9 +12,10 @@ package me.coley.cafedude.tree.frame;
  *     <li>{@link #NULL}</li>
  *     <li>{@link #UNINITIALIZED_THIS}</li>
  * </ul>
+ *
+ * @author Justus Garbe
  */
 public class PrimitiveValue extends Value {
-
 	private int value;
 
 	/**

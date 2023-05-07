@@ -50,22 +50,23 @@ import me.coley.cafedude.classfile.instruction.Opcodes;
  *     <li>{@link Opcodes#L2D}</li>
  *     <li>{@link Opcodes#F2I}</li>
  *     <li>{@link Opcodes#F2L}</li>
- *	   <li>{@link Opcodes#F2D}</li>
- *	   <li>{@link Opcodes#D2I}</li>
- *	   <li>{@link Opcodes#D2L}</li>
- *	   <li>{@link Opcodes#D2F}</li>
- *	   <li>{@link Opcodes#I2B}</li>
- *	   <li>{@link Opcodes#I2C}</li>
- *	   <li>{@link Opcodes#I2S}</li>
- *	   <li>{@link Opcodes#LCMP}</li>
- *	   <li>{@link Opcodes#FCMPL}</li>
- *	   <li>{@link Opcodes#FCMPG}</li>
- *	   <li>{@link Opcodes#DCMPL}</li>
- *	   <li>{@link Opcodes#DCMPG}</li>
+ * 	   <li>{@link Opcodes#F2D}</li>
+ * 	   <li>{@link Opcodes#D2I}</li>
+ * 	   <li>{@link Opcodes#D2L}</li>
+ * 	   <li>{@link Opcodes#D2F}</li>
+ * 	   <li>{@link Opcodes#I2B}</li>
+ * 	   <li>{@link Opcodes#I2C}</li>
+ * 	   <li>{@link Opcodes#I2S}</li>
+ * 	   <li>{@link Opcodes#LCMP}</li>
+ * 	   <li>{@link Opcodes#FCMPL}</li>
+ * 	   <li>{@link Opcodes#FCMPG}</li>
+ * 	   <li>{@link Opcodes#DCMPL}</li>
+ * 	   <li>{@link Opcodes#DCMPG}</li>
  * </ul>
+ *
+ * @author Justus Garbe
  */
 public class ArithmeticInsn extends Insn {
-
 	/**
 	 * @param opcode
 	 * 		Instruction opcode.
@@ -73,5 +74,4 @@ public class ArithmeticInsn extends Insn {
 	public ArithmeticInsn(int opcode) {
 		super(InsnKind.ARITHMETIC, opcode);
 	}
-
 }

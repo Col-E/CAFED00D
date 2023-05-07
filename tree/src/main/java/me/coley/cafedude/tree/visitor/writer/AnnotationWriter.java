@@ -6,12 +6,17 @@ import me.coley.cafedude.tree.Constant;
 import me.coley.cafedude.tree.visitor.AnnotationArrayVisitor;
 import me.coley.cafedude.tree.visitor.AnnotationVisitor;
 
+import javax.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
+/**
+ * Annotation visitor implementation to write back to a {@link Annotation}.
+ *
+ * @author Justus Garbe
+ */
 public class AnnotationWriter implements AnnotationVisitor {
-
 	private final Symbols symbols;
 	private final Map<CpUtf8, ElementValue> values = new HashMap<>();
 	private final Consumer<Map<CpUtf8, ElementValue>> callback;
@@ -22,12 +27,12 @@ public class AnnotationWriter implements AnnotationVisitor {
 	}
 
 	@Override
-	public void visitValue(String key, Constant value) {
+	public void visitValue(@Nonnull String key, @Nonnull Constant value) {
 		values.put(symbols.newUtf8(key), symbols.newElementValue(value));
 	}
 
 	@Override
-	public AnnotationVisitor visitAnnotation(String key, String type) {
+	public AnnotationVisitor visitAnnotation(@Nonnull String key, @Nonnull String type) {
 		return new AnnotationWriter(this.symbols, values -> {
 			Annotation anno = new Annotation(this.symbols.newUtf8(type), values);
 			this.values.put(this.symbols.newUtf8(key), new AnnotationElementValue('@', anno));
@@ -35,14 +40,14 @@ public class AnnotationWriter implements AnnotationVisitor {
 	}
 
 	@Override
-	public AnnotationArrayVisitor visitArray(String key) {
+	public AnnotationArrayVisitor visitArray(@Nonnull String key) {
 		return new AnnotationArrayWriter(symbols, array -> {
 			values.put(symbols.newUtf8(key), new ArrayElementValue('[', array));
 		});
 	}
 
 	@Override
-	public void visitEnum(String key, String type, String name) {
+	public void visitEnum(@Nonnull String key, @Nonnull String type, @Nonnull String name) {
 		values.put(symbols.newUtf8(key), new EnumElementValue('e', symbols.newUtf8(type), symbols.newUtf8(name)));
 	}
 

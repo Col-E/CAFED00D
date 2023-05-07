@@ -1,14 +1,18 @@
 package me.coley.cafedude.tree.visitor;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
  * Visitor for visiting module information.
+ *
+ * @author Justus Garbe
  */
 public interface ModuleVisitor {
 
 	/**
 	 * Return the delegate visitor for pass through implementations.
+	 *
 	 * @return Delegate visitor.
 	 */
 	@Nullable
@@ -25,11 +29,11 @@ public interface ModuleVisitor {
 	 * 		Access flags.
 	 * @param version
 	 * 		Module version.
-	 * 		{@code null} if not specified.
+	 *        {@code null} if not specified.
 	 */
-	default void visitRequires(String module, int flags, @Nullable String version) {
+	default void visitRequires(@Nonnull String module, int flags, @Nullable String version) {
 		ModuleVisitor delegate = moduleDelegate();
-		if(delegate != null) delegate.visitRequires(module, flags, version);
+		if (delegate != null) delegate.visitRequires(module, flags, version);
 	}
 
 	/**
@@ -42,9 +46,9 @@ public interface ModuleVisitor {
 	 * @param modules
 	 * 		Modules to export to.
 	 */
-	default void visitExports(String exportPackage, int flags, String... modules) {
+	default void visitExports(@Nonnull String exportPackage, int flags, String... modules) {
 		ModuleVisitor delegate = moduleDelegate();
-		if(delegate != null) delegate.visitExports(exportPackage, flags, modules);
+		if (delegate != null) delegate.visitExports(exportPackage, flags, modules);
 	}
 
 	/**
@@ -57,9 +61,9 @@ public interface ModuleVisitor {
 	 * @param modules
 	 * 		Modules to open to.
 	 */
-	default void visitOpens(String openPackage, int flags, String... modules) {
+	default void visitOpens(@Nonnull String openPackage, int flags, String... modules) {
 		ModuleVisitor delegate = moduleDelegate();
-		if(delegate != null) delegate.visitOpens(openPackage, flags, modules);
+		if (delegate != null) delegate.visitOpens(openPackage, flags, modules);
 	}
 
 	/**
@@ -68,9 +72,9 @@ public interface ModuleVisitor {
 	 * @param service
 	 * 		Service to use.
 	 */
-	default void visitUses(String service) {
+	default void visitUses(@Nonnull String service) {
 		ModuleVisitor delegate = moduleDelegate();
-		if(delegate != null) delegate.visitUses(service);
+		if (delegate != null) delegate.visitUses(service);
 	}
 
 	/**
@@ -81,9 +85,9 @@ public interface ModuleVisitor {
 	 * @param providers
 	 * 		Providers of the service.
 	 */
-	default void visitProvides(String service, String... providers) {
+	default void visitProvides(@Nonnull String service, String... providers) {
 		ModuleVisitor delegate = moduleDelegate();
-		if(delegate != null) delegate.visitProvides(service, providers);
+		if (delegate != null) delegate.visitProvides(service, providers);
 	}
 
 	/**
@@ -92,9 +96,9 @@ public interface ModuleVisitor {
 	 * @param mainClass
 	 * 		Main class.
 	 */
-	default void visitMainClass(String mainClass) {
+	default void visitMainClass(@Nonnull String mainClass) {
 		ModuleVisitor delegate = moduleDelegate();
-		if(delegate != null) delegate.visitMainClass(mainClass);
+		if (delegate != null) delegate.visitMainClass(mainClass);
 	}
 
 	/**
@@ -103,9 +107,9 @@ public interface ModuleVisitor {
 	 * @param packageName
 	 * 		Package name.
 	 */
-	default void visitPackage(String packageName) {
+	default void visitPackage(@Nonnull String packageName) {
 		ModuleVisitor delegate = moduleDelegate();
-		if(delegate != null) delegate.visitPackage(packageName);
+		if (delegate != null) delegate.visitPackage(packageName);
 	}
 
 	/**
@@ -113,7 +117,6 @@ public interface ModuleVisitor {
 	 */
 	default void visitModuleEnd() {
 		ModuleVisitor delegate = moduleDelegate();
-		if(delegate != null) delegate.visitModuleEnd();
+		if (delegate != null) delegate.visitModuleEnd();
 	}
-
 }

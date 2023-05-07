@@ -13,6 +13,8 @@ import me.coley.cafedude.classfile.instruction.Opcodes;
  *     <li>{@link Opcodes#IRETURN}</li>
  *     <li>{@link Opcodes#LRETURN}</li>
  * </ul>
+ *
+ * @author Justus Garbe
  */
 public class ReturnInsn extends Insn {
 

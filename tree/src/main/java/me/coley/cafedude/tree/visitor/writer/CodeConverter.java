@@ -16,8 +16,12 @@ import static me.coley.cafedude.classfile.attribute.LineNumberTableAttribute.Lin
 import static me.coley.cafedude.classfile.attribute.LocalVariableTableAttribute.VarEntry;
 import static me.coley.cafedude.classfile.attribute.LocalVariableTypeTableAttribute.VarTypeEntry;
 
-public class CodeConverter implements Opcodes{
-
+/**
+ * Converter for {@link Code} back into a {@link CodeAttribute}.
+ *
+ * @author Justus Garbe
+ */
+public class CodeConverter implements Opcodes {
 	private final Code code;
 	private final Symbols symbols;
 
@@ -34,7 +38,7 @@ public class CodeConverter implements Opcodes{
 		for (Insn insn : code.getInstructions()) {
 			insnMap.put(state.offset, insn);
 			Instruction convertedInsn = convert(insn, state);
-			if(convertedInsn != null) {
+			if (convertedInsn != null) {
 				converted.add(convertedInsn);
 				state.offset += convertedInsn.computeSize();
 			}
@@ -52,7 +56,7 @@ public class CodeConverter implements Opcodes{
 					symbols.newUtf8(local.getDesc().getDescriptor()),
 					local.getIndex());
 			localVariables.add(var);
-			if(local.getSignature() != null) {
+			if (local.getSignature() != null) {
 				// Local variable type table
 				VarTypeEntry type = new VarTypeEntry(
 						local.getStart().getOffset(),
@@ -67,7 +71,7 @@ public class CodeConverter implements Opcodes{
 		for (BsmEntry bsmEntry : state.bsmEntries) {
 			CpMethodHandle bsm = symbols.newHandle(bsmEntry.handle);
 			List<CpEntry> args = new ArrayList<>();
-			for(Constant constant : bsmEntry.args)
+			for (Constant constant : bsmEntry.args)
 				args.add(symbols.newConstant(constant));
 			bootstrapMethods.add(new BootstrapMethod(bsm, args));
 		}
@@ -83,19 +87,19 @@ public class CodeConverter implements Opcodes{
 					symbols.newClass(handler.getType())));
 		}
 		List<Attribute> attributes = new ArrayList<>();
-		if(!localVariables.isEmpty())
+		if (!localVariables.isEmpty())
 			attributes.add(new LocalVariableTableAttribute(
 					symbols.newUtf8(AttributeConstants.LOCAL_VARIABLE_TABLE),
 					localVariables));
-		if(!localVariableTypes.isEmpty())
+		if (!localVariableTypes.isEmpty())
 			attributes.add(new LocalVariableTypeTableAttribute(
 					symbols.newUtf8(AttributeConstants.LOCAL_VARIABLE_TYPE_TABLE),
 					localVariableTypes));
-		if(!bootstrapMethods.isEmpty())
+		if (!bootstrapMethods.isEmpty())
 			attributes.add(new BootstrapMethodsAttribute(
 					symbols.newUtf8(AttributeConstants.BOOTSTRAP_METHODS),
 					bootstrapMethods));
-		if(!state.lineEntries.isEmpty()) {
+		if (!state.lineEntries.isEmpty()) {
 			List<LineEntry> sorted = new ArrayList<>(state.lineEntries);
 			sorted.sort(Comparator.comparingInt(LineEntry::getStartPc));
 			attributes.add(new LineNumberTableAttribute(
@@ -119,13 +123,13 @@ public class CodeConverter implements Opcodes{
 				case LDC: {
 					LdcInsn ldcInsn = (LdcInsn) insn;
 					CpEntry constant = symbols.newConstant(ldcInsn.getConstant());
-					if((constant.getIndex() > 255 || constant.isWide()) && ldcInsn.getOpcode() == LDC)
+					if ((constant.getIndex() > 255 || constant.isWide()) && ldcInsn.getOpcode() == LDC)
 						offset += 1;
 					break;
 				}
 				case VAR: {
 					VarInsn varInsn = (VarInsn) insn;
-					if(varInsn.getIndex() <= 3)
+					if (varInsn.getIndex() <= 3)
 						offset--; // patching will convert to X{STORE/LOAD}_N
 					break;
 				}
@@ -173,9 +177,9 @@ public class CodeConverter implements Opcodes{
 				LdcInsn ldcInsn = (LdcInsn) insn;
 				CpEntry constant = symbols.newConstant(ldcInsn.getConstant());
 				int ldcOpcode = Opcodes.LDC;
-				if(constant.getIndex() > 255)
+				if (constant.getIndex() > 255)
 					ldcOpcode = Opcodes.LDC_W;
-				if(constant.isWide())
+				if (constant.isWide())
 					ldcOpcode = Opcodes.LDC2_W;
 				return new CpRefInstruction(ldcOpcode, symbols.newConstant(ldcInsn.getConstant()));
 			}
@@ -236,10 +240,10 @@ public class CodeConverter implements Opcodes{
 			case VAR: {
 				VarInsn varInsn = (VarInsn) insn;
 				int var = varInsn.getIndex();
-				if(var < 4) {
-					if(opcode >= ILOAD && opcode <= ALOAD) {
+				if (var < 4) {
+					if (opcode >= ILOAD && opcode <= ALOAD) {
 						opcode = ILOAD_0 + ((opcode - ILOAD) * 4) + var;
-					} else if(opcode >= ISTORE && opcode <= ASTORE) {
+					} else if (opcode >= ISTORE && opcode <= ASTORE) {
 						opcode = ISTORE_0 + ((opcode - ISTORE) * 4) + var;
 					}
 					state.offset--; // compensate for the index
@@ -266,16 +270,17 @@ public class CodeConverter implements Opcodes{
 	}
 
 	private void checkLabel(Label label, Insn insn, State state) throws InvalidCodeException {
-		if(!label.isResolved()) throw new UnresolvedLabelException(label, state.offset, insn);
+		if (!label.isResolved()) throw new UnresolvedLabelException(label, state.offset, insn);
 	}
 
 	private void checkLabel(Label label, String where) throws InvalidCodeException {
-		if(!label.isResolved()) throw new UnresolvedLabelException(label, where);
+		if (!label.isResolved()) throw new UnresolvedLabelException(label, where);
 	}
 
 	static class BsmEntry {
 		final Handle handle;
 		final List<Constant> args;
+
 		BsmEntry(Handle handle, List<Constant> args) {
 			this.handle = handle;
 			this.args = args;
@@ -292,13 +297,13 @@ public class CodeConverter implements Opcodes{
 			BsmEntry entry = null;
 			int index = 0;
 			for (BsmEntry bsmEntry : bsmEntries) {
-				if(bsmEntry.handle.equals(handle) && bsmEntry.args.equals(args)) {
+				if (bsmEntry.handle.equals(handle) && bsmEntry.args.equals(args)) {
 					entry = bsmEntry;
 					break;
 				}
 				index++;
 			}
-			if(entry == null) {
+			if (entry == null) {
 				entry = new BsmEntry(handle, args);
 				bsmEntries.add(entry);
 				index = bsmEntries.size() - 1;

@@ -20,14 +20,16 @@ import static me.coley.cafedude.classfile.instruction.Opcodes.*;
 
 /**
  * Label transformer for converting instruction offsets to labels.
+ *
+ * @author Justus Garbe
  */
 public class LabelTransformer extends Transformer {
-
 	private final Map<Method, TreeMap<Integer, Label>> labels = new HashMap<>();
 	private final Map<Method, TreeMap<Integer, Instruction>> instructions = new HashMap<>();
 
 	/**
-	 * @param clazz Class file to modify.
+	 * @param clazz
+	 * 		Class file to modify.
 	 */
 	public LabelTransformer(ClassFile clazz) {
 		super(clazz);
@@ -52,13 +54,13 @@ public class LabelTransformer extends Transformer {
 					int start = exceptionTableEntry.getStartPc();
 					int end = exceptionTableEntry.getEndPc();
 					int handler = exceptionTableEntry.getHandlerPc();
-					if(!labels.containsKey(start)) {
+					if (!labels.containsKey(start)) {
 						labels.put(start, new Label(start));
 					}
-					if(!labels.containsKey(end)) {
+					if (!labels.containsKey(end)) {
 						labels.put(end, new Label(end));
 					}
-					if(!labels.containsKey(handler)) {
+					if (!labels.containsKey(handler)) {
 						labels.put(handler, new Label(handler));
 					}
 				}
@@ -71,14 +73,14 @@ public class LabelTransformer extends Transformer {
 						int offset = ioi.getOperand();
 						int target = pos + offset;
 						labels.computeIfAbsent(target, Label::new);
-					} else if(opcode == TABLESWITCH) {
+					} else if (opcode == TABLESWITCH) {
 						TableSwitchInstruction tsi = (TableSwitchInstruction) insn;
 						List<Integer> offsets = tsi.getOffsets();
 						for (int offset : offsets) {
 							labels.computeIfAbsent(pos + offset, Label::new);
 						}
 						labels.computeIfAbsent(pos + tsi.getDefault(), Label::new);
-					} else if(opcode == LOOKUPSWITCH) {
+					} else if (opcode == LOOKUPSWITCH) {
 						LookupSwitchInstruction lsi = (LookupSwitchInstruction) insn;
 						List<Integer> offsets = lsi.getOffsets();
 						for (int offset : offsets) {
@@ -91,14 +93,14 @@ public class LabelTransformer extends Transformer {
 				}
 				labels.put(pos, new Label(pos)); // end label
 				// add lines to labels
-				if(lnta != null) {
+				if (lnta != null) {
 					for (LineNumberTableAttribute.LineEntry entry : lnta.getEntries()) {
 						Label lab = labels.computeIfAbsent(entry.getStartPc(), Label::new);
 						lab.addLineNumber(entry.getLine());
 					}
 				}
 				// add local labels to labels
-				if(lvta != null) {
+				if (lvta != null) {
 					for (LocalVariableTableAttribute.VarEntry entry : lvta.getEntries()) {
 						int start = entry.getStartPc();
 						int end = entry.getStartPc() + entry.getLength();
@@ -108,14 +110,16 @@ public class LabelTransformer extends Transformer {
 				}
 				this.labels.put(method, labels);
 				this.instructions.put(method, instructions);
-				// TODO: patch invalid offsets
+				// TODO: patch invalid offsets when obfuscators jump into the middle of instructions
+				//  (note: these obfuscators require -noverify)
 			}
 		}
-
 	}
 
 	/**
-	 * @param method Method to get labels for.
+	 * @param method
+	 * 		Method to get labels for.
+	 *
 	 * @return Labels for the given method.
 	 */
 	public TreeMap<Integer, Label> getLabels(Method method) {
@@ -123,7 +127,9 @@ public class LabelTransformer extends Transformer {
 	}
 
 	/**
-	 * @param method Method to get instructions for.
+	 * @param method
+	 * 		Method to get instructions for.
+	 *
 	 * @return Instructions for the given method.
 	 */
 	public TreeMap<Integer, Instruction> getInstructions(Method method) {

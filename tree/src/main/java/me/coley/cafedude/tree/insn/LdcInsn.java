@@ -3,16 +3,19 @@ package me.coley.cafedude.tree.insn;
 import me.coley.cafedude.classfile.instruction.Opcodes;
 import me.coley.cafedude.tree.Constant;
 
+import javax.annotation.Nonnull;
+
 /**
  * Instruction for the group of {@link Opcodes#LDC} instructions which have a constant operand.
+ *
+ * @author Justus Garbe
  * @see Opcodes#LDC_W
  * @see Opcodes#LDC2_W
  */
 public class LdcInsn extends Insn {
-
 	private Constant constant;
 
-	public LdcInsn(Constant constant) {
+	public LdcInsn(@Nonnull Constant constant) {
 		this(Opcodes.LDC, constant);
 	}
 
@@ -22,7 +25,7 @@ public class LdcInsn extends Insn {
 	 * @param constant
 	 * 		Constant operand.
 	 */
-	public LdcInsn(int opcode, Constant constant) {
+	public LdcInsn(int opcode, @Nonnull Constant constant) {
 		super(InsnKind.LDC, opcode);
 		this.constant = constant;
 	}
@@ -30,6 +33,7 @@ public class LdcInsn extends Insn {
 	/**
 	 * @return Constant operand.
 	 */
+	@Nonnull
 	public Constant getConstant() {
 		return constant;
 	}
@@ -38,7 +42,7 @@ public class LdcInsn extends Insn {
 	 * @param constant
 	 * 		Constant operand.
 	 */
-	public void setConstant(Constant constant) {
+	public void setConstant(@Nonnull Constant constant) {
 		this.constant = constant;
 	}
 

@@ -5,12 +5,12 @@ import me.coley.cafedude.classfile.instruction.Opcodes;
 /**
  * Instruction for the {@link Opcodes#IINC} instruction,
  * which has a local variable index and an increment integer operand.
+ *
+ * @author Justus Garbe
  * @see Opcodes#IINC
  */
 public class IIncInsn extends Insn {
-
 	private int index;
-
 	private int increment;
 
 	/**

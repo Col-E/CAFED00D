@@ -2,13 +2,19 @@ package me.coley.cafedude.tree.visitor;
 
 import me.coley.cafedude.classfile.Descriptor;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 /**
  * Visitor for accepting class members and attributes.
+ *
+ * @author Justus Garbe
  */
 public interface ClassVisitor extends DeclarationVisitor {
 
 	/**
 	 * Return the delegate visitor for pass through implementations.
+	 *
 	 * @return Delegate visitor.
 	 */
 	default ClassVisitor classDelegate() {
@@ -22,53 +28,58 @@ public interface ClassVisitor extends DeclarationVisitor {
 
 	/**
 	 * Visit the class itself
+	 *
 	 * @param name
-	 * 			Name of the class.
+	 * 		Name of the class.
 	 * @param access
-	 * 			Access flags of the class.
+	 * 		Access flags of the class.
 	 * @param superName
-	 * 			Name of the super class.
+	 * 		Name of the super class.
 	 * @param interfaces
-	 * 			Names of the interfaces.
+	 * 		Names of the interfaces.
 	 */
-	default void visitClass(String name, int access, String superName, String... interfaces) {
+	default void visitClass(@Nonnull String name, int access, @Nonnull String superName, String... interfaces) {
 		ClassVisitor delegate = classDelegate();
-		if(delegate != null) delegate.visitClass(name, access, superName, interfaces);
+		if (delegate != null) delegate.visitClass(name, access, superName, interfaces);
 	}
 
 	/**
 	 * Visit a method in this class.
+	 *
 	 * @param name
-	 * 			Name of the method.
+	 * 		Name of the method.
 	 * @param access
-	 * 			Access flags of the method.
+	 * 		Access flags of the method.
 	 * @param descriptor
-	 * 			Descriptor of the method. May be {@link Descriptor.Kind#ILLEGAL} if the method has
-	 * 			an illegal type descriptor.
+	 * 		Descriptor of the method. May be {@link Descriptor.Kind#ILLEGAL} if the method has
+	 * 		an illegal type descriptor.
+	 *
 	 * @return A visitor for the method.
 	 */
 	@Nullable
-	default MethodVisitor visitMethod(String name, int access, Descriptor descriptor) {
+	default MethodVisitor visitMethod(@Nonnull String name, int access, @Nonnull Descriptor descriptor) {
 		ClassVisitor delegate = classDelegate();
-		if(delegate != null) return delegate.visitMethod(name, access, descriptor);
+		if (delegate != null) return delegate.visitMethod(name, access, descriptor);
 		return null;
 	}
 
 	/**
 	 * Visit a field in this class.
+	 *
 	 * @param name
-	 * 			Name of the field.
+	 * 		Name of the field.
 	 * @param access
-	 * 			Access flags of the field.
+	 * 		Access flags of the field.
 	 * @param descriptor
-	 * 			Descriptor of the field. May be {@link Descriptor.Kind#ILLEGAL} if the field has
-	 * 			an illegal type descriptor.
+	 * 		Descriptor of the field. May be {@link Descriptor.Kind#ILLEGAL} if the field has
+	 * 		an illegal type descriptor.
+	 *
 	 * @return A visitor for the field.
 	 */
 	@Nullable
-	default FieldVisitor visitField(String name, int access, Descriptor descriptor) {
+	default FieldVisitor visitField(@Nonnull String name, int access, @Nonnull Descriptor descriptor) {
 		ClassVisitor delegate = classDelegate();
-		if(delegate != null) return delegate.visitField(name, access, descriptor);
+		if (delegate != null) return delegate.visitField(name, access, descriptor);
 		return null;
 	}
 
@@ -76,16 +87,17 @@ public interface ClassVisitor extends DeclarationVisitor {
 	 * Visit a record component in this class.
 	 *
 	 * @param name
-	 * 		  Name of the record component.
+	 * 		Name of the record component.
 	 * @param descriptor
-	 * 		  Descriptor of the record component. May be {@link Descriptor.Kind#ILLEGAL} if the
-	 * 		  record component has an illegal type descriptor.
+	 * 		Descriptor of the record component. May be {@link Descriptor.Kind#ILLEGAL} if the
+	 * 		record component has an illegal type descriptor.
+	 *
 	 * @return A visitor for the record component.
 	 */
 	@Nullable
-	default RecordComponentVisitor visitRecordComponent(String name, Descriptor descriptor) {
+	default RecordComponentVisitor visitRecordComponent(@Nonnull String name, @Nonnull Descriptor descriptor) {
 		ClassVisitor delegate = classDelegate();
-		if(delegate != null) return delegate.visitRecordComponent(name, descriptor);
+		if (delegate != null) return delegate.visitRecordComponent(name, descriptor);
 		return null;
 	}
 
@@ -93,18 +105,19 @@ public interface ClassVisitor extends DeclarationVisitor {
 	 * Visit a module in this class.
 	 *
 	 * @param name
-	 * 		  Name of the module.
+	 * 		Name of the module.
 	 * @param access
-	 * 		  Access flags of the module.
+	 * 		Access flags of the module.
 	 * @param version
-	 * 		  Version of the module.
-	 * 		  {@code null} if the module has no version.
+	 * 		Version of the module.
+	 *        {@code null} if the module has no version.
+	 *
 	 * @return A visitor for the module.
 	 */
 	@Nullable
-	default ModuleVisitor visitModule(String name, int access, @Nullable String version) {
+	default ModuleVisitor visitModule(@Nonnull String name, int access, @Nullable String version) {
 		ClassVisitor delegate = classDelegate();
-		if(delegate != null) return delegate.visitModule(name, access, version);
+		if (delegate != null) return delegate.visitModule(name, access, version);
 		return null;
 	}
 
@@ -112,83 +125,84 @@ public interface ClassVisitor extends DeclarationVisitor {
 	 * Visits the enclosing class of the class.
 	 *
 	 * @param owner
-	 * 			Name of the enclosing class.
+	 * 		Name of the enclosing class.
 	 * @param name
-	 * 			Name of the enclosing method.
-	 * 			{@code null} if the class is not enclosed in a method.
+	 * 		Name of the enclosing method.
+	 *        {@code null} if the class is not enclosed in a method.
 	 * @param descriptor
-	 * 			Descriptor of the enclosing method.
-	 * 			{@code null} if the class is not enclosed in a method.
+	 * 		Descriptor of the enclosing method.
+	 *        {@code null} if the class is not enclosed in a method.
 	 */
-	default void visitOuterClass(String owner, @Nullable String name, @Nullable Descriptor descriptor) {
+	default void visitOuterClass(@Nonnull String owner, @Nullable String name, @Nullable Descriptor descriptor) {
 		ClassVisitor delegate = classDelegate();
-		if(delegate != null) delegate.visitOuterClass(owner, name, descriptor);
+		if (delegate != null) delegate.visitOuterClass(owner, name, descriptor);
 	}
 
 	/**
 	 * Visit an inner class.
 	 *
 	 * @param name
-	 * 			Name of the inner class.
+	 * 		Name of the inner class.
 	 * @param outerName
-	 * 			Name of the outer class.
-	 * 			{@code null} if the inner class is not a member of another class.
+	 * 		Name of the outer class.
+	 *        {@code null} if the inner class is not a member of another class.
 	 * @param innerName
-	 * 			Name of the inner class inside its enclosing class.
-	 * 			{@code null} if the inner class is anonymous.
+	 * 		Name of the inner class inside its enclosing class.
+	 *        {@code null} if the inner class is anonymous.
 	 * @param access
-	 * 			Access flags of the inner class.
+	 * 		Access flags of the inner class.
 	 */
 	default void visitInnerClass(String name, @Nullable String outerName, @Nullable String innerName, int access) {
 		ClassVisitor delegate = classDelegate();
-		if(delegate != null) delegate.visitInnerClass(name, outerName, innerName, access);
+		if (delegate != null) delegate.visitInnerClass(name, outerName, innerName, access);
 	}
 
 	/**
 	 * Visit a source file.
+	 *
 	 * @param source
-	 * 			Name of the source file.
-	 * 			{@code null} if the source file name is unknown.
+	 * 		Name of the source file.
+	 *        {@code null} if the source file name is unknown.
 	 * @param debug
-	 * 			Debug information.
-	 * 			{@code null} if the debug information is unknown.
+	 * 		Debug information.
+	 *        {@code null} if the debug information is unknown.
 	 */
 	default void visitSource(@Nullable String source, byte @Nullable [] debug) {
 		ClassVisitor delegate = classDelegate();
-		if(delegate != null) delegate.visitSource(source, debug);
+		if (delegate != null) delegate.visitSource(source, debug);
 	}
 
 	/**
 	 * Visit the nest host class of this class.
 	 *
 	 * @param nestHost
-	 * 			Name of the nest host class.
+	 * 		Name of the nest host class.
 	 */
-	default void visitNestHost(String nestHost) {
+	default void visitNestHost(@Nonnull String nestHost) {
 		ClassVisitor delegate = classDelegate();
-		if(delegate != null) delegate.visitNestHost(nestHost);
+		if (delegate != null) delegate.visitNestHost(nestHost);
 	}
 
 	/**
 	 * Visit a nest member class of this class.
 	 *
 	 * @param nestMember
-	 * 			Name of the nest member class.
+	 * 		Name of the nest member class.
 	 */
-	default void visitNestMember(String nestMember) {
+	default void visitNestMember(@Nonnull String nestMember) {
 		ClassVisitor delegate = classDelegate();
-		if(delegate != null) delegate.visitNestMember(nestMember);
+		if (delegate != null) delegate.visitNestMember(nestMember);
 	}
 
 	/**
 	 * Visit a permitted subclass of this class.
 	 *
 	 * @param permittedSubclass
-	 * 			Name of the permitted subclass.
+	 * 		Name of the permitted subclass.
 	 */
-	default void visitPermittedSubclass(String permittedSubclass) {
+	default void visitPermittedSubclass(@Nonnull String permittedSubclass) {
 		ClassVisitor delegate = classDelegate();
-		if(delegate != null) delegate.visitPermittedSubclass(permittedSubclass);
+		if (delegate != null) delegate.visitPermittedSubclass(permittedSubclass);
 	}
 
 	/**
@@ -196,7 +210,6 @@ public interface ClassVisitor extends DeclarationVisitor {
 	 */
 	default void visitClassEnd() {
 		ClassVisitor delegate = classDelegate();
-		if(delegate != null) delegate.visitClassEnd();
+		if (delegate != null) delegate.visitClassEnd();
 	}
-
 }

@@ -7,34 +7,39 @@ import me.coley.cafedude.tree.visitor.AnnotationDefaultVisitor;
 import me.coley.cafedude.tree.visitor.AnnotationVisitor;
 import me.coley.cafedude.util.ConstantUtil;
 
+import javax.annotation.Nonnull;
 import java.util.Map;
 
+/**
+ * Reader for an {@link Annotation} to pass it along to a {@link AnnotationVisitor}.
+ *
+ * @author Justus Garbe
+ */
 class AnnotationReader {
-
-	static void visitAnnotation(Annotation annotation, AnnotationVisitor av) {
+	static void visitAnnotation(@Nonnull Annotation annotation, @Nonnull AnnotationVisitor av) {
 		for (Map.Entry<CpUtf8, ElementValue> entry : annotation.getValues().entrySet()) {
 			visitAnnotationElement(entry.getKey().getText(), entry.getValue(), av);
 		}
 	}
 
-	static void visitAnnotationElement(String key, ElementValue value, AnnotationVisitor av) {
-		if(value.getTag() == '[' || value.getTag() == '@' || value.getTag() == 'e') {
-			if(value instanceof ArrayElementValue) {
+	static void visitAnnotationElement(@Nonnull String key, @Nonnull ElementValue value, @Nonnull AnnotationVisitor av) {
+		if (value.getTag() == '[' || value.getTag() == '@' || value.getTag() == 'e') {
+			if (value instanceof ArrayElementValue) {
 				ArrayElementValue array = (ArrayElementValue) value;
 				AnnotationArrayVisitor aav = av.visitArray(key);
-				if(aav == null) return; // skip
+				if (aav == null) return; // skip
 				for (ElementValue elementValue : array.getArray()) {
 					visitArrayElement(elementValue, aav);
 				}
 				aav.visitArrayEnd();
-			} else if(value instanceof EnumElementValue) {
+			} else if (value instanceof EnumElementValue) {
 				EnumElementValue enumValue = (EnumElementValue) value;
 				av.visitEnum(key, enumValue.getType().getText(), enumValue.getName().getText());
-			} else if(value instanceof AnnotationElementValue) {
+			} else if (value instanceof AnnotationElementValue) {
 				AnnotationElementValue annotationValue = (AnnotationElementValue) value;
 				Annotation annotation = annotationValue.getAnnotation();
 				AnnotationVisitor annotationVisitor = av.visitAnnotation(key, annotation.getType().getText());
-				if(annotationVisitor == null) return; // skip
+				if (annotationVisitor == null) return; // skip
 				visitAnnotation(annotationValue.getAnnotation(), annotationVisitor);
 				annotationVisitor.visitAnnotationEnd();
 			}
@@ -43,24 +48,24 @@ class AnnotationReader {
 		}
 	}
 
-	static void visitArrayElement(ElementValue value, AnnotationArrayVisitor aav) {
-		if(value.getTag() == '[' || value.getTag() == '@' || value.getTag() == 'e') {
-			if(value instanceof ArrayElementValue) {
+	static void visitArrayElement(@Nonnull ElementValue value, @Nonnull AnnotationArrayVisitor aav) {
+		if (value.getTag() == '[' || value.getTag() == '@' || value.getTag() == 'e') {
+			if (value instanceof ArrayElementValue) {
 				ArrayElementValue array = (ArrayElementValue) value;
 				AnnotationArrayVisitor aav2 = aav.visitSubArray();
-				if(aav2 == null) return; // skip
+				if (aav2 == null) return; // skip
 				for (ElementValue elementValue : array.getArray()) {
 					visitArrayElement(elementValue, aav2);
 				}
 				aav2.visitArrayEnd();
-			} else if(value instanceof EnumElementValue) {
+			} else if (value instanceof EnumElementValue) {
 				EnumElementValue enumValue = (EnumElementValue) value;
 				aav.visitArrayEnum(enumValue.getType().getText(), enumValue.getName().getText());
-			} else if(value instanceof AnnotationElementValue) {
+			} else if (value instanceof AnnotationElementValue) {
 				AnnotationElementValue annotationValue = (AnnotationElementValue) value;
 				Annotation annotation = annotationValue.getAnnotation();
 				AnnotationVisitor annotationVisitor = aav.visitArrayAnnotation(annotation.getType().getText());
-				if(annotationVisitor == null) return; // skip
+				if (annotationVisitor == null) return; // skip
 				visitAnnotation(annotationValue.getAnnotation(), annotationVisitor);
 				annotationVisitor.visitAnnotationEnd();
 			}
@@ -69,24 +74,24 @@ class AnnotationReader {
 		}
 	}
 
-	static void visitAnnotationDefaultElement(ElementValue value, AnnotationDefaultVisitor adv) {
-		if(value.getTag() == '[' || value.getTag() == '@' || value.getTag() == 'e') {
-			if(value instanceof ArrayElementValue) {
+	static void visitAnnotationDefaultElement(@Nonnull ElementValue value, @Nonnull AnnotationDefaultVisitor adv) {
+		if (value.getTag() == '[' || value.getTag() == '@' || value.getTag() == 'e') {
+			if (value instanceof ArrayElementValue) {
 				ArrayElementValue array = (ArrayElementValue) value;
 				AnnotationArrayVisitor aav = adv.visitDefaultArray();
-				if(aav == null) return; // skip
+				if (aav == null) return; // skip
 				for (ElementValue elementValue : array.getArray()) {
 					visitArrayElement(elementValue, aav);
 				}
 				aav.visitArrayEnd();
-			} else if(value instanceof EnumElementValue) {
+			} else if (value instanceof EnumElementValue) {
 				EnumElementValue enumValue = (EnumElementValue) value;
 				adv.visitDefaultEnum(enumValue.getType().getText(), enumValue.getName().getText());
-			} else if(value instanceof AnnotationElementValue) {
+			} else if (value instanceof AnnotationElementValue) {
 				AnnotationElementValue annotationValue = (AnnotationElementValue) value;
 				Annotation annotation = annotationValue.getAnnotation();
 				AnnotationVisitor annotationVisitor = adv.visitDefaultAnnotation(annotation.getType().getText());
-				if(annotationVisitor == null) return; // skip
+				if (annotationVisitor == null) return; // skip
 				visitAnnotation(annotationValue.getAnnotation(), annotationVisitor);
 				annotationVisitor.visitAnnotationEnd();
 			}
@@ -94,5 +99,4 @@ class AnnotationReader {
 			adv.visitDefaultValue(ConstantUtil.from(value));
 		}
 	}
-
 }

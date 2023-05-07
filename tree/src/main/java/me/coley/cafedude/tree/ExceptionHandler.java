@@ -5,6 +5,8 @@ import javax.annotation.Nullable;
 
 /**
  * Exception handler object.
+ *
+ * @author Justus Garbe
  */
 public class ExceptionHandler {
 	@Nullable
@@ -33,7 +35,8 @@ public class ExceptionHandler {
 	/**
 	 * @return Exception type.
 	 */
-	public @Nullable String getType() {
+	@Nullable
+	public String getType() {
 		return type;
 	}
 

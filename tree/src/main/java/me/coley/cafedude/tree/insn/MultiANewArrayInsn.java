@@ -2,15 +2,17 @@ package me.coley.cafedude.tree.insn;
 
 import me.coley.cafedude.classfile.instruction.Opcodes;
 
+import javax.annotation.Nonnull;
+
 /**
  * Instruction for the {@link Opcodes#MULTIANEWARRAY} instruction,
  * which has a class reference and a dimension count operand.
+ *
+ * @author Justus Garbe
  * @see Opcodes#MULTIANEWARRAY
  */
 public class MultiANewArrayInsn extends Insn {
-
 	private String owner;
-
 	private int dimensions;
 
 	/**
@@ -19,7 +21,7 @@ public class MultiANewArrayInsn extends Insn {
 	 * @param dimensions
 	 * 		Number of dimensions of the array.
 	 */
-	public MultiANewArrayInsn(String owner, int dimensions) {
+	public MultiANewArrayInsn(@Nonnull String owner, int dimensions) {
 		super(InsnKind.MULTI_ANEWARRAY, Opcodes.MULTIANEWARRAY);
 		this.owner = owner;
 		this.dimensions = dimensions;

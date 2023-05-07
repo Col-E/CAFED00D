@@ -9,38 +9,50 @@ import me.coley.cafedude.classfile.constant.*;
 import me.coley.cafedude.tree.Constant;
 import me.coley.cafedude.tree.Handle;
 
+import javax.annotation.Nonnull;
+
 import static me.coley.cafedude.classfile.ConstantPoolConstants.*;
 
 /**
  * Utility for converting constant pool entries to their tree representation.
+ *
+ * @author Justus Garbe
  */
 public class ConstantUtil {
 
 	/**
 	 * Convert a {@link CpEntry} to a {@link Constant}.
+	 *
 	 * @param entry
-	 * 			Constant pool entry.
-	 * @param pool
-	 * 			Constant pool to use for resolving references.
+	 * 		Constant pool entry.
+	 *
 	 * @return Constant or {@code null} if the entry is not convertible.
+	 *
+	 * @throws IllegalArgumentException
+	 * 		When the constant type is not convertible.
 	 */
-	public static Constant from(CpEntry entry) {
+	@Nonnull
+	public static Constant from(@Nonnull CpEntry entry) {
 		switch (entry.getTag()) {
-			case UTF8: return new Constant(Constant.Type.STRING, ((CpUtf8) entry).getText());
-			case STRING: return from(((CpString) entry).getString());
-			case INTEGER: return new Constant(Constant.Type.INT, ((CpInt) entry).getValue());
-			case FLOAT: return new Constant(Constant.Type.FLOAT, ((CpFloat) entry).getValue());
-			case LONG: return new Constant(Constant.Type.LONG, ((CpLong) entry).getValue());
-			case DOUBLE: return new Constant(Constant.Type.DOUBLE, ((CpDouble) entry).getValue());
+			case UTF8:
+				return Constant.of(((CpUtf8) entry).getText());
+			case STRING:
+				return from(((CpString) entry).getString());
+			case INTEGER:
+				return Constant.of(((CpInt) entry).getValue());
+			case FLOAT:
+				return Constant.of(((CpFloat) entry).getValue());
+			case LONG:
+				return Constant.of(((CpLong) entry).getValue());
+			case DOUBLE:
+				return Constant.of(((CpDouble) entry).getValue());
 			case CLASS: {
 				CpClass cpClass = (CpClass) entry;
-				return new Constant(Constant.Type.DESCRIPTOR,
-						Descriptor.from('L' + cpClass.getName().getText() + ';'));
+				return Constant.of(Descriptor.from('L' + cpClass.getName().getText() + ';'));
 			}
 			case METHOD_TYPE: {
 				CpMethodType cpMethodType = (CpMethodType) entry;
-				return new Constant(Constant.Type.DESCRIPTOR,
-						Descriptor.from(cpMethodType.getDescriptor().getText()));
+				return Constant.of(Descriptor.from(cpMethodType.getDescriptor().getText()));
 			}
 			case METHOD_HANDLE: {
 				CpMethodHandle cpMethodHandle = (CpMethodHandle) entry;
@@ -49,10 +61,11 @@ public class ConstantUtil {
 				String owner = ref.getClassRef().getName().getText();
 				String name = nt.getName().getText();
 				String desc = nt.getType().getText();
-				return new Constant(Constant.Type.HANDLE,
+				return Constant.of(
 						new Handle(Handle.Tag.fromKind(cpMethodHandle.getKind()), owner, name, Descriptor.from(desc)));
 			}
-			default: return null;
+			default:
+				throw new IllegalArgumentException("Non convertible constant type: " + entry.getTag());
 		}
 	}
 
@@ -60,21 +73,23 @@ public class ConstantUtil {
 	 * Convert a {@link ElementValue} to a {@link Constant}.
 	 *
 	 * @param value
-	 * 			Element value. {@link PrimitiveElementValue}, {@link Utf8ElementValue} or {@link ClassElementValue}.
-	 * @param pool
-	 * 			Constant pool to use for resolving references.
+	 * 		Element value. {@link PrimitiveElementValue}, {@link Utf8ElementValue} or {@link ClassElementValue}.
+	 *
 	 * @return Constant or {@code null} if the value is not convertible.
-	 * @throws IllegalArgumentException If a invalid element value is encountered.
+	 *
+	 * @throws IllegalArgumentException
+	 * 		If a invalid element value is encountered.
 	 */
-	public static Constant from(ElementValue value) {
+	@Nonnull
+	public static Constant from(@Nonnull ElementValue value) {
 		CpEntry cp;
-		if(value instanceof PrimitiveElementValue) {
+		if (value instanceof PrimitiveElementValue) {
 			PrimitiveElementValue primitive = (PrimitiveElementValue) value;
 			cp = primitive.getValue();
-		} else if(value instanceof Utf8ElementValue) {
+		} else if (value instanceof Utf8ElementValue) {
 			Utf8ElementValue utf8 = (Utf8ElementValue) value;
 			cp = utf8.getValue();
-		} else if(value instanceof ClassElementValue) {
+		} else if (value instanceof ClassElementValue) {
 			ClassElementValue clazz = (ClassElementValue) value;
 			cp = clazz.getClassEntry();
 		} else {

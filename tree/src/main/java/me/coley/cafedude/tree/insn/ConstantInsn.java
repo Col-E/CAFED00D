@@ -22,6 +22,8 @@ import me.coley.cafedude.classfile.instruction.Opcodes;
  *     <li>{@link Opcodes#DCONST_0}</li>
  *     <li>{@link Opcodes#DCONST_1}</li>
  * </ul>
+ *
+ * @author Justus Garbe
  */
 public class ConstantInsn extends Insn {
 	/**

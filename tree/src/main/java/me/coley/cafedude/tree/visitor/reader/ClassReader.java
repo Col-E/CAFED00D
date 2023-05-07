@@ -1,7 +1,10 @@
 package me.coley.cafedude.tree.visitor.reader;
 
 import me.coley.cafedude.InvalidClassException;
-import me.coley.cafedude.classfile.*;
+import me.coley.cafedude.classfile.ClassFile;
+import me.coley.cafedude.classfile.Descriptor;
+import me.coley.cafedude.classfile.Field;
+import me.coley.cafedude.classfile.Method;
 import me.coley.cafedude.classfile.attribute.*;
 import me.coley.cafedude.classfile.constant.*;
 import me.coley.cafedude.io.ClassFileReader;
@@ -11,24 +14,27 @@ import me.coley.cafedude.tree.visitor.ModuleVisitor;
 import me.coley.cafedude.tree.visitor.RecordComponentVisitor;
 import me.coley.cafedude.util.Optional;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
  * Class to read a {@link ClassFile} into a {@link ClassVisitor}.
+ *
  * @author Justus Garbe
  */
 public class ClassReader {
-
 	private final ClassFile classFile;
 
 	/**
 	 * Construct a class reader using a byte array which will be read.
 	 *
 	 * @param bytes
-	 * 			Byte array of the class file.
-	 * @throws InvalidClassException if the class bytes are invalid
+	 * 		Byte array of the class file.
+	 *
+	 * @throws InvalidClassException
+	 * 		if the class bytes are invalid
 	 */
-	public ClassReader(byte[] bytes) throws InvalidClassException {
+	public ClassReader(@Nonnull byte[] bytes) throws InvalidClassException {
 		ClassFileReader reader = new ClassFileReader();
 		this.classFile = reader.read(bytes);
 	}
@@ -37,9 +43,9 @@ public class ClassReader {
 	 * Create a new class reader using an existing class file.
 	 *
 	 * @param file
-	 * 			Class file.
+	 * 		Class file.
 	 */
-	public ClassReader(ClassFile file) {
+	public ClassReader(@Nonnull ClassFile file) {
 		this.classFile = file;
 	}
 
@@ -47,53 +53,62 @@ public class ClassReader {
 	 * Accept a class visitor to be visited using this class file.
 	 *
 	 * @param visitor
-	 * 			Visitor to accept.
+	 * 		Visitor to accept.
 	 */
-	public void accept(ClassVisitor visitor) throws InvalidClassException {
+	public void accept(@Nonnull ClassVisitor visitor) throws InvalidClassException {
 		LabelTransformer transformer = new LabelTransformer(classFile);
 		transformer.transform();
 		List<CpClass> interfaces = classFile.getInterfaceClasses();
 		String[] interfaceNames = new String[interfaces.size()];
+
 		// convert interface indices to names
 		for (int i = 0; i < interfaces.size(); i++) {
 			interfaceNames[i] = interfaces.get(i).getName().getText();
 		}
+
 		// visit class
 		visitor.visitClass(classFile.getName(), classFile.getAccess(), classFile.getSuperName(), interfaceNames);
+
 		// visit annotations, signature and deprecated
 		MemberReader.visitDeclaration(visitor, classFile);
+
 		// outer class
 		EnclosingMethodAttribute enclosingMethod = classFile.getAttribute(EnclosingMethodAttribute.class);
 		if (enclosingMethod != null) {
 			String owner = enclosingMethod.getClassEntry().getName().getText();
 			String name = null;
 			Descriptor desc = null;
-			if(enclosingMethod.getMethodEntry() != null) {
+			if (enclosingMethod.getMethodEntry() != null) {
 				CpNameType nameType = enclosingMethod.getMethodEntry();
 				name = nameType.getName().getText();
 				desc = Descriptor.from(nameType.getType().getText());
 			}
 			visitor.visitOuterClass(owner, name, desc);
 		}
+
 		// inner classes
 		InnerClassesAttribute innerClasses = classFile.getAttribute(InnerClassesAttribute.class);
 		if (innerClasses != null) {
 			for (InnerClassesAttribute.InnerClass innerClass : innerClasses.getInnerClasses()) {
 				// inner name must be given
 				String innerName = innerClass.getInnerClassInfo().getName().getText();
+
 				// outer name only for non-anonymous classes
 				String outerName = Optional.orNull(innerClass.getOuterClassInfo(), t -> t.getName().getText());
+
 				// inner simple name only for non-anonymous classes
 				String innerSimpleName = Optional.orNull(innerClass.getInnerName(), CpUtf8::getText);
 				visitor.visitInnerClass(innerName, outerName, innerSimpleName, innerClass.getInnerClassAccessFlags());
 			}
 		}
+
 		// source and debug
 		SourceFileAttribute sourceFile = classFile.getAttribute(SourceFileAttribute.class);
 		SourceDebugExtensionAttribute sourceDebug = classFile.getAttribute(SourceDebugExtensionAttribute.class);
 		String source = Optional.orNull(sourceFile, t -> t.getSourceFilename().getText());
 		byte[] debug = Optional.orNull(sourceDebug, SourceDebugExtensionAttribute::getDebugExtension);
 		visitor.visitSource(source, debug);
+
 		// nests
 		NestHostAttribute nestHost = classFile.getAttribute(NestHostAttribute.class);
 		NestMembersAttribute nestMembers = classFile.getAttribute(NestMembersAttribute.class);
@@ -105,6 +120,7 @@ public class ClassReader {
 				visitor.visitNestMember(member.getName().getText());
 			}
 		}
+
 		// permitted subclasses
 		PermittedClassesAttribute permittedClasses = classFile.getAttribute(PermittedClassesAttribute.class);
 		if (permittedClasses != null) {
@@ -112,6 +128,7 @@ public class ClassReader {
 				visitor.visitPermittedSubclass(permitted.getName().getText());
 			}
 		}
+
 		// read records
 		RecordAttribute record = classFile.getAttribute(RecordAttribute.class);
 		if (record != null) {
@@ -119,25 +136,28 @@ public class ClassReader {
 				String name = component.getName().getText();
 				String type = component.getDesc().getText();
 				RecordComponentVisitor rcv = visitor.visitRecordComponent(name, Descriptor.from(type));
-				if(rcv == null) continue;
+				if (rcv == null) continue;
 				MemberReader.visitDeclaration(rcv, component);
 				rcv.visitRecordComponentEnd();
 			}
 		}
+
 		// read module
 		ModuleAttribute module = classFile.getAttribute(ModuleAttribute.class);
-		if(module != null) {
+		if (module != null) {
 			String name = module.getName().getText();
 			int flags = module.getFlags();
 			String version = Optional.orNull(module.getVersion(), CpUtf8::getText);
 			ModuleVisitor mv = visitor.visitModule(name, flags, version);
-			if(mv != null) {
+			if (mv != null) {
 				visitModule(mv, module);
 				mv.visitModuleEnd();
 			}
 		}
+
 		// read members
 		MemberReader memberReader = new MemberReader(classFile, transformer);
+
 		// read methods
 		for (Method method : classFile.getMethods()) {
 			memberReader.visitMethod(visitor.visitMethod(
@@ -146,6 +166,7 @@ public class ClassReader {
 					Descriptor.from(method.getType().getText())
 			), method);
 		}
+
 		// read fields
 		for (Field field : classFile.getFields()) {
 			memberReader.visitField(visitor.visitField(
@@ -154,10 +175,11 @@ public class ClassReader {
 					Descriptor.from(field.getType().getText())
 			), field);
 		}
+
 		visitor.visitClassEnd();
 	}
 
-	private void visitModule(ModuleVisitor visitor, ModuleAttribute module) {
+	private void visitModule(@Nonnull ModuleVisitor visitor, @Nonnull ModuleAttribute module) {
 		for (ModuleAttribute.Requires require : module.getRequires()) {
 			String name = require.getModule().getName().getText();
 			int flags = require.getFlags();
@@ -169,8 +191,8 @@ public class ClassReader {
 			String[] targets = new String[export.getTo().size()];
 			int i = 0;
 			for (CpModule to : export.getTo()) {
-				 targets[i] = to.getName().getText();
-				 i++;
+				targets[i] = to.getName().getText();
+				i++;
 			}
 			visitor.visitExports(name, flags, targets);
 		}
@@ -208,11 +230,5 @@ public class ClassReader {
 				visitor.visitPackage(pkg.getPackageName().getText());
 			}
 		}
-	}
-
-	private String getClassName(int classIndex) {
-		CpClass cpClass = (CpClass) classFile.getCp(classIndex);
-		CpUtf8 cpClassName = (CpUtf8) classFile.getCp(cpClass.getIndex());
-		return cpClassName.getText();
 	}
 }

@@ -1,6 +1,7 @@
 package me.coley.cafedude.util;
 
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.function.Function;
 
@@ -22,7 +23,7 @@ public class Optional {
 	 *
 	 * @return The function's return value, or {@code null} if the provided value was {@code null}.
 	 */
-	public static <T, R> @Nullable R orNull(T value, Function<T, R> orElse) {
+	public static <T, R> @Nullable R orNull(@Nullable T value, @Nonnull Function<T, R> orElse) {
 		return value == null ? null : orElse.apply(value);
 	}
 
@@ -40,7 +41,7 @@ public class Optional {
 	 *
 	 * @return The function's return value, or the default-value if the provided value was {@code null}.
 	 */
-	public static <T, R> R orElse(T value, Function<T, R> orElse, R defaultValue) {
+	public static <T, R> R orElse(@Nullable T value, @Nonnull Function<T, R> orElse, @Nonnull R defaultValue) {
 		return value == null ? defaultValue : orElse.apply(value);
 	}
 }

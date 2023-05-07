@@ -14,14 +14,17 @@ import me.coley.cafedude.transform.LabelTransformer;
 import me.coley.cafedude.tree.visitor.*;
 import me.coley.cafedude.util.ConstantUtil;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map.Entry;
 
 /**
- * Helper class for transforming from information {@link ClassMember} into a visitor
+ * Helper class for transforming from information {@link ClassMember} into a visitor.
+ *
+ * @author Justus Garbe
  */
 public class MemberReader {
-
 	private final ClassFile classFile;
 	private final LabelTransformer transformer;
 
@@ -31,7 +34,7 @@ public class MemberReader {
 	 * @param transformer
 	 * 		Label transformer for accessing label and instruction positions.
 	 */
-	MemberReader(ClassFile file, LabelTransformer transformer) {
+	MemberReader(@Nonnull ClassFile file,@Nonnull LabelTransformer transformer) {
 		this.transformer = transformer;
 		this.classFile = file;
 	}
@@ -44,20 +47,20 @@ public class MemberReader {
 	 * @param member
 	 * 		Member to visit.
 	 */
-	static void visitDeclaration(DeclarationVisitor visitor, AttributeHolder member) {
+	static void visitDeclaration(@Nonnull DeclarationVisitor visitor,@Nonnull  AttributeHolder member) {
 		AnnotationsAttribute annotations = member.getAttribute(AnnotationsAttribute.class);
 		if (annotations != null) {
 			boolean visible = annotations.isVisible();
 			for (Annotation annotation : annotations.getAnnotations()) {
 				String type = annotation.getType().getText();
 				AnnotationVisitor av;
-				if(annotation instanceof TypeAnnotation) {
+				if (annotation instanceof TypeAnnotation) {
 					TypeAnnotation ta = (TypeAnnotation) annotation;
 					av = visitor.visitTypeAnnotation(type, ta.getTargetInfo(), ta.getTypePath(), visible);
 				} else {
 					av = visitor.visitAnnotation(type, visible);
 				}
-				if(av == null) continue;
+				if (av == null) continue;
 				AnnotationReader.visitAnnotation(annotation, av);
 				av.visitAnnotationEnd();
 			}
@@ -70,63 +73,62 @@ public class MemberReader {
 		visitor.visitSynthetic(member.getAttribute(SyntheticAttribute.class) != null);
 	}
 
-	void visitMethod(MethodVisitor mv, AttributeHolder member) throws InvalidClassException {
-		if(mv == null) return;
+	void visitMethod(@Nullable MethodVisitor mv, @Nonnull  AttributeHolder member) throws InvalidClassException {
+		if (mv == null) return;
 		visitDeclaration(mv, member);
 		visitCode(mv.visitCode(), (Method) member);
 		ExceptionsAttribute exceptions = member.getAttribute(ExceptionsAttribute.class);
-		if(exceptions != null) {
+		if (exceptions != null) {
 			for (CpClass exception : exceptions.getExceptionTable()) {
 				mv.visitThrows(exception.getName().getText());
 			}
 		}
 		ParameterAnnotationsAttribute parameterAnnotations = member.getAttribute(ParameterAnnotationsAttribute.class);
-		if(parameterAnnotations != null) {
+		if (parameterAnnotations != null) {
 			boolean visible = parameterAnnotations.isVisible();
 			for (Entry<Integer, List<Annotation>> entry : parameterAnnotations.getParameterAnnotations().entrySet()) {
 				int parameter = entry.getKey();
 				for (Annotation annotation : entry.getValue()) {
 					String type = annotation.getType().getText();
 					AnnotationVisitor av = mv.visitParameterAnnotation(parameter, type, visible);
-					if(av == null) continue;
+					if (av == null) continue;
 					AnnotationReader.visitAnnotation(annotation, av);
 					av.visitAnnotationEnd();
 				}
 			}
 		}
 		MethodParametersAttribute methodParameters = member.getAttribute(MethodParametersAttribute.class);
-		if(methodParameters != null) {
+		if (methodParameters != null) {
 			for (MethodParametersAttribute.Parameter parameter : methodParameters.getParameters()) {
 				String name = parameter.getName().getText();
 				mv.visitParameter(name, parameter.getAccessFlags());
 			}
 		}
 		AnnotationDefaultAttribute annotationDefault = member.getAttribute(AnnotationDefaultAttribute.class);
-		if(annotationDefault != null) {
+		if (annotationDefault != null) {
 			AnnotationDefaultVisitor adv = mv.visitAnnotationDefault();
-			if(adv == null) return;
+			if (adv == null) return;
 			AnnotationReader.visitAnnotationDefaultElement(annotationDefault.getElementValue(), adv);
 		}
 		mv.visitMethodEnd();
 	}
 
 	void visitField(FieldVisitor fv, AttributeHolder member) {
-		if(fv == null) return;
+		if (fv == null) return;
 		visitDeclaration(fv, member);
 		ConstantValueAttribute constant = member.getAttribute(ConstantValueAttribute.class);
-		if(constant != null) {
+		if (constant != null) {
 			fv.visitConstantValue(ConstantUtil.from(constant.getConstantValue()));
 		}
 		fv.visitFieldEnd();
 	}
 
 	private void visitCode(CodeVisitor cv, Method method) throws InvalidCodeException {
-		if(cv == null) return; // skip code
+		if (cv == null) return; // skip code
 		CodeAttribute code = method.getAttribute(CodeAttribute.class);
-		if(code == null) return; // skip code
+		if (code == null) return; // skip code
 		CodeReader cr = new CodeReader(classFile, code, cv, method,
 				transformer.getLabels(method), transformer.getInstructions(method));
 		cr.accept();
 	}
-
 }

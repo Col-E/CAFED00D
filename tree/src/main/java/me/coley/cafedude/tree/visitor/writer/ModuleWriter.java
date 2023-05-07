@@ -12,6 +12,7 @@ import me.coley.cafedude.classfile.constant.CpUtf8;
 import me.coley.cafedude.tree.visitor.ModuleVisitor;
 import me.coley.cafedude.util.Optional;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,20 +20,24 @@ import java.util.function.Consumer;
 
 import static me.coley.cafedude.classfile.attribute.ModuleAttribute.*;
 
+/**
+ * Module visitor implementation for writing back to {@link ModulePackagesAttribute} / {@link ModuleAttribute}.
+ *
+ * @author Justus Garbe
+ */
 public class ModuleWriter implements ModuleVisitor {
-
-	private CpModule name;
-	private int flags;
-	private CpUtf8 version;
-	private Symbols symbols;
-	private List<Exports> exports = new ArrayList<>();
-	private List<Opens> opens = new ArrayList<>();
-	private List<Provides> provides = new ArrayList<>();
-	private List<Requires> requires = new ArrayList<>();
-	private List<CpClass> uses = new ArrayList<>();
-	private List<CpPackage> modulePackages = new ArrayList<>();
-	private List<Attribute> attributes = new ArrayList<>();
-	private Consumer<List<Attribute>> callback;
+	private final CpModule name;
+	private final int flags;
+	private final CpUtf8 version;
+	private final Symbols symbols;
+	private final List<Exports> exports = new ArrayList<>();
+	private final List<Opens> opens = new ArrayList<>();
+	private final List<Provides> provides = new ArrayList<>();
+	private final List<Requires> requires = new ArrayList<>();
+	private final List<CpClass> uses = new ArrayList<>();
+	private final List<CpPackage> modulePackages = new ArrayList<>();
+	private final List<Attribute> attributes = new ArrayList<>();
+	private final Consumer<List<Attribute>> callback;
 
 	public ModuleWriter(Symbols symbols, CpModule name, int access, CpUtf8 version,
 						Consumer<List<Attribute>> callback) {
@@ -44,7 +49,7 @@ public class ModuleWriter implements ModuleVisitor {
 	}
 
 	@Override
-	public void visitExports(String exportPackage, int flags, String... modules) {
+	public void visitExports(@Nonnull String exportPackage, int flags, String... modules) {
 		CpPackage packageEntry = symbols.newPackage(exportPackage);
 		List<CpModule> moduleIndexes = new ArrayList<>();
 		for (String module : modules) {
@@ -54,7 +59,7 @@ public class ModuleWriter implements ModuleVisitor {
 	}
 
 	@Override
-	public void visitOpens(String openPackage, int flags, String... modules) {
+	public void visitOpens(@Nonnull String openPackage, int flags, String... modules) {
 		CpPackage packageEntry = symbols.newPackage(openPackage);
 		List<CpModule> moduleIndexes = new ArrayList<>();
 		for (String module : modules) {
@@ -64,7 +69,7 @@ public class ModuleWriter implements ModuleVisitor {
 	}
 
 	@Override
-	public void visitProvides(String service, String... providers) {
+	public void visitProvides(@Nonnull String service, String... providers) {
 		CpClass serviceEntry = symbols.newClass(service);
 		List<CpClass> providerIndexes = new ArrayList<>();
 		for (String provider : providers) {
@@ -74,26 +79,26 @@ public class ModuleWriter implements ModuleVisitor {
 	}
 
 	@Override
-	public void visitUses(String service) {
+	public void visitUses(@Nonnull String service) {
 		uses.add(symbols.newClass(service));
 	}
 
 	@Override
-	public void visitRequires(String module, int flags, @Nullable String version) {
+	public void visitRequires(@Nonnull String module, int flags, @Nullable String version) {
 		CpModule moduleRef = symbols.newModule(module);
 		CpUtf8 versionRef = Optional.orNull(module, symbols::newUtf8);
 		requires.add(new Requires(moduleRef, flags, versionRef));
 	}
 
 	@Override
-	public void visitMainClass(String mainClass) {
+	public void visitMainClass(@Nonnull String mainClass) {
 		attributes.add(new ModuleMainClassAttribute(
 				symbols.newUtf8(AttributeConstants.MODULE_MAIN_CLASS),
 				symbols.newClass(mainClass)));
 	}
 
 	@Override
-	public void visitPackage(String packageName) {
+	public void visitPackage(@Nonnull String packageName) {
 		modulePackages.add(symbols.newPackage(packageName));
 	}
 

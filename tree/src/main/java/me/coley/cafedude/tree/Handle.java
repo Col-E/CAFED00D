@@ -2,11 +2,14 @@ package me.coley.cafedude.tree;
 
 import me.coley.cafedude.classfile.Descriptor;
 
+import javax.annotation.Nonnull;
+
 /**
  * Handle to a method or field.
+ *
+ * @author Justus Garbe
  */
 public class Handle {
-
 	private Tag tag;
 	private String owner;
 	private String name;
@@ -22,7 +25,7 @@ public class Handle {
 	 * @param descriptor
 	 * 		Descriptor of the handle.
 	 */
-	public Handle(Tag tag, String owner, String name, Descriptor descriptor) {
+	public Handle(@Nonnull Tag tag, @Nonnull String owner, @Nonnull String name, @Nonnull Descriptor descriptor) {
 		this.tag = tag;
 		this.owner = owner;
 		this.name = name;
@@ -32,6 +35,7 @@ public class Handle {
 	/**
 	 * @return Tag of the handle.
 	 */
+	@Nonnull
 	public Tag getTag() {
 		return tag;
 	}
@@ -40,13 +44,14 @@ public class Handle {
 	 * @param tag
 	 * 		Tag of the handle.
 	 */
-	public void setTag(Tag tag) {
+	public void setTag(@Nonnull Tag tag) {
 		this.tag = tag;
 	}
 
 	/**
 	 * @return Owner of the handle.
 	 */
+	@Nonnull
 	public String getOwner() {
 		return owner;
 	}
@@ -55,13 +60,14 @@ public class Handle {
 	 * @param owner
 	 * 		Owner of the handle.
 	 */
-	public void setOwner(String owner) {
+	public void setOwner(@Nonnull String owner) {
 		this.owner = owner;
 	}
 
 	/**
 	 * @return Name of the handle.
 	 */
+	@Nonnull
 	public String getName() {
 		return name;
 	}
@@ -70,13 +76,14 @@ public class Handle {
 	 * @param name
 	 * 		Name of the handle.
 	 */
-	public void setName(String name) {
+	public void setName(@Nonnull String name) {
 		this.name = name;
 	}
 
 	/**
 	 * @return Descriptor of the handle.
 	 */
+	@Nonnull
 	public Descriptor getDescriptor() {
 		return descriptor;
 	}
@@ -85,7 +92,7 @@ public class Handle {
 	 * @param descriptor
 	 * 		Descriptor of the handle.
 	 */
-	public void setDescriptor(Descriptor descriptor) {
+	public void setDescriptor(@Nonnull Descriptor descriptor) {
 		this.descriptor = descriptor;
 	}
 
@@ -109,9 +116,9 @@ public class Handle {
 		 *
 		 * @return Tag for the given ordinal.
 		 */
+		@Nonnull
 		public static Tag fromKind(int kind) {
-			return values()[kind-1];
+			return values()[kind - 1];
 		}
 	}
-
 }

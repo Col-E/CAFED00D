@@ -9,6 +9,7 @@ import me.coley.cafedude.tree.visitor.reader.ClassReader;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,7 +23,6 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class VisitorTest {
-
 	@ParameterizedTest
 	@MethodSource("supply")
 	public void testVisitClass(Path file) {
@@ -55,7 +55,7 @@ public class VisitorTest {
 
 	private static class VerificationClassVisitor implements ClassVisitor {
 		@Override
-		public void visitClass(String name, int access, String superName, String... interfaces) {
+		public void visitClass(@Nonnull String name, int access, @Nonnull String superName, String... interfaces) {
 			System.out.println("Class: " + name);
 			System.out.println("Access: " + access);
 			System.out.println("Super: " + superName);
@@ -63,7 +63,7 @@ public class VisitorTest {
 		}
 
 		@Override
-		public MethodVisitor visitMethod(String name, int access, Descriptor descriptor) {
+		public MethodVisitor visitMethod(@Nonnull String name, int access, @Nonnull Descriptor descriptor) {
 			System.out.println("Method: " + name);
 			System.out.println("Access: " + access);
 			System.out.printf("Descriptor: [%s] kind: %s\n", descriptor.getDescriptor(), descriptor.getKind());
@@ -71,7 +71,7 @@ public class VisitorTest {
 		}
 
 		@Override
-		public FieldVisitor visitField(String name, int access, Descriptor descriptor) {
+		public FieldVisitor visitField(@Nonnull String name, int access, @Nonnull Descriptor descriptor) {
 			System.out.println("Field: " + name);
 			System.out.println("Access: " + access);
 			System.out.printf("Descriptor: [%s] kind: %s\n", descriptor.getDescriptor(), descriptor.getKind());
@@ -79,6 +79,4 @@ public class VisitorTest {
 			};
 		}
 	}
-
-
 }

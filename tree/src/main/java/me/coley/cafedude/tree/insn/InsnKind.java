@@ -1,7 +1,11 @@
 package me.coley.cafedude.tree.insn;
 
+/**
+ * Types of instructions.
+ *
+ * @author Justus Garbe
+ */
 public enum InsnKind {
-
 	ARITHMETIC,
 	ARRAY,
 	CONSTANT,

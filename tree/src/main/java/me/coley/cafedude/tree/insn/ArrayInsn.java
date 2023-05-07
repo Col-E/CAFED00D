@@ -24,9 +24,10 @@ import me.coley.cafedude.classfile.instruction.Opcodes;
  *     <li>{@link Opcodes#SASTORE}</li>
  *     <li>{@link Opcodes#ARRAYLENGTH}</li>
  * </ul>
+ *
+ * @author Justus Garbe
  */
 public class ArrayInsn extends Insn {
-
 	/**
 	 * @param opcode
 	 * 		Instruction opcode.
