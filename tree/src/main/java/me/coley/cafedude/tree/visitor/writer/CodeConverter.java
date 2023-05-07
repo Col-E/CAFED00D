@@ -8,6 +8,7 @@ import me.coley.cafedude.classfile.constant.*;
 import me.coley.cafedude.classfile.instruction.*;
 import me.coley.cafedude.tree.*;
 import me.coley.cafedude.tree.insn.*;
+import me.coley.cafedude.util.Optional;
 
 import java.util.*;
 
@@ -77,14 +78,16 @@ public class CodeConverter implements Opcodes {
 		}
 		List<CodeAttribute.ExceptionTableEntry> exceptionTable = new ArrayList<>();
 		for (ExceptionHandler handler : code.getHandlers()) {
-			checkLabel(handler.getStart(), "handler <" + handler.getType() + "> start");
-			checkLabel(handler.getEnd(), "handler <" + handler.getType() + "> end");
-			checkLabel(handler.getHandler(), "handler <" + handler.getType() + "> handler");
+			String catchType = handler.getType();
+			String catchTypeRep =catchType == null ? "*" : catchType;
+			checkLabel(handler.getStart(), "handler <" + catchTypeRep + "> start");
+			checkLabel(handler.getEnd(), "handler <" + catchTypeRep + "> end");
+			checkLabel(handler.getHandler(), "handler <" + catchTypeRep + "> handler");
 			exceptionTable.add(new CodeAttribute.ExceptionTableEntry(
 					handler.getStart().getOffset(),
 					handler.getEnd().getOffset(),
 					handler.getHandler().getOffset(),
-					handler.getType() == null ? null : symbols.newClass(handler.getType())));
+					catchType == null ? null : symbols.newClass(catchType)));
 		}
 		List<Attribute> attributes = new ArrayList<>();
 		if (!localVariables.isEmpty())

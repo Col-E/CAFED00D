@@ -200,7 +200,7 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 		 * @param catchType
 		 * 		Constant pool entry holding the exception class type.
 		 */
-		public ExceptionTableEntry(int startPc, int endPc, int handlerPc, CpClass catchType) {
+		public ExceptionTableEntry(int startPc, int endPc, int handlerPc, @Nullable CpClass catchType) {
 			this.startPc = startPc;
 			this.endPc = endPc;
 			this.handlerPc = handlerPc;
@@ -254,7 +254,9 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 
 		/**
 		 * @return Constant pool entry holding the exception class type.
+		 * Can be {@code null} to represent handling ALL possible exception types.
 		 */
+		@Nullable
 		public CpClass getCatchType() {
 			return catchType;
 		}
@@ -262,15 +264,18 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 		/**
 		 * @param catchType
 		 * 		New constant pool entry holding the exception class type.
+		 * 		Can be {@code null} to represent handling ALL possible exception types.
 		 */
-		public void setCatchType(CpClass catchType) {
+		public void setCatchType(@Nullable CpClass catchType) {
 			this.catchType = catchType;
 		}
 
 		@Nonnull
 		@Override
 		public Set<CpEntry> cpAccesses() {
-			return Collections.singleton(getCatchType());
+			if (catchType != null)
+				return Collections.singleton(catchType);
+			return Collections.emptySet();
 		}
 	}
 }

@@ -191,11 +191,12 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				code.getAttributes().removeIf(sub -> !isValid(code, sub));
 				// Ensure exception indices are valid
 				for (ExceptionTableEntry entry : code.getExceptionTable()) {
-					expectedTypeMasks.put(entry.getCatchType(), i -> i == 0 || i == CLASS);
-					if (entry.getCatchType() == null) {
+					CpClass catchType = entry.getCatchType();
+					if (catchType == null) {
 						allow0Case = true;
 					} else {
-						cpEntryValidators.put(entry.getCatchType(), matchClass());
+						cpEntryValidators.put(catchType, matchClass());
+						expectedTypeMasks.put(catchType, i -> i == 0 || i == CLASS);
 					}
 				}
 				break;

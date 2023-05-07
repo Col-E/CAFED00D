@@ -29,6 +29,7 @@ public class CrasherPatchingTest {
 	public void testPatch(File sub) {
 		try {
 			byte[] code = Files.readAllBytes(sub.toPath());
+
 			// Reading with ASM fails or produces incorrect representation...
 			assertThrows(Throwable.class, () -> {
 				ClassWriter cw = new TestClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -37,10 +38,12 @@ public class CrasherPatchingTest {
 				cr.accept(node, 0);
 				node.accept(cw);
 			}, "Class does not break ASM: " + sub.getName());
+
 			// Patch obfuscated class
 			ClassFile cf = new ClassFileReader().read(code);
 			new IllegalStrippingTransformer(cf).transform();
 			byte[] modified = new ClassFileWriter().write(cf);
+
 			// Reading with ASM works
 			assertDoesNotThrow(() -> {
 				ClassWriter cw = new TestClassWriter(ClassWriter.COMPUTE_FRAMES);
