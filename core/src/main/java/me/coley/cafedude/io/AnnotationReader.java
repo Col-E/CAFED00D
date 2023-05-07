@@ -104,7 +104,7 @@ public class AnnotationReader {
 		try {
 			return new AnnotationDefaultAttribute(name, readElementValue());
 		} catch (Throwable t) {
-			logger.debug("Illegally formatted AnnotationDefault", t);
+			logger.debug("Illegally formatted AnnotationDefault, dropping");
 			return null;
 		}
 	}
@@ -146,7 +146,7 @@ public class AnnotationReader {
 			// Didn't throw exception, its valid
 			return new AnnotationsAttribute(name, annotations, visible);
 		} catch (Throwable t) {
-			logger.debug("Illegally formatted Annotations", t);
+			logger.debug("Illegally formatted Annotations, dropping");
 			return null;
 		}
 	}
@@ -176,7 +176,7 @@ public class AnnotationReader {
 			// Didn't crash, its valid
 			return new ParameterAnnotationsAttribute(name, parameterAnnotations, visible);
 		} catch (Throwable t) {
-			logger.debug("Illegally formatted ParameterAnnotations", t);
+			logger.debug("Illegally formatted ParameterAnnotations, dropping");
 			return null;
 		}
 	}
@@ -201,7 +201,7 @@ public class AnnotationReader {
 			// Didn't throw exception, its valid
 			return new AnnotationsAttribute(name, annotations, visible);
 		} catch (Throwable t) {
-			logger.debug("Illegally formatted TypeAnnotations", t);
+			logger.debug("Illegally formatted TypeAnnotations, dropping");
 			return null;
 		}
 	}
