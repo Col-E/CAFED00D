@@ -89,8 +89,8 @@ public class AttributeReader {
 	 * @return Read attribute, or {@code null} if it could not be parsed.
 	 */
 	@Nullable
-	public static Attribute read(@Nonnull ClassFileReader reader, @Nonnull ClassBuilder builder,
-								 @Nonnull DataInputStream is, @Nonnull AttributeContext context) {
+	public static Attribute readFromClass(@Nonnull ClassFileReader reader, @Nonnull ClassBuilder builder,
+										  @Nonnull DataInputStream is, @Nonnull AttributeContext context) {
 		try {
 			return new AttributeReader(reader, builder, is).read(context);
 		} catch (Exception ex) {

@@ -13,11 +13,18 @@ import javax.annotation.Nonnull;
 public class LabelInsn extends Insn {
 	private final Label label;
 
+	/**
+	 * @param label
+	 * 		Label.
+	 */
 	public LabelInsn(@Nonnull Label label) {
 		super(InsnKind.LABEL, LABEL_INSN_OPCODE);
 		this.label = label;
 	}
 
+	/**
+	 * @return Label.
+	 */
 	@Nonnull
 	public Label getLabel() {
 		return label;
