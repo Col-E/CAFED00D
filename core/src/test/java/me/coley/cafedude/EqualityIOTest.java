@@ -23,8 +23,18 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class EqualityIOTest {
 	@ParameterizedTest
-	@MethodSource("supply")
-	public void testEquality(Path sub) {
+	@MethodSource("supplyResourceClasses")
+	public void testEqualityNormal(Path sub) {
+		test(sub);
+	}
+
+	@ParameterizedTest
+	@MethodSource("supplySelfClasses")
+	public void testEqualitySelf(Path sub) {
+		test(sub);
+	}
+
+	private void test(Path sub) {
 		try {
 			byte[] code = Files.readAllBytes(sub);
 			ClassFile cf = new ClassFileReader().read(code);
@@ -42,11 +52,25 @@ public class EqualityIOTest {
 	/**
 	 * @return Test files to check.
 	 */
-	public static List<Path> supply() {
+	public static List<Path> supplyResourceClasses() {
 		try {
 			BiPredicate<Path, BasicFileAttributes> filter =
 					(path, attrib) -> attrib.isRegularFile() && path.toString().endsWith(".class");
 			return Files.find(Paths.get("src/test/resources/samples/normal"), 25, filter)
+					.collect(Collectors.toList());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * @return Test files to check.
+	 */
+	public static List<Path> supplySelfClasses() {
+		try {
+			BiPredicate<Path, BasicFileAttributes> filter =
+					(path, attrib) -> attrib.isRegularFile() && path.toString().endsWith(".class");
+			return Files.find(Paths.get("target/classes"), 25, filter)
 					.collect(Collectors.toList());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
