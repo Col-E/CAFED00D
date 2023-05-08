@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class DescTest {
 	@Test
 	public void testParseMethodParams() {
+		assertEquals(2, Descriptor.from("([BLme/coley/cafedude/classfile/ConstPool;)Ljava/util/List;").getParameterCount());
 		assertEquals(0, Descriptor.from("()V").getParameterCount());
 		assertEquals(1, Descriptor.from("(I)V").getParameterCount());
 		assertEquals(1, Descriptor.from("(Ljava/lang/String;)V").getParameterCount());

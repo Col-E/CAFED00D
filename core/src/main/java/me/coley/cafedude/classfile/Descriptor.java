@@ -113,7 +113,7 @@ public class Descriptor {
 						return -1;
 					current = end + 1;
 				} else if (c == '[') {
-					while ((c = desc.charAt(current++)) == '[') ;
+					while ((c = desc.charAt(++current)) == '[') ;
 					if (isPrimitive(c)) {
 						current++;
 						count++;
@@ -178,6 +178,35 @@ public class Descriptor {
 		return arrayLevel;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		Descriptor that = (Descriptor) o;
+
+		if (arrayLevel != that.arrayLevel) return false;
+		if (kind != that.kind) return false;
+		return desc.equals(that.desc);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = kind.hashCode();
+		result = 31 * result + desc.hashCode();
+		result = 31 * result + arrayLevel;
+		return result;
+	}
+
+	@Override
+	public String toString() {
+		return "Descriptor{" +
+				"kind=" + kind +
+				", desc='" + desc + '\'' +
+				", arrayLevel=" + arrayLevel +
+				'}';
+	}
+
 	/**
 	 * @param desc
 	 * 		Descriptor to parse.
@@ -223,7 +252,8 @@ public class Descriptor {
 						return new Descriptor(Kind.ILLEGAL, desc);
 					Descriptor d = new Descriptor(Kind.METHOD, desc);
 					// Validate return type
-					if (from(d.getReturnDesc().desc).kind == Kind.ILLEGAL)
+					Descriptor returnDesc = d.getReturnDesc();
+					if (returnDesc.kind == Kind.ILLEGAL)
 						return new Descriptor(Kind.ILLEGAL, desc);
 					// Validate parameter count
 					if (d.getParameterCount() < 0)
