@@ -32,7 +32,7 @@ public class MethodWriter extends DeclarationWriter implements MethodVisitor {
 	private final Consumer<Method> callback;
 	private final Method method;
 
-	public MethodWriter(Symbols symbols, int access, CpUtf8 name, CpUtf8 descriptor, Consumer<Method> callback) {
+	MethodWriter(Symbols symbols, int access, CpUtf8 name, CpUtf8 descriptor, Consumer<Method> callback) {
 		super(symbols);
 		this.method = new Method(attributes, access, name, descriptor);
 		this.callback = callback;

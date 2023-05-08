@@ -22,7 +22,8 @@ class AnnotationReader {
 		}
 	}
 
-	static void visitAnnotationElement(@Nonnull String key, @Nonnull ElementValue value, @Nonnull AnnotationVisitor av) {
+	static void visitAnnotationElement(@Nonnull String key, @Nonnull ElementValue value,
+									   @Nonnull AnnotationVisitor av) {
 		if (value.getTag() == '[' || value.getTag() == '@' || value.getTag() == 'e') {
 			if (value instanceof ArrayElementValue) {
 				ArrayElementValue array = (ArrayElementValue) value;

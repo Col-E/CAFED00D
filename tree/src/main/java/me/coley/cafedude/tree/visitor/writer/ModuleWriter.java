@@ -39,7 +39,7 @@ public class ModuleWriter implements ModuleVisitor {
 	private final List<Attribute> attributes = new ArrayList<>();
 	private final Consumer<List<Attribute>> callback;
 
-	public ModuleWriter(Symbols symbols, CpModule name, int access, CpUtf8 version,
+	ModuleWriter(Symbols symbols, CpModule name, int access, CpUtf8 version,
 						Consumer<List<Attribute>> callback) {
 		this.symbols = symbols;
 		this.callback = callback;

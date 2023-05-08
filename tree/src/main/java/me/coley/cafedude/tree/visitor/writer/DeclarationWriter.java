@@ -25,7 +25,7 @@ public class DeclarationWriter implements DeclarationVisitor {
 	private final List<Annotation> invisibleTypeAnnotations = new ArrayList<>();
 	protected Symbols symbols;
 
-	public DeclarationWriter(Symbols symbols) {
+	DeclarationWriter(Symbols symbols) {
 		this.symbols = symbols;
 	}
 

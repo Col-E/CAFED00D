@@ -21,7 +21,7 @@ public class AnnotationArrayWriter implements AnnotationArrayVisitor {
 	private final Symbols symbols;
 	private final Consumer<List<ElementValue>> callback;
 
-	public AnnotationArrayWriter(@Nonnull Symbols symbols, @Nonnull Consumer<List<ElementValue>> callback) {
+	AnnotationArrayWriter(@Nonnull Symbols symbols, @Nonnull Consumer<List<ElementValue>> callback) {
 		this.callback = callback;
 		this.symbols = symbols;
 	}

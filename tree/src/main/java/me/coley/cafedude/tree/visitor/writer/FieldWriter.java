@@ -19,7 +19,7 @@ public class FieldWriter extends DeclarationWriter implements FieldVisitor {
 	private final Field field;
 	private final Consumer<Field> callback;
 
-	public FieldWriter(Symbols symbols, int access, CpUtf8 name, CpUtf8 descriptor, Consumer<Field> callback) {
+	FieldWriter(Symbols symbols, int access, CpUtf8 name, CpUtf8 descriptor, Consumer<Field> callback) {
 		super(symbols);
 		this.field = new Field(attributes, access, name, descriptor);
 		this.callback = callback;

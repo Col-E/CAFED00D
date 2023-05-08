@@ -268,7 +268,8 @@ public interface CodeVisitor {
 	 * @param descriptor
 	 * 		descriptor of the method.
 	 */
-	default void visitMethodInsn(int opcode, @Nonnull String owner, @Nonnull String name, @Nonnull Descriptor descriptor) {
+	default void visitMethodInsn(int opcode, @Nonnull String owner, @Nonnull String name,
+								 @Nonnull Descriptor descriptor) {
 		CodeVisitor cv = codeDelegate();
 		if (cv != null) cv.visitMethodInsn(opcode, owner, name, descriptor);
 	}

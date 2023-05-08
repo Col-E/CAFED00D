@@ -21,7 +21,7 @@ public class AnnotationWriter implements AnnotationVisitor {
 	private final Map<CpUtf8, ElementValue> values = new HashMap<>();
 	private final Consumer<Map<CpUtf8, ElementValue>> callback;
 
-	public AnnotationWriter(Symbols symbols, Consumer<Map<CpUtf8, ElementValue>> callback) {
+	AnnotationWriter(Symbols symbols, Consumer<Map<CpUtf8, ElementValue>> callback) {
 		this.callback = callback;
 		this.symbols = symbols;
 	}
