@@ -111,7 +111,7 @@ public class ClassFileReader {
 				// Attributes
 				int numAttributes = is.readUnsignedShort();
 				for (int i = 0; i < numAttributes; i++) {
-					Attribute attr = new AttributeReader(this, builder, is).readAttribute(AttributeContext.CLASS);
+					Attribute attr = AttributeReader.read(this, builder, is, AttributeContext.CLASS);
 					if (attr != null)
 						builder.addAttribute(attr);
 				}
@@ -302,16 +302,9 @@ public class ClassFileReader {
 		int numAttributes = is.readUnsignedShort();
 		List<Attribute> attributes = new ArrayList<>();
 		for (int i = 0; i < numAttributes; i++) {
-			try {
-				Attribute attr = new AttributeReader(this, builder, is).readAttribute(AttributeContext.FIELD);
-				if (attr != null)
-					attributes.add(attr);
-			} catch (EOFException e) {
-				if (doDropEofAttributes()) {
-					logger.debug("Dropping attribute " + i + " of field: " + name.getText()
-							+ " due to EOF: " + e.getMessage());
-				}
-			}
+			Attribute attr = AttributeReader.read(this, builder, is, AttributeContext.FIELD);
+			if (attr != null)
+				attributes.add(attr);
 		}
 		return new Field(attributes, access, name, type);
 	}
@@ -333,7 +326,7 @@ public class ClassFileReader {
 		int numAttributes = is.readUnsignedShort();
 		List<Attribute> attributes = new ArrayList<>();
 		for (int i = 0; i < numAttributes; i++) {
-			Attribute attr = new AttributeReader(this, builder, is).readAttribute(AttributeContext.METHOD);
+			Attribute attr = AttributeReader.read(this, builder, is, AttributeContext.METHOD);
 			if (attr != null)
 				attributes.add(attr);
 		}

@@ -21,6 +21,7 @@ import me.coley.cafedude.classfile.instruction.Instruction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -59,17 +60,43 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
-	public AttributeReader(ClassFileReader reader, ClassBuilder builder, DataInputStream is) throws IOException {
+	private AttributeReader(@Nonnull ClassFileReader reader, @Nonnull ClassBuilder builder,
+							@Nonnull DataInputStream is) throws IOException {
 		this.reader = reader;
 		this.builder = builder;
 		this.cp = builder.getPool();
-		// Extract name/lengtjh
+
+		// Extract name/length
 		this.name = (CpUtf8) cp.get(is.readUnsignedShort());
 		this.expectedContentLength = is.readInt();
+
 		// Create local stream
 		byte[] subsection = new byte[expectedContentLength];
 		is.readFully(subsection);
 		this.is = new IndexableByteStream(subsection);
+	}
+
+	/**
+	 * @param reader
+	 * 		Parent class reader.
+	 * @param builder
+	 * 		Class being build/read into.
+	 * @param is
+	 * 		Parent stream.
+	 * @param context
+	 * 		Where the attribute is applied to.
+	 *
+	 * @return Read attribute, or {@code null} if it could not be parsed.
+	 */
+	@Nullable
+	public static Attribute read(@Nonnull ClassFileReader reader, @Nonnull ClassBuilder builder,
+								 @Nonnull DataInputStream is, @Nonnull AttributeContext context) {
+		try {
+			return new AttributeReader(reader, builder, is).read(context);
+		} catch (Exception ex) {
+			logger.debug("Dropping attribute on {}: {}", context.name(), ex.getMessage());
+			return null;
+		}
 	}
 
 	/**
@@ -81,7 +108,8 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
-	public Attribute readAttribute(AttributeContext context) throws IOException {
+	@Nullable
+	public Attribute readAttribute(@Nonnull AttributeContext context) throws IOException {
 		try {
 			Attribute attribute = read(context);
 			if (attribute == null)
@@ -118,7 +146,7 @@ public class AttributeReader {
 	}
 
 	@Nullable
-	private Attribute read(AttributeContext context) throws IOException {
+	private Attribute read(@Nonnull AttributeContext context) throws IOException {
 		// Check for illegally inserted attributes from future versions
 		if (reader.doDropForwardVersioned()) {
 			int introducedAt = AttributeVersions.getIntroducedVersion(name.getText());
@@ -184,7 +212,7 @@ public class AttributeReader {
 			case LOCAL_VARIABLE_TABLE:
 				return readLocalVariables();
 			case LOCAL_VARIABLE_TYPE_TABLE:
-				return readLocalVariableTypess();
+				return readLocalVariableTypes();
 			case PERMITTED_SUBCLASSES:
 				return readPermittedClasses();
 			case RECORD:
@@ -216,6 +244,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nonnull
 	private RecordAttribute readRecord() throws IOException {
 		List<RecordComponent> components = new ArrayList<>();
 		int count = is.readUnsignedShort();
@@ -240,6 +269,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nonnull
 	private PermittedClassesAttribute readPermittedClasses() throws IOException {
 		List<CpClass> entries = new ArrayList<>();
 		int count = is.readUnsignedShort();
@@ -256,7 +286,8 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
-	private LocalVariableTypeTableAttribute readLocalVariableTypess() throws IOException {
+	@Nonnull
+	private LocalVariableTypeTableAttribute readLocalVariableTypes() throws IOException {
 		List<VarTypeEntry> entries = new ArrayList<>();
 		int count = is.readUnsignedShort();
 		for (int i = 0; i < count; i++) {
@@ -276,6 +307,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nonnull
 	private LocalVariableTableAttribute readLocalVariables() throws IOException {
 		List<VarEntry> entries = new ArrayList<>();
 		int count = is.readUnsignedShort();
@@ -296,6 +328,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nonnull
 	private LineNumberTableAttribute readLineNumbers() throws IOException {
 		List<LineEntry> entries = new ArrayList<>();
 		int count = is.readUnsignedShort();
@@ -313,6 +346,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nonnull
 	private MethodParametersAttribute readMethodParameters() throws IOException {
 		List<MethodParametersAttribute.Parameter> entries = new ArrayList<>();
 		int count = is.readUnsignedByte();
@@ -407,6 +441,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nonnull
 	private ModuleMainClassAttribute readModuleMainClass() throws IOException {
 		return new ModuleMainClassAttribute(name, (CpClass) cp.get(is.readUnsignedShort()));
 	}
@@ -417,6 +452,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nonnull
 	private ModulePackagesAttribute readModulePackages() throws IOException {
 		List<CpPackage> packages = new ArrayList<>();
 		int count = is.readUnsignedShort();
@@ -432,6 +468,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nonnull
 	private SignatureAttribute readSignature() throws IOException {
 		CpUtf8 signature = (CpUtf8) cp.get(is.readUnsignedShort());
 		return new SignatureAttribute(name, signature);
@@ -443,6 +480,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nonnull
 	private SourceFileAttribute readSourceFile() throws IOException {
 		CpUtf8 sourceFile = (CpUtf8) cp.get(is.readUnsignedShort());
 		return new SourceFileAttribute(name, sourceFile);
@@ -454,6 +492,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nonnull
 	private EnclosingMethodAttribute readEnclosingMethod() throws IOException {
 		CpClass enclosingClass = (CpClass) cp.get(is.readUnsignedShort());
 		CpNameType enclosingMethod = orNullInCp(is.readUnsignedShort());
@@ -466,6 +505,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nonnull
 	private ExceptionsAttribute readExceptions() throws IOException {
 		int numberOfExceptionIndices = is.readUnsignedShort();
 		List<CpClass> exceptions = new ArrayList<>(numberOfExceptionIndices);
@@ -481,6 +521,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nonnull
 	private InnerClassesAttribute readInnerClasses() throws IOException {
 		int numberOfInnerClasses = is.readUnsignedShort();
 		List<InnerClass> innerClasses = new ArrayList<>();
@@ -500,6 +541,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nullable
 	private NestHostAttribute readNestHost() throws IOException {
 		if (expectedContentLength != 2) {
 			logger.debug("Found NestHost with illegal content length: {} != 2", expectedContentLength);
@@ -515,6 +557,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nonnull
 	private NestMembersAttribute readNestMembers() throws IOException {
 		int count = is.readUnsignedShort();
 		List<CpClass> memberClassIndices = new ArrayList<>();
@@ -530,6 +573,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nullable
 	private SourceDebugExtensionAttribute readSourceDebugExtension() throws IOException {
 		byte[] debugExtension = new byte[expectedContentLength];
 		is.readFully(debugExtension);
@@ -552,6 +596,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nullable
 	private AnnotationsAttribute readAnnotations(AttributeContext context, boolean visible) throws IOException {
 		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, name, context, visible)
 				.readAnnotations();
@@ -566,6 +611,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nullable
 	private ParameterAnnotationsAttribute readParameterAnnotations(AttributeContext context, boolean visible)
 			throws IOException {
 		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, name, context, visible)
@@ -581,6 +627,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nullable
 	private AnnotationsAttribute readTypeAnnotations(AttributeContext context, boolean visible) throws IOException {
 		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, name, context, visible)
 				.readTypeAnnotations();
@@ -595,6 +642,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nullable
 	private AnnotationDefaultAttribute readAnnotationDefault(AttributeContext context) throws IOException {
 		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, name, context, true)
 				.readAnnotationDefault();
@@ -603,6 +651,7 @@ public class AttributeReader {
 	/**
 	 * @return Synthetic attribute.
 	 */
+	@Nonnull
 	private SyntheticAttribute readSynthetic() {
 		return new SyntheticAttribute(name);
 	}
@@ -613,6 +662,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nonnull
 	private BootstrapMethodsAttribute readBoostrapMethods() throws IOException {
 		List<BootstrapMethod> bootstrapMethods = new ArrayList<>();
 		int bsmCount = is.readUnsignedShort();
@@ -634,6 +684,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nonnull
 	private CodeAttribute readCode() throws IOException {
 		int maxStack = -1;
 		int maxLocals = -1;
@@ -677,6 +728,7 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nonnull
 	private CodeAttribute.ExceptionTableEntry readCodeException() throws IOException {
 		return new CodeAttribute.ExceptionTableEntry(
 				is.readUnsignedShort(),
@@ -692,11 +744,13 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nonnull
 	private ConstantValueAttribute readConstantValue() throws IOException {
 		CpEntry value = cp.get(is.readUnsignedShort());
 		return new ConstantValueAttribute(name, value);
 	}
 
+	@Nonnull
 	private StackMapTableAttribute readStackMapTable() throws IOException {
 		int numEntries = is.readUnsignedShort();
 		List<StackMapFrame> frames = new ArrayList<>(numEntries);
@@ -787,6 +841,7 @@ public class AttributeReader {
 		return new StackMapTableAttribute(name, frames);
 	}
 
+	@Nonnull
 	private TypeInfo readVerificationTypeInfo() throws IOException {
 		// u1 tag
 		int tag = is.readUnsignedByte();

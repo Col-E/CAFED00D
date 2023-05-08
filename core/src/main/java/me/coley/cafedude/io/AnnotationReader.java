@@ -34,6 +34,7 @@ import me.coley.cafedude.classfile.constant.CpUtf8;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -100,6 +101,7 @@ public class AnnotationReader {
 	 *
 	 * @return The annotation default attribute read. {@code null} when malformed.
 	 */
+	@Nullable
 	public AnnotationDefaultAttribute readAnnotationDefault() {
 		try {
 			return new AnnotationDefaultAttribute(name, readElementValue());
@@ -118,6 +120,7 @@ public class AnnotationReader {
 	 *
 	 * @return The type annotation attribute read. {@code null} if the annotation was malformed.
 	 */
+	@Nullable
 	public AnnotationsAttribute readAnnotations() {
 		try {
 			// Skip if obvious junk
@@ -156,6 +159,7 @@ public class AnnotationReader {
 	 *
 	 * @return The type annotation attribute read. {@code null} if the annotation was malformed.
 	 */
+	@Nullable
 	public ParameterAnnotationsAttribute readParameterAnnotations() {
 		try {
 			// Skip if obvious junk
@@ -186,6 +190,7 @@ public class AnnotationReader {
 	 *
 	 * @return The type annotation attribute read. {@code null} if the annotation was malformed.
 	 */
+	@Nullable
 	public AnnotationsAttribute readTypeAnnotations() {
 		try {
 			// Skip if obvious junk
