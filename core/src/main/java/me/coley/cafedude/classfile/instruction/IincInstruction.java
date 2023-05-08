@@ -82,7 +82,7 @@ public class IincInstruction extends BasicInstruction {
 
 	@Override
 	public String toString() {
-		return "insn(" + getOpcode() + ": " + var + ", " + increment + ")";
+		return "insn(" + OpcodeNames.name(getOpcode()) + ": " + var + ", " + increment + ")";
 	}
 
 }

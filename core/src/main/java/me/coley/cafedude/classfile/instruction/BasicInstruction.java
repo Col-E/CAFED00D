@@ -16,6 +16,6 @@ public class BasicInstruction extends Instruction {
 
 	@Override
 	public String toString() {
-		return "insn(" + getOpcode() + ")";
+		return "insn(" + OpcodeNames.name(getOpcode()) + ")";
 	}
 }

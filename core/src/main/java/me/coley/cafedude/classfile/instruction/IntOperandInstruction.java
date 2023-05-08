@@ -78,7 +78,7 @@ public class IntOperandInstruction extends BasicInstruction {
 
 	@Override
 	public String toString() {
-		return "insn(" + getOpcode() + ": " + operand + ")";
+		return "insn(" + OpcodeNames.name(getOpcode()) + ": " + operand + ")";
 	}
 
 }
