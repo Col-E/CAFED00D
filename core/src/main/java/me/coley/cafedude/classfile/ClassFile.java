@@ -79,8 +79,10 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	/**
 	 * @return Parent class name.
 	 */
-	@Nonnull
+	@Nullable
 	public String getSuperName() {
+		if (superClass == null)
+			return null;
 		return superClass.getName().getText();
 	}
 

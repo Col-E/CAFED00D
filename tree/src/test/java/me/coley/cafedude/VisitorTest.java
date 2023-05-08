@@ -10,6 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,7 +56,7 @@ public class VisitorTest {
 
 	private static class VerificationClassVisitor implements ClassVisitor {
 		@Override
-		public void visitClass(@Nonnull String name, int access, @Nonnull String superName, String... interfaces) {
+		public void visitClass(@Nonnull String name, int access, @Nullable String superName, String... interfaces) {
 			System.out.println("Class: " + name);
 			System.out.println("Access: " + access);
 			System.out.println("Super: " + superName);

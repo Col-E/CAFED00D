@@ -38,10 +38,10 @@ public class ClassWriter extends DeclarationWriter implements ClassVisitor {
 	}
 
 	@Override
-	public void visitClass(@Nonnull String name, int access, @Nonnull String superName, String... interfaces) {
+	public void visitClass(@Nonnull String name, int access, @Nullable String superName, String... interfaces) {
 		builder.setThisClass(symbols.newClass(name));
 		builder.setAccess(access);
-		builder.setSuperClass(symbols.newClass(superName));
+		builder.setSuperClass(Optional.orNull(superName, s -> symbols.newClass(s)));
 		for (String anInterface : interfaces) {
 			builder.addInterface(symbols.newClass(anInterface));
 		}

@@ -38,7 +38,7 @@ public interface ClassVisitor extends DeclarationVisitor {
 	 * @param interfaces
 	 * 		Names of the interfaces.
 	 */
-	default void visitClass(@Nonnull String name, int access, @Nonnull String superName, String... interfaces) {
+	default void visitClass(@Nonnull String name, int access, @Nullable String superName, String... interfaces) {
 		ClassVisitor delegate = classDelegate();
 		if (delegate != null) delegate.visitClass(name, access, superName, interfaces);
 	}
@@ -167,7 +167,7 @@ public interface ClassVisitor extends DeclarationVisitor {
 	 * 		Debug information.
 	 *        {@code null} if the debug information is unknown.
 	 */
-	default void visitSource(@Nullable String source, byte @Nullable [] debug) {
+	default void visitSource(@Nullable String source, @Nullable byte[] debug) {
 		ClassVisitor delegate = classDelegate();
 		if (delegate != null) delegate.visitSource(source, debug);
 	}
