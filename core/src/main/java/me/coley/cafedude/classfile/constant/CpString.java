@@ -34,4 +34,19 @@ public class CpString extends CpEntry {
 	public void setString(@Nonnull CpUtf8 string) {
 		this.string = string;
 	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		CpString cpString = (CpString) o;
+
+		return string.equals(cpString.string);
+	}
+
+	@Override
+	public int hashCode() {
+		return string.hashCode();
+	}
 }
