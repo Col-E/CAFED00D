@@ -1,31 +1,9 @@
 package me.coley.cafedude.io;
 
 import me.coley.cafedude.classfile.ConstPool;
-import me.coley.cafedude.classfile.annotation.Annotation;
-import me.coley.cafedude.classfile.annotation.AnnotationElementValue;
-import me.coley.cafedude.classfile.annotation.ArrayElementValue;
-import me.coley.cafedude.classfile.annotation.ClassElementValue;
-import me.coley.cafedude.classfile.annotation.ElementValue;
-import me.coley.cafedude.classfile.annotation.EnumElementValue;
-import me.coley.cafedude.classfile.annotation.PrimitiveElementValue;
-import me.coley.cafedude.classfile.annotation.TargetInfo;
-import me.coley.cafedude.classfile.annotation.TargetInfo.CatchTargetInfo;
-import me.coley.cafedude.classfile.annotation.TargetInfo.EmptyTargetInfo;
-import me.coley.cafedude.classfile.annotation.TargetInfo.FormalParameterTargetInfo;
-import me.coley.cafedude.classfile.annotation.TargetInfo.LocalVarTargetInfo;
+import me.coley.cafedude.classfile.annotation.*;
+import me.coley.cafedude.classfile.annotation.TargetInfo.*;
 import me.coley.cafedude.classfile.annotation.TargetInfo.LocalVarTargetInfo.Variable;
-import me.coley.cafedude.classfile.annotation.TargetInfo.OffsetTargetInfo;
-import me.coley.cafedude.classfile.annotation.TargetInfo.SuperTypeTargetInfo;
-import me.coley.cafedude.classfile.annotation.TargetInfo.ThrowsTargetInfo;
-import me.coley.cafedude.classfile.annotation.TargetInfo.TypeArgumentTargetInfo;
-import me.coley.cafedude.classfile.annotation.TargetInfo.TypeParameterBoundTargetInfo;
-import me.coley.cafedude.classfile.annotation.TargetInfo.TypeParameterTargetInfo;
-import me.coley.cafedude.classfile.annotation.TargetInfoType;
-import me.coley.cafedude.classfile.annotation.TypeAnnotation;
-import me.coley.cafedude.classfile.annotation.TypePath;
-import me.coley.cafedude.classfile.annotation.TypePathElement;
-import me.coley.cafedude.classfile.annotation.TypePathKind;
-import me.coley.cafedude.classfile.annotation.Utf8ElementValue;
 import me.coley.cafedude.classfile.attribute.AnnotationDefaultAttribute;
 import me.coley.cafedude.classfile.attribute.AnnotationsAttribute;
 import me.coley.cafedude.classfile.attribute.ParameterAnnotationsAttribute;
@@ -34,16 +12,12 @@ import me.coley.cafedude.classfile.constant.CpUtf8;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Annotation reader for all annotation attributes.
@@ -52,6 +26,7 @@ import java.util.Set;
  */
 public class AnnotationReader {
 	private static final Logger logger = LoggerFactory.getLogger(AnnotationReader.class);
+	private static final int MAX_NESTING = 50;
 	private final ClassFileReader reader;
 	private final ConstPool cp;
 	private final DataInputStream is;
@@ -104,7 +79,7 @@ public class AnnotationReader {
 	@Nullable
 	public AnnotationDefaultAttribute readAnnotationDefault() {
 		try {
-			return new AnnotationDefaultAttribute(name, readElementValue());
+			return new AnnotationDefaultAttribute(name, readElementValue(new AnnotationScope()));
 		} catch (Throwable t) {
 			logger.debug("Illegally formatted AnnotationDefault, dropping");
 			return null;
@@ -133,7 +108,7 @@ public class AnnotationReader {
 			Set<String> usedAnnotationTypes = new HashSet<>();
 			List<Annotation> annotations = new ArrayList<>();
 			for (int i = 0; i < numAnnotations; i++) {
-				Annotation annotation = readAnnotation();
+				Annotation annotation = readAnnotation(new AnnotationScope());
 				if (reader.doDropDupeAnnotations()) {
 					// Only add if the type hasn't been used before
 					String type = annotation.getType().getText();
@@ -174,7 +149,7 @@ public class AnnotationReader {
 				List<Annotation> annotations = new ArrayList<>();
 				int numAnnotations = is.readUnsignedShort();
 				for (int i = 0; i < numAnnotations; i++)
-					annotations.add(readAnnotation());
+					annotations.add(readAnnotation(new AnnotationScope()));
 				parameterAnnotations.put(p, annotations);
 			}
 			// Didn't crash, its valid
@@ -202,7 +177,7 @@ public class AnnotationReader {
 			// Read each type annotation
 			List<Annotation> annotations = new ArrayList<>();
 			for (int i = 0; i < numAnnotations; i++)
-				annotations.add(readTypeAnnotation());
+				annotations.add(readTypeAnnotation(new AnnotationScope()));
 			// Didn't throw exception, its valid
 			return new AnnotationsAttribute(name, annotations, visible);
 		} catch (Throwable t) {
@@ -214,10 +189,14 @@ public class AnnotationReader {
 	/**
 	 * Common annotation structure reading.
 	 *
+	 * @param scope
+	 * 		Scope for tracking annotation containment hierarchy.
+	 *
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
-	private Annotation readAnnotation() throws IOException {
+	@Nonnull
+	private Annotation readAnnotation(@Nonnull AnnotationScope scope) throws IOException {
 		int typeIndex = is.readUnsignedShort();
 		// Validate the type points to an entry in the constant pool that is valid UTF8 item
 		if (typeIndex >= maxCpIndex) {
@@ -226,17 +205,21 @@ public class AnnotationReader {
 			throw new IllegalArgumentException("Annotation type_index out of CP bounds!");
 		}
 		CpUtf8 type = (CpUtf8) cp.get(typeIndex);
-		Map<CpUtf8, ElementValue> values = readElementPairs();
+		Map<CpUtf8, ElementValue> values = readElementPairs(scope.with(type.getText()));
 		return new Annotation(type, values);
 	}
 
 	/**
 	 * Common type annotation structure reading.
 	 *
+	 * @param scope
+	 * 		Scope for tracking annotation containment hierarchy.
+	 *
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
-	private TypeAnnotation readTypeAnnotation() throws IOException {
+	@Nonnull
+	private TypeAnnotation readTypeAnnotation(@Nonnull AnnotationScope scope) throws IOException {
 		// Read target type (lets us know where the type annotation is located)
 		int targetType = is.readUnsignedByte();
 		AttributeContext expectedLocation = AttributeContext.fromAnnotationTargetType(targetType);
@@ -312,7 +295,7 @@ public class AnnotationReader {
 		TypePath typePath = readTypePath();
 		// Parse the stuff that populates a normal annotation
 		CpUtf8 type = (CpUtf8) cp.get(is.readUnsignedShort());
-		Map<CpUtf8, ElementValue> values = readElementPairs();
+		Map<CpUtf8, ElementValue> values = readElementPairs(scope);
 		return new TypeAnnotation(type, values, info, typePath);
 	}
 
@@ -334,17 +317,26 @@ public class AnnotationReader {
 	}
 
 	/**
+	 * @param scope
+	 * 		Scope for tracking annotation containment hierarchy.
+	 *
 	 * @return The annotation field pairs <i>({@code name} --> {@code Value})</i>.
 	 *
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
-	private Map<CpUtf8, ElementValue> readElementPairs() throws IOException {
+	@Nonnull
+	private Map<CpUtf8, ElementValue> readElementPairs(@Nonnull AnnotationScope scope) throws IOException {
+		// Abort if bogus nesting found. There should never be a real circumstance where you need 50 levels
+		// of embedded annotations.
+		if (scope.size() > MAX_NESTING)
+			throw new IllegalArgumentException("Bogus deep annotation packing detected");
+
 		int numPairs = is.readUnsignedShort();
 		Map<CpUtf8, ElementValue> values = new LinkedHashMap<>();
 		while (numPairs > 0) {
 			CpUtf8 name = (CpUtf8) cp.get(is.readUnsignedShort());
-			ElementValue value = readElementValue();
+			ElementValue value = readElementValue(scope);
 			if (values.containsKey(name))
 				throw new IllegalArgumentException("Element pairs already has field by name index: " + name);
 			values.put(name, value);
@@ -354,12 +346,16 @@ public class AnnotationReader {
 	}
 
 	/**
+	 * @param scope
+	 * 		Scope for tracking annotation containment hierarchy.
+	 *
 	 * @return The annotation field <i>(Technically method)</i> value.
 	 *
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
-	private ElementValue readElementValue() throws IOException {
+	@Nonnull
+	private ElementValue readElementValue(@Nonnull AnnotationScope scope) throws IOException {
 		char tag = (char) is.readUnsignedByte();
 		switch (tag) {
 			case 'B': // byte
@@ -388,18 +384,25 @@ public class AnnotationReader {
 				CpUtf8 classInfo = (CpUtf8) cp.get(classInfoIndex);
 				return new ClassElementValue(tag, classInfo);
 			case '@': // Annotation
-				Annotation nestedAnnotation = readAnnotation();
+				Annotation nestedAnnotation = readAnnotation(scope);
 				return new AnnotationElementValue(tag, nestedAnnotation);
 			case '[': // Array
 				int numElements = is.readUnsignedShort();
 				List<ElementValue> arrayValues = new ArrayList<>();
 				for (int i = 0; i < numElements; i++)
-					arrayValues.add(readElementValue());
+					arrayValues.add(readElementValue(scope.with("[")));
 				return new ArrayElementValue(tag, arrayValues);
 			default:
 				logger.debug("Unknown element_value tag: ({}) '{}'", (int) tag, tag);
 				break;
 		}
 		throw new IllegalArgumentException("Unrecognized tag for annotation element value: " + tag);
+	}
+
+	static class AnnotationScope extends ArrayList<String> {
+		AnnotationScope with(String value) {
+			add(value);
+			return this;
+		}
 	}
 }
