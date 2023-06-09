@@ -15,6 +15,10 @@ import javax.annotation.Nonnull;
 public class LdcInsn extends Insn {
 	private Constant constant;
 
+	/**
+	 * @param constant
+	 * 		Constant operand.
+	 */
 	public LdcInsn(@Nonnull Constant constant) {
 		this(Opcodes.LDC, constant);
 	}

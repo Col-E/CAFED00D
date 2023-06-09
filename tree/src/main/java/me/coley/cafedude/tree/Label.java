@@ -71,6 +71,9 @@ public class Label {
 		this.lines = lines;
 	}
 
+	/**
+	 * @return {@code true} when the label is resolved.
+	 */
 	public boolean isResolved() {
 		return offset != -1;
 	}

@@ -8,7 +8,6 @@ import me.coley.cafedude.classfile.constant.*;
 import me.coley.cafedude.classfile.instruction.*;
 import me.coley.cafedude.tree.*;
 import me.coley.cafedude.tree.insn.*;
-import me.coley.cafedude.util.Optional;
 
 import java.util.*;
 
@@ -31,14 +30,14 @@ public class CodeConverter implements Opcodes {
 		this.symbols = symbols;
 	}
 
-	CodeAttribute convert() throws InvalidCodeException {
+	CodeAttribute convertToAttribute() throws InvalidCodeException {
 		State state = new State();
 		List<Instruction> converted = new ArrayList<>();
 		Map<Integer, Insn> insnMap = new TreeMap<>();
 		prepass(code.getInstructions());
 		for (Insn insn : code.getInstructions()) {
 			insnMap.put(state.offset, insn);
-			Instruction convertedInsn = convert(insn, state);
+			Instruction convertedInsn = convertToInstruction(insn, state);
 			if (convertedInsn != null) {
 				converted.add(convertedInsn);
 				state.offset += convertedInsn.computeSize();
@@ -147,12 +146,13 @@ public class CodeConverter implements Opcodes {
 					labelInsn.getLabel().setOffset(offset);
 					break;
 				}
+				default: break;
 			}
 			offset += insn.size();
 		}
 	}
 
-	private Instruction convert(Insn insn, State state) throws InvalidCodeException {
+	Instruction convertToInstruction(Insn insn, State state) throws InvalidCodeException {
 		int opcode = insn.getOpcode();
 		switch (insn.getKind()) {
 			case ARITHMETIC:

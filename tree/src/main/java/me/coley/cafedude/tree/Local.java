@@ -19,6 +19,20 @@ public class Local {
 	private Label end;
 
 
+	/**
+	 * @param index
+	 * 		Index of local variable.
+	 * @param name
+	 * 		Name of local variable.
+	 * @param desc
+	 * 		Descriptor of local variable.
+	 * @param signature
+	 * 		Signature of local variable.
+	 * @param start
+	 * 		Label of start of local variable.
+	 * @param end
+	 * 		Label of end of local variable.
+	 */
 	public Local(int index, @Nonnull String name, @Nonnull Descriptor desc, @Nullable String signature,
 				 @Nonnull Label start, @Nonnull Label end) {
 		this.index = index;

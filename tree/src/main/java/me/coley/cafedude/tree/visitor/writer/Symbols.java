@@ -20,6 +20,10 @@ import javax.annotation.Nonnull;
 public class Symbols {
 	protected final ConstPool pool;
 
+	/**
+	 * @param pool
+	 * 		Pool to resource from.
+	 */
 	public Symbols(@Nonnull ConstPool pool) {
 		this.pool = pool;
 	}
@@ -112,14 +116,16 @@ public class Symbols {
 						throw new IllegalStateException("Cannot create constant for primitive descriptor");
 					case ILLEGAL:
 						throw new IllegalStateException("Cannot create constant for illegal descriptor");
+					default: break;
 				}
 			}
 			case HANDLE: {
 				Handle handle = (Handle) value.getValue();
 				return newHandle(handle);
 			}
+			default:
+				throw new IllegalStateException("Unknown constant type: " + value.getType());
 		}
-		throw new IllegalStateException("Unknown constant type: " + value.getType());
 	}
 
 	@Nonnull
@@ -156,42 +162,25 @@ public class Symbols {
 				tag = 'D';
 				break;
 			case STRING:
-				tag = 's';
-				break;
+				return new Utf8ElementValue('s', (CpUtf8) entry);
 			case DESCRIPTOR: {
 				Descriptor descriptor = (Descriptor) value.getValue();
 				switch (descriptor.getKind()) {
 					case OBJECT:
 					case ARRAY:
-						tag = 'c';
-						break;
+						return new ClassElementValue('c', (CpUtf8) entry);
 					case METHOD:
 						throw new IllegalStateException("Cannot create element value for method descriptor");
 					case PRIMITIVE:
 						throw new IllegalStateException("Cannot create element value for primitive descriptor");
 					case ILLEGAL:
 						throw new IllegalStateException("Cannot create element value for illegal descriptor");
+					default: break;
 				}
-				break;
 			}
 			default:
 				throw new IllegalArgumentException("Invalid constant type: " + value.getType());
 		}
-		switch (tag) {
-			case 'B': // byte
-			case 'C': // char
-			case 'D': // double
-			case 'F': // float
-			case 'I': // int
-			case 'J': // long
-			case 'S': // short
-			case 'Z': // boolean
-				return new PrimitiveElementValue(tag, entry);
-			case 's': // String
-				return new Utf8ElementValue(tag, (CpUtf8) entry);
-			case 'c': // Class
-				return new ClassElementValue(tag, (CpUtf8) entry);
-		}
-		throw new IllegalStateException("Unknown element value tag: " + tag);
+		return new PrimitiveElementValue(tag, entry);
 	}
 }

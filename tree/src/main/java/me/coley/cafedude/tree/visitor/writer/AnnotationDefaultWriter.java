@@ -23,7 +23,7 @@ public class AnnotationDefaultWriter implements AnnotationDefaultVisitor {
 	private final Symbols symbols;
 	private final Consumer<ElementValue> callback;
 
-	public AnnotationDefaultWriter(Symbols symbols, Consumer<ElementValue> callback) {
+	AnnotationDefaultWriter(Symbols symbols, Consumer<ElementValue> callback) {
 		this.symbols = symbols;
 		this.callback = callback;
 	}

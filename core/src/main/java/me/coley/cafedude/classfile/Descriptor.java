@@ -271,6 +271,13 @@ public class Descriptor {
 		}
 	}
 
+	/**
+	 * Get a descriptor from a java class.
+	 * @param clazz
+	 * 		Class to get descriptor from.
+	 * @return
+	 * 		Descriptor object instance.
+	 */
 	public static Descriptor from(@Nonnull Class<?> clazz) {
 		String descriptor = clazz.toGenericString().replace('.', '/');
 		if (clazz.isArray()) {

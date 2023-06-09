@@ -28,8 +28,8 @@ public class Constant {
 
 	/**
 	 * Create a constant from a {@code boolean} value.
-	 * <p>
-	 * Corresponds to {@code CpInt}.
+	 *
+	 * <p>Corresponds to {@code CpInt}.
 	 *
 	 * @param value
 	 * 		Boolean value.
@@ -43,8 +43,8 @@ public class Constant {
 
 	/**
 	 * Create a constant from a {@code byte} value.
-	 * <p>
-	 * Corresponds to {@code CpInt}.
+	 *
+	 * <p>Corresponds to {@code CpInt}.
 	 *
 	 * @param value
 	 * 		Byte value.
@@ -58,8 +58,8 @@ public class Constant {
 
 	/**
 	 * Create a constant from a {@code char} value.
-	 * <p>
-	 * Corresponds to {@code CpInt}.
+	 *
+	 * <p>Corresponds to {@code CpInt}.
 	 *
 	 * @param value
 	 * 		Char value.
@@ -73,8 +73,8 @@ public class Constant {
 
 	/**
 	 * Create a constant from a {@code short} value.
-	 * <p>
-	 * Corresponds to {@code CpInt}.
+	 *
+	 * <p>Corresponds to {@code CpInt}.
 	 *
 	 * @param value
 	 * 		Short value.
@@ -88,8 +88,8 @@ public class Constant {
 
 	/**
 	 * Create a constant from a {@code float} value.
-	 * <p>
-	 * Corresponds to {@code CpFloat}.
+	 *
+	 * <p>Corresponds to {@code CpFloat}.
 	 *
 	 * @param value
 	 * 		Float value.
@@ -103,8 +103,8 @@ public class Constant {
 
 	/**
 	 * Create a constant from a {@code double} value.
-	 * <p>
-	 * Corresponds to {@code CpDouble}.
+	 *
+	 * <p>Corresponds to {@code CpDouble}.
 	 *
 	 * @param value
 	 * 		Double value.
@@ -118,8 +118,8 @@ public class Constant {
 
 	/**
 	 * Create a constant from a {@code long} value.
-	 * <p>
-	 * Corresponds to {@code CpLong}.
+	 *
+	 * <p>Corresponds to {@code CpLong}.
 	 *
 	 * @param value
 	 * 		Long value.
@@ -133,8 +133,8 @@ public class Constant {
 
 	/**
 	 * Create a constant from a {@code int} value.
-	 * <p>
-	 * Corresponds to {@code CpInt}.
+	 *
+	 * <p>Corresponds to {@code CpInt}.
 	 *
 	 * @param value
 	 * 		Integer value.
@@ -148,8 +148,8 @@ public class Constant {
 
 	/**
 	 * Create a constant from a {@code String} value.
-	 * <p>
-	 * Corresponds to {@code CpUtf8}.
+	 *
+	 * <p>Corresponds to {@code CpUtf8}.
 	 *
 	 * @param value
 	 * 		String value.
@@ -169,8 +169,8 @@ public class Constant {
 	 * 		<li>{@link Descriptor.Kind#ARRAY} - Corresponds to {@code CpClass}</li>
 	 * 		<li>{@link Descriptor.Kind#METHOD} - Corresponds to {@code CpMethodType}</li>
 	 * </ul>
-	 * <p>
-	 * Any other kind does not have a corresponding constant type.
+	 *
+	 * <p>Any other kind does not have a corresponding constant type.
 	 *
 	 * @param value
 	 * 		Descriptor value.
@@ -194,8 +194,8 @@ public class Constant {
 
 	/**
 	 * Create a constant from a {@link Handle} value.
-	 * <p>
-	 * Corresponds to {@code CpMethodHandle}.
+	 *
+	 * <p>Corresponds to {@code CpMethodHandle}.
 	 *
 	 * @param value
 	 * 		Handle value.

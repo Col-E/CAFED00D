@@ -19,6 +19,8 @@ public class LookupSwitchInsn extends Insn {
 	private Label defaultLabel;
 
 	/**
+	 * @param keys
+	 * 		Keys of the switch.
 	 * @param labels
 	 * 		Offsets of the switch.
 	 * @param defaultLabel

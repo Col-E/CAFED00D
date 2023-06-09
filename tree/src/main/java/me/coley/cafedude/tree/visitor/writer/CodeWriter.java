@@ -19,7 +19,7 @@ public class CodeWriter implements CodeVisitor, Opcodes {
 	private final CodeDataVisitor converter = new CodeDataVisitor();
 	private final Consumer<CodeAttribute> callback;
 
-	public CodeWriter(Symbols symbols, Consumer<CodeAttribute> callback) {
+	CodeWriter(Symbols symbols, Consumer<CodeAttribute> callback) {
 		this.symbols = symbols;
 		this.callback = callback;
 	}
@@ -32,6 +32,6 @@ public class CodeWriter implements CodeVisitor, Opcodes {
 	@Override
 	public void visitCodeEnd() throws InvalidCodeException {
 		Code code = converter.getCode();
-		callback.accept(new CodeConverter(code, symbols).convert());
+		callback.accept(new CodeConverter(code, symbols).convertToAttribute());
 	}
 }

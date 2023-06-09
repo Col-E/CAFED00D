@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -111,7 +110,7 @@ public class ClassFileReader {
 				// Attributes
 				int numAttributes = is.readUnsignedShort();
 				for (int i = 0; i < numAttributes; i++) {
-					Attribute attr = AttributeReader.read(this, builder, is, AttributeContext.CLASS);
+					Attribute attr = AttributeReader.readFromClass(this, builder, is, AttributeContext.CLASS);
 					if (attr != null)
 						builder.addAttribute(attr);
 				}
@@ -302,7 +301,7 @@ public class ClassFileReader {
 		int numAttributes = is.readUnsignedShort();
 		List<Attribute> attributes = new ArrayList<>();
 		for (int i = 0; i < numAttributes; i++) {
-			Attribute attr = AttributeReader.read(this, builder, is, AttributeContext.FIELD);
+			Attribute attr = AttributeReader.readFromClass(this, builder, is, AttributeContext.FIELD);
 			if (attr != null)
 				attributes.add(attr);
 		}
@@ -326,7 +325,7 @@ public class ClassFileReader {
 		int numAttributes = is.readUnsignedShort();
 		List<Attribute> attributes = new ArrayList<>();
 		for (int i = 0; i < numAttributes; i++) {
-			Attribute attr = AttributeReader.read(this, builder, is, AttributeContext.METHOD);
+			Attribute attr = AttributeReader.readFromClass(this, builder, is, AttributeContext.METHOD);
 			if (attr != null)
 				attributes.add(attr);
 		}

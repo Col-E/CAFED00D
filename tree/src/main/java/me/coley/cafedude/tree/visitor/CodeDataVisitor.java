@@ -59,7 +59,8 @@ public class CodeDataVisitor implements CodeVisitor {
 	}
 
 	@Override
-	public void visitMethodInsn(int opcode, @Nonnull String owner, @Nonnull String name, @Nonnull Descriptor descriptor) {
+	public void visitMethodInsn(int opcode, @Nonnull String owner, @Nonnull String name,
+								@Nonnull Descriptor descriptor) {
 		add(new MethodInsn(opcode, owner, name, descriptor));
 	}
 
@@ -79,7 +80,8 @@ public class CodeDataVisitor implements CodeVisitor {
 	}
 
 	@Override
-	public void visitInvokeDynamicInsn(@Nonnull String name, @Nonnull Descriptor descriptor, @Nonnull Handle bootstrapMethod, Constant... bootstrapArgs) {
+	public void visitInvokeDynamicInsn(@Nonnull String name, @Nonnull Descriptor descriptor,
+									   @Nonnull Handle bootstrapMethod, Constant... bootstrapArgs) {
 		add(new InvokeDynamicInsn(name, descriptor, bootstrapMethod, Arrays.asList(bootstrapArgs)));
 	}
 
@@ -134,7 +136,8 @@ public class CodeDataVisitor implements CodeVisitor {
 	}
 
 	@Override
-	public void visitLocalVariable(int index, @Nonnull String name, @Nonnull Descriptor descriptor, @Nullable String signature, @Nonnull Label start, @Nonnull Label end) {
+	public void visitLocalVariable(int index, @Nonnull String name, @Nonnull Descriptor descriptor,
+								   @Nullable String signature, @Nonnull Label start, @Nonnull Label end) {
 		Local local = new Local(index, name, descriptor, signature,start,end);
 		locals.add(local);
 	}
@@ -146,10 +149,14 @@ public class CodeDataVisitor implements CodeVisitor {
 	}
 
 	@Override
-	public void visitExceptionHandler(@Nullable String type, @Nonnull Label start, @Nonnull Label end, @Nonnull Label handler) {
+	public void visitExceptionHandler(@Nullable String type, @Nonnull Label start, @Nonnull Label end,
+									  @Nonnull Label handler) {
 		handlers.add(new ExceptionHandler(type, start, end, handler));
 	}
 
+	/**
+	 * @return {@link Code} object representing the visited code.
+	 */
 	public Code getCode() {
 		return new Code(insns, locals, handlers, maxStack, maxLocals);
 	}

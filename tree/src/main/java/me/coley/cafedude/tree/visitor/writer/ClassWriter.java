@@ -28,6 +28,12 @@ public class ClassWriter extends DeclarationWriter implements ClassVisitor {
 	private final List<InnerClass> innerClasses = new ArrayList<>();
 	private final List<RecordAttribute.RecordComponent> recordComponents = new ArrayList<>();
 
+	/**
+	 * @param versionMajor
+	 * 		Class major version.
+	 * @param versionMinor
+	 * 		Class minor version.
+	 */
 	public ClassWriter(int versionMajor, int versionMinor) {
 		super(new Symbols(new ConstPool()));
 		this.builder = new ClassBuilder();
@@ -123,6 +129,13 @@ public class ClassWriter extends DeclarationWriter implements ClassVisitor {
 		}
 	}
 
+	/**
+	 * Convert the class tree to a class file byte array.
+	 * @return
+	 * 		Class file byte array.
+	 * @throws InvalidClassException
+	 * 		When the class is invalid.
+	 */
 	public byte[] toByteArray() throws InvalidClassException {
 		builder.setConstPool(symbols.pool);
 		ClassFile file = builder.build();
