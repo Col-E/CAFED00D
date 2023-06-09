@@ -56,6 +56,15 @@ public class VarInsn extends Insn {
 		this.index = index;
 	}
 
+	/**
+	 * @return {@code true} when this insn can be mapped to a single op such as {@link Opcodes#ISTORE_0}.
+	 */
+	public boolean supportsSingleOpInsn() {
+		// XLOAD_0 through XLOAD_3
+		// XSTORE_0 through XSTORE_3
+		return getIndex() <= 3;
+	}
+
 	@Override
 	public int size() {
 		// u1 opcode

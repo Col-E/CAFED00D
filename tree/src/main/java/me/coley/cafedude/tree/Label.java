@@ -75,7 +75,7 @@ public class Label {
 	 * @return {@code true} when the label is resolved.
 	 */
 	public boolean isResolved() {
-		return offset != -1;
+		return offset >= 0;
 	}
 
 	@Override

@@ -49,9 +49,12 @@ public class CodeConverter implements Opcodes {
 			checkLabel(local.getStart(), "local <" + local.getIndex() + "> start");
 			checkLabel(local.getEnd(), "local <" + local.getIndex() + "> end");
 			// Local variable table
+			int startPc = local.getStart().getOffset();
+			int endPc = local.getEnd().getOffset();
+			int length = endPc - startPc;
 			VarEntry var = new VarEntry(
-					local.getStart().getOffset(),
-					local.getEnd().getOffset(),
+					startPc,
+					length,
 					symbols.newUtf8(local.getName()),
 					symbols.newUtf8(local.getDesc().getDescriptor()),
 					local.getIndex());
@@ -59,8 +62,8 @@ public class CodeConverter implements Opcodes {
 			if (local.getSignature() != null) {
 				// Local variable type table
 				VarTypeEntry type = new VarTypeEntry(
-						local.getStart().getOffset(),
-						local.getEnd().getOffset(),
+						startPc,
+						length,
 						symbols.newUtf8(local.getName()),
 						symbols.newUtf8(local.getSignature()),
 						local.getIndex());
@@ -78,7 +81,7 @@ public class CodeConverter implements Opcodes {
 		List<CodeAttribute.ExceptionTableEntry> exceptionTable = new ArrayList<>();
 		for (ExceptionHandler handler : code.getHandlers()) {
 			String catchType = handler.getType();
-			String catchTypeRep =catchType == null ? "*" : catchType;
+			String catchTypeRep = catchType == null ? "*" : catchType;
 			checkLabel(handler.getStart(), "handler <" + catchTypeRep + "> start");
 			checkLabel(handler.getEnd(), "handler <" + catchTypeRep + "> end");
 			checkLabel(handler.getHandler(), "handler <" + catchTypeRep + "> handler");
@@ -121,18 +124,23 @@ public class CodeConverter implements Opcodes {
 		// calculate labels offsets
 		int offset = 0;
 		for (Insn insn : insns) {
+			int size = insn.size();
 			switch (insn.getKind()) {
 				case LDC: {
 					LdcInsn ldcInsn = (LdcInsn) insn;
 					CpEntry constant = symbols.newConstant(ldcInsn.getConstant());
+
+					// Expand size based if WIDE usage is required but LDC is specified
 					if ((constant.getIndex() > 255 || constant.isWide()) && ldcInsn.getOpcode() == LDC)
-						offset += 1;
+						size += 1;
 					break;
 				}
 				case VAR: {
 					VarInsn varInsn = (VarInsn) insn;
-					if (varInsn.getIndex() <= 3)
-						offset--; // patching will convert to X{STORE/LOAD}_N
+
+					// Check for cases where insn can become X{STORE/LOAD}_N
+					if (varInsn.supportsSingleOpInsn())
+						size--;
 					break;
 				}
 				case TABLE_SWITCH:
@@ -146,9 +154,10 @@ public class CodeConverter implements Opcodes {
 					labelInsn.getLabel().setOffset(offset);
 					break;
 				}
-				default: break;
+				default:
+					break;
 			}
-			offset += insn.size();
+			offset += size;
 		}
 	}
 
@@ -273,11 +282,13 @@ public class CodeConverter implements Opcodes {
 	}
 
 	private void checkLabel(Label label, Insn insn, State state) throws InvalidCodeException {
-		if (!label.isResolved()) throw new UnresolvedLabelException(label, state.offset, insn);
+		if (!label.isResolved())
+			throw new UnresolvedLabelException(label, state.offset, insn);
 	}
 
 	private void checkLabel(Label label, String where) throws InvalidCodeException {
-		if (!label.isResolved()) throw new UnresolvedLabelException(label, where);
+		if (!label.isResolved())
+			throw new UnresolvedLabelException(label, where);
 	}
 
 	static class BsmEntry {
