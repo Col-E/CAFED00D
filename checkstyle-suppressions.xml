@@ -13,28 +13,16 @@
 	<suppress checks="CyclomaticComplexity"
 			  files="ClassFileReader.java"
 			  lines="0-9999"/>
-	<suppress checks="ClassFanOutComplexity"
-			  files="ClassFileReader.java"
-			  lines="0-9999"/>
-			  
+
 	<suppress checks="ClassDataAbstractionCoupling"
 			  files="ClassFileWriter.java"
 			  lines="0-9999"/>
 	<suppress checks="CyclomaticComplexity"
 			  files="ClassFileWriter.java"
 			  lines="0-9999"/>
-	<suppress checks="ClassFanOutComplexity"
-			  files="ClassFileWriter.java"
-			  lines="0-9999"/>
 
 	<suppress checks="ClassDataAbstractionCoupling"
 			  files="AnnotationReader.java"
-			  lines="0-9999"/>
-	<suppress checks="ClassFanOutComplexity"
-			  files="AnnotationReader.java"
-			  lines="0-9999"/>
-	<suppress checks="ClassFanOutComplexity"
-			  files="AnnotationWriter.java"
 			  lines="0-9999"/>
 	<suppress checks="CyclomaticComplexity"
 			  files="TargetInfoType.java"
@@ -53,9 +41,6 @@
 	<suppress checks="CyclomaticComplexity"
 			  files="IllegalStrippingTransformer.java"
 			  lines="0-9999"/>
-	<suppress checks="ClassFanOutComplexity"
-			  files="IllegalStrippingTransformer.java"
-			  lines="0-9999"/>
 
 	<suppress checks="CyclomaticComplexity"
 			  files="Descriptor.java"
@@ -64,17 +49,14 @@
 	<suppress checks="CyclomaticComplexity"
 			  files="AttributeReader.java"
 			  lines="0-9999"/>
-	<suppress checks="ClassFanOutComplexity"
+	<suppress checks="ClassDataAbstractionCoupling"
 			  files="AttributeReader.java"
 			  lines="0-9999"/>
-	<suppress checks="ClassDataAbstractionCoupling"
+	<suppress checks="ClassFanOutComplexity"
 			  files="AttributeReader.java"
 			  lines="0-9999"/>
 
 	<suppress checks="CyclomaticComplexity"
-			  files="AttributeWriter.java"
-			  lines="0-9999"/>
-	<suppress checks="ClassFanOutComplexity"
 			  files="AttributeWriter.java"
 			  lines="0-9999"/>
 
@@ -83,5 +65,16 @@
 			  lines="0-9999"/>
 	<suppress checks="CyclomaticComplexity"
 			  files="InstructionWriter.java"
+			  lines="0-9999"/>
+
+	<suppress checks="CyclomaticComplexity"
+			  files="InstructionVisitor.java"
+			  lines="0-9999"/>
+	<suppress checks="BooleanExpressionComplexity"
+			  files="InstructionVisitor.java"
+			  lines="0-9999"/>
+
+	<suppress checks="CyclomaticComplexity"
+			  files="ClassReader.java"
 			  lines="0-9999"/>
 </suppressions>

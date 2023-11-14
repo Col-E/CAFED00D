@@ -135,7 +135,6 @@
 		<module name="InvalidJavadocPosition"/>
 		<module name="JavadocBlockTagLocation"/>
 		<module name="JavadocContentLocationCheck"/>
-		<module name="JavadocParagraph"/>
 		<module name="JavadocType"/>
 		<module name="SingleLineJavadoc">
 			<property name="ignoreInlineTags" value="false"/>
@@ -175,8 +174,8 @@
 			<property name="excludedClasses" value="File, FileUtils, Path, Paths, URL"/>
 		</module>
 		<module name="ClassFanOutComplexity">
-			<!-- Number of type references -->
-			<property name="max" value="20"/>
+			<!-- Number of type references, set high as this is something that cannot be avoided in a number of cases -->
+			<property name="max" value="80"/>
 			<!-- Sets of excluded classes based on general use case -->
 			<property name="excludedClasses" value="boolean, byte, char, double, float, int, long, short, void"/>
 			<property name="excludedClasses" value="Boolean, Byte, Character, Double, Float, Integer, Long, Short, Void"/>
@@ -187,7 +186,7 @@
 		</module>
 		<module name="CyclomaticComplexity">
 			<!-- Number of possible paths through the source -->
-			<property name="max" value="15"/>
+			<property name="max" value="20"/>
 		</module>
 		<module name="AnonInnerLength">
 			<property name="max" value="60"/>

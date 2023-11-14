@@ -3,3 +3,9 @@
 *.iml
 target/*
 /target/
+/core/target/
+/tree/target
+/tree/test-results/
+/tree/test-results
+/tree/test-results/*
+/tree/test-results/**/*
