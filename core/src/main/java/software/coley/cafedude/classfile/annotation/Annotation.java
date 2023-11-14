@@ -14,10 +14,10 @@ import java.util.Set;
 /**
  * Annotation outline. Represents an annotation item to be contained in an annotation collection attribute such as:
  * <ul>
- *     <li>{@link AnnotationsAttribute RuntimeInvisibleAnnotations}</li>>
- *     <li>{@link AnnotationsAttribute RuntimeVisibleAnnotations}</li>>
- *     <li>{@link ParameterAnnotationsAttribute RuntimeInvisibleParameterAnnotations}</li>>
- *     <li>{@link ParameterAnnotationsAttribute RuntimeVisibleParameterAnnotations}</li>>
+ *     <li>{@link AnnotationsAttribute RuntimeInvisibleAnnotations}</li>
+ *     <li>{@link AnnotationsAttribute RuntimeVisibleAnnotations}</li>
+ *     <li>{@link ParameterAnnotationsAttribute RuntimeInvisibleParameterAnnotations}</li>
+ *     <li>{@link ParameterAnnotationsAttribute RuntimeVisibleParameterAnnotations}</li>
  * </ul>
  *
  * @author Matt Coley

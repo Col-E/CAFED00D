@@ -38,6 +38,10 @@ import java.util.function.Supplier;
 public class ClassFileWriter {
 	private DataOutputStream out;
 	private AttributeWriter attributeWriter;
+
+	/**
+	 * Fallback writer. Default to always failing on any input.
+	 */
 	protected Supplier<FallbackInstructionWriter> fallbackWriterSupplier = FallbackInstructionWriter::fail;
 
 	/**

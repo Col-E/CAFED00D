@@ -12,14 +12,23 @@ import java.util.List;
  * @author Matt Coley
  */
 public class Descriptor {
+	/** Descriptor of a {@code void} primitive. */
 	public static final Descriptor VOID = new Descriptor(Kind.PRIMITIVE, "V");
+	/** Descriptor of a {@code boolean} primitive. */
 	public static final Descriptor BOOLEAN = new Descriptor(Kind.PRIMITIVE, "Z");
+	/** Descriptor of a {@code byte} primitive. */
 	public static final Descriptor BYTE = new Descriptor(Kind.PRIMITIVE, "B");
+	/** Descriptor of a {@code char} primitive. */
 	public static final Descriptor CHAR = new Descriptor(Kind.PRIMITIVE, "C");
+	/** Descriptor of an {@code int} primitive. */
 	public static final Descriptor INT = new Descriptor(Kind.PRIMITIVE, "I");
+	/** Descriptor of a {@code float} primitive. */
 	public static final Descriptor FLOAT = new Descriptor(Kind.PRIMITIVE, "F");
+	/** Descriptor of a {@code double} primitive. */
 	public static final Descriptor DOUBLE = new Descriptor(Kind.PRIMITIVE, "D");
+	/** Descriptor of a {@code long} primitive. */
 	public static final Descriptor LONG = new Descriptor(Kind.PRIMITIVE, "J");
+	/** Descriptor of an {@code Object}. */
 	public static final Descriptor OBJECT = new Descriptor(Kind.OBJECT, "Ljava/lang/Object;");
 	//
 	private final Kind kind;
@@ -346,10 +355,15 @@ public class Descriptor {
 	 * Descriptor kind.
 	 */
 	public enum Kind {
+		/** Descriptor is of a primitive type. */
 		PRIMITIVE,
+		/** Descriptor is of an object type. */
 		OBJECT,
+		/** Descriptor is of an array type. The component can be a primitive or object. */
 		ARRAY,
+		/** Descriptor is of a method type. */
 		METHOD,
+		/** Descriptor is malformed. */
 		ILLEGAL
 	}
 }

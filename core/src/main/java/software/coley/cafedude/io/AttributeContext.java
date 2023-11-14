@@ -12,7 +12,26 @@ import javax.annotation.Nullable;
  * @author Matt Coley
  */
 public enum AttributeContext {
-	CLASS, FIELD, METHOD, RECORD_COMPONENT, ATTRIBUTE;
+	/**
+	 * Attribute appears on classes.
+	 */
+	CLASS,
+	/**
+	 * Attribute appears on fields.
+	 */
+	FIELD,
+	/**
+	 * Attribute appears on methods.
+	 */
+	METHOD,
+	/**
+	 * Attribute appears on record components.
+	 */
+	RECORD_COMPONENT,
+	/**
+	 * Attribute appears on other attributes.
+	 */
+	ATTRIBUTE;
 
 	private static final Logger logger = LoggerFactory.getLogger(AttributeContext.class);
 

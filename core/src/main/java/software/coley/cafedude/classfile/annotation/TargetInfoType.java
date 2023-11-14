@@ -10,15 +10,64 @@ import javax.annotation.Nonnull;
  * @author Matt Coley
  */
 public enum TargetInfoType implements AnnotationConstants {
+	/**
+	 * Type parameter declaration of generic class, interface, method, or constructor.
+	 */
 	TYPE_PARAMETER_TARGET,
+	/**
+	 * Type in {@code extends} or {@code implements} clause of class declaration (including the direct superclass or direct
+	 * superinterface of an anonymous class declaration), or in {@code extends} clause of interface declaration.
+	 */
 	SUPERTYPE_TARGET,
+	/**
+	 * Type in bound of type parameter declaration of generic class, interface, method, or constructor.
+	 */
 	TYPE_PARAMETER_BOUND_TARGET,
+	/**
+	 * Potential uses:
+	 * <ul>
+	 * <li>Type in field or record component declaration.</li>
+	 * <li>Type of method, or type of newly constructed object.</li>
+	 * <li>Receiver type of method or constructor.</li>
+	 * </ul>
+	 */
 	EMPTY_TARGET,
+	/**
+	 * Type in formal parameter declaration of method, constructor, or lambda expression.
+	 */
 	FORMAL_PARAMETER_TARGET,
+	/**
+	 * Type in {@code throws} clause of method or constructor.
+	 */
 	THROWS_TARGET,
+	/**
+	 * Type in local variable declaration.
+	 */
 	LOCALVAR_TARGET,
+	/**
+	 * Type in exception parameter declaration.
+	 */
 	CATCH_TARGET,
+	/**
+	 * Potential uses:
+	 * <ul>
+	 *    <li>type in {@code instanceof} expression.</li>
+	 *    <li>type in {@code new} expression.</li>
+	 *    <li>type in method reference expression using {@code ::new}.</li>
+	 *    <li>type in method reference expression using {@code ::Identifier}.</li>
+	 * </ul>
+	 */
 	OFFSET_TARGET,
+	/**
+	 * Potential uses:
+	 * <ul>
+	 *     <li>Type in cast expression</li>
+	 *     <li>Type argument for generic constructor in new expression or explicit constructor invocation statement.</li>
+	 *     <li>Type argument for generic method in method invocation expression.</li>
+	 *     <li>Type argument for generic constructor in method reference expression using {@code ::new}.</li>
+	 *     <li>Type argument for generic method in method reference expression using {@code ::Identifier}.</li>
+	 * </ul>
+	 */
 	TYPE_ARGUMENT_TARGET;
 
 	/**

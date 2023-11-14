@@ -31,6 +31,10 @@ public class ClassFileReader {
 	private boolean dropForwardVersioned = true;
 	private boolean dropEofAttributes = true;
 	private boolean dropDupeAnnotations = true;
+
+	/**
+	 * Fallback reader. Default to always failing on any input.
+	 */
 	protected Supplier<FallbackInstructionReader> fallbackReaderSupplier = FallbackInstructionReader::fail;
 
 	/**

@@ -92,6 +92,9 @@ public abstract class TargetInfo implements CpAccessor {
 	 * of a class or interface declaration.
 	 */
 	public static class SuperTypeTargetInfo extends TargetInfo {
+		/**
+		 * Case for the super-type index to appear on the extends clause.
+		 */
 		public static final int EXTENDS = 65535;
 		private final int superTypeIndex;
 

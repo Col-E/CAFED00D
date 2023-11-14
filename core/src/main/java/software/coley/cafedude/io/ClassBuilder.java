@@ -184,7 +184,10 @@ public class ClassBuilder {
 	}
 
 	/**
-	 * @return Build it!
+	 * @return Built class file.
+	 *
+	 * @throws InvalidClassException
+	 * 		When the class cannot be built.
 	 */
 	@Nonnull
 	public ClassFile build() throws InvalidClassException {

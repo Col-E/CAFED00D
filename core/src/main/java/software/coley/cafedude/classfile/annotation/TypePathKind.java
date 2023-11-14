@@ -8,9 +8,13 @@ import javax.annotation.Nonnull;
  * @author Matt Coley
  */
 public enum TypePathKind {
+	/** Annotation is deeper in an array type. */
 	ARRAY_DEEPER(0),
+	/** Annotation is deeper in a nested type. */
 	NESTED_DEEPER(1),
+	/** Annotation is on the bound of a wildcard type argument of a parameterized type. */
 	WILDCARD_BOUND(2),
+	/** Annotation is on a type argument of a parameterized type. */
 	TYPE_ARGUMENT(3);
 
 	private final int value;

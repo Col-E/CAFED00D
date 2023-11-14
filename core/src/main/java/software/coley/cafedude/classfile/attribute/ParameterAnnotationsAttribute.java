@@ -12,8 +12,8 @@ import java.util.Set;
 /**
  * Annotation collection attribute on method parameters. Represents either:
  * <ul>
- *     <li>{@code RuntimeInvisibleParameterAnnotations}</li>>
- *     <li>{@code RuntimeVisibleParameterAnnotations}</li>>
+ *     <li>{@code RuntimeInvisibleParameterAnnotations}</li>
+ *     <li>{@code RuntimeVisibleParameterAnnotations}</li>
  * </ul>
  *
  * @author Matt Coley

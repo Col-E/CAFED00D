@@ -9,7 +9,9 @@ import software.coley.cafedude.classfile.ConstPool;
  * @author Matt Coley
  */
 public abstract class Transformer {
+	/** Target class. */
 	protected final ClassFile clazz;
+	/** Target class's pool. */
 	protected final ConstPool pool;
 
 	/**

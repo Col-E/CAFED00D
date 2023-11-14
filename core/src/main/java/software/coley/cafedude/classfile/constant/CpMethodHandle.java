@@ -81,7 +81,8 @@ public class CpMethodHandle extends CpEntry {
 	 * <td>REF_invokeInterface</td>
 	 * <td>invokeinterface C.m:(A*)T</td>
 	 * </tr>
-	 * </tbody></table>
+	 * </tbody>
+	 * </table>
 	 *
 	 * @return Byte indicating handle behavior.
 	 */
