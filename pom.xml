@@ -11,7 +11,29 @@
     <name>CAFED00D</name>
     <packaging>pom</packaging>
     <description>Parent module for CafeDude</description>
-    
+
+    <licenses>
+        <license>
+            <name>The MIT License (MIT)</name>
+            <url>https://spdx.org/licenses/MIT.html</url>
+        </license>
+    </licenses>
+    <scm>
+        <connection>scm:git:git://github.com/Col-E/CAFED00D.git</connection>
+        <developerConnection>scm:git:ssh://github.com:Col-E/CAFED00D.git</developerConnection>
+        <url>https://github.com/Col-E/CAFED00D</url>
+    </scm>
+    <developers>
+        <developer>
+            <name>Matt Coley</name>
+            <email>mcoley2@gmu.edu</email>
+        </developer>
+        <developer>
+            <name>Justus Garbe</name>
+            <email>gihihoh@gmail.com</email>
+        </developer>
+    </developers>
+
     <modules>
     	<module>core</module>
     	<module>tree</module>
