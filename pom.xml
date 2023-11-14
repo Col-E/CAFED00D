@@ -185,7 +185,14 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
                 <version>1.5.0</version>
-                <configuration></configuration>
+                <configuration>
+                    <pomElements>
+                        <name/>
+                        <description/>
+                        <developers/>
+                        <contributors/>
+                    </pomElements>
+                </configuration>
                 <executions>
                     <!-- enable flattening -->
                     <execution>
