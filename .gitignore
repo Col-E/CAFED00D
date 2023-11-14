@@ -9,3 +9,4 @@ target/*
 /tree/test-results
 /tree/test-results/*
 /tree/test-results/**/*
+.flattened-pom.xml
