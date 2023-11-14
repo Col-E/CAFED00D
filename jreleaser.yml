@@ -11,7 +11,7 @@ project:
   stereotype: none
   java:
     version: 11
-    groupId: me.coley
+    groupId: software.coley
     artifactId: cafedude
 
 release:

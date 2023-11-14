@@ -7,10 +7,10 @@
     <artifactId>cafedude-core</artifactId>
     <url>https://github.com/Col-E/CAFED00D/</url>
     <version>${revision}</version>
-    <name>CAFED00D-Core</name>
+    <name>cafedude-core</name>
 
     <parent>
-        <groupId>me.coley</groupId>
+        <groupId>software.coley</groupId>
         <artifactId>cafedude</artifactId>
         <version>${revision}</version>
     </parent>
