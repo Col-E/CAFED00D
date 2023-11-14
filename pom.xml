@@ -191,6 +191,8 @@
                         <description/>
                         <developers/>
                         <contributors/>
+                        <url/>
+                        <scm/>
                     </pomElements>
                 </configuration>
                 <executions>
