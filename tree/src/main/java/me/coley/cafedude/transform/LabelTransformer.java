@@ -54,15 +54,9 @@ public class LabelTransformer extends Transformer {
 					int start = exceptionTableEntry.getStartPc();
 					int end = exceptionTableEntry.getEndPc();
 					int handler = exceptionTableEntry.getHandlerPc();
-					if (!labels.containsKey(start)) {
-						labels.put(start, new Label(start));
-					}
-					if (!labels.containsKey(end)) {
-						labels.put(end, new Label(end));
-					}
-					if (!labels.containsKey(handler)) {
-						labels.put(handler, new Label(handler));
-					}
+					labels.computeIfAbsent(start, Label::new);
+					labels.computeIfAbsent(end, Label::new);
+					labels.computeIfAbsent(handler, Label::new);
 				}
 
 				int pos = 0;
@@ -89,7 +83,8 @@ public class LabelTransformer extends Transformer {
 						labels.computeIfAbsent(pos + lsi.getDefault(), Label::new);
 					}
 					instructions.put(pos, insn);
-					pos += insn.computeSize();
+					int insnSize = insn.computeSize();
+					pos += insnSize;
 				}
 				labels.put(pos, new Label(pos)); // end label
 				// add lines to labels

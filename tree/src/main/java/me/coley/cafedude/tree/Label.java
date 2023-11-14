@@ -1,8 +1,8 @@
 package me.coley.cafedude.tree;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Label to mark a position in the bytecode.
@@ -11,7 +11,7 @@ import java.util.List;
  */
 public class Label {
 	private int offset;
-	private List<Integer> lines = new ArrayList<>();
+	private Set<Integer> lines = new TreeSet<>();
 
 	/**
 	 * @param offset
@@ -57,7 +57,7 @@ public class Label {
 	 * @return Line numbers associated with this label.
 	 */
 	@Nonnull
-	public List<Integer> getLines() {
+	public Set<Integer> getLines() {
 		return lines;
 	}
 
@@ -67,7 +67,7 @@ public class Label {
 	 * @param lines
 	 * 		Line numbers.
 	 */
-	public void setLines(@Nonnull List<Integer> lines) {
+	public void setLines(@Nonnull Set<Integer> lines) {
 		this.lines = lines;
 	}
 

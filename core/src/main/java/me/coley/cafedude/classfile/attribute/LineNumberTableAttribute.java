@@ -78,5 +78,31 @@ public class LineNumberTableAttribute extends Attribute {
 		public int getLine() {
 			return line;
 		}
+
+		@Override
+		public String toString() {
+			return "LineEntry{" +
+					"startPc=" + startPc +
+					", line=" + line +
+					'}';
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+
+			LineEntry lineEntry = (LineEntry) o;
+
+			if (startPc != lineEntry.startPc) return false;
+			return line == lineEntry.line;
+		}
+
+		@Override
+		public int hashCode() {
+			int result = startPc;
+			result = 31 * result + line;
+			return result;
+		}
 	}
 }

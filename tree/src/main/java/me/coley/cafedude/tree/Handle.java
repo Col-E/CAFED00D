@@ -96,6 +96,28 @@ public class Handle {
 		this.descriptor = descriptor;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		Handle handle = (Handle) o;
+
+		if (tag != handle.tag) return false;
+		if (!owner.equals(handle.owner)) return false;
+		if (!name.equals(handle.name)) return false;
+		return descriptor.equals(handle.descriptor);
+	}
+
+	@Override
+	public int hashCode() {
+		int result = tag.hashCode();
+		result = 31 * result + owner.hashCode();
+		result = 31 * result + name.hashCode();
+		result = 31 * result + descriptor.hashCode();
+		return result;
+	}
+
 	/**
 	 * Handle tag.
 	 */

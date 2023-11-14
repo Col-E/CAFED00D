@@ -299,6 +299,24 @@ public class CodeConverter implements Opcodes {
 			this.handle = handle;
 			this.args = args;
 		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
+
+			BsmEntry bsmEntry = (BsmEntry) o;
+
+			if (!handle.equals(bsmEntry.handle)) return false;
+			return args.equals(bsmEntry.args);
+		}
+
+		@Override
+		public int hashCode() {
+			int result = handle.hashCode();
+			result = 31 * result + args.hashCode();
+			return result;
+		}
 	}
 
 	static class State {
