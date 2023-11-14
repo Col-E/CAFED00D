@@ -23,10 +23,3 @@ release:
       preset: conventional-commits
       contributors:
         format: '- {{contributorName}}{{#contributorUsernameAsLink}} ({{.}}){{/contributorUsernameAsLink}}'
-
-distributions:
-  dist:
-    type: JAVA_BINARY
-    artifacts:
-      - path: core/target/cafedude-core-{{projectVersion}}.jar
-      - path: tree/target/cafedude-tree-{{projectVersion}}.jar
