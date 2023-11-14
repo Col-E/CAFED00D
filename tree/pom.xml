@@ -8,6 +8,7 @@
     <url>https://github.com/Col-E/CAFED00D/</url>
     <version>${revision}</version>
     <name>cafedude-tree</name>
+    <description>Tree module for CafeDude, containing a simplified intermediate model for classes</description>
 
     <parent>
         <groupId>software.coley</groupId>

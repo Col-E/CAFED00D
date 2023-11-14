@@ -8,6 +8,7 @@
     <url>https://github.com/Col-E/CAFED00D/</url>
     <version>${revision}</version>
     <name>cafedude-core</name>
+    <description>Core module for CafeDude, containing class parsing and writing</description>
 
     <parent>
         <groupId>software.coley</groupId>

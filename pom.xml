@@ -10,6 +10,7 @@
     <version>${revision}</version>
     <name>CAFED00D</name>
     <packaging>pom</packaging>
+    <description>Parent module for CafeDude</description>
     
     <modules>
     	<module>core</module>
