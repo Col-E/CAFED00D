@@ -26,7 +26,7 @@ release:
 
 distributions:
   dist:
-    type: SINGLE_JAR
+    type: JAVA_BINARY
     artifacts:
       - path: core/target/cafedude-core-{{projectVersion}}.jar
       - path: tree/target/cafedude-tree-{{projectVersion}}.jar
