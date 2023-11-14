@@ -23,3 +23,24 @@ release:
       preset: conventional-commits
       contributors:
         format: '- {{contributorName}}{{#contributorUsernameAsLink}} ({{.}}){{/contributorUsernameAsLink}}'
+
+signing:
+  active: RELEASE
+  mode: MEMORY
+  armored: true
+  verify: true
+  artifacts: true
+  checksums: true
+  files: false
+
+deploy:
+  maven:
+    nexus2:
+      maven-central:
+        active: RELEASE
+        url: https://s01.oss.sonatype.org/service/local
+        applyMavenCentralRules: true
+        stagingRepositories:
+          - target/staging-deploy
+        closeRepository: true
+        releaseRepository: true
