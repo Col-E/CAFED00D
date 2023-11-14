@@ -14,15 +14,13 @@ import me.coley.cafedude.classfile.attribute.ModuleAttribute.Requires;
 import me.coley.cafedude.classfile.attribute.RecordAttribute.RecordComponent;
 import me.coley.cafedude.classfile.attribute.StackMapTableAttribute.StackMapFrame;
 import me.coley.cafedude.classfile.attribute.StackMapTableAttribute.TypeInfo;
-import me.coley.cafedude.classfile.constant.CpClass;
-import me.coley.cafedude.classfile.constant.CpEntry;
-import me.coley.cafedude.classfile.constant.CpModule;
-import me.coley.cafedude.classfile.constant.CpUtf8;
+import me.coley.cafedude.classfile.constant.*;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Attribute writer for all attributes.
@@ -264,12 +262,28 @@ public class AttributeWriter {
 							(StackMapTableAttribute) attribute;
 					writeStackMapTable(out, stackMapTable);
 					break;
-				case AttributeConstants.SOURCE_ID:
-				case AttributeConstants.MODULE_HASHES:
-				case AttributeConstants.MODULE_MAIN_CLASS:
 				case AttributeConstants.MODULE_PACKAGES:
-				case AttributeConstants.MODULE_RESOLUTION:
+					ModulePackagesAttribute modulePackagesAttribute = (ModulePackagesAttribute) attribute;
+					out.writeShort(modulePackagesAttribute.getPackages().size());
+					for (CpPackage cpPackage : modulePackagesAttribute.getPackages()) {
+						out.writeShort(cpPackage.getIndex());
+					}
 				case AttributeConstants.MODULE_TARGET:
+					ModuleTargetAttribute moduleTargetAttribute = (ModuleTargetAttribute) attribute;
+					out.writeShort(moduleTargetAttribute.getPlatformName().getIndex());
+				case AttributeConstants.MODULE_HASHES:
+					ModuleHashesAttribute moduleHashesAttribute = (ModuleHashesAttribute) attribute;
+					out.writeShort(moduleHashesAttribute.getAlgorithmName().getIndex());
+					out.writeShort(moduleHashesAttribute.getModuleHashes().size());
+					for (Map.Entry<CpUtf8, byte[]> entry : moduleHashesAttribute.getModuleHashes().entrySet()) {
+						out.writeShort(entry.getKey().getIndex());
+						out.writeShort(entry.getValue().length);
+						out.write(entry.getValue());
+					}
+					break;
+				case AttributeConstants.SOURCE_ID:
+				case AttributeConstants.MODULE_MAIN_CLASS:
+				case AttributeConstants.MODULE_RESOLUTION:
 				case AttributeConstants.METHOD_PARAMETERS:
 				case AttributeConstants.CHARACTER_RANGE_TABLE:
 				case AttributeConstants.COMPILATION_ID:

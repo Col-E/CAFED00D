@@ -27,7 +27,9 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import static me.coley.cafedude.classfile.AttributeConstants.*;
 import static me.coley.cafedude.classfile.StackMapTableConstants.*;
@@ -205,6 +207,10 @@ public class AttributeReader {
 				return readModuleMainClass();
 			case MODULE_PACKAGES:
 				return readModulePackages();
+			case MODULE_TARGET:
+				return readModuleTarget();
+			case MODULE_HASHES:
+				return readModuleHashes();
 			case STACK_MAP_TABLE:
 				return readStackMapTable();
 			case LINE_NUMBER_TABLE:
@@ -219,9 +225,7 @@ public class AttributeReader {
 				return readRecord();
 			case CHARACTER_RANGE_TABLE:
 			case COMPILATION_ID:
-			case MODULE_HASHES:
 			case MODULE_RESOLUTION:
-			case MODULE_TARGET:
 			case SOURCE_ID:
 			default:
 				break;
@@ -460,6 +464,40 @@ public class AttributeReader {
 			packages.add((CpPackage) cp.get(is.readUnsignedShort()));
 		}
 		return new ModulePackagesAttribute(name, packages);
+	}
+
+	/**
+	 * @return Module target attribute.
+	 *
+	 * @throws IOException
+	 * 		When the stream is unexpectedly closed or ends.
+	 */
+	@Nonnull
+	private ModuleTargetAttribute readModuleTarget() throws IOException {
+		CpUtf8 platformName = (CpUtf8) cp.get(is.readUnsignedShort());
+		return new ModuleTargetAttribute(name, platformName);
+	}
+
+	/**
+	 * @return Module hashes attribute.
+	 *
+	 * @throws IOException
+	 * 		When the stream is unexpectedly closed or ends.
+	 */
+	@Nonnull
+	private ModuleHashesAttribute readModuleHashes() throws IOException {
+		CpUtf8 algorithm = (CpUtf8) cp.get(is.readUnsignedShort());
+		int moduleCount = is.readUnsignedShort();
+		Map<CpUtf8, byte[]> moduleHashes = new LinkedHashMap<>();
+		for (int i = 0; i < moduleCount; i++) {
+			int moduleNameIndex = is.readUnsignedShort();
+			int moduleHashLength = is.readUnsignedShort();
+			CpUtf8 moduleName = (CpUtf8) cp.get(moduleNameIndex);
+			byte[] moduleHash = new byte[moduleHashLength];
+			is.read(moduleHash);
+			moduleHashes.put(moduleName, moduleHash);
+		}
+		return new ModuleHashesAttribute(name, algorithm, moduleHashes);
 	}
 
 	/**
