@@ -5,6 +5,7 @@ import software.coley.cafedude.classfile.constant.CpEntry;
 import software.coley.cafedude.classfile.constant.CpUtf8;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -70,8 +71,9 @@ public class MethodParametersAttribute extends Attribute {
 		 * 		Access flags.
 		 * @param name
 		 * 		Constant pool entry holding the parameter's name.
+		 * 		Can be {@code null} to represent a formal parameter with no name.
 		 */
-		public Parameter(int accessFlags, @Nonnull CpUtf8 name) {
+		public Parameter(int accessFlags, @Nullable CpUtf8 name) {
 			this.accessFlags = accessFlags;
 			this.name = name;
 		}
@@ -93,8 +95,9 @@ public class MethodParametersAttribute extends Attribute {
 
 		/**
 		 * @return Constant pool entry holding the parameter's name.
+		 * Can be {@code null} to represent a formal parameter with no name.
 		 */
-		@Nonnull
+		@Nullable
 		public CpUtf8 getName() {
 			return name;
 		}
@@ -102,8 +105,9 @@ public class MethodParametersAttribute extends Attribute {
 		/**
 		 * @param name
 		 * 		New constant pool entry holding the parameter's name.
+		 * 		Can be {@code null} to represent a formal parameter with no name.
 		 */
-		public void setName(@Nonnull CpUtf8 name) {
+		public void setName(@Nullable CpUtf8 name) {
 			this.name = name;
 		}
 
@@ -111,7 +115,7 @@ public class MethodParametersAttribute extends Attribute {
 		@Override
 		public Set<CpEntry> cpAccesses() {
 			Set<CpEntry> set = new HashSet<>();
-			set.add(name);
+			if (name != null) set.add(name);
 			return set;
 		}
 	}

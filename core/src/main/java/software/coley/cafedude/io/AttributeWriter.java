@@ -153,6 +153,14 @@ public class AttributeWriter {
 						out.writeShort(entry.getIndex());
 					}
 					break;
+				case AttributeConstants.METHOD_PARAMETERS:
+					MethodParametersAttribute methodParametersAttribute = (MethodParametersAttribute) attribute;
+					out.writeByte(methodParametersAttribute.getParameters().size());
+					for (MethodParametersAttribute.Parameter parameter : methodParametersAttribute.getParameters()) {
+						out.writeShort(orZero(parameter.getName()));
+						out.writeShort(parameter.getAccessFlags());
+					}
+					break;
 				case AttributeConstants.MODULE:
 					ModuleAttribute moduleAttribute = (ModuleAttribute) attribute;
 					out.writeShort(moduleAttribute.getModule().getIndex());
@@ -281,7 +289,6 @@ public class AttributeWriter {
 				case AttributeConstants.SOURCE_ID:
 				case AttributeConstants.MODULE_MAIN_CLASS:
 				case AttributeConstants.MODULE_RESOLUTION:
-				case AttributeConstants.METHOD_PARAMETERS:
 				case AttributeConstants.CHARACTER_RANGE_TABLE:
 				case AttributeConstants.COMPILATION_ID:
 				case AttributeConstants.DEPRECATED:
