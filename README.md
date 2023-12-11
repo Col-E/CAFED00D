@@ -12,33 +12,16 @@ Another class library with a focus on obfuscation support.
 
 ### Add dependency
 
-Add Jitpack to your repositories
-```xml
-<repositories>
-    <repository>
-        <id>jitpack.io</id>
-        <url>https://jitpack.io</url>
-    </repository>
-</repositories>
-```
-```groovy
-allprojects {
-    repositories {
-        ...
-        maven { url 'https://jitpack.io' }
-    }
-}
-```
 Add CafeDude dependency _(where `VERSION` is the latest version)_
 ```xml
 <dependency>
-    <groupId>com.github.Col-E</groupId>
-    <artifactId>CAFED00D</artifactId>
+    <groupId>software.coley</groupId>
+    <artifactId>cafedude-core</artifactId>
     <version>VERSION</version>
 </dependency>
 ```
 ```groovy
-implementation 'com.github.Col-E:CAFED00D:VERSION'
+implementation 'software.coley:cafedude-core:VERSION'
 ```
 
 ### Reading and writing classes
