@@ -92,6 +92,11 @@ public class MethodInsn extends Insn {
 	public int size() {
 		// u1 opcode
 		// u2 index
+		if (getOpcode() == Opcodes.INVOKEINTERFACE){
+			// u1 count
+			// u1 padding
+			return 5;
+		}
 		return 3;
 	}
 
