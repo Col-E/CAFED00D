@@ -1,5 +1,7 @@
 package software.coley.cafedude.io;
 
+import software.coley.cafedude.classfile.Descriptor;
+import software.coley.cafedude.classfile.constant.ConstRef;
 import software.coley.cafedude.classfile.instruction.*;
 import software.coley.cafedude.util.GrowingByteBuffer;
 
@@ -249,13 +251,23 @@ public class InstructionWriter {
 				case INVOKEVIRTUAL:
 				case INVOKESPECIAL:
 				case INVOKESTATIC:
-				case INVOKEINTERFACE:
 				case NEW:
 				case ANEWARRAY:
 				case CHECKCAST:
 				case INSTANCEOF:
 					buffer.putShort(((CpRefInstruction) instruction).getEntry().getIndex() & 0xFFFF);
 					break;
+				case INVOKEINTERFACE: {
+					ConstRef ref = (ConstRef) ((CpRefInstruction) instruction).getEntry();
+					buffer.putShort(ref.getIndex() & 0xFFFF);
+
+					// InvokeInterface encodes the number of arguments.
+					// We add +1 because of the implicit 'this' argument.
+					int argCount = Descriptor.from(ref.getNameType().getType().getText()).getParameterCount() + 1;
+					buffer.put(argCount);
+					buffer.put(0);
+					break;
+				}
 				case IINC: {
 					IincInstruction iinc = (IincInstruction) instruction;
 					buffer.put(iinc.getVar() & 0xFF);
@@ -339,7 +351,7 @@ public class InstructionWriter {
 			int size = endPos - startPos;
 			if (size != expectedSize) {
 				throw new IllegalStateException("Instruction size expectation mismatch: " + instruction +
-						"\n - expected vs actual: " + expectedSize + " vs " + size);
+						"\n - expected=" + expectedSize + ", actual=" + size);
 			}
 		}
 		ByteBuffer result = buffer.unwrap();

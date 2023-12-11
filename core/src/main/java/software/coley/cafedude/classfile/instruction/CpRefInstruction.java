@@ -51,9 +51,9 @@ public class CpRefInstruction extends BasicInstruction implements CpAccessor {
 		if (opcode == Opcodes.LDC)
 			return 1 + 1; // 1 byte opcode + 1 byte index
 
-		// InvokeDynamic has two bytes of padding after it for some reason.
-		// See: jvms-6.5.invokedynamic
-		if (opcode == Opcodes.INVOKEDYNAMIC)
+		// InvokeDynamic and Invokespecial have two bytes of padding after them for some reason.
+		// See: jvms-6.5.invokedynamic / jvms-6.5.invokeinterface
+		if (opcode == Opcodes.INVOKEDYNAMIC || opcode == Opcodes.INVOKEINTERFACE)
 			return 1 + 2 + 2; // 1 byte opcode + 2 byte index + 2 byte padding
 
 		return 1 + 2; // 1 byte opcode + 2 byte index

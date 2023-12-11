@@ -313,17 +313,27 @@ public class InstructionReader {
 				case PUTFIELD:
 				case INVOKEVIRTUAL:
 				case INVOKESPECIAL:
-				case INVOKESTATIC:
-				case INVOKEINTERFACE:
+				case INVOKESTATIC: {
 					ConstRef ref = (ConstRef) pool.get(buffer.getShort() & 0xFFFF);
 					instructions.add(new CpRefInstruction(opcode, ref));
 					break;
+				}
+				case INVOKEINTERFACE: {
+					ConstRef ref = (ConstRef) pool.get(buffer.getShort() & 0xFFFF);
+
+					// 1 byte for arg-count
+					// 1 padding byte
+					buffer.getShort();
+
+					instructions.add(new CpRefInstruction(opcode, ref));
+					break;
+				}
 				case INVOKEDYNAMIC: {
 					int index = buffer.getShort() & 0xFFFF;
-					if ((buffer.get() | buffer.get()) != 0) {
-						// TODO: should we silently ignore, or throw?
-						throw new IllegalStateException("InvokeDynamic padding bytes are non-zero");
-					}
+
+					// 2 padding bytes
+					buffer.getShort();
+
 					CpInvokeDynamic entry = (CpInvokeDynamic) pool.get(index);
 					instructions.add(new CpRefInstruction(INVOKEDYNAMIC, entry));
 					break;
