@@ -205,4 +205,20 @@ public class ClassBuilder {
 				attributes
 		);
 	}
+	/**
+	 * Convert the class tree to a class file byte array.
+	 * @return
+	 * 		Class file byte array.
+	 * @throws InvalidClassException
+	 * 		When the class is invalid.
+	 */
+
+	public byte[] toByteArray() throws InvalidClassException {
+		if (versionMajor == 0 && versionMinor == 0) {
+			throw new InvalidClassException("Version information is not set");
+		}
+		ClassFile file = build();
+		ClassFileWriter writer = new ClassFileWriter();
+		return writer.write(file);
+	}
 }

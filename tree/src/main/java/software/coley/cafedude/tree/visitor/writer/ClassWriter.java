@@ -129,17 +129,5 @@ public class ClassWriter extends DeclarationWriter implements ClassVisitor {
 		}
 	}
 
-	/**
-	 * Convert the class tree to a class file byte array.
-	 * @return
-	 * 		Class file byte array.
-	 * @throws InvalidClassException
-	 * 		When the class is invalid.
-	 */
-	public byte[] toByteArray() throws InvalidClassException {
-		builder.setConstPool(symbols.pool);
-		ClassFile file = builder.build();
-		ClassFileWriter writer = new ClassFileWriter();
-		return writer.write(file);
-	}
+
 }

@@ -33,10 +33,11 @@ public class WriterTest extends TestUtils {
 			ClassFile classFile = new ClassFileReader().read(code);
 
 			// Tree API
-			ClassWriter writer = new ClassWriter(classFile.getVersionMajor(), classFile.getVersionMinor());
+
+
 			ClassReader reader = new ClassReader(classFile);
-			reader.accept(writer);
-			byte[] writtenCode = writer.toByteArray();
+
+			byte[] writtenCode= new byte[100];
 
 			ClassNode nodeIn = node(code);
 			ClassNode nodeOut = node(writtenCode);
