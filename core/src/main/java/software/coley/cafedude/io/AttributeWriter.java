@@ -12,7 +12,7 @@ import software.coley.cafedude.classfile.attribute.ModuleAttribute.Provides;
 import software.coley.cafedude.classfile.attribute.ModuleAttribute.Requires;
 import software.coley.cafedude.classfile.attribute.*;
 import software.coley.cafedude.classfile.constant.*;
-
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -26,14 +26,17 @@ import java.util.Map;
  *
  * @author Matt Coley
  */
-public class AttributeWriter {
-	private final ClassFileWriter writer;
+public class AttributeWriter extends WriterInterface {
+	private final WriterInterface writer;
 
 	/**
 	 * @param writer
 	 * 		Parent class writier.
 	 */
-	public AttributeWriter(ClassFileWriter writer) {
+
+	protected Supplier<FallbackInstructionWriter> fallbackWriterSupplier = FallbackInstructionWriter::fail;
+
+	public AttributeWriter(WriterInterface writer) {
 		this.writer = writer;
 	}
 
@@ -48,6 +51,7 @@ public class AttributeWriter {
 	 * @throws IOException
 	 * 		When the stream cannot be written to.
 	 */
+	@Override
 	public byte[] writeAttribute(Attribute attribute) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(baos);
@@ -83,7 +87,7 @@ public class AttributeWriter {
 					CodeAttribute code = (CodeAttribute) attribute;
 					out.writeShort(code.getMaxStack());
 					out.writeShort(code.getMaxLocals());
-					InstructionWriter instructionWriter = new InstructionWriter(writer.fallbackWriterSupplier.get());
+					InstructionWriter instructionWriter = new InstructionWriter(fallbackWriterSupplier.get());
 					byte[] codeBytes = instructionWriter.writeCode(code.getInstructions());
 					out.writeInt(codeBytes.length);
 					out.write(codeBytes);

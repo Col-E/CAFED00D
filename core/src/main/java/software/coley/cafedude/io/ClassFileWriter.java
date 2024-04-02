@@ -1,3 +1,4 @@
+
 package software.coley.cafedude.io;
 
 import software.coley.cafedude.classfile.ConstantPoolConstants;
@@ -35,9 +36,9 @@ import java.util.function.Supplier;
  * @see ClassFile Parsed class representation.
  * @see ClassFileWriter Class file format writer.
  */
-public class ClassFileWriter {
+public class ClassFileWriter   {
 	private DataOutputStream out;
-	private AttributeWriter attributeWriter;
+	private WriterInterface attributeWriter;
 
 	/**
 	 * Fallback writer. Default to always failing on any input.
@@ -53,11 +54,18 @@ public class ClassFileWriter {
 	 * @throws InvalidClassException
 	 * 		When the class cannot be written.
 	 */
+	public ClassFileWriter() {
+		setAttributeWriter();
+	}
+	public void setAttributeWriter() {
+		attributeWriter = new AttributeWriter(attributeWriter);
+	}
+
+
 	public byte[] write(ClassFile clazz) throws InvalidClassException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try (DataOutputStream out = new DataOutputStream(baos)) {
 			this.out = out;
-			attributeWriter = new AttributeWriter(this);
 
 			// Write magic header
 			out.writeInt(0xCAFEBABE);
@@ -97,7 +105,7 @@ public class ClassFileWriter {
 			// Attributes
 			out.writeShort(clazz.getAttributes().size());
 			for (Attribute attribute : clazz.getAttributes())
-				writeAttribute(attribute);
+				writeAttribute1(attribute);
 
 			return baos.toByteArray();
 		} catch (IOException ex) {
@@ -185,7 +193,7 @@ public class ClassFileWriter {
 	 * 		When the attribute name points to a non-utf8
 	 * 		constant.
 	 */
-	private void writeAttribute(Attribute attribute) throws IOException, InvalidClassException {
+	private void writeAttribute1(Attribute attribute) throws IOException, InvalidClassException {
 		out.write(attributeWriter.writeAttribute(attribute));
 	}
 
@@ -204,7 +212,7 @@ public class ClassFileWriter {
 		out.writeShort(field.getType().getIndex());
 		out.writeShort(field.getAttributes().size());
 		for (Attribute attribute : field.getAttributes())
-			writeAttribute(attribute);
+			writeAttribute1(attribute);
 	}
 
 	/**
@@ -222,6 +230,6 @@ public class ClassFileWriter {
 		out.writeShort(method.getType().getIndex());
 		out.writeShort(method.getAttributes().size());
 		for (Attribute attribute : method.getAttributes())
-			writeAttribute(attribute);
+			writeAttribute1(attribute);
 	}
 }
