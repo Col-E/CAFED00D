@@ -58,46 +58,66 @@ public class Descriptor {
 			return from(desc.substring(arrayLevel));
 	}
 
-	/**
-	 * @return Return desc of a {@link Kind#METHOD} descriptor.
-	 * Otherwise, singleton list of self.
-	 */
 	public List<Descriptor> getParameters() {
 		if (kind == Kind.METHOD) {
-			int start = 1;
-			int stop = 1;
-			int max = desc.indexOf(')');
-			List<Descriptor> list = new ArrayList<>();
-			while (start < max) {
-				stop++;
-				String section = desc.substring(start, stop);
-				if (isPrimitive(desc)) {
-					list.add(from(section));
-				} else {
-					char first = section.charAt(0);
-					if (first == '[') {
-						int i = 1;
-						while (i < stop && section.charAt(i) == '[')
-							i++;
-						char elementStart = desc.charAt(start + i);
-						if (isPrimitive(elementStart))
-							stop = start + i;
-						else
-							stop = desc.indexOf(';', start + 1) + 1;
-						section = desc.substring(start, stop);
-						list.add(new Descriptor(Kind.ARRAY, section, i));
-					} else if (first == 'L' && (start + 1 < max)) {
-						stop = desc.indexOf(';', start + 1) + 1;
-						section = desc.substring(start, stop);
-						list.add(new Descriptor(Kind.OBJECT, section));
-					} else {
-						list.add(new Descriptor(Kind.ILLEGAL, section));
-					}
-				}
-				start = stop;
-			}
-			return list;
+			return getMethodParameters();
+		} else {
+			return getSingleParameter();
 		}
+	}
+
+	private List<Descriptor> getMethodParameters() {
+		List<Descriptor> parameters = new ArrayList<>();
+		int startIndex = 1;
+		int stopIndex = 1;
+		int maxIndex = desc.indexOf(')');
+
+		while (startIndex < maxIndex) {
+			stopIndex++;
+			String parameterSection = desc.substring(startIndex, stopIndex);
+			if (isPrimitive(parameterSection)) {
+				parameters.add(from(parameterSection));
+			} else {
+				char firstChar = parameterSection.charAt(0);
+				if (firstChar == '[') {
+					stopIndex = handleArrayParameter(parameters, startIndex, stopIndex);
+				} else if (firstChar == 'L' && (startIndex + 1 < maxIndex)) {
+					stopIndex = handleObjectParameter(parameters, startIndex);
+				} else {
+					parameters.add(new Descriptor(Kind.ILLEGAL, parameterSection));
+				}
+			}
+			startIndex = stopIndex;
+		}
+		return parameters;
+	}
+
+	private int handleArrayParameter(List<Descriptor> parameters, int startIndex, int stopIndex) {
+		int arrayDimension = 1;
+		int i = 1;
+		while (i < stopIndex && desc.charAt(startIndex + i) == '[') {
+			i++;
+			arrayDimension++;
+		}
+		char elementStart = desc.charAt(startIndex + i);
+		if (isPrimitive(elementStart)) {
+			stopIndex = startIndex + i;
+		} else {
+			stopIndex = desc.indexOf(';', startIndex + 1) + 1;
+		}
+		String section = desc.substring(startIndex, stopIndex);
+		parameters.add(new Descriptor(Kind.ARRAY, section, arrayDimension));
+		return stopIndex;
+	}
+
+	private int handleObjectParameter(List<Descriptor> parameters, int startIndex) {
+		int stopIndex = desc.indexOf(';', startIndex + 1) + 1;
+		String section = desc.substring(startIndex, stopIndex);
+		parameters.add(new Descriptor(Kind.OBJECT, section));
+		return stopIndex;
+	}
+
+	private List<Descriptor> getSingleParameter() {
 		return Collections.singletonList(this);
 	}
 

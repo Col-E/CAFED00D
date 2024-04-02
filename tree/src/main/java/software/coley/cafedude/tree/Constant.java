@@ -182,14 +182,20 @@ public class Constant {
 	 */
 	@Nonnull
 	public static Constant of(@Nonnull Descriptor value) {
-		if (value.getKind() == Descriptor.Kind.OBJECT
-				|| value.getKind() == Descriptor.Kind.ARRAY
-				|| value.getKind() == Descriptor.Kind.METHOD) {
+		if (isValidDescriptorKind(value.getKind())) {
 			return new Constant(Type.DESCRIPTOR, value);
 		} else {
 			throw new IllegalArgumentException("Invalid descriptor kind: " + value.getKind());
 		}
 	}
+	
+	private static boolean isValidDescriptorKind(Descriptor.Kind kind) {
+		return kind == Descriptor.Kind.OBJECT
+				|| kind == Descriptor.Kind.ARRAY
+				|| kind == Descriptor.Kind.METHOD;
+	}
+
+	/**
 
 	/**
 	 * Create a constant from a {@link Handle} value.

@@ -57,7 +57,10 @@ public class TypePath {
 	 * @return Length of type path item.
 	 */
 	public int computeLength() {
-		// u1: path_length + pathSize * (type_path_kind + type_argument_index)
-		return 1 + (2 * getPath().size());
-	}
+    int pathLength = 1; // u1: path_length
+    int pathSize = getPath().size(); // Number of elements in the path
+    int typePathElements = 2; // type_path_kind + type_argument_index
+    return pathLength + (pathSize * typePathElements);
+}
+
 }
