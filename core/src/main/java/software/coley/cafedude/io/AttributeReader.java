@@ -26,6 +26,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -151,6 +152,14 @@ public class AttributeReader {
 			if (introducedAt > builder.getVersionMajor()) {
 				logger.debug("Found '{}' on {} in class version {}, min supported is {}",
 						name.getText(), context.name(), builder.getVersionMajor(), introducedAt);
+				return null;
+			}
+		}
+		// Check for attributes present in the wrong contexts.
+		if (reader.doDropBadContextAttributes()) {
+			Collection<AttributeContext> allowedContexts = AttributeContexts.getAllowedContexts(name.getText());
+			if (!allowedContexts.contains(context)) {
+				logger.debug("Found '{}' in invalid context {}", name.getText(), context.name());
 				return null;
 			}
 		}

@@ -29,6 +29,7 @@ public class ClassFileReader {
 	private IndexableByteStream is;
 	// config
 	private boolean dropForwardVersioned = true;
+	private boolean dropBadContextAttributes = true;
 	private boolean dropEofAttributes = true;
 	private boolean dropDupeAnnotations = true;
 
@@ -348,6 +349,21 @@ public class ClassFileReader {
 	 */
 	public void setDropForwardVersioned(boolean dropForwardVersioned) {
 		this.dropForwardVersioned = dropForwardVersioned;
+	}
+
+	/**
+	 * @return {@code true} if attributes declared in the wrongs contexts should be removed.
+	 */
+	public boolean doDropBadContextAttributes() {
+		return dropBadContextAttributes;
+	}
+
+	/**
+	 * @param dropBadContextAttributes
+	 *        {@code true} if attributes declared in the wrong contexts should be removed.
+	 */
+	public void setDropBadContextAttributes(boolean dropBadContextAttributes) {
+		this.dropBadContextAttributes = dropBadContextAttributes;
 	}
 
 	/**
