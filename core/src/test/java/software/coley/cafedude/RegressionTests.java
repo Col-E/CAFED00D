@@ -1,4 +1,4 @@
-package coley.software.cafedude;
+package software.coley.cafedude;
 
 import software.coley.cafedude.io.ClassFileReader;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -7,15 +7,16 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Miscellaneous tests for checking that the library does not crash on specifically designed tests.
+ * Miscellaneous tests for checking that the library does not crash on specifically crafted classes.
+ * These also serve as regression tests for ensuring we support obfuscated input that doesn't strictly
+ * aim to crash ASM as covered by {@link CrasherPatchingTest}
  */
-public class MiscTest {
+public class RegressionTests {
 	@ParameterizedTest
 	@MethodSource("supply")
 	public void testNoErrors(File sample) {
@@ -33,7 +34,11 @@ public class MiscTest {
 	 * @return Test class files.
 	 */
 	public static List<File> supply() {
-		// Intention may be to add more files in the future, if more crashes are found.
-		return Arrays.asList(new File[] { new File("src/test/resources/samples/obfuscated/misc/fakecode.class") });
-	}
+		List<File> files = new ArrayList<>();
+		File root = new File("src/test/resources/samples/obfuscated/crasher-dude");
+		for (File sub : Objects.requireNonNull(root.listFiles())) {
+			if (sub.getName().endsWith(".class"))
+				files.add(sub);
+		}
+		return files;	}
 }
