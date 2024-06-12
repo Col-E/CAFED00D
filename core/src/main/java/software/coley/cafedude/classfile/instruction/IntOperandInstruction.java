@@ -71,6 +71,9 @@ public class IntOperandInstruction extends BasicInstruction {
 			case Opcodes.LSTORE:
 			case Opcodes.NEWARRAY:
 				return 2; // opcode + operand (1 byte)
+			case Opcodes.GOTO_W:
+			case Opcodes.JSR_W:
+				return 5; // opcode + operand (4 bytes)
 			default:
 				return 3; // opcode + operand (2 bytes)
 		}
