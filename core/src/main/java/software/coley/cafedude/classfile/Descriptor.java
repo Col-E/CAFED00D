@@ -20,6 +20,8 @@ public class Descriptor {
 	public static final Descriptor BYTE = new Descriptor(Kind.PRIMITIVE, "B");
 	/** Descriptor of a {@code char} primitive. */
 	public static final Descriptor CHAR = new Descriptor(Kind.PRIMITIVE, "C");
+	/** Descriptor of a {@code short} primitive. */
+	public static final Descriptor SHORT = new Descriptor(Kind.PRIMITIVE, "S");
 	/** Descriptor of an {@code int} primitive. */
 	public static final Descriptor INT = new Descriptor(Kind.PRIMITIVE, "I");
 	/** Descriptor of a {@code float} primitive. */
@@ -102,7 +104,7 @@ public class Descriptor {
 	}
 
 	/**
-	 * @return Number of parameters the descriptor as, assuming it is a {@link Kind#METHOD}.
+	 * @return Number of parameters the descriptor has, assuming it is a {@link Kind#METHOD}.
 	 */
 	@SuppressWarnings("StatementWithEmptyBody")
 	public int getParameterCount() {
@@ -141,6 +143,50 @@ public class Descriptor {
 				}
 			}
 			return count;
+		}
+		return -1;
+	}
+
+	/**
+	 * @return Size of parameters the descriptor has, assuming it is a {@link Kind#METHOD}.
+	 */
+	@SuppressWarnings("StatementWithEmptyBody")
+	public int getParameterSize() {
+		if (kind == Kind.METHOD) {
+			int size = 0;
+			int current = 1;
+			int max = desc.indexOf(')');
+			while (current < max) {
+				char c = desc.charAt(current);
+				if (isPrimitive(c)) {
+					size += (c == 'J' || c == 'D') ? 2 : 1;
+					current++;
+				} else if (c == 'L') {
+					size++;
+					int end = desc.indexOf(';', current + 2);
+					if (end < 0)
+						return -1;
+					current = end + 1;
+				} else if (c == '[') {
+					while ((c = desc.charAt(++current)) == '[') ;
+					if (isPrimitive(c)) {
+						current++;
+						size++;
+					} else if (c == 'L') {
+						size++;
+						int end = desc.indexOf(';', current + 2);
+						if (end < 0)
+							return -1;
+						current = end + 1;
+					} else {
+						return -1;
+					}
+				} else {
+					// Should not happen
+					return -1;
+				}
+			}
+			return size;
 		}
 		return -1;
 	}
@@ -234,6 +280,8 @@ public class Descriptor {
 				return BYTE;
 			case "C":
 				return CHAR;
+			case "S":
+				return SHORT;
 			case "I":
 				return INT;
 			case "F":
@@ -301,6 +349,8 @@ public class Descriptor {
 					return BYTE;
 				case "char":
 					return CHAR;
+				case "short":
+					return SHORT;
 				case "int":
 					return INT;
 				case "float":
@@ -341,6 +391,7 @@ public class Descriptor {
 			case 'Z':
 			case 'B':
 			case 'C':
+			case 'S':
 			case 'I':
 			case 'F':
 			case 'D':
