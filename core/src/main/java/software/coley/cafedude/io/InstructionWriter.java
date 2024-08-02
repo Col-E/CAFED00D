@@ -261,10 +261,10 @@ public class InstructionWriter {
 					ConstRef ref = (ConstRef) ((CpRefInstruction) instruction).getEntry();
 					buffer.putShort(ref.getIndex() & 0xFFFF);
 
-					// InvokeInterface encodes the number of arguments.
+					// InvokeInterface encodes the size of arguments.
 					// We add +1 because of the implicit 'this' argument.
-					int argCount = Descriptor.from(ref.getNameType().getType().getText()).getParameterCount() + 1;
-					buffer.put(argCount);
+					int argSize = Descriptor.from(ref.getNameType().getType().getText()).getParameterSize() + 1;
+					buffer.put(argSize);
 					buffer.put(0);
 					break;
 				}
