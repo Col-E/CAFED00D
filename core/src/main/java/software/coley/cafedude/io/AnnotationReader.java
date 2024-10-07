@@ -199,8 +199,8 @@ public class AnnotationReader {
 	private Annotation readAnnotation(@Nonnull AnnotationScope scope) throws IOException {
 		int typeIndex = is.readUnsignedShort();
 		// Validate the type points to an entry in the constant pool that is valid UTF8 item
-		if (typeIndex >= maxCpIndex) {
-			logger.warn("Illegally formatted Annotation item, out of CP bounds, type_index={} >= {}",
+		if (typeIndex > maxCpIndex) {
+			logger.warn("Illegally formatted Annotation item, out of CP bounds, type_index={} > {}",
 					typeIndex, maxCpIndex);
 			throw new IllegalArgumentException("Annotation type_index out of CP bounds!");
 		}
