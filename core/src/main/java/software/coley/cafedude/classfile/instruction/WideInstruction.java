@@ -26,16 +26,19 @@ public class WideInstruction extends BasicInstruction {
 
 	@Override
 	public int computeSize() {
-		switch (backing.getOpcode()) {
-			case Opcodes.IINC:
-				return 6;
-			case Opcodes.LLOAD:
-			case Opcodes.DLOAD:
-			case Opcodes.LSTORE:
-			case Opcodes.DSTORE:
-				return 4;
-			default:
-				return 3;
+		if (backing.getOpcode() == Opcodes.IINC) {
+			// opcode
+			// iinc
+			// indexbyte1
+			// indexbyte2
+			// constbyte1
+			// constbyte2
+			return 6;
 		}
+		// opcode
+		// input opcode
+		// indexbyte1
+		// indexbyte2
+		return 4;
 	}
 }

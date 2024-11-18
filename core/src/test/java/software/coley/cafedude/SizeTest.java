@@ -51,13 +51,13 @@ public class SizeTest implements Opcodes {
 
 			// Wide type variable insns are 4
 			for (int op : four_byte_ops) {
-				instruction = new WideInstruction(new IntOperandInstruction(op, 0));
-				assertEquals(4, instruction.computeSize());
+				WideInstruction instruction1 = new WideInstruction(new IntOperandInstruction(op, 0));
+				assertEquals(4, instruction1.computeSize());
 			}
-			// Normal variable insns are 3
+			// Normal variable insns are 2
 			for (int op : three_byte_ops) {
-				instruction = new WideInstruction(new IntOperandInstruction(op, 0));
-				assertEquals(3, instruction.computeSize());
+				IntOperandInstruction instruction2 = new IntOperandInstruction(op, 0);
+				assertEquals(2, instruction2.computeSize());
 			}
 		}
 
