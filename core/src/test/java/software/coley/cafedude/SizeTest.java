@@ -38,26 +38,18 @@ public class SizeTest implements Opcodes {
 
 		@Test
 		void testWideInstruction() {
-			int[] four_byte_ops = {
-					LLOAD, DLOAD, LSTORE, DSTORE
-			};
-			int[] three_byte_ops = {
-					RET, ILOAD, FLOAD, ALOAD, ISTORE, FSTORE, ASTORE
-			};
-
 			// IINC is 6 bytes
 			WideInstruction instruction = new WideInstruction(new IincInstruction(0, 0));
 			assertEquals(6, instruction.computeSize());
+
+			int[] four_byte_ops = {
+				LLOAD, DLOAD, LSTORE, DSTORE, RET, ILOAD, FLOAD, ALOAD, ISTORE, FSTORE, ASTORE
+			};
 
 			// Wide type variable insns are 4
 			for (int op : four_byte_ops) {
 				WideInstruction instruction1 = new WideInstruction(new IntOperandInstruction(op, 0));
 				assertEquals(4, instruction1.computeSize());
-			}
-			// Normal variable insns are 2
-			for (int op : three_byte_ops) {
-				IntOperandInstruction instruction2 = new IntOperandInstruction(op, 0);
-				assertEquals(2, instruction2.computeSize());
 			}
 		}
 
