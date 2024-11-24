@@ -27,6 +27,9 @@ public class WideInstruction extends BasicInstruction {
 	@Override
 	public int computeSize() {
 		if (backing.getOpcode() == Opcodes.IINC) {
+			// IINC is unique in that it becomes 6 bytes:
+			//   https://docs.oracle.com/javase/specs/jvms/se21/html/jvms-6.html#jvms-6.5.wide
+			//
 			// opcode
 			// iinc
 			// indexbyte1
