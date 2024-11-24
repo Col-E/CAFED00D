@@ -21,6 +21,7 @@ import software.coley.cafedude.classfile.attribute.*;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * A transformer to remove illegal attributes and data from a class.
@@ -28,7 +29,6 @@ import java.util.function.Predicate;
  * @author Matt Coley
  */
 public class IllegalStrippingTransformer extends Transformer implements ConstantPoolConstants {
-	private static final int FORCE_FAIL = -1;
 	private static final Logger logger = LoggerFactory.getLogger(IllegalStrippingTransformer.class);
 
 	/**
@@ -44,18 +44,39 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	@Override
 	public void transform() {
 		logger.info("Transforming '{}'", clazz.getName());
+
 		// Record existing CP refs.
 		Set<CpEntry> cpAccesses = clazz.cpAccesses();
+
+		// Strip BSM class attribute if it is unused.
+		removeInvalidBootstrapMethodAttribute();
+
 		// Strip attributes that are not valid.
 		clazz.getAttributes().removeIf(attribute -> !isValidWrapped(clazz, attribute));
 		for (Field field : clazz.getFields())
 			field.getAttributes().removeIf(attribute -> !isValidWrapped(field, attribute));
 		for (Method method : clazz.getMethods())
 			method.getAttributes().removeIf(attribute -> !isValidWrapped(method, attribute));
+
 		// Record filtered CP refs, the difference of the sets are the indices that were referenced
 		// by removed attributes/data.
 		Set<CpEntry> filteredCpAccesses = clazz.cpAccesses();
 		cpAccesses.removeAll(filteredCpAccesses);
+	}
+
+	private void removeInvalidBootstrapMethodAttribute() {
+		// ASM will try to read this attribute if any CP entry exists for DYNAMIC or INVOKE_DYNAMIC.
+		// If no methods actually refer to those CP entries, this attribute can be filled with garbage,
+		// in which case we will want to remove it.
+		BootstrapMethodsAttribute bsmAttribute = clazz.getAttribute(BootstrapMethodsAttribute.class);
+		if (bsmAttribute != null) {
+			List<CpEntry> dynamicCpAccesses = clazz.getMethods().stream()
+					.flatMap(m -> m.cpAccesses().stream())
+					.filter(cp -> cp.getTag() == CpEntry.DYNAMIC || cp.getTag() == CpEntry.INVOKE_DYNAMIC)
+					.collect(Collectors.toList());
+			if (dynamicCpAccesses.isEmpty())
+				clazz.getAttributes().remove(bsmAttribute);
+		}
 	}
 
 	private boolean isValidWrapped(AttributeHolder holder, Attribute attribute) {
@@ -72,15 +93,19 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	private boolean isValid(AttributeHolder holder, Attribute attribute) {
 		Map<CpEntry, Predicate<Integer>> expectedTypeMasks = new HashMap<>();
 		Map<CpEntry, Predicate<CpEntry>> cpEntryValidators = new HashMap<>();
+
 		// Check name index
 		int maxCpIndex = pool.size();
 		if (attribute.getName().getIndex() > maxCpIndex)
 			return false;
+
 		// Cannot investigate directly unsupported attributes.
 		if (attribute instanceof DefaultAttribute)
 			return true;
+
 		// Holder must be allowed to hold the given attribute
 		String name = attribute.getName().getText();
+
 		// Check for illegal usage contexts
 		Collection<AttributeContext> allowedContexts = AttributeContexts.getAllowedContexts(name);
 		AttributeContext context = holder.getHolderType();
@@ -89,6 +114,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 					name, context.name(), allowedContexts);
 			return false;
 		}
+
 		// Check indices match certain types (key=cp_index, value=mask of allowed cp_tags)
 		boolean allow0Case = false;
 		switch (name) {
@@ -110,6 +136,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				if (context != AttributeContext.METHOD)
 					return false;
 				ParameterAnnotationsAttribute paramAnnotations = (ParameterAnnotationsAttribute) attribute;
+
 				// Compare against actual number of parameters
 				Method method = (Method) holder;
 				String desc = method.getType().getText();
@@ -120,6 +147,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 					logger.debug("Out of bounds parameter-annotation indices used on method {}", methodName);
 					return false;
 				}
+
 				// Filter annotations
 				Collection<List<Annotation>> parameterAnnos = paramAnnotations.getParameterAnnotations().values();
 				for (List<Annotation> annotationList : parameterAnnos)
@@ -146,6 +174,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				EnclosingMethodAttribute enclosingMethod = (EnclosingMethodAttribute) attribute;
 				expectedTypeMasks.put(enclosingMethod.getClassEntry(), i -> i == CLASS);
 				cpEntryValidators.put(enclosingMethod.getClassEntry(), matchClass());
+
 				// method_index must be zero if the current class was immediately enclosed in source code by an
 				//   instance initializer, static initializer, instance variable initializer,
 				//   or class variable initializer
@@ -164,8 +193,10 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				for (InnerClass innerClass : innerClasses.getInnerClasses()) {
 					expectedTypeMasks.put(innerClass.getInnerClassInfo(), i -> i == 0 || i == CLASS);
 					cpEntryValidators.put(innerClass.getInnerClassInfo(), matchClass());
+
 					// 0 if the defining class is the top-level class
 					expectedTypeMasks.put(innerClass.getOuterClassInfo(), i -> i == 0 || i == CLASS);
+
 					// 0 if anonymous, otherwise name index
 					expectedTypeMasks.put(innerClass.getInnerName(), i -> i == 0 || i == UTF8);
 					allow0Case |= innerClass.getInnerClassInfo() == null
@@ -177,6 +208,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				// Sanity check
 				if (context != AttributeContext.METHOD)
 					return false;
+
 				// Method cannot be abstract
 				Method method = (Method) holder;
 				if ((method.getAccess() & Modifiers.ACC_ABSTRACT) > 0) {
@@ -184,8 +216,10 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 					return false;
 				}
 				CodeAttribute code = (CodeAttribute) attribute;
+
 				// Prune bad code sub-attributes
 				code.getAttributes().removeIf(sub -> !isValid(code, sub));
+
 				// Ensure exception indices are valid
 				for (ExceptionTableEntry entry : code.getExceptionTable()) {
 					CpClass catchType = entry.getCatchType();
@@ -405,6 +439,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				String text = ((CpUtf8) e).getText();
 				while (text.startsWith("["))
 					text = text.substring(1);
+
 				// More than one char means it must be an object type.
 				// Otherwise, it must be a primitive.
 				if (text.length() > 1) {

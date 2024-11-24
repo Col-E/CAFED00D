@@ -45,9 +45,9 @@ public class Method extends ClassMember {
 	public Set<CpEntry> cpAccesses() {
 		Set<CpEntry> set = super.cpAccesses();
 		for (Attribute attribute : getAttributes()) {
-			if(attribute instanceof CodeAttribute) {
+			if (attribute instanceof CodeAttribute) {
 				int access = getAccess();
-				if(Modifiers.has(access, Modifiers.ACC_NATIVE) || Modifiers.has(access, Modifiers.ACC_ABSTRACT)) {
+				if (Modifiers.has(access, Modifiers.ACC_NATIVE) || Modifiers.has(access, Modifiers.ACC_ABSTRACT)) {
 					// Native and abstract methods cannot have code, but they can still have the attribute.
 					logger.warn("Code attribute found on native or abstract method: {}", this);
 					continue;
