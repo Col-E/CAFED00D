@@ -1,8 +1,10 @@
 package software.coley.cafedude;
 
+import software.coley.cafedude.classfile.ClassFile;
 import software.coley.cafedude.io.ClassFileReader;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import software.coley.cafedude.io.ClassFileWriter;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +25,8 @@ public class RegressionTests {
 		try {
 			byte[] code = Files.readAllBytes(sample.toPath());
 			assertDoesNotThrow(() -> {
-				new ClassFileReader().read(code);
+				ClassFile classFile = new ClassFileReader().read(code);
+				new ClassFileWriter().write(classFile);
 			}, "Library crashes when reading: " + sample.getName());
 		} catch (IOException error) {
 			fail("Failed to read class, IO error", error);
