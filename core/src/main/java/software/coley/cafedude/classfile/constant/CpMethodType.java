@@ -1,7 +1,6 @@
 package software.coley.cafedude.classfile.constant;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
 
 /**
  * Method type pool entry. Points to an UTF constant.
@@ -39,13 +38,15 @@ public class CpMethodType extends CpEntry {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (!(o instanceof CpMethodType)) return false;
+
 		CpMethodType that = (CpMethodType) o;
-		return Objects.equals(descriptor, that.descriptor);
+
+		return descriptor.equals(that.descriptor);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(descriptor);
+		return descriptor.hashCode();
 	}
 }

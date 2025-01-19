@@ -9,7 +9,6 @@ import software.coley.cafedude.classfile.constant.CpUtf8;
 import javax.annotation.Nonnull;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -134,6 +133,10 @@ public abstract class ClassMember implements AttributeHolder, CpAccessor {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(attributes, access, name, type);
+		int result = attributes.hashCode();
+		result = 31 * result + access;
+		result = 31 * result + name.hashCode();
+		result = 31 * result + type.hashCode();
+		return result;
 	}
 }

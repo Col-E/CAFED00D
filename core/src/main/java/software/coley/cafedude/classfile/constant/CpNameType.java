@@ -1,7 +1,6 @@
 package software.coley.cafedude.classfile.constant;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
 
 /**
  * NameType pool entry. Points to two UTF constants.
@@ -66,6 +65,8 @@ public class CpNameType extends CpEntry {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(name, type);
+		int result = name.hashCode();
+		result = 31 * result + type.hashCode();
+		return result;
 	}
 }

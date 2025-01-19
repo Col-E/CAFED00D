@@ -1,7 +1,6 @@
 package software.coley.cafedude.classfile.constant;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
 
 /**
  * Module pool entry. Points to an UTF constant.
@@ -39,13 +38,15 @@ public class CpModule extends CpEntry {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		CpModule that = (CpModule) o;
-		return Objects.equals(name, that.name);
+		if (!(o instanceof CpModule)) return false;
+
+		CpModule cpModule = (CpModule) o;
+
+		return name.equals(cpModule.name);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(name);
+		return name.hashCode();
 	}
 }

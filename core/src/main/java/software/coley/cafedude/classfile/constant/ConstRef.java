@@ -3,7 +3,6 @@ package software.coley.cafedude.classfile.constant;
 import software.coley.cafedude.classfile.ConstantPoolConstants;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
 
 /**
  * Base reference pool entry. Points to a reference's {@link CpClass defining class}
@@ -66,7 +65,7 @@ public abstract class ConstRef extends CpEntry {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (!(o instanceof ConstRef)) return false;
 
 		ConstRef constRef = (ConstRef) o;
 
@@ -76,6 +75,8 @@ public abstract class ConstRef extends CpEntry {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(classRef, nameType);
+		int result = classRef.hashCode();
+		result = 31 * result + nameType.hashCode();
+		return result;
 	}
 }

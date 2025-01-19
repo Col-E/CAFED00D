@@ -1,7 +1,6 @@
 package software.coley.cafedude.classfile.constant;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
 
 /**
  * MethodHandle pool entry. Holds a byte to indicate behavior and points to a relevant reference constant
@@ -122,13 +121,18 @@ public class CpMethodHandle extends CpEntry {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
+		if (!(o instanceof CpMethodHandle)) return false;
+
 		CpMethodHandle that = (CpMethodHandle) o;
-		return kind == that.kind && Objects.equals(reference, that.reference);
+
+		if (kind != that.kind) return false;
+		return reference.equals(that.reference);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(reference, kind);
+		int result = reference.hashCode();
+		result = 31 * result + (int) kind;
+		return result;
 	}
 }

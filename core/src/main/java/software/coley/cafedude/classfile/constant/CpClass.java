@@ -1,7 +1,6 @@
 package software.coley.cafedude.classfile.constant;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
 
 /**
  * Class pool entry. Points to a UTF constant.
@@ -48,6 +47,6 @@ public class CpClass extends CpEntry {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(name);
+		return name.hashCode();
 	}
 }

@@ -1,7 +1,6 @@
 package software.coley.cafedude.classfile.constant;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
 
 /**
  * Base dynamic value pool entry. Points to a {@link CpNameType NameType} constant
@@ -70,6 +69,8 @@ public abstract class ConstDynamic extends CpEntry {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(bsmIndex, nameType);
+		int result = bsmIndex;
+		result = 31 * result + nameType.hashCode();
+		return result;
 	}
 }
