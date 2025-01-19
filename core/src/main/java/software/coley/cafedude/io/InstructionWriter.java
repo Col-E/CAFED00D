@@ -312,7 +312,9 @@ public class InstructionWriter {
 					Instruction backing = ((WideInstruction) instruction).getBacking();
 					int type = backing.getOpcode();
 					buffer.put(type & 0xFF);
+					// List of those opcodes: https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html#jvms-6.5.wide
 					switch (type) {
+						// Format 1
 						case ILOAD:
 						case FLOAD:
 						case ALOAD:
@@ -320,10 +322,13 @@ public class InstructionWriter {
 						case DLOAD:
 						case ISTORE:
 						case FSTORE:
+						case ASTORE:
+						case LSTORE:
 						case DSTORE:
 						case RET:
 							buffer.putShort(((IntOperandInstruction) backing).getOperand() & 0xFFFF);
 							break;
+						// Format 2
 						case IINC:
 							IincInstruction iinc = (IincInstruction) backing;
 							buffer.putShort(iinc.getVar() & 0xFFFF);
