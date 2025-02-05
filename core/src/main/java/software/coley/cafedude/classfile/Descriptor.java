@@ -1,7 +1,6 @@
 package software.coley.cafedude.classfile;
 
 import javax.annotation.Nonnull;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -66,37 +65,43 @@ public class Descriptor {
 	 */
 	public List<Descriptor> getParameters() {
 		if (kind == Kind.METHOD) {
-			int start = 1;
-			int stop = 1;
+			int current = 1;
 			int max = desc.indexOf(')');
+			if (max == 1)
+				return Collections.emptyList();
 			List<Descriptor> list = new ArrayList<>();
-			while (start < max) {
-				stop++;
-				String section = desc.substring(start, stop);
-				if (isPrimitive(desc)) {
-					list.add(from(section));
-				} else {
-					char first = section.charAt(0);
-					if (first == '[') {
-						int i = 1;
-						while (i < stop && section.charAt(i) == '[')
-							i++;
-						char elementStart = desc.charAt(start + i);
-						if (isPrimitive(elementStart))
-							stop = start + i;
-						else
-							stop = desc.indexOf(';', start + 1) + 1;
-						section = desc.substring(start, stop);
-						list.add(new Descriptor(Kind.ARRAY, section, i));
-					} else if (first == 'L' && (start + 1 < max)) {
-						stop = desc.indexOf(';', start + 1) + 1;
-						section = desc.substring(start, stop);
-						list.add(new Descriptor(Kind.OBJECT, section));
+			while (current < max) {
+				char c = desc.charAt(current);
+				if (isPrimitive(c)) {
+					list.add(Descriptor.from(c));
+					current++;
+				} else if (c == 'L') {
+					int end = desc.indexOf(';', current + 2);
+					if (end < 0)
+						// Error: No end to the object descriptor
+						return list;
+					list.add(Descriptor.from(desc.substring(current, end + 1)));
+					current = end + 1;
+				} else if (c == '[') {
+					int start = current;
+					while ((c = desc.charAt(++current)) == '[') ;
+					if (isPrimitive(c)) {
+						current++;
+					} else if (c == 'L') {
+						int end = desc.indexOf(';', current + 2);
+						if (end < 0)
+							// Error: No end to the object descriptor
+							return list;
+						current = end + 1;
 					} else {
-						list.add(new Descriptor(Kind.ILLEGAL, section));
+						// Array element type is not a primitive, object start 'L', or array start '['
+						return list;
 					}
+					list.add(Descriptor.from(desc.substring(start, current)));
+				} else {
+					// Not a primitive, object start 'L', or array start '['
+					return list;
 				}
-				start = stop;
 			}
 			return list;
 		}
@@ -329,11 +334,43 @@ public class Descriptor {
 	}
 
 	/**
+	 * @param desc
+	 * 		Descriptor to parse.
+	 *
+	 * @return Primitive descriptor instance or and {@link Kind#ILLEGAL} if the char is not a recognized primitive type.
+	 */
+	public static Descriptor from(char desc) {
+		switch (desc) {
+			case 'V':
+				return VOID;
+			case 'Z':
+				return BOOLEAN;
+			case 'B':
+				return BYTE;
+			case 'C':
+				return CHAR;
+			case 'S':
+				return SHORT;
+			case 'I':
+				return INT;
+			case 'F':
+				return FLOAT;
+			case 'D':
+				return DOUBLE;
+			case 'J':
+				return LONG;
+			default:
+				return new Descriptor(Kind.ILLEGAL, String.valueOf(desc));
+		}
+	}
+
+	/**
 	 * Get a descriptor from a java class.
+	 *
 	 * @param clazz
 	 * 		Class to get descriptor from.
-	 * @return
-	 * 		Descriptor object instance.
+	 *
+	 * @return Descriptor object instance.
 	 */
 	public static Descriptor from(@Nonnull Class<?> clazz) {
 		String descriptor = clazz.toGenericString().replace('.', '/');

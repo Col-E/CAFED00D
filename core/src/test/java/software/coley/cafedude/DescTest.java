@@ -6,6 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import javax.annotation.Nonnull;
+
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -14,24 +18,35 @@ import static org.junit.jupiter.api.Assertions.*;
 public class DescTest {
 	@Test
 	public void testParseMethodParams() {
-		Assertions.assertEquals(0, Descriptor.from("()V").getParameterCount());
-		assertEquals(1, Descriptor.from("(I)V").getParameterCount());
-		assertEquals(1, Descriptor.from("(Ljava/lang/String;)V").getParameterCount());
-		assertEquals(1, Descriptor.from("([I)V").getParameterCount());
-		assertEquals(1, Descriptor.from("([[I)V").getParameterCount());
-		assertEquals(2, Descriptor.from("(II)V").getParameterCount());
-		assertEquals(2, Descriptor.from("(I[I)V").getParameterCount());
-		assertEquals(2, Descriptor.from("([I[I)V").getParameterCount());
-		assertEquals(2, Descriptor.from("(Ljava/lang/String;Ljava/lang/String;)V").getParameterCount());
-		assertEquals(2, Descriptor.from("(Ljava/lang/String;[Ljava/lang/String;)V").getParameterCount());
-		assertEquals(2, Descriptor.from("([Ljava/lang/String;[Ljava/lang/String;)V").getParameterCount());
-		assertEquals(2, Descriptor.from("(Ljava/lang/String;I)V").getParameterCount());
-		assertEquals(2, Descriptor.from("(I[Ljava/lang/String;)V").getParameterCount());
-		assertEquals(2, Descriptor.from("([BLjava/lang/String;)Ljava/util/List;").getParameterCount());
-		assertEquals(3, Descriptor.from("([BLjava/lang/String;[B)Ljava/util/List;").getParameterCount());
-		assertEquals(3, Descriptor.from("([Ljava/lang/String;I[Ljava/lang/String;)V").getParameterCount());
-		assertEquals(4, Descriptor.from("([BLjava/lang/String;[B[B)Ljava/util/List;").getParameterCount());
-		assertEquals(4, Descriptor.from("([BLjava/lang/String;[BB)Ljava/util/List;").getParameterCount());
+		assertParameterCount(0, "()V");
+		assertParameterCount(1, "(I)V");
+		assertParameterCount(1, "(Ljava/lang/String;)V");
+		assertParameterCount(1, "([Ljava/lang/String;)V");
+		assertParameterCount(1, "([I)V");
+		assertParameterCount(1, "([[I)V");
+		assertParameterCount(2, "(II)V");
+		assertParameterCount(2, "(I[I)V");
+		assertParameterCount(2, "([I[I)V");
+		assertParameterCount(2, "(Ljava/lang/String;Ljava/lang/String;)V");
+		assertParameterCount(2, "(Ljava/lang/String;[Ljava/lang/String;)V");
+		assertParameterCount(2, "([Ljava/lang/String;[Ljava/lang/String;)V");
+		assertParameterCount(2, "(Ljava/lang/String;I)V");
+		assertParameterCount(2, "(I[Ljava/lang/String;)V");
+		assertParameterCount(2, "([BLjava/lang/String;)Ljava/util/List;");
+		assertParameterCount(3, "([BLjava/lang/String;[B)Ljava/util/List;");
+		assertParameterCount(3, "([Ljava/lang/String;I[Ljava/lang/String;)V");
+		assertParameterCount(4, "([BLjava/lang/String;[B[B)Ljava/util/List;");
+		assertParameterCount(4, "([BLjava/lang/String;[BB)Ljava/util/List;");
+	}
+
+	private static void assertParameterCount(int expected, @Nonnull String desc) {
+		Descriptor descriptor = Descriptor.from(desc);
+		assertEquals(expected, descriptor.getParameterCount());
+		List<Descriptor> parameters = descriptor.getParameters();
+		assertEquals(expected, parameters.size());
+		for (Descriptor parameter : parameters)
+			if (parameter.getKind() == Descriptor.Kind.ILLEGAL)
+				fail("Illegal parameter: " + desc + " ---> " + parameter);
 	}
 
 	@ParameterizedTest
