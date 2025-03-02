@@ -38,11 +38,11 @@ public class Descriptor {
 	private final String desc;
 	private final int arrayLevel;
 
-	private Descriptor(Kind kind, String desc) {
+	private Descriptor(@Nonnull Kind kind, @Nonnull String desc) {
 		this(kind, desc, 0);
 	}
 
-	private Descriptor(Kind kind, String desc, int arrayLevel) {
+	private Descriptor(@Nonnull Kind kind, @Nonnull String desc, int arrayLevel) {
 		this.kind = kind;
 		this.desc = desc;
 		this.arrayLevel = arrayLevel;
@@ -54,6 +54,7 @@ public class Descriptor {
 	 * @return Element desc of an {@link Kind#ARRAY array} descriptor.
 	 * Otherwise, self.
 	 */
+	@Nonnull
 	public Descriptor getElementDesc() {
 		if (arrayLevel == 0)
 			return this;
@@ -65,6 +66,7 @@ public class Descriptor {
 	 * @return Return desc of a {@link Kind#METHOD} descriptor.
 	 * Otherwise, singleton list of self.
 	 */
+	@Nonnull
 	public List<Descriptor> getParameters() {
 		if (kind == Kind.METHOD) {
 			int current = 1;
@@ -202,6 +204,7 @@ public class Descriptor {
 	 * @return Return desc of a {@link Kind#METHOD} descriptor.
 	 * Otherwise, self.
 	 */
+	@Nonnull
 	public Descriptor getReturnDesc() {
 		if (kind == Kind.METHOD)
 			return from(desc.substring(desc.indexOf(')') + 1));
@@ -221,7 +224,9 @@ public class Descriptor {
 
 	/**
 	 * @return String contents of this desc object.
+	 * Can be empty {@code ""} if the {@link #getKind() kind} is {@link Kind#ILLEGAL}.
 	 */
+	@Nonnull
 	public String getDescriptor() {
 		return desc;
 	}
@@ -229,12 +234,13 @@ public class Descriptor {
 	/**
 	 * @return Descriptor kind.
 	 */
+	@Nonnull
 	public Kind getKind() {
 		return kind;
 	}
 
 	/**
-	 * @return Array level.
+	 * @return Array level. Will be {@code 0} for any non-array descriptor.
 	 */
 	public int getArrayLevel() {
 		return arrayLevel;
@@ -275,10 +281,12 @@ public class Descriptor {
 	 *
 	 * @return Descriptor object instance.
 	 */
-	@Nullable
+	@Nonnull
 	public static Descriptor from(@Nullable String desc) {
-		if (desc == null || desc.trim().isEmpty())
-			return null;
+		if (desc == null)
+			return new Descriptor(Kind.ILLEGAL, "");
+		if (desc.isEmpty())
+			return new Descriptor(Kind.ILLEGAL, desc);
 		char first = desc.charAt(0);
 		switch (first) {
 			case 'V':
@@ -308,7 +316,7 @@ public class Descriptor {
 
 					// Validate the element type is legitimate
 					Descriptor d = from(desc.substring(i));
-					if (d == null || d.kind == Kind.ILLEGAL)
+					if (d.kind == Kind.ILLEGAL)
 						return new Descriptor(Kind.ILLEGAL, desc);
 					return new Descriptor(Kind.ARRAY, desc, i);
 				} else if (first == '(') {

@@ -63,7 +63,9 @@ public class DescTest {
 
 	@ParameterizedTest
 	@ValueSource(strings = {
-			"()V",
+			"([LLL;)V",
+			"([L ;)V",
+			"([L\0;)V",
 			"(I)V",
 			"(Ljava/lang/String;)V",
 			"(Ljava/lang/String;)Ljava/lang/String;",
@@ -78,6 +80,10 @@ public class DescTest {
 
 	@ParameterizedTest
 	@ValueSource(strings = {
+			"",
+			" ",
+			"\t",
+			"\n",
 			"K",
 			"[",
 			"[[K",
@@ -96,17 +102,6 @@ public class DescTest {
 	})
 	public void testParseIllegal(String desc) {
 		Descriptor d = Descriptor.from(desc);
-		Assertions.assertEquals(Descriptor.Kind.ILLEGAL, d.getKind());
-	}
-
-	@ParameterizedTest
-	@ValueSource(strings = {
-			"",
-			" ",
-			"\t",
-			"\n"
-	})
-	public void testParseEmpty(String desc) {
-		assertNull(Descriptor.from(desc));
+		assertEquals(Descriptor.Kind.ILLEGAL, d.getKind());
 	}
 }

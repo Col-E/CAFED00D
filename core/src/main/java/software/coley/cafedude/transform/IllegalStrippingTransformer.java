@@ -137,7 +137,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		try {
 			String descUtf8 = descEntry.getText();
 			Descriptor parsed = Descriptor.from(descUtf8);
-			return parsed == null || parsed.getKind() == Descriptor.Kind.ILLEGAL;
+			return parsed.getKind() == Descriptor.Kind.ILLEGAL;
 		} catch (Throwable t) {
 			return true;
 		}
