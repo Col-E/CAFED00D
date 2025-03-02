@@ -9,6 +9,8 @@ import software.coley.cafedude.classfile.Field;
 import software.coley.cafedude.classfile.Method;
 import software.coley.cafedude.classfile.Modifiers;
 import software.coley.cafedude.classfile.annotation.Annotation;
+import software.coley.cafedude.classfile.annotation.AnnotationElementValue;
+import software.coley.cafedude.classfile.annotation.ArrayElementValue;
 import software.coley.cafedude.classfile.annotation.ClassElementValue;
 import software.coley.cafedude.classfile.annotation.ElementValue;
 import software.coley.cafedude.classfile.annotation.EnumElementValue;
@@ -52,6 +54,7 @@ import software.coley.cafedude.classfile.constant.CpUtf8;
 import software.coley.cafedude.io.AttributeContext;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -143,7 +146,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		}
 	}
 
-	private boolean isValid(AttributeHolder holder, Attribute attribute) {
+	private boolean isValid(@Nonnull AttributeHolder holder, @Nonnull Attribute attribute) {
 		Map<CpEntry, Predicate<Integer>> expectedTypeMasks = new HashMap<>();
 		Map<CpEntry, Predicate<CpEntry>> cpEntryValidators = new HashMap<>();
 
@@ -393,10 +396,10 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		return true;
 	}
 
-	private void addAnnotationValidation(AttributeHolder holder,
-	                                     Map<CpEntry, Predicate<Integer>> expectedTypeMasks,
-	                                     Map<CpEntry, Predicate<CpEntry>> cpEntryValidators,
-	                                     Annotation anno) {
+	private void addAnnotationValidation(@Nullable AttributeHolder holder,
+	                                     @Nonnull Map<CpEntry, Predicate<Integer>> expectedTypeMasks,
+	                                     @Nonnull Map<CpEntry, Predicate<CpEntry>> cpEntryValidators,
+	                                     @Nonnull Annotation anno) {
 		expectedTypeMasks.put(anno.getType(), i -> i == UTF8);
 		cpEntryValidators.put(anno.getType(), matchUtf8FieldDescriptor());
 		for (Map.Entry<CpUtf8, ElementValue> entry : anno.getValues().entrySet()) {
@@ -462,9 +465,9 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		}
 	}
 
-	private void addElementValueValidation(Map<CpEntry, Predicate<Integer>> expectedTypeMasks,
-	                                       Map<CpEntry, Predicate<CpEntry>> cpEntryValidators,
-	                                       ElementValue elementValue) {
+	private void addElementValueValidation(@Nonnull Map<CpEntry, Predicate<Integer>> expectedTypeMasks,
+	                                       @Nonnull Map<CpEntry, Predicate<CpEntry>> cpEntryValidators,
+	                                       @Nonnull ElementValue elementValue) {
 		if (elementValue instanceof ClassElementValue) {
 			CpUtf8 classIndex = ((ClassElementValue) elementValue).getClassEntry();
 			cpEntryValidators.put(classIndex, matchUtf8ValidQualifiedName());
@@ -474,13 +477,22 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		} else if (elementValue instanceof PrimitiveElementValue) {
 			CpEntry primitiveEntry = ((PrimitiveElementValue) elementValue).getValue();
 			expectedTypeMasks.put(primitiveEntry, i -> (i >= INTEGER && i <= DOUBLE));
+		} else if (elementValue instanceof AnnotationElementValue) {
+			Annotation annotation = ((AnnotationElementValue) elementValue).getAnnotation();
+			addAnnotationValidation(null, expectedTypeMasks, cpEntryValidators, annotation);
+		} else if (elementValue instanceof ArrayElementValue) {
+			List<ElementValue> array = ((ArrayElementValue) elementValue).getArray();
+			for (ElementValue arrayValue : array)
+				addElementValueValidation(expectedTypeMasks, cpEntryValidators, arrayValue);
 		}
 	}
 
+	@Nonnull
 	private Predicate<CpEntry> matchClass() {
 		return e -> e instanceof CpClass && matchUtf8ValidQualifiedName().test(((CpClass) e).getName());
 	}
 
+	@Nonnull
 	private Predicate<CpEntry> matchUtf8ValidQualifiedName() {
 		return e -> {
 			if (!(e instanceof CpUtf8)) return false;
@@ -493,14 +505,17 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		};
 	}
 
+	@Nonnull
 	private Predicate<CpEntry> matchUtf8FieldDescriptor() {
 		return e -> (e instanceof CpUtf8) && !isInvalidDesc((CpUtf8) e);
 	}
 
+	@Nonnull
 	private Predicate<CpEntry> matchUtf8NonEmpty() {
 		return e -> e instanceof CpUtf8 && !((CpUtf8) e).getText().isEmpty();
 	}
 
+	@Nonnull
 	private Predicate<CpEntry> matchUtf8Word() {
 		return e -> e instanceof CpUtf8 && ((CpUtf8) e).getText().matches("[<>;/$\\w]+");
 	}
