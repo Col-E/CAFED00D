@@ -1,25 +1,62 @@
 package software.coley.cafedude.transform;
 
-import software.coley.cafedude.classfile.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import software.coley.cafedude.classfile.AttributeConstants;
+import software.coley.cafedude.classfile.ClassFile;
+import software.coley.cafedude.classfile.ConstantPoolConstants;
+import software.coley.cafedude.classfile.Descriptor;
+import software.coley.cafedude.classfile.Field;
+import software.coley.cafedude.classfile.Method;
+import software.coley.cafedude.classfile.Modifiers;
+import software.coley.cafedude.classfile.annotation.Annotation;
+import software.coley.cafedude.classfile.annotation.ClassElementValue;
+import software.coley.cafedude.classfile.annotation.ElementValue;
+import software.coley.cafedude.classfile.annotation.EnumElementValue;
+import software.coley.cafedude.classfile.annotation.PrimitiveElementValue;
+import software.coley.cafedude.classfile.annotation.TargetInfo;
 import software.coley.cafedude.classfile.annotation.TargetInfo.CatchTargetInfo;
 import software.coley.cafedude.classfile.annotation.TargetInfo.SuperTypeTargetInfo;
+import software.coley.cafedude.classfile.annotation.TypeAnnotation;
+import software.coley.cafedude.classfile.attribute.AnnotationDefaultAttribute;
+import software.coley.cafedude.classfile.attribute.AnnotationsAttribute;
+import software.coley.cafedude.classfile.attribute.Attribute;
+import software.coley.cafedude.classfile.attribute.AttributeContexts;
+import software.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute;
 import software.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.BootstrapMethod;
+import software.coley.cafedude.classfile.attribute.CodeAttribute;
 import software.coley.cafedude.classfile.attribute.CodeAttribute.ExceptionTableEntry;
+import software.coley.cafedude.classfile.attribute.ConstantValueAttribute;
+import software.coley.cafedude.classfile.attribute.DefaultAttribute;
+import software.coley.cafedude.classfile.attribute.EnclosingMethodAttribute;
+import software.coley.cafedude.classfile.attribute.ExceptionsAttribute;
+import software.coley.cafedude.classfile.attribute.InnerClassesAttribute;
 import software.coley.cafedude.classfile.attribute.InnerClassesAttribute.InnerClass;
+import software.coley.cafedude.classfile.attribute.LocalVariableTableAttribute;
 import software.coley.cafedude.classfile.attribute.LocalVariableTableAttribute.VarEntry;
+import software.coley.cafedude.classfile.attribute.LocalVariableTypeTableAttribute;
 import software.coley.cafedude.classfile.attribute.LocalVariableTypeTableAttribute.VarTypeEntry;
+import software.coley.cafedude.classfile.attribute.ModuleAttribute;
 import software.coley.cafedude.classfile.attribute.ModuleAttribute.Requires;
+import software.coley.cafedude.classfile.attribute.NestHostAttribute;
+import software.coley.cafedude.classfile.attribute.NestMembersAttribute;
+import software.coley.cafedude.classfile.attribute.ParameterAnnotationsAttribute;
+import software.coley.cafedude.classfile.attribute.PermittedClassesAttribute;
+import software.coley.cafedude.classfile.attribute.RecordAttribute;
+import software.coley.cafedude.classfile.attribute.SignatureAttribute;
+import software.coley.cafedude.classfile.attribute.SourceFileAttribute;
 import software.coley.cafedude.classfile.behavior.AttributeHolder;
 import software.coley.cafedude.classfile.constant.CpClass;
 import software.coley.cafedude.classfile.constant.CpEntry;
 import software.coley.cafedude.classfile.constant.CpUtf8;
 import software.coley.cafedude.io.AttributeContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import software.coley.cafedude.classfile.*;
-import software.coley.cafedude.classfile.attribute.*;
 
-import java.util.*;
+import javax.annotation.Nonnull;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -43,10 +80,16 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 
 	@Override
 	public void transform() {
-		logger.info("Transforming '{}'", clazz.getName());
+		logger.debug("Transforming '{}'", clazz.getName());
 
 		// Record existing CP refs.
 		Set<CpEntry> cpAccesses = clazz.cpAccesses();
+
+		// Remove members with illegal descriptors.
+		// If any of these exist the class isn't going to ever be loaded (without throwing a LinkageError)
+		// so its fair game to toss this stuff just to make ASM happy.
+		clazz.getFields().removeIf(field -> isInvalidDesc(field.getType()));
+		clazz.getMethods().removeIf(method -> isInvalidDesc(method.getType()));
 
 		// Strip BSM class attribute if it is unused.
 		removeInvalidBootstrapMethodAttribute();
@@ -79,7 +122,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		}
 	}
 
-	private boolean isValidWrapped(AttributeHolder holder, Attribute attribute) {
+	private boolean isValidWrapped(@Nonnull AttributeHolder holder, @Nonnull Attribute attribute) {
 		try {
 			return isValid(holder, attribute);
 		} catch (Exception ex) {
@@ -87,6 +130,16 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 					attribute.getClass().getName(),
 					holder.getHolderType().name());
 			return false;
+		}
+	}
+
+	private static boolean isInvalidDesc(@Nonnull CpUtf8 descEntry) {
+		try {
+			String descUtf8 = descEntry.getText();
+			Descriptor parsed = Descriptor.from(descUtf8);
+			return parsed == null || parsed.getKind() == Descriptor.Kind.ILLEGAL;
+		} catch (Throwable t) {
+			return true;
 		}
 	}
 
@@ -320,7 +373,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				continue; // skip edge case
 
 			// cpEntryValidators
-			if(cpEntry == null) {
+			if (cpEntry == null) {
 				logger.debug("Invalid '{}' attribute on {}, contains CP reference to null!",
 						name, context.name());
 				return false;
@@ -341,14 +394,14 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	}
 
 	private void addAnnotationValidation(AttributeHolder holder,
-										 Map<CpEntry, Predicate<Integer>> expectedTypeMasks,
-										 Map<CpEntry, Predicate<CpEntry>> cpEntryValidators,
-										 Annotation anno) {
+	                                     Map<CpEntry, Predicate<Integer>> expectedTypeMasks,
+	                                     Map<CpEntry, Predicate<CpEntry>> cpEntryValidators,
+	                                     Annotation anno) {
 		expectedTypeMasks.put(anno.getType(), i -> i == UTF8);
 		cpEntryValidators.put(anno.getType(), matchUtf8FieldDescriptor());
 		for (Map.Entry<CpUtf8, ElementValue> entry : anno.getValues().entrySet()) {
 			CpUtf8 elementTypeIndex = entry.getKey();
-			cpEntryValidators.put(elementTypeIndex, matchUtf8InternalName());
+			cpEntryValidators.put(elementTypeIndex, matchUtf8ValidQualifiedName());
 			addElementValueValidation(expectedTypeMasks, cpEntryValidators, entry.getValue());
 		}
 		if (anno instanceof TypeAnnotation) {
@@ -410,89 +463,42 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	}
 
 	private void addElementValueValidation(Map<CpEntry, Predicate<Integer>> expectedTypeMasks,
-										   Map<CpEntry, Predicate<CpEntry>> cpEntryValidators,
-										   ElementValue elementValue) {
+	                                       Map<CpEntry, Predicate<CpEntry>> cpEntryValidators,
+	                                       ElementValue elementValue) {
 		if (elementValue instanceof ClassElementValue) {
 			CpUtf8 classIndex = ((ClassElementValue) elementValue).getClassEntry();
-			cpEntryValidators.put(classIndex, matchUtf8InternalName());
+			cpEntryValidators.put(classIndex, matchUtf8ValidQualifiedName());
 		} else if (elementValue instanceof EnumElementValue) {
 			EnumElementValue enumElementValue = (EnumElementValue) elementValue;
 			cpEntryValidators.put(enumElementValue.getType(), matchUtf8FieldDescriptor());
 		} else if (elementValue instanceof PrimitiveElementValue) {
-			expectedTypeMasks.put(((PrimitiveElementValue) elementValue).getValue(),
-					i -> (i >= INTEGER && i <= DOUBLE));
+			CpEntry primitiveEntry = ((PrimitiveElementValue) elementValue).getValue();
+			expectedTypeMasks.put(primitiveEntry, i -> (i >= INTEGER && i <= DOUBLE));
 		}
 	}
 
 	private Predicate<CpEntry> matchClass() {
-		return e -> e instanceof CpClass && matchUtf8InternalName().test(((CpClass) e).getName());
-	}
-
-	private Predicate<CpEntry> matchUtf8InternalName() {
-		return matchUtf8NonEmpty();
-	}
-
-	private Predicate<CpEntry> matchUtf8FieldDescriptor() {
-		return e -> {
-			if (e instanceof CpUtf8) {
-				// Trim out preceding array indicators of the descriptor.
-				String text = ((CpUtf8) e).getText();
-				while (text.startsWith("["))
-					text = text.substring(1);
-
-				// More than one char means it must be an object type.
-				// Otherwise, it must be a primitive.
-				if (text.length() > 1) {
-					char first = text.charAt(0);
-					if (first == 'L')
-						return text.charAt(text.length() - 1) == ';';
-				} else if (text.length() == 1) {
-					char desc = text.charAt(0);
-					switch (desc) {
-						case 'Z':
-						case 'C':
-						case 'B':
-						case 'S':
-						case 'I':
-						case 'F':
-						case 'J':
-						case 'D':
-							// no case for void, it shouldn't be used as a 'field descriptor'
-							return true;
-						default:
-							return false;
-					}
-				}
-				// Empty string or failing the cases of the above.
-				return false;
-			}
-			return false;
-		};
+		return e -> e instanceof CpClass && matchUtf8ValidQualifiedName().test(((CpClass) e).getName());
 	}
 
 	private Predicate<CpEntry> matchUtf8ValidQualifiedName() {
 		return e -> {
-			if (e instanceof CpUtf8) {
-				// Trim out preceding array indicators of the descriptor.
-				String text = ((CpUtf8) e).getText();
-				if (text.indexOf('.') >= 0)
-					return false;
-				else if (text.indexOf(';') >= 0)
-					return false;
-				else if (text.indexOf('[') >= 0)
-					return false;
-				else if (text.indexOf('/') >= 0)
-					return false;
-				// No illegal chars
-				return true;
-			}
-			// Not a UTF8 constant
-			return false;
+			if (!(e instanceof CpUtf8)) return false;
+			String text = ((CpUtf8) e).getText();
+			return !text.isEmpty()
+					// From #jvms-4.2.2 - Class names cannot contain any of these characters
+					&& text.indexOf('.') < 0
+					&& text.indexOf(';') < 0
+					&& text.indexOf('[') < 0;
 		};
 	}
 
+	private Predicate<CpEntry> matchUtf8FieldDescriptor() {
+		return e -> (e instanceof CpUtf8) && !isInvalidDesc((CpUtf8) e);
+	}
+
 	private Predicate<CpEntry> matchUtf8NonEmpty() {
-		return e -> e instanceof CpUtf8 && ((CpUtf8) e).getText().length() > 0;
+		return e -> e instanceof CpUtf8 && !((CpUtf8) e).getText().isEmpty();
 	}
 
 	private Predicate<CpEntry> matchUtf8Word() {

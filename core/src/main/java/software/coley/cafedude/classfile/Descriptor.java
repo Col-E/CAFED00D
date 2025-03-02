@@ -1,9 +1,11 @@
 package software.coley.cafedude.classfile;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Descriptor parsing utility.
@@ -273,35 +275,37 @@ public class Descriptor {
 	 *
 	 * @return Descriptor object instance.
 	 */
-	public static Descriptor from(String desc) {
+	@Nullable
+	public static Descriptor from(@Nullable String desc) {
 		if (desc == null || desc.trim().isEmpty())
 			return null;
-		switch (desc) {
-			case "V":
+		char first = desc.charAt(0);
+		switch (first) {
+			case 'V':
 				return VOID;
-			case "Z":
+			case 'Z':
 				return BOOLEAN;
-			case "B":
+			case 'B':
 				return BYTE;
-			case "C":
+			case 'C':
 				return CHAR;
-			case "S":
+			case 'S':
 				return SHORT;
-			case "I":
+			case 'I':
 				return INT;
-			case "F":
+			case 'F':
 				return FLOAT;
-			case "D":
+			case 'D':
 				return DOUBLE;
-			case "J":
+			case 'J':
 				return LONG;
 			default:
-				char first = desc.charAt(0);
 				if (first == '[') {
 					int max = desc.length();
 					int i = 1;
 					while (i < max && desc.charAt(i) == '[')
 						i++;
+
 					// Validate the element type is legitimate
 					Descriptor d = from(desc.substring(i));
 					if (d == null || d.kind == Kind.ILLEGAL)
@@ -313,16 +317,19 @@ public class Descriptor {
 					if (end < 0 || end == desc.length() - 1)
 						return new Descriptor(Kind.ILLEGAL, desc);
 					Descriptor d = new Descriptor(Kind.METHOD, desc);
+
 					// Validate return type
 					Descriptor returnDesc = d.getReturnDesc();
 					if (returnDesc.kind == Kind.ILLEGAL)
 						return new Descriptor(Kind.ILLEGAL, desc);
+
 					// Validate parameter count
 					if (d.getParameterCount() < 0)
 						return new Descriptor(Kind.ILLEGAL, desc);
 					return d;
 				} else if (first == 'L') {
 					int end = desc.indexOf(';');
+
 					// Validate ';' exists and there is at least one char between 'L' and ';'
 					if (end < 0 || end == 1)
 						return new Descriptor(Kind.ILLEGAL, desc);
@@ -339,6 +346,7 @@ public class Descriptor {
 	 *
 	 * @return Primitive descriptor instance or and {@link Kind#ILLEGAL} if the char is not a recognized primitive type.
 	 */
+	@Nonnull
 	public static Descriptor from(char desc) {
 		switch (desc) {
 			case 'V':
@@ -372,10 +380,11 @@ public class Descriptor {
 	 *
 	 * @return Descriptor object instance.
 	 */
+	@Nonnull
 	public static Descriptor from(@Nonnull Class<?> clazz) {
 		String descriptor = clazz.toGenericString().replace('.', '/');
 		if (clazz.isArray()) {
-			return from(descriptor);
+			return Objects.requireNonNull(from(descriptor), "Failed to parse array descriptor from class reference");
 		} else if (clazz.isPrimitive()) {
 			switch (descriptor) {
 				case "void":
@@ -400,7 +409,7 @@ public class Descriptor {
 					throw new IllegalArgumentException("Unknown primitive type: " + descriptor);
 			}
 		} else {
-			return from("L" + descriptor + ";");
+			return Objects.requireNonNull(from("L" + descriptor + ";"), "Failed to parse object descriptor from class reference");
 		}
 	}
 
@@ -410,7 +419,7 @@ public class Descriptor {
 	 *
 	 * @return {@code true} if it denotes a primitive.
 	 */
-	public static boolean isPrimitive(String desc) {
+	public static boolean isPrimitive(@Nullable String desc) {
 		if (desc == null || desc.length() != 1)
 			return false;
 		return isPrimitive(desc.charAt(0));
