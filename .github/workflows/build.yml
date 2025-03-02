@@ -69,7 +69,8 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           check_name: Unit Test results
-          files: artifacts/unit-test-*/**/*.xml
+          files: |
+            **/TEST-*
 
   # Builds the projects and attempts to publish a release if the current project version
   # does not match any existing tags in the repository.
