@@ -1,10 +1,15 @@
 package software.coley.cafedude.io;
 
 import software.coley.cafedude.InvalidClassException;
+import software.coley.cafedude.classfile.ClassFile;
+import software.coley.cafedude.classfile.ConstPool;
+import software.coley.cafedude.classfile.Field;
+import software.coley.cafedude.classfile.Method;
+import software.coley.cafedude.classfile.Modifiers;
+import software.coley.cafedude.classfile.VersionConstants;
 import software.coley.cafedude.classfile.attribute.Attribute;
 import software.coley.cafedude.classfile.constant.CpClass;
 import software.coley.cafedude.classfile.constant.Placeholders;
-import software.coley.cafedude.classfile.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

@@ -1,6 +1,5 @@
 package software.coley.cafedude.classfile.attribute;
 
-import software.coley.cafedude.classfile.AttributeConstants;
 import software.coley.cafedude.classfile.VersionConstants;
 
 import javax.annotation.Nonnull;

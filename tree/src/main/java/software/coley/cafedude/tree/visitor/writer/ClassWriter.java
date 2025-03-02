@@ -1,7 +1,7 @@
 package software.coley.cafedude.tree.visitor.writer;
 
 import software.coley.cafedude.InvalidClassException;
-import software.coley.cafedude.classfile.AttributeConstants;
+import software.coley.cafedude.classfile.attribute.AttributeConstants;
 import software.coley.cafedude.classfile.ClassFile;
 import software.coley.cafedude.classfile.ConstPool;
 import software.coley.cafedude.classfile.Descriptor;

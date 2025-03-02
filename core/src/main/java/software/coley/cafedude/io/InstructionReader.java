@@ -4,7 +4,15 @@ import software.coley.cafedude.classfile.ConstPool;
 import software.coley.cafedude.classfile.constant.ConstRef;
 import software.coley.cafedude.classfile.constant.CpClass;
 import software.coley.cafedude.classfile.constant.CpInvokeDynamic;
-import software.coley.cafedude.classfile.instruction.*;
+import software.coley.cafedude.classfile.instruction.BasicInstruction;
+import software.coley.cafedude.classfile.instruction.CpRefInstruction;
+import software.coley.cafedude.classfile.instruction.IincInstruction;
+import software.coley.cafedude.classfile.instruction.Instruction;
+import software.coley.cafedude.classfile.instruction.IntOperandInstruction;
+import software.coley.cafedude.classfile.instruction.LookupSwitchInstruction;
+import software.coley.cafedude.classfile.instruction.MultiANewArrayInstruction;
+import software.coley.cafedude.classfile.instruction.TableSwitchInstruction;
+import software.coley.cafedude.classfile.instruction.WideInstruction;
 
 import javax.annotation.Nonnull;
 import java.nio.ByteBuffer;

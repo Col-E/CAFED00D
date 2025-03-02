@@ -23,7 +23,7 @@ public class ClassElementValue extends ElementValue {
 	 */
 	public ClassElementValue(char tag, @Nonnull CpUtf8 classEntry) {
 		super(tag);
-		if (tag != 'c')
+		if (tag != ElementValueConstants.TAG_CLASS)
 			throw new IllegalArgumentException("Class element value must have 'c' tag");
 		this.classEntry = classEntry;
 	}

@@ -1,6 +1,5 @@
 package software.coley.cafedude.classfile.attribute;
 
-import software.coley.cafedude.classfile.StackMapTableConstants;
 import software.coley.cafedude.classfile.behavior.CpAccessor;
 import software.coley.cafedude.classfile.constant.CpClass;
 import software.coley.cafedude.classfile.constant.CpEntry;

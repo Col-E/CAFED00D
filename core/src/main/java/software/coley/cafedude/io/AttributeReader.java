@@ -1,7 +1,10 @@
 package software.coley.cafedude.io;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.coley.cafedude.classfile.ConstPool;
 import software.coley.cafedude.classfile.InvalidCpIndexException;
+import software.coley.cafedude.classfile.attribute.*;
 import software.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.BootstrapMethod;
 import software.coley.cafedude.classfile.attribute.CodeAttribute.ExceptionTableEntry;
 import software.coley.cafedude.classfile.attribute.InnerClassesAttribute.InnerClass;
@@ -12,13 +15,14 @@ import software.coley.cafedude.classfile.attribute.ModuleAttribute.Exports;
 import software.coley.cafedude.classfile.attribute.ModuleAttribute.Opens;
 import software.coley.cafedude.classfile.attribute.ModuleAttribute.Provides;
 import software.coley.cafedude.classfile.attribute.ModuleAttribute.Requires;
+import software.coley.cafedude.classfile.constant.CpClass;
+import software.coley.cafedude.classfile.constant.CpEntry;
+import software.coley.cafedude.classfile.constant.CpMethodHandle;
+import software.coley.cafedude.classfile.constant.CpModule;
+import software.coley.cafedude.classfile.constant.CpNameType;
+import software.coley.cafedude.classfile.constant.CpPackage;
+import software.coley.cafedude.classfile.constant.CpUtf8;
 import software.coley.cafedude.classfile.instruction.Instruction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import software.coley.cafedude.classfile.AttributeConstants;
-import software.coley.cafedude.classfile.StackMapTableConstants;
-import software.coley.cafedude.classfile.attribute.*;
-import software.coley.cafedude.classfile.constant.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -60,7 +64,7 @@ public class AttributeReader {
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	private AttributeReader(@Nonnull ClassFileReader reader, @Nonnull ClassBuilder builder,
-							@Nonnull DataInputStream is) throws IOException {
+	                        @Nonnull DataInputStream is) throws IOException {
 		this.reader = reader;
 		this.builder = builder;
 		this.cp = builder.getPool();
@@ -89,7 +93,7 @@ public class AttributeReader {
 	 */
 	@Nullable
 	public static Attribute readFromClass(@Nonnull ClassFileReader reader, @Nonnull ClassBuilder builder,
-										  @Nonnull DataInputStream is, @Nonnull AttributeContext context) {
+	                                      @Nonnull DataInputStream is, @Nonnull AttributeContext context) {
 		try {
 			return new AttributeReader(reader, builder, is).read(context);
 		} catch (Exception ex) {

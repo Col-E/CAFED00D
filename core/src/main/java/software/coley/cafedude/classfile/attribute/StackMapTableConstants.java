@@ -1,4 +1,4 @@
-package software.coley.cafedude.classfile;
+package software.coley.cafedude.classfile.attribute;
 
 /**
  * Constants for the stack map table.

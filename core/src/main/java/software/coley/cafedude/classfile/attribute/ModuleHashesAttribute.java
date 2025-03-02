@@ -25,7 +25,7 @@ public class ModuleHashesAttribute extends Attribute {
 	 * 		Map of constant pool entries of module names to their hashes.
 	 */
 	public ModuleHashesAttribute(@Nonnull CpUtf8 name, @Nonnull CpUtf8 algorithmName,
-								 @Nonnull Map<CpUtf8, byte[]> moduleHashes) {
+	                             @Nonnull Map<CpUtf8, byte[]> moduleHashes) {
 		super(name);
 		this.algorithmName = algorithmName;
 		this.moduleHashes = moduleHashes;
@@ -57,7 +57,8 @@ public class ModuleHashesAttribute extends Attribute {
 	}
 
 	/**
-	 * @param moduleHashes New map of constant pool entries of module names to their hashes.
+	 * @param moduleHashes
+	 * 		New map of constant pool entries of module names to their hashes.
 	 */
 	public void setModuleHashes(@Nonnull Map<CpUtf8, byte[]> moduleHashes) {
 		this.moduleHashes = moduleHashes;

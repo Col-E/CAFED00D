@@ -28,7 +28,7 @@ public class EnclosingMethodAttribute extends Attribute {
 	 * 		May be {@code null}.
 	 */
 	public EnclosingMethodAttribute(@Nonnull CpUtf8 name, @Nonnull CpClass classEntry,
-									@Nullable CpNameType methodEntry) {
+	                                @Nullable CpNameType methodEntry) {
 		super(name);
 		this.classEntry = classEntry;
 		this.methodEntry = methodEntry;

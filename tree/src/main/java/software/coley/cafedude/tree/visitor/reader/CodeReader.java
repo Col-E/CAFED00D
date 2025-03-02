@@ -6,7 +6,7 @@ import software.coley.cafedude.InvalidCodeException;
 import software.coley.cafedude.classfile.ClassFile;
 import software.coley.cafedude.classfile.Descriptor;
 import software.coley.cafedude.classfile.Method;
-import software.coley.cafedude.classfile.StackMapTableConstants;
+import software.coley.cafedude.classfile.attribute.StackMapTableConstants;
 import software.coley.cafedude.classfile.attribute.*;
 import software.coley.cafedude.classfile.constant.*;
 import software.coley.cafedude.classfile.instruction.*;

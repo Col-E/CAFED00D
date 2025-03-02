@@ -23,7 +23,7 @@ public class ArrayElementValue extends ElementValue {
 	 */
 	public ArrayElementValue(char tag, @Nonnull List<ElementValue> array) {
 		super(tag);
-		if (tag != '[')
+		if (tag != ElementValueConstants.TAG_ARRAY)
 			throw new IllegalArgumentException("Array element value must have '[' tag");
 		this.array = array;
 	}

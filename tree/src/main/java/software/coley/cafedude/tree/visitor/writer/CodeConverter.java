@@ -2,7 +2,7 @@ package software.coley.cafedude.tree.visitor.writer;
 
 import software.coley.cafedude.InvalidCodeException;
 import software.coley.cafedude.UnresolvedLabelException;
-import software.coley.cafedude.classfile.AttributeConstants;
+import software.coley.cafedude.classfile.attribute.AttributeConstants;
 import software.coley.cafedude.classfile.attribute.*;
 import software.coley.cafedude.classfile.constant.*;
 import software.coley.cafedude.classfile.instruction.*;

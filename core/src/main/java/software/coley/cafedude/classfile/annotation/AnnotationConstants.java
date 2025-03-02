@@ -1,6 +1,4 @@
-package software.coley.cafedude.classfile;
-
-import software.coley.cafedude.classfile.annotation.TargetInfoType;
+package software.coley.cafedude.classfile.annotation;
 
 /**
  * Constants for annotation attributes.

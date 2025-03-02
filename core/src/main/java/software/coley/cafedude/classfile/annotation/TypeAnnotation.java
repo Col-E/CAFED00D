@@ -25,7 +25,7 @@ public class TypeAnnotation extends Annotation {
 	 * 		Information about which part of the type is annotated.
 	 */
 	public TypeAnnotation(@Nonnull CpUtf8 typeIndex, @Nonnull Map<CpUtf8, ElementValue> values,
-						  @Nonnull TargetInfo targetInfo, @Nonnull TypePath typePath) {
+	                      @Nonnull TargetInfo targetInfo, @Nonnull TypePath typePath) {
 		super(typeIndex, values);
 		this.targetInfo = targetInfo;
 		this.typePath = typePath;

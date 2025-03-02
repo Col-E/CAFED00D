@@ -2,7 +2,6 @@ package software.coley.cafedude.transform;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import software.coley.cafedude.classfile.AttributeConstants;
 import software.coley.cafedude.classfile.ClassFile;
 import software.coley.cafedude.classfile.ConstantPoolConstants;
 import software.coley.cafedude.classfile.Descriptor;
@@ -21,6 +20,7 @@ import software.coley.cafedude.classfile.annotation.TypeAnnotation;
 import software.coley.cafedude.classfile.attribute.AnnotationDefaultAttribute;
 import software.coley.cafedude.classfile.attribute.AnnotationsAttribute;
 import software.coley.cafedude.classfile.attribute.Attribute;
+import software.coley.cafedude.classfile.attribute.AttributeConstants;
 import software.coley.cafedude.classfile.attribute.AttributeContexts;
 import software.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute;
 import software.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.BootstrapMethod;

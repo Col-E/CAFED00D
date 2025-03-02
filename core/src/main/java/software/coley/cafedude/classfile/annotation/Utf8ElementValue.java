@@ -23,7 +23,7 @@ public class Utf8ElementValue extends ElementValue {
 	 */
 	public Utf8ElementValue(char tag, @Nonnull CpUtf8 value) {
 		super(tag);
-		if (tag != 's')
+		if (tag != ElementValueConstants.TAG_STRING)
 			throw new IllegalArgumentException("UTF8 element value must have 's' tag");
 		this.value = value;
 	}

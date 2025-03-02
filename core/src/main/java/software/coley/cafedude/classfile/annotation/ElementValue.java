@@ -20,6 +20,8 @@ public abstract class ElementValue implements CpAccessor {
 
 	/**
 	 * @return ASCII tag representation, indicating the type of element value.
+	 *
+	 * @see ElementValueConstants Possible 'tag' values
 	 */
 	public char getTag() {
 		return tag;

@@ -1,12 +1,12 @@
 package software.coley.cafedude.classfile;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.coley.cafedude.classfile.attribute.Attribute;
 import software.coley.cafedude.classfile.attribute.CodeAttribute;
 import software.coley.cafedude.classfile.constant.CpEntry;
 import software.coley.cafedude.classfile.constant.CpUtf8;
 import software.coley.cafedude.io.AttributeContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.util.List;

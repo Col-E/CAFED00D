@@ -86,7 +86,7 @@ public class InnerClassesAttribute extends Attribute {
 		 * 		Access flags of the inner class.
 		 */
 		public InnerClass(@Nonnull CpClass innerClassInfo, @Nullable CpClass outerClassInfo, @Nullable CpUtf8 innerName,
-						  int innerClassAccessFlags) {
+		                  int innerClassAccessFlags) {
 			this.innerClassInfo = innerClassInfo;
 			this.outerClassInfo = outerClassInfo;
 			this.innerName = innerName;

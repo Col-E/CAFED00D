@@ -1,8 +1,8 @@
 package software.coley.cafedude.io;
 
-import software.coley.cafedude.classfile.AnnotationConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.coley.cafedude.classfile.annotation.AnnotationConstants;
 
 import javax.annotation.Nullable;
 

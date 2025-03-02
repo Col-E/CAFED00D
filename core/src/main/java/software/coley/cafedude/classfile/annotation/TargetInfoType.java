@@ -1,7 +1,5 @@
 package software.coley.cafedude.classfile.annotation;
 
-import software.coley.cafedude.classfile.AnnotationConstants;
-
 import javax.annotation.Nonnull;
 
 /**

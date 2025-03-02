@@ -41,7 +41,7 @@ public class CodeAttribute extends Attribute implements AttributeHolder {
 	 * 		List of other attributes.
 	 */
 	public CodeAttribute(@Nonnull CpUtf8 name, int maxStack, int maxLocals, @Nonnull List<Instruction> instructions,
-						 @Nonnull List<ExceptionTableEntry> exceptionTable, @Nonnull List<Attribute> attributes) {
+	                     @Nonnull List<ExceptionTableEntry> exceptionTable, @Nonnull List<Attribute> attributes) {
 		super(name);
 		this.maxStack = maxStack;
 		this.maxLocals = maxLocals;

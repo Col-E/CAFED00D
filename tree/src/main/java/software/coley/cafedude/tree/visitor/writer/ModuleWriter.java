@@ -1,6 +1,6 @@
 package software.coley.cafedude.tree.visitor.writer;
 
-import software.coley.cafedude.classfile.AttributeConstants;
+import software.coley.cafedude.classfile.attribute.AttributeConstants;
 import software.coley.cafedude.classfile.attribute.Attribute;
 import software.coley.cafedude.classfile.attribute.ModuleAttribute;
 import software.coley.cafedude.classfile.attribute.ModuleMainClassAttribute;

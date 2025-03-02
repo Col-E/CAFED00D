@@ -1,6 +1,4 @@
-package software.coley.cafedude.classfile;
-
-import software.coley.cafedude.classfile.attribute.*;
+package software.coley.cafedude.classfile.attribute;
 
 /**
  * Constants for attribute names.

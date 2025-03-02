@@ -1,8 +1,8 @@
 package software.coley.cafedude.transform;
 
 import software.coley.cafedude.classfile.ConstPool;
-import software.coley.cafedude.classfile.constant.CpEntry;
 import software.coley.cafedude.classfile.constant.CpDynamic;
+import software.coley.cafedude.classfile.constant.CpEntry;
 import software.coley.cafedude.classfile.constant.CpMethodHandle;
 import software.coley.cafedude.classfile.constant.CpMethodType;
 import software.coley.cafedude.classfile.constant.CpString;

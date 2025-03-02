@@ -53,9 +53,9 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	 * 		Attributes.
 	 */
 	public ClassFile(int versionMinor, int versionMajor,
-					 ConstPool pool, int access, CpClass thisClass, CpClass superClass,
-					 List<CpClass> interfaceClasses, List<Field> fields, List<Method> methods,
-					 List<Attribute> attributes) {
+	                 ConstPool pool, int access, CpClass thisClass, CpClass superClass,
+	                 List<CpClass> interfaceClasses, List<Field> fields, List<Method> methods,
+	                 List<Attribute> attributes) {
 		this.versionMinor = versionMinor;
 		this.versionMajor = versionMajor;
 		this.pool = pool;

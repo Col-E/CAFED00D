@@ -1,7 +1,11 @@
 package software.coley.cafedude.classfile.attribute;
 
 import software.coley.cafedude.classfile.behavior.CpAccessor;
-import software.coley.cafedude.classfile.constant.*;
+import software.coley.cafedude.classfile.constant.CpClass;
+import software.coley.cafedude.classfile.constant.CpEntry;
+import software.coley.cafedude.classfile.constant.CpModule;
+import software.coley.cafedude.classfile.constant.CpPackage;
+import software.coley.cafedude.classfile.constant.CpUtf8;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -48,9 +52,9 @@ public class ModuleAttribute extends Attribute {
 	 * 		The {@link Provides} items.
 	 */
 	public ModuleAttribute(@Nonnull CpUtf8 name, @Nonnull CpModule module, int flags, @Nullable CpUtf8 version,
-						   @Nonnull List<Requires> requires, @Nonnull List<Exports> exports,
-						   @Nonnull List<Opens> opens, @Nonnull List<CpClass> uses,
-						   @Nonnull List<Provides> provides) {
+	                       @Nonnull List<Requires> requires, @Nonnull List<Exports> exports,
+	                       @Nonnull List<Opens> opens, @Nonnull List<CpClass> uses,
+	                       @Nonnull List<Provides> provides) {
 		super(name);
 		this.module = module;
 		this.flags = flags;

@@ -22,7 +22,7 @@ public class AnnotationElementValue extends ElementValue {
 	 */
 	public AnnotationElementValue(char tag, @Nonnull Annotation annotation) {
 		super(tag);
-		if (tag != '@')
+		if (tag != ElementValueConstants.TAG_ANNOTATION)
 			throw new IllegalArgumentException("Annotation element value must have '@' tag");
 		this.annotation = annotation;
 	}

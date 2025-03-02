@@ -1,23 +1,50 @@
 package software.coley.cafedude.io;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.coley.cafedude.classfile.ConstPool;
-import software.coley.cafedude.classfile.annotation.*;
-import software.coley.cafedude.classfile.annotation.TargetInfo.*;
+import software.coley.cafedude.classfile.annotation.Annotation;
+import software.coley.cafedude.classfile.annotation.AnnotationElementValue;
+import software.coley.cafedude.classfile.annotation.ArrayElementValue;
+import software.coley.cafedude.classfile.annotation.ClassElementValue;
+import software.coley.cafedude.classfile.annotation.ElementValue;
+import software.coley.cafedude.classfile.annotation.EnumElementValue;
+import software.coley.cafedude.classfile.annotation.PrimitiveElementValue;
+import software.coley.cafedude.classfile.annotation.TargetInfo;
+import software.coley.cafedude.classfile.annotation.TargetInfo.CatchTargetInfo;
+import software.coley.cafedude.classfile.annotation.TargetInfo.EmptyTargetInfo;
+import software.coley.cafedude.classfile.annotation.TargetInfo.FormalParameterTargetInfo;
+import software.coley.cafedude.classfile.annotation.TargetInfo.LocalVarTargetInfo;
 import software.coley.cafedude.classfile.annotation.TargetInfo.LocalVarTargetInfo.Variable;
+import software.coley.cafedude.classfile.annotation.TargetInfo.OffsetTargetInfo;
+import software.coley.cafedude.classfile.annotation.TargetInfo.SuperTypeTargetInfo;
+import software.coley.cafedude.classfile.annotation.TargetInfo.ThrowsTargetInfo;
+import software.coley.cafedude.classfile.annotation.TargetInfo.TypeArgumentTargetInfo;
+import software.coley.cafedude.classfile.annotation.TargetInfo.TypeParameterBoundTargetInfo;
+import software.coley.cafedude.classfile.annotation.TargetInfo.TypeParameterTargetInfo;
+import software.coley.cafedude.classfile.annotation.TargetInfoType;
+import software.coley.cafedude.classfile.annotation.TypeAnnotation;
+import software.coley.cafedude.classfile.annotation.TypePath;
+import software.coley.cafedude.classfile.annotation.TypePathElement;
+import software.coley.cafedude.classfile.annotation.TypePathKind;
+import software.coley.cafedude.classfile.annotation.Utf8ElementValue;
 import software.coley.cafedude.classfile.attribute.AnnotationDefaultAttribute;
 import software.coley.cafedude.classfile.attribute.AnnotationsAttribute;
 import software.coley.cafedude.classfile.attribute.ParameterAnnotationsAttribute;
 import software.coley.cafedude.classfile.constant.CpEntry;
 import software.coley.cafedude.classfile.constant.CpUtf8;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Annotation reader for all annotation attributes.
@@ -58,7 +85,7 @@ public class AnnotationReader {
 	 * 		possible due to out-of-bounds problems. This is an indicator of a malformed class.
 	 */
 	public AnnotationReader(ClassFileReader reader, ConstPool cp, DataInputStream is, int length,
-							CpUtf8 name, AttributeContext context, boolean visible)
+	                        CpUtf8 name, AttributeContext context, boolean visible)
 			throws IOException {
 		this.reader = reader;
 		this.cp = cp;

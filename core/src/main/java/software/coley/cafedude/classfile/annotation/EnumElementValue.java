@@ -26,7 +26,7 @@ public class EnumElementValue extends ElementValue {
 	 */
 	public EnumElementValue(char tag, @Nonnull CpUtf8 type, @Nonnull CpUtf8 name) {
 		super(tag);
-		if (tag != 'e')
+		if (tag != ElementValueConstants.TAG_ENUM)
 			throw new IllegalArgumentException("UTF8 element value must have 'e' tag");
 		this.type = type;
 		this.name = name;
