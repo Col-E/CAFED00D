@@ -344,6 +344,9 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				for (RecordAttribute.RecordComponent component : recordAttribute.getComponents()) {
 					cpEntryValidators.put(component.getName(), matchUtf8Word());
 					cpEntryValidators.put(component.getDesc(), matchUtf8FieldDescriptor());
+
+					// Prune bad component sub-attributes (annotations)
+					component.getAttributes().removeIf(sub -> !isValid(component, sub));
 				}
 				break;
 			case AttributeConstants.LINE_NUMBER_TABLE:

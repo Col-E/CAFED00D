@@ -43,7 +43,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.10.2</junit.version>
         <asm.version>9.7</asm.version>
-        <revision>2.2.0</revision>
+        <revision>2.2.1</revision>
     </properties>
 
     <dependencies>
