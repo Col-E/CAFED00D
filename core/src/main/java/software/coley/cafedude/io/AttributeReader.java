@@ -97,7 +97,8 @@ public class AttributeReader {
 		try {
 			return new AttributeReader(reader, builder, is).read(context);
 		} catch (Exception ex) {
-			logger.debug("Dropping attribute on {}: {}", context.name(), ex.getMessage());
+			String message = ex.getMessage();
+			logger.debug("Dropping attribute on {}: {}", context.name(), message);
 			return null;
 		}
 	}
@@ -738,6 +739,7 @@ public class AttributeReader {
 		int codeLength = -1;
 		List<ExceptionTableEntry> exceptions = new ArrayList<>();
 		List<Attribute> attributes = new ArrayList<>();
+
 		// Parse depending on class format version
 		if (builder.isOakVersion()) {
 			// Pre-java oak parsing (half-size data types)
@@ -750,13 +752,20 @@ public class AttributeReader {
 			maxLocals = is.readUnsignedShort();
 			codeLength = is.readInt();
 		}
+
+		// The JVMLS states method code shall not be longer than an unsigned short.
+		if (reader.doCheckCodeLength() && codeLength > 65536)
+			throw new IOException("Method code_length > 65536: " + codeLength);
+
 		// Read instructions
 		InstructionReader reader = new InstructionReader(this.reader.fallbackReaderSupplier.get());
 		List<Instruction> instructions = reader.read(is, cp, codeLength);
+
 		// Read exceptions
 		int numExceptions = is.readUnsignedShort();
 		for (int i = 0; i < numExceptions; i++)
 			exceptions.add(readCodeException());
+
 		// Read attributes
 		int numAttributes = is.readUnsignedShort();
 		for (int i = 0; i < numAttributes; i++) {
@@ -764,6 +773,7 @@ public class AttributeReader {
 			if (attr != null)
 				attributes.add(attr);
 		}
+
 		return new CodeAttribute(name, maxStack, maxLocals, instructions, exceptions, attributes);
 	}
 

@@ -52,6 +52,7 @@ public class ClassFileReader {
 	private boolean dropBadContextAttributes = true;
 	private boolean dropEofAttributes = true;
 	private boolean dropDupeAnnotations = true;
+	private boolean checkCodeLength = true;
 
 	/**
 	 * Fallback reader. Default to always failing on any input.
@@ -415,5 +416,20 @@ public class ClassFileReader {
 	 */
 	public void setDropDupeAnnotations(boolean dropDupeAnnotations) {
 		this.dropDupeAnnotations = dropDupeAnnotations;
+	}
+
+	/**
+	 * @return {@code true} to automatically remove methods with bogus code lengths.
+	 */
+	public boolean doCheckCodeLength() {
+		return checkCodeLength;
+	}
+
+	/**
+	 * @param checkCodeLength
+	 *        {@code true} to automatically remove methods with bogus code lengths.
+	 */
+	public void setCheckCodeLength(boolean checkCodeLength) {
+		this.checkCodeLength = checkCodeLength;
 	}
 }
