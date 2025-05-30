@@ -9,6 +9,13 @@ import software.coley.cafedude.classfile.ConstantPoolConstants;
  * @author Matt Coley
  */
 public abstract class CpEntry implements ConstantPoolConstants {
+	/**
+	 * Flag to validate {@link #getIndex()} when called.
+	 */
+	public static boolean checkIndices = true;
+	/**
+	 * CP tag.
+	 */
 	private final int tag;
 	/**
 	 * Index is the index this entry has in a constant pool, < 1 if not in a pool.
@@ -36,6 +43,8 @@ public abstract class CpEntry implements ConstantPoolConstants {
 	 * @return Index of the constant in the constant pool.
 	 */
 	public int getIndex() {
+		if (checkIndices && index <= 0)
+			throw new IllegalStateException("Cannot get index of CpEntry{tag=" + getTag() + "} - not present in ConstPool");
 		return index;
 	}
 
