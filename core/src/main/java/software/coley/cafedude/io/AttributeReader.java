@@ -751,10 +751,8 @@ public class AttributeReader {
 			codeLength = is.readInt();
 		}
 		// Read instructions
-		byte[] code = new byte[codeLength];
-		is.readFully(code);
 		InstructionReader reader = new InstructionReader(this.reader.fallbackReaderSupplier.get());
-		List<Instruction> instructions = reader.read(code, cp);
+		List<Instruction> instructions = reader.read(is, cp, codeLength);
 		// Read exceptions
 		int numExceptions = is.readUnsignedShort();
 		for (int i = 0; i < numExceptions; i++)

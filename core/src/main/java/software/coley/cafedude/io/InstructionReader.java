@@ -15,7 +15,7 @@ import software.coley.cafedude.classfile.instruction.TableSwitchInstruction;
 import software.coley.cafedude.classfile.instruction.WideInstruction;
 
 import javax.annotation.Nonnull;
-import java.nio.ByteBuffer;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,21 +45,27 @@ public class InstructionReader {
 	}
 
 	/**
-	 * @param code
-	 * 		Code data.
+	 * @param is
+	 * 		Parent stream.
 	 * @param pool
 	 * 		Constant pool to pull data from.
+	 * @param codeLength
+	 * 		Length of code attribute.
 	 *
 	 * @return List of instructions.
+	 *
+	 * @throws IOException
+	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	@Nonnull
 	@SuppressWarnings("DuplicateBranchesInSwitch")
-	public List<Instruction> read(@Nonnull byte[] code, @Nonnull ConstPool pool) {
+	public List<Instruction> read(@Nonnull IndexableByteStream is, @Nonnull ConstPool pool, int codeLength) throws IOException {
+		int start = is.getIndex();
+		int end = start + codeLength;
 		List<Instruction> instructions = new ArrayList<>();
-		ByteBuffer buffer = ByteBuffer.wrap(code);
 		FallbackInstructionReader fallbackReader = this.fallbackReader;
-		while (buffer.hasRemaining()) {
-			int opcode = buffer.get() & 0xFF;
+		while (is.getIndex() < end) {
+			int opcode = is.readByte() & 0xFF;
 			switch (opcode) {
 				case NOP:
 				case ACONST_NULL:
@@ -80,24 +86,24 @@ public class InstructionReader {
 					instructions.add(new BasicInstruction(opcode));
 					break;
 				case BIPUSH:
-					instructions.add(new IntOperandInstruction(opcode, buffer.get()));
+					instructions.add(new IntOperandInstruction(opcode, is.readByte()));
 					break;
 				case SIPUSH:
-					instructions.add(new IntOperandInstruction(opcode, buffer.getShort()));
+					instructions.add(new IntOperandInstruction(opcode, is.readShort()));
 					break;
 				case LDC:
-					instructions.add(new CpRefInstruction(opcode, pool.get(buffer.get() & 0xFF)));
+					instructions.add(new CpRefInstruction(opcode, pool.get(is.readByte() & 0xFF)));
 					break;
 				case LDC_W:
 				case LDC2_W:
-					instructions.add(new CpRefInstruction(opcode, pool.get(buffer.getShort() & 0xFFFF)));
+					instructions.add(new CpRefInstruction(opcode, pool.get(is.readShort() & 0xFFFF)));
 					break;
 				case ILOAD:
 				case LLOAD:
 				case FLOAD:
 				case DLOAD:
 				case ALOAD:
-					instructions.add(new IntOperandInstruction(opcode, buffer.get() & 0xFF));
+					instructions.add(new IntOperandInstruction(opcode, is.readByte() & 0xFF));
 					break;
 				case ILOAD_0:
 				case ILOAD_1:
@@ -136,7 +142,7 @@ public class InstructionReader {
 				case FSTORE:
 				case DSTORE:
 				case ASTORE:
-					instructions.add(new IntOperandInstruction(opcode, buffer.get() & 0xFF));
+					instructions.add(new IntOperandInstruction(opcode, is.readByte() & 0xFF));
 					break;
 				case ISTORE_0:
 				case ISTORE_1:
@@ -220,7 +226,7 @@ public class InstructionReader {
 					instructions.add(new BasicInstruction(opcode));
 					break;
 				case IINC:
-					instructions.add(new IincInstruction(buffer.get() & 0xFF, buffer.get()));
+					instructions.add(new IincInstruction(is.readByte() & 0xFF, is.readByte()));
 					break;
 				case I2L:
 				case I2F:
@@ -252,7 +258,7 @@ public class InstructionReader {
 				case IFGE:
 				case IFGT:
 				case IFLE:
-					instructions.add(new IntOperandInstruction(opcode, buffer.getShort()));
+					instructions.add(new IntOperandInstruction(opcode, is.readShort()));
 					break;
 				case IF_ICMPEQ:
 				case IF_ICMPNE:
@@ -262,28 +268,28 @@ public class InstructionReader {
 				case IF_ICMPLE:
 				case IF_ACMPEQ:
 				case IF_ACMPNE:
-					instructions.add(new IntOperandInstruction(opcode, buffer.getShort()));
+					instructions.add(new IntOperandInstruction(opcode, is.readShort()));
 					break;
 				case GOTO:
-					instructions.add(new IntOperandInstruction(GOTO, buffer.getShort()));
+					instructions.add(new IntOperandInstruction(GOTO, is.readShort()));
 					break;
 				case JSR:
-					instructions.add(new IntOperandInstruction(JSR, buffer.getShort()));
+					instructions.add(new IntOperandInstruction(JSR, is.readShort()));
 					break;
 				case RET:
-					instructions.add(new IntOperandInstruction(RET, buffer.get() & 0xFF));
+					instructions.add(new IntOperandInstruction(RET, is.readByte() & 0xFF));
 					break;
 				case TABLESWITCH: {
-					int pos = buffer.position();
+					int pos = is.getIndex();
 					// Skip padding.
-					buffer.position(pos + (4 - pos & 3));
-					int dflt = buffer.getInt();
-					int low = buffer.getInt();
-					int high = buffer.getInt();
+					is.skip((4 - pos & 3));
+					int dflt = is.readInt();
+					int low = is.readInt();
+					int high = is.readInt();
 					int count = high - low + 1;
 					List<Integer> offsets = new ArrayList<>(count);
 					for (int i = 0; i < count; i++) {
-						offsets.add(buffer.getInt());
+						offsets.add(is.readInt());
 					}
 					TableSwitchInstruction tswitch = new TableSwitchInstruction(dflt, low, high, offsets);
 					tswitch.notifyStartPosition(pos - 1); // Offset by 1 to accommodate for opcode
@@ -291,16 +297,16 @@ public class InstructionReader {
 					break;
 				}
 				case LOOKUPSWITCH: {
-					int pos = buffer.position();
+					int pos = is.getIndex();
 					// Skip padding.
-					buffer.position(pos + (4 - pos & 3));
-					int dflt = buffer.getInt();
-					int keyCount = buffer.getInt();
+					is.skip((4 - pos & 3));
+					int dflt = is.readInt();
+					int keyCount = is.readInt();
 					List<Integer> keys = new ArrayList<>(keyCount);
 					List<Integer> offsets = new ArrayList<>(keyCount);
 					for (int i = 0; i < keyCount; i++) {
-						keys.add(buffer.getInt());
-						offsets.add(buffer.getInt());
+						keys.add(is.readInt());
+						offsets.add(is.readInt());
 					}
 					LookupSwitchInstruction lswitch = new LookupSwitchInstruction(dflt, keys, offsets);
 					lswitch.notifyStartPosition(pos - 1); // Offset by 1 to accommodate for opcode
@@ -322,25 +328,25 @@ public class InstructionReader {
 				case INVOKEVIRTUAL:
 				case INVOKESPECIAL:
 				case INVOKESTATIC: {
-					ConstRef ref = (ConstRef) pool.get(buffer.getShort() & 0xFFFF);
+					ConstRef ref = (ConstRef) pool.get(is.readShort() & 0xFFFF);
 					instructions.add(new CpRefInstruction(opcode, ref));
 					break;
 				}
 				case INVOKEINTERFACE: {
-					ConstRef ref = (ConstRef) pool.get(buffer.getShort() & 0xFFFF);
+					ConstRef ref = (ConstRef) pool.get(is.readShort() & 0xFFFF);
 
 					// 1 byte for arg-count
 					// 1 padding byte
-					buffer.getShort();
+					is.readShort();
 
 					instructions.add(new CpRefInstruction(opcode, ref));
 					break;
 				}
 				case INVOKEDYNAMIC: {
-					int index = buffer.getShort() & 0xFFFF;
+					int index = is.readShort() & 0xFFFF;
 
 					// 2 padding bytes
-					buffer.getShort();
+					is.readShort();
 
 					CpInvokeDynamic entry = (CpInvokeDynamic) pool.get(index);
 					instructions.add(new CpRefInstruction(INVOKEDYNAMIC, entry));
@@ -350,11 +356,11 @@ public class InstructionReader {
 				case ANEWARRAY:
 				case CHECKCAST:
 				case INSTANCEOF:
-					CpClass clazz = (CpClass) pool.get(buffer.getShort() & 0xFFFF);
+					CpClass clazz = (CpClass) pool.get(is.readShort() & 0xFFFF);
 					instructions.add(new CpRefInstruction(opcode, clazz));
 					break;
 				case NEWARRAY:
-					instructions.add(new IntOperandInstruction(NEWARRAY, buffer.get() & 0xFF));
+					instructions.add(new IntOperandInstruction(NEWARRAY, is.readByte() & 0xFF));
 					break;
 				case ARRAYLENGTH:
 					instructions.add(new BasicInstruction(ARRAYLENGTH));
@@ -367,7 +373,7 @@ public class InstructionReader {
 					instructions.add(new BasicInstruction(opcode));
 					break;
 				case WIDE:
-					int type = buffer.get() & 0xFF;
+					int type = is.readByte() & 0xFF;
 					switch (type) {
 						case ILOAD:
 						case FLOAD:
@@ -381,32 +387,32 @@ public class InstructionReader {
 						case DSTORE:
 						case RET:
 							instructions.add(new WideInstruction(new IntOperandInstruction(type,
-									buffer.getShort() & 0xFFFF)));
+									is.readShort() & 0xFFFF)));
 							break;
 						case IINC:
-							instructions.add(new WideInstruction(new IincInstruction(buffer.getShort() & 0xFFFF,
-									buffer.getShort())));
+							instructions.add(new WideInstruction(new IincInstruction(is.readShort() & 0xFFFF,
+									is.readShort())));
 							break;
 						default:
 							throw new IllegalStateException("Illegal wide instruction type: " + type);
 					}
 					break;
 				case MULTIANEWARRAY:
-					int index = buffer.getShort() & 0xFFFF;
-					int dimensions = buffer.get() & 0xFF;
+					int index = is.readShort() & 0xFFFF;
+					int dimensions = is.readByte() & 0xFF;
 					instructions.add(new MultiANewArrayInstruction((CpClass) pool.get(index),
 							dimensions));
 					break;
 				case IFNULL:
 				case IFNONNULL:
-					instructions.add(new IntOperandInstruction(opcode, buffer.getShort()));
+					instructions.add(new IntOperandInstruction(opcode, is.readShort()));
 					break;
 				case GOTO_W:
 				case JSR_W:
-					instructions.add(new IntOperandInstruction(opcode, buffer.getInt()));
+					instructions.add(new IntOperandInstruction(opcode, is.readInt()));
 					break;
 				default:
-					instructions.addAll(fallbackReader.read(opcode, buffer));
+					instructions.addAll(fallbackReader.read(opcode, is));
 			}
 		}
 		return instructions;

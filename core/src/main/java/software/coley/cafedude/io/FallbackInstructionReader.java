@@ -2,7 +2,8 @@ package software.coley.cafedude.io;
 
 import software.coley.cafedude.classfile.instruction.Instruction;
 
-import java.nio.ByteBuffer;
+import javax.annotation.Nonnull;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -14,16 +15,21 @@ public interface FallbackInstructionReader {
 	/**
 	 * @param opcode
 	 * 		Instruction opcode.
-	 * @param buffer
-	 * 		Buffer containing instruction data.
+	 * @param is
+	 * 		Parent stream.
 	 *
 	 * @return Read instruction.
+	 *
+	 * @throws IOException
+	 * 		When the stream is unexpectedly closed or ends.
 	 */
-	List<Instruction> read(int opcode, ByteBuffer buffer);
+	@Nonnull
+	List<Instruction> read(int opcode, @Nonnull IndexableByteStream is) throws IOException;
 
 	/**
 	 * @return Default fail-fast fallback reader.
 	 */
+	@Nonnull
 	static FallbackInstructionReader fail() {
 		return (opcode, buffer) -> {
 			throw new IllegalStateException("Unable to read: " + opcode);

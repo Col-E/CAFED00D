@@ -11,8 +11,10 @@ import software.coley.cafedude.classfile.instruction.Instruction;
 import software.coley.cafedude.classfile.instruction.IntOperandInstruction;
 import software.coley.cafedude.classfile.instruction.ReservedOpcodes;
 import software.coley.cafedude.io.FallbackInstructionReader;
+import software.coley.cafedude.io.IndexableByteStream;
 
-import java.nio.ByteBuffer;
+import javax.annotation.Nonnull;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,12 +48,13 @@ final class IllegalRewritingInstructionsReader implements FallbackInstructionRea
 		this.cp = cp;
 	}
 
+	@Nonnull
 	@Override
-	public List<Instruction> read(int opcode, ByteBuffer buffer) {
+	public List<Instruction> read(int opcode, @Nonnull IndexableByteStream is) throws IOException {
 		switch (opcode) {
 			case breakpoint:
 				rewritten = true;
-				buffer.get(); // Breakpoint occupies two bytes.
+				is.readByte(); // Breakpoint occupies two bytes.
 				return Arrays.asList(NOP_INSN, NOP_INSN); // Emit two nops
 			case fast_aload_0:
 				rewritten = true;
@@ -59,10 +62,10 @@ final class IllegalRewritingInstructionsReader implements FallbackInstructionRea
 			case fast_aldc:
 				rewritten = true;
 				return Collections.singletonList(new IntOperandInstruction(LDC,
-						rewriteIndex(buffer.get() & 0xFF)));
+						rewriteIndex(is.readByte() & 0xFF)));
 			case fast_aldc_w:
 				rewritten = true;
-				short idx = buffer.getShort();
+				short idx = is.readShort();
 				int newIndex = rewriteIndex(idx & 0xFFFF);
 				if (newIndex == -1)
 					newIndex = rewriteIndex(swap(idx) & 0xFFFF);
