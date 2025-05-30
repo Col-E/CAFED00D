@@ -290,7 +290,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			}
 			case AttributeConstants.SIGNATURE:
 				SignatureAttribute signatureAttribute = (SignatureAttribute) attribute;
-				cpEntryValidators.put(signatureAttribute.getSignature(), matchUtf8NonEmpty());
+				cpEntryValidators.put(signatureAttribute.getSignature(), e -> matchSignature((CpUtf8) e, holder));
 				break;
 			case AttributeConstants.SOURCE_FILE:
 				SourceFileAttribute sourceFileAttribute = (SourceFileAttribute) attribute;
@@ -488,6 +488,18 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			for (ElementValue arrayValue : array)
 				addElementValueValidation(expectedTypeMasks, cpEntryValidators, arrayValue);
 		}
+	}
+
+	/**
+	 * @param e
+	 * 		Signature string constant pool entry.
+	 * @param context
+	 * 		The context of the signature declaration.
+	 *
+	 * @return {@code true} when the signature is valid and can be kept.
+	 */
+	protected boolean matchSignature(@Nonnull CpUtf8 e, @Nonnull AttributeHolder context) {
+		return matchUtf8NonEmpty().test(e);
 	}
 
 	@Nonnull
