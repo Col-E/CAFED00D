@@ -118,7 +118,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		if (bsmAttribute != null) {
 			List<CpEntry> dynamicCpAccesses = clazz.getMethods().stream()
 					.flatMap(m -> m.cpAccesses().stream())
-					.filter(cp -> cp.getTag() == CpEntry.DYNAMIC || cp.getTag() == CpEntry.INVOKE_DYNAMIC)
+					.filter(cp -> cp != null && (cp.getTag() == CpEntry.DYNAMIC || cp.getTag() == CpEntry.INVOKE_DYNAMIC))
 					.collect(Collectors.toList());
 			if (dynamicCpAccesses.isEmpty())
 				clazz.getAttributes().remove(bsmAttribute);

@@ -67,7 +67,7 @@ public class ClassFileWriter {
 			out.writeShort(clazz.getVersionMajor());
 
 			// Constant pool
-			out.writeShort(clazz.getPool().size() + 1);
+			out.writeShort(clazz.getPool().size());
 			for (CpEntry entry : clazz.getPool())
 				writeCpEntry(entry);
 

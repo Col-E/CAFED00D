@@ -3,17 +3,13 @@ package software.coley.cafedude.classfile;
 import software.coley.cafedude.classfile.constant.CpEntry;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 
 /**
  * Constant pool wrapper.
@@ -22,271 +18,294 @@ import java.util.TreeSet;
  */
 public class ConstPool implements List<CpEntry> {
 	private final List<CpEntry> backing = new ArrayList<>();
-	private final SortedSet<Integer> wideIndices = new TreeSet<>();
-	private final Map<Integer, Integer> indexToWides = new HashMap<>();
 
-	/**
-	 * CP indices are 1-indexed, so the indices must start at 1.
-	 * In addition, wide constants <i>(long/double)</i> take two indices in the CP.
-	 * <br>
-	 * In order to count wide indices, we use {@link SortedSet#headSet(Object)} which is a sub-set of items
-	 * that are {@code < index}.
-	 *
-	 * @param index
-	 * 		Internal index of {@link #backing}.
-	 *
-	 * @return Converted CP index.
-	 */
-	private int internalToCp(int index) {
-		if (index == -1)
-			return -1; // -1 is used when the index is not found in the CP.
-		// 0: Double --> 1
-		// 1: String --> 3 --
-		// 2: String --> 4
-		// 3: Double --> 5
-		// 4: String --> 7 --
-		// 5: String --> 8
-		int wideCount = indexToWides.computeIfAbsent(index, i -> wideIndices.headSet(i).size());
-		return 1 + index + wideCount;
-	}
-
-	/**
-	 * CP indices are 1-indexed, so the indices must start at 1.
-	 * In addition, wide constants <i>(long/double)</i> take two indices in the CP.
-	 * <br>
-	 *
-	 * @param index
-	 * 		CP index.
-	 *
-	 * @return Converted internal index for {@link #backing}.
-	 */
-	private int cpToInternal(int index) {
-		// Edge case
-		if (index == 0)
-			return index;
-		// Convert index back to 0-index
-		int internal = index - 1;
-		// Just subtract until a match. Will be at worst O(N) where N is the # of wide entries.
-		while (internalToCp(internal - 1) >= index) {
-			internal--;
-		}
-		return internal;
-	}
-
-	/**
-	 * Clear wide entries.
-	 */
-	private void onClear() {
-		wideIndices.clear();
-	}
-
-	/**
-	 * Update wide index tracking.
-	 *
-	 * @param cpEntry
-	 * 		Entry added.
-	 * @param location
-	 * 		Location added.
-	 */
-	private void onAdd(@Nonnull CpEntry cpEntry, int location) {
-		int entrySize = cpEntry.isWide() ? 2 : 1;
-		// Need to push things over since something is being inserted.
-		// Shift everything >= location by +entrySize
-		SortedSet<Integer> larger = wideIndices.tailSet(location);
-		if (!larger.isEmpty()) {
-			List<Integer> tmp = new ArrayList<>(larger);
-			larger.clear();
-			tmp.forEach(i -> addWideIndex(i + entrySize));
-		}
-		// Add wide
-		if (cpEntry.isWide())
-			addWideIndex(location);
-		cpEntry.setIndex(internalToCp(location));
-	}
-
-	/**
-	 * Update wide index tracking.
-	 *
-	 * @param cpEntry
-	 * 		Entry removed.
-	 * @param location
-	 * 		Location removed from.
-	 */
-	private void onRemove(@Nonnull CpEntry cpEntry, int location) {
-		int entrySize = cpEntry.isWide() ? 2 : 1;
-		// Remove wide
-		if (cpEntry.isWide())
-			wideIndices.remove(location);
-		// Need to move everything down to fill the gap.
-		// Shift everything >= location by -entrySize
-		SortedSet<Integer> larger = wideIndices.tailSet(location + 1);
-		if (!larger.isEmpty()) {
-			List<Integer> tmp = new ArrayList<>(larger);
-			larger.clear();
-			tmp.forEach(i -> addWideIndex(i - entrySize));
-		}
-		cpEntry.setIndex(-1);
-	}
-
-	private void addWideIndex(int i) {
-		wideIndices.add(i);
-		indexToWides.clear();
+	public ConstPool() {
+		// Constant pool index starts at one, so we add a reserved item at the 0th index.
+		backing.add(ImplZero.INSTANCE);
 	}
 
 	@Override
 	public int size() {
-		if (backing.isEmpty())
-			return 0;
-		return internalToCp(backing.size() - 1);
+		// Size is correct as-is since we insert dummy entries at the 0th index and for any wide reserved slot.
+		return backing.size();
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return backing.isEmpty();
+		// Constant pool index starts at one, so we ignore our first item.
+		return size() <= 1;
 	}
 
 	@Override
-	public boolean contains(@Nonnull Object o) {
+	public boolean contains(Object o) {
 		return backing.contains(o);
+	}
+
+	@Override
+	public int indexOf(Object o) {
+		for (int i = 1; i < backing.size(); i++)
+			if (Objects.equals(backing.get(i), o))
+				return i;
+		return -1;
+	}
+
+	@Override
+	public int lastIndexOf(Object o) {
+		for (int i = backing.size() - 1; i >= 1; i--)
+			if (Objects.equals(backing.get(i), o))
+				return i;
+		return -1;
 	}
 
 	@Nonnull
 	@Override
 	public Iterator<CpEntry> iterator() {
-		return backing.iterator();
-	}
-
-	@Nonnull
-	@Override
-	public Object[] toArray() {
-		return backing.toArray(new CpEntry[0]);
-	}
-
-	@Nonnull
-	@Override
-	@SuppressWarnings("unchecked")
-	public <T> T[] toArray(T[] a) {
-		return (T[]) backing.toArray();
-	}
-
-	@Override
-	public boolean add(@Nonnull CpEntry cpEntry) {
-		onAdd(cpEntry, backing.size());
-		return backing.add(cpEntry);
-	}
-
-	@Override
-	public void add(int index, @Nonnull CpEntry element) {
-		onAdd(element, index);
-		backing.add(cpToInternal(index), element);
-	}
-
-	@Nullable
-	@Override
-	public CpEntry remove(int index) {
-		CpEntry ret = backing.remove(cpToInternal(index));
-		if (ret != null)
-			onRemove(ret, index);
-		return ret;
-	}
-
-	@Override
-	public boolean remove(Object o) {
-		if (o instanceof CpEntry) {
-			CpEntry cpEntry = (CpEntry) o;
-			onRemove(cpEntry, indexOf(cpEntry));
-			return backing.remove(cpEntry);
-		}
-		return false;
-	}
-
-	@Override
-	public boolean containsAll(@Nonnull Collection<?> c) {
-		return new HashSet<>(backing).containsAll(c);
-	}
-
-	@Override
-	public boolean addAll(@Nonnull Collection<? extends CpEntry> c) {
-		for (CpEntry cpEntry : c)
-			add(cpEntry);
-		return true;
-	}
-
-	@Override
-	public boolean addAll(int index, @Nonnull Collection<? extends CpEntry> c) {
-		for (CpEntry cpEntry : c)
-			add(index, cpEntry);
-		return true;
-	}
-
-	@Override
-	public boolean removeAll(@Nonnull Collection<?> c) {
-		boolean ret = false;
-		for (Object o : c)
-			ret |= remove(o);
-		return ret;
-	}
-
-	@Override
-	public boolean retainAll(@Nonnull Collection<?> c) {
-		boolean ret = false;
-		for (CpEntry o : this)
-			if (!c.contains(o))
-				ret |= remove(o);
-		return ret;
-	}
-
-	@Override
-	public void clear() {
-		onClear();
-		backing.clear();
-	}
-
-	@Nullable
-	@Override
-	public CpEntry get(int index) {
-		try {
-			if (index == 0)
-				return null;
-			return backing.get(cpToInternal(index));
-		} catch (IndexOutOfBoundsException e) {
-			throw new InvalidCpIndexException(this, index);
-		}
-	}
-
-	@Nullable
-	@Override
-	public CpEntry set(int index, @Nonnull CpEntry element) {
-		CpEntry ret = remove(index);
-		add(index, element);
-		return ret;
-	}
-
-	@Override
-	public int indexOf(Object o) {
-		return internalToCp(backing.indexOf(o));
-	}
-
-	@Override
-	public int lastIndexOf(Object o) {
-		return internalToCp(backing.lastIndexOf(o));
+		return listIterator();
 	}
 
 	@Nonnull
 	@Override
 	public ListIterator<CpEntry> listIterator() {
-		return backing.listIterator();
+		// Initialize index to one since the constant pool starts at one.
+		return listIterator(1);
 	}
 
 	@Nonnull
 	@Override
 	public ListIterator<CpEntry> listIterator(int index) {
-		return backing.listIterator(cpToInternal(index));
+		return new ListIterator<CpEntry>() {
+			private int cursor = index;
+
+			@Override
+			public boolean hasNext() {
+				return cursor < size();
+			}
+
+			@Override
+			public CpEntry next() {
+				if (hasNext()) {
+					// Move forwards, skipping over padding entries.
+					CpEntry cp = backing.get(cursor);
+					cursor += cp.isWide() ? 2 : 1;
+					return cp;
+				}
+				throw new NoSuchElementException();
+			}
+
+			@Override
+			public boolean hasPrevious() {
+				return cursor > 1;
+			}
+
+			@Override
+			public CpEntry previous() {
+				if (hasPrevious()) {
+					// Move backwards, skipping over padding entries.
+					CpEntry cp = backing.get(cursor - 1);
+					if (cp.getTag() <= 0)
+						cp = backing.get(cursor - 2);
+					cursor -= cp.isWide() ? 2 : 1;
+					return cp;
+				}
+				throw new NoSuchElementException();
+			}
+
+			@Override
+			public int nextIndex() {
+				return Math.min(cursor + 1, size());
+			}
+
+			@Override
+			public int previousIndex() {
+				if (hasPrevious()) {
+					// Check the previous entry. If it is a valid entry the prev index is just -1.
+					// If the entry is not a valid tag, the prev index is -2.
+					CpEntry cp = backing.get(cursor - 1);
+					if (cp.getTag() <= 0)
+						return cp.getTag() <= 0 ? cursor - 2 : cursor - 1;
+				}
+				return -1;
+			}
+
+			@Override
+			public void remove() {
+				ConstPool.this.remove(cursor);
+			}
+
+			@Override
+			public void set(CpEntry cp) {
+				ConstPool.this.set(cursor, cp);
+			}
+
+			@Override
+			public void add(CpEntry cp) {
+				ConstPool.this.set(cursor, cp);
+			}
+		};
+	}
+
+	@Nonnull
+	@Override
+	public Object[] toArray() {
+		Object[] array = backing.toArray();
+		for (int i = 0; i < array.length; i++) {
+			Object o = array[i];
+			if (o instanceof CpEntry && ((CpEntry) o).getTag() <= 0)
+				array[i] = null;
+		}
+		return array;
+	}
+
+	@Nonnull
+	@Override
+	@SuppressWarnings("unchecked")
+	public <T> T[] toArray(@Nonnull T[] array) {
+		return (T[]) toArray();
 	}
 
 	@Nonnull
 	@Override
 	public List<CpEntry> subList(int fromIndex, int toIndex) {
-		return backing.subList(cpToInternal(fromIndex), cpToInternal(toIndex));
+		// Create a new list that contains only valid entries.
+		List<CpEntry> list = new ArrayList<>();
+		for (int i = fromIndex; i < toIndex; i++) {
+			CpEntry cp = get(i);
+
+			// Skip adding any of our padding entries.
+			if (cp.getTag() > 0)
+				list.add(cp);
+		}
+		return list;
+	}
+
+	@Override
+	public boolean add(CpEntry cp) {
+		int index = size();
+		backing.add(cp);
+		cp.setIndex(index);
+		if (cp.isWide())
+			backing.add(ImplWidePadding.INSTANCE);
+		return true;
+	}
+
+	@Override
+	public void add(int index, CpEntry cp) {
+		if (cp.isWide())
+			backing.add(ImplWidePadding.INSTANCE);
+		backing.add(cp);
+		cp.setIndex(index);
+	}
+
+	@Override
+	public boolean addAll(Collection<? extends CpEntry> c) {
+		boolean res = false;
+		for (CpEntry cp : c)
+			res |= add(cp);
+		return res;
+	}
+
+	@Override
+	public boolean addAll(int index, Collection<? extends CpEntry> c) {
+		for (CpEntry cp : c)
+			add(index, cp);
+		return true;
+	}
+
+	@Override
+	public boolean remove(Object o) {
+		int i = indexOf(o);
+		if (i >= 1) {
+			CpEntry removed = backing.remove(i);
+			if (removed.isWide() && backing.get(i) instanceof ImplWidePadding)
+				backing.remove(i);
+		}
+		return false;
+	}
+
+	@Override
+	public CpEntry remove(int i) {
+		CpEntry removed = backing.remove(i);
+		if (removed.isWide() && backing.get(i) instanceof ImplWidePadding)
+			backing.remove(i);
+		return removed;
+	}
+
+	@Override
+	public boolean removeAll(Collection<?> c) {
+		boolean res = false;
+		for (Object o : c)
+			if (o instanceof CpEntry)
+				res |= add((CpEntry) o);
+		return res;
+	}
+
+	@Override
+	public void clear() {
+		backing.clear();
+		backing.add(ImplZero.INSTANCE);
+	}
+
+	@Override
+	public boolean containsAll(@Nonnull Collection<?> c) {
+		return c.stream().allMatch(this::contains);
+	}
+
+	@Override
+	public boolean retainAll(@Nonnull Collection<?> c) {
+		boolean ret = false;
+		for (CpEntry cp : this)
+			if (!c.contains(cp))
+				ret |= remove(cp);
+		return ret;
+	}
+
+	@Override
+	public CpEntry get(int index) {
+		if (index < 1 || index >= size())
+			return null;
+		CpEntry cp = backing.get(index);
+		if (cp.getTag() <= 0)
+			return null;
+		return cp;
+	}
+
+	@Override
+	public CpEntry set(int index, CpEntry cp) {
+		if (cp == null)
+			throw new IllegalArgumentException("Cannot set null");
+		if (index < 1 || index >= size())
+			return null;
+		return backing.set(index, cp);
+	}
+
+	@Nonnull
+	public static CpEntry getWideFiller() {
+		return ImplWidePadding.INSTANCE;
+	}
+
+	private static class ImplZero extends CpEntry {
+		private static final ImplZero INSTANCE = new ImplZero();
+
+		public ImplZero() {
+			super(-1);
+		}
+
+		@Override
+		public String toString() {
+			return "Zero";
+		}
+	}
+
+	private static class ImplWidePadding extends CpEntry {
+		private static final ImplWidePadding INSTANCE = new ImplWidePadding();
+
+		public ImplWidePadding() {
+			super(-1);
+		}
+
+		@Override
+		public String toString() {
+			return "WidePadding";
+		}
 	}
 }
