@@ -303,9 +303,11 @@ public class AttributeWriter {
 					for (CpPackage cpPackage : modulePackagesAttribute.getPackages()) {
 						out.writeShort(cpPackage.getIndex());
 					}
+					break;
 				case AttributeConstants.MODULE_TARGET:
 					ModuleTargetAttribute moduleTargetAttribute = (ModuleTargetAttribute) attribute;
 					out.writeShort(moduleTargetAttribute.getPlatformName().getIndex());
+					break;
 				case AttributeConstants.MODULE_HASHES:
 					ModuleHashesAttribute moduleHashesAttribute = (ModuleHashesAttribute) attribute;
 					out.writeShort(moduleHashesAttribute.getAlgorithmName().getIndex());
