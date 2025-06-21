@@ -1,5 +1,7 @@
 package software.coley.cafedude.classfile.constant;
 
+import software.coley.cafedude.classfile.instruction.Opcodes;
+
 import javax.annotation.Nonnull;
 
 /**
@@ -9,6 +11,24 @@ import javax.annotation.Nonnull;
  * @author Matt Coley
  */
 public class CpMethodHandle extends CpEntry {
+	/** Interpreted as {@link Opcodes#GETFIELD}. */
+	public static final int REF_GET_FIELD = 1;
+	/** Interpreted as {@link Opcodes#GETSTATIC}. */
+	public static final int REF_GET_STATIC = 2;
+	/** Interpreted as {@link Opcodes#PUTFIELD}. */
+	public static final int REF_PUT_FIELD = 3;
+	/** Interpreted as {@link Opcodes#PUTSTATIC}. */
+	public static final int REF_PUT_STATIC = 4;
+	/** Interpreted as {@link Opcodes#INVOKEVIRTUAL}. */
+	public static final int REF_INVOKE_VIRTUAL = 5;
+	/** Interpreted as {@link Opcodes#INVOKESTATIC}. */
+	public static final int REF_INVOKE_STATIC = 6;
+	/** Interpreted as {@link Opcodes#INVOKESPECIAL}. */
+	public static final int REF_INVOKE_SPECIAL = 7;
+	/** Interpreted as {@link Opcodes#INVOKESPECIAL} following {@link Opcodes#NEW}. */
+	public static final int REF_NEW_INVOKE_SPECIAL = 8;
+	/** Interpreted as {@link Opcodes#INVOKEINTERFACE}. */
+	public static final int REF_INVOKE_INTERFACE = 9;
 	private ConstRef reference;
 	private byte kind;
 
@@ -27,8 +47,6 @@ public class CpMethodHandle extends CpEntry {
 
 	/**
 	 * @return Byte indicating handle behavior.
-	 *
-	 * @see CpMethodHandleConstants
 	 */
 	public byte getKind() {
 		return kind;
@@ -37,8 +55,6 @@ public class CpMethodHandle extends CpEntry {
 	/**
 	 * @param kind
 	 * 		New behavior indicating byte.
-	 *
-	 * @see CpMethodHandleConstants
 	 */
 	public void setKind(byte kind) {
 		this.kind = kind;
