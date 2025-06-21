@@ -18,7 +18,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class ClassFile implements AttributeHolder, CpAccessor {
+public class ClassFile implements Accessible, AttributeHolder, CpAccessor {
 	private final ConstPool pool;
 	private List<CpClass> interfaceClasses;
 	private List<Field> fields;
@@ -166,6 +166,7 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	/**
 	 * @return Class access flags.
 	 */
+	@Override
 	public int getAccess() {
 		return access;
 	}
@@ -174,6 +175,7 @@ public class ClassFile implements AttributeHolder, CpAccessor {
 	 * @param access
 	 * 		Class access flags.
 	 */
+	@Override
 	public void setAccess(int access) {
 		this.access = access;
 	}

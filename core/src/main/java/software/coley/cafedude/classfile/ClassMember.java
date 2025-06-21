@@ -16,7 +16,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public abstract class ClassMember implements AttributeHolder, CpAccessor {
+public abstract class ClassMember implements Accessible, AttributeHolder, CpAccessor {
 	private List<Attribute> attributes;
 	private int access;
 	private CpUtf8 name;
@@ -42,6 +42,7 @@ public abstract class ClassMember implements AttributeHolder, CpAccessor {
 	/**
 	 * @return Member access flags.
 	 */
+	@Override
 	public int getAccess() {
 		return access;
 	}
@@ -50,6 +51,7 @@ public abstract class ClassMember implements AttributeHolder, CpAccessor {
 	 * @param access
 	 * 		New member access flags.
 	 */
+	@Override
 	public void setAccess(int access) {
 		this.access = access;
 	}
