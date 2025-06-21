@@ -5,8 +5,8 @@ import software.coley.cafedude.tree.Constant;
 import software.coley.cafedude.tree.visitor.AnnotationArrayVisitor;
 import software.coley.cafedude.tree.visitor.AnnotationVisitor;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;

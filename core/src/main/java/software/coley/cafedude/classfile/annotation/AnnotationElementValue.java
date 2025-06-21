@@ -2,7 +2,7 @@ package software.coley.cafedude.classfile.annotation;
 
 import software.coley.cafedude.classfile.constant.CpEntry;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.util.HashSet;
 import java.util.Set;
 

@@ -2,7 +2,7 @@ package software.coley.cafedude.tree.insn;
 
 import software.coley.cafedude.tree.Label;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * Instruction that acts as a label pointer, the label inside the instruction

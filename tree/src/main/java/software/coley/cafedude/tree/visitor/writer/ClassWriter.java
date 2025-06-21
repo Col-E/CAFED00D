@@ -11,8 +11,8 @@ import software.coley.cafedude.io.ClassFileWriter;
 import software.coley.cafedude.tree.visitor.*;
 import software.coley.cafedude.util.Optional;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -3,7 +3,7 @@ package software.coley.cafedude.transform;
 import software.coley.cafedude.classfile.ClassFile;
 import software.coley.cafedude.classfile.ConstPool;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * Base transformer outline.

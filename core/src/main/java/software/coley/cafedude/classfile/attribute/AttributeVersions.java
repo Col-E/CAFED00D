@@ -2,7 +2,7 @@ package software.coley.cafedude.classfile.attribute;
 
 import software.coley.cafedude.classfile.VersionConstants;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * Attribute relations to class file versions.

@@ -1,6 +1,6 @@
 package software.coley.cafedude.classfile.constant;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * NameType pool entry. Points to two UTF constants.

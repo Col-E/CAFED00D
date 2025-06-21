@@ -2,8 +2,8 @@ package software.coley.cafedude.tree;
 
 import software.coley.cafedude.classfile.Descriptor;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 /**
  * Local variable object.

@@ -2,7 +2,7 @@ package software.coley.cafedude.classfile.attribute;
 
 import software.coley.cafedude.io.AttributeContext;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.util.Collection;
 import java.util.EnumSet;
 

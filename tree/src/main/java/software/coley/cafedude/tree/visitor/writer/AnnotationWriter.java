@@ -6,7 +6,7 @@ import software.coley.cafedude.tree.Constant;
 import software.coley.cafedude.tree.visitor.AnnotationArrayVisitor;
 import software.coley.cafedude.tree.visitor.AnnotationVisitor;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;

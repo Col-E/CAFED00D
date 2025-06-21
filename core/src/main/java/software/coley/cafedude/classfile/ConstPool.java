@@ -2,7 +2,7 @@ package software.coley.cafedude.classfile;
 
 import software.coley.cafedude.classfile.constant.CpEntry;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;

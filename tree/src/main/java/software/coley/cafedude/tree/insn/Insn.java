@@ -3,7 +3,7 @@ package software.coley.cafedude.tree.insn;
 import software.coley.cafedude.classfile.instruction.Opcodes;
 import software.coley.cafedude.util.OpcodeUtil;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * Ungrouped instruction. Instructions that use this are:

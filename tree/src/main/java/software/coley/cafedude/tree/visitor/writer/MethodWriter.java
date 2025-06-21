@@ -11,7 +11,7 @@ import software.coley.cafedude.tree.visitor.AnnotationVisitor;
 import software.coley.cafedude.tree.visitor.CodeVisitor;
 import software.coley.cafedude.tree.visitor.MethodVisitor;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

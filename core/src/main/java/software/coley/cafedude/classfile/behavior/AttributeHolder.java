@@ -3,8 +3,8 @@ package software.coley.cafedude.classfile.behavior;
 import software.coley.cafedude.classfile.attribute.Attribute;
 import software.coley.cafedude.io.AttributeContext;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import java.util.List;
 
 /**

@@ -2,7 +2,7 @@ package software.coley.cafedude.tree;
 
 import software.coley.cafedude.classfile.Descriptor;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * Constant object with type and value.

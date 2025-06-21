@@ -2,7 +2,7 @@ package software.coley.cafedude.classfile.attribute;
 
 import software.coley.cafedude.classfile.constant.CpUtf8;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * Module target attribute, will hold values like <i>"linux-x86"</i>, <i>"win-x64"</i>, etc.

@@ -2,7 +2,7 @@ package software.coley.cafedude.classfile.constant;
 
 import software.coley.cafedude.io.ClassFileReader;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * Placeholders to be used in {@link ClassFileReader} when constructing {@link CpEntry} values

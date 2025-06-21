@@ -14,7 +14,7 @@ import software.coley.cafedude.util.Optional;
 import software.coley.cafedude.classfile.attribute.*;
 import software.coley.cafedude.classfile.constant.*;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.util.List;
 
 /**

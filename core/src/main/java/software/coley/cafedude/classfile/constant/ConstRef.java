@@ -2,7 +2,7 @@ package software.coley.cafedude.classfile.constant;
 
 import software.coley.cafedude.classfile.ConstantPoolConstants;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * Base reference pool entry. Points to a reference's {@link CpClass defining class}

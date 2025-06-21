@@ -1,6 +1,6 @@
 package software.coley.cafedude.classfile.constant;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * String pool entry. Points to a UTF constant.

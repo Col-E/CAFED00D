@@ -22,7 +22,7 @@ import software.coley.cafedude.util.ConstantUtil;
 import software.coley.cafedude.util.OpcodeUtil;
 import software.coley.cafedude.util.Optional;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.util.*;
 
 import static software.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.BootstrapMethod;

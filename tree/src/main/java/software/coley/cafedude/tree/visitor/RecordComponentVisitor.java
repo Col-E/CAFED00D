@@ -1,6 +1,6 @@
 package software.coley.cafedude.tree.visitor;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 
 /**
  * Visitor for visiting record component information.

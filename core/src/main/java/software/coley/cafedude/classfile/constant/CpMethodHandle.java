@@ -2,7 +2,7 @@ package software.coley.cafedude.classfile.constant;
 
 import software.coley.cafedude.classfile.instruction.Opcodes;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * MethodHandle pool entry. Holds a byte to indicate behavior and points to a relevant reference constant

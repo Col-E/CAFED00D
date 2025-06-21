@@ -9,8 +9,8 @@ import software.coley.cafedude.tree.visitor.AnnotationArrayVisitor;
 import software.coley.cafedude.tree.visitor.AnnotationDefaultVisitor;
 import software.coley.cafedude.tree.visitor.AnnotationVisitor;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import java.util.function.Consumer;
 
 /**

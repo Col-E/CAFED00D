@@ -9,8 +9,8 @@ import software.coley.cafedude.tree.Label;
 import software.coley.cafedude.tree.frame.Frame;
 import software.coley.cafedude.tree.frame.Value;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 /**
  * Visitor to visit the various instructions of a method.

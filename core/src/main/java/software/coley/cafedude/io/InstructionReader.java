@@ -14,7 +14,7 @@ import software.coley.cafedude.classfile.instruction.MultiANewArrayInstruction;
 import software.coley.cafedude.classfile.instruction.TableSwitchInstruction;
 import software.coley.cafedude.classfile.instruction.WideInstruction;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;

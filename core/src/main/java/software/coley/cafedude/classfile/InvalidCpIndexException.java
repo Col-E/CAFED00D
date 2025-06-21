@@ -1,6 +1,6 @@
 package software.coley.cafedude.classfile;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * Exception thrown when {@link ConstPool#get(int)} triggers a {@link IndexOutOfBoundsException}.

@@ -1,6 +1,6 @@
 package software.coley.cafedude.classfile.annotation;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * Indicates purpose of the associated {@link TypePathElement}.

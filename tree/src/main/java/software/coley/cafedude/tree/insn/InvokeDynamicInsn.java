@@ -5,7 +5,7 @@ import software.coley.cafedude.classfile.instruction.Opcodes;
 import software.coley.cafedude.tree.Constant;
 import software.coley.cafedude.tree.Handle;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.util.List;
 
 /**

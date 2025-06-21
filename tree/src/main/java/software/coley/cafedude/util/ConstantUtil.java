@@ -10,7 +10,7 @@ import software.coley.cafedude.tree.Handle;
 import software.coley.cafedude.classfile.ConstantPoolConstants;
 import software.coley.cafedude.classfile.constant.*;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * Utility for converting constant pool entries to their tree representation.

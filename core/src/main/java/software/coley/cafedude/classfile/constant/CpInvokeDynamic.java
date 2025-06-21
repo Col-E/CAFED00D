@@ -1,6 +1,6 @@
 package software.coley.cafedude.classfile.constant;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * Invoke-dynamic value pool entry. Points to a {@link CpNameType NameType} constant

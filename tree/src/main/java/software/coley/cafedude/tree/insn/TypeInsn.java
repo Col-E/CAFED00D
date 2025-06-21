@@ -3,7 +3,7 @@ package software.coley.cafedude.tree.insn;
 import software.coley.cafedude.classfile.Descriptor;
 import software.coley.cafedude.classfile.instruction.Opcodes;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 /**
  * Instruction which has type descriptor operand.

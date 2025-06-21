@@ -7,7 +7,7 @@ import software.coley.cafedude.tree.visitor.AnnotationDefaultVisitor;
 import software.coley.cafedude.tree.visitor.AnnotationVisitor;
 import software.coley.cafedude.util.ConstantUtil;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.util.Map;
 
 /**

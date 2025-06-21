@@ -5,8 +5,8 @@ import software.coley.cafedude.classfile.annotation.TargetInfo;
 import software.coley.cafedude.classfile.annotation.TypeAnnotation;
 import software.coley.cafedude.classfile.annotation.TypePath;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 /**
  * Visitor for visiting generic declaration information.

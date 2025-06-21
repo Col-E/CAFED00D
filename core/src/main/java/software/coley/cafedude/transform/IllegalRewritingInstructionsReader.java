@@ -13,7 +13,7 @@ import software.coley.cafedude.classfile.instruction.ReservedOpcodes;
 import software.coley.cafedude.io.FallbackInstructionReader;
 import software.coley.cafedude.io.IndexableByteStream;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;

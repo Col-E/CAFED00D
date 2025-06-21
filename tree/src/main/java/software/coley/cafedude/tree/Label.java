@@ -1,6 +1,6 @@
 package software.coley.cafedude.tree;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.util.Set;
 import java.util.TreeSet;
 

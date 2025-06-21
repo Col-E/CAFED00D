@@ -7,7 +7,7 @@ import software.coley.cafedude.classfile.constant.CpUtf8;
 import software.coley.cafedude.tree.Constant;
 import software.coley.cafedude.tree.visitor.FieldVisitor;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.util.function.Consumer;
 
 /**

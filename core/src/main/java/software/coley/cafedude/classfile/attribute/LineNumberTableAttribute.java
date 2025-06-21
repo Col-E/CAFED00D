@@ -2,7 +2,7 @@ package software.coley.cafedude.classfile.attribute;
 
 import software.coley.cafedude.classfile.constant.CpUtf8;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.util.List;
 
 /**

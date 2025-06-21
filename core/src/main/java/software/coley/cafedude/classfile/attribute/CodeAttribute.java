@@ -8,8 +8,8 @@ import software.coley.cafedude.classfile.constant.CpUtf8;
 import software.coley.cafedude.classfile.instruction.Instruction;
 import software.coley.cafedude.io.AttributeContext;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;

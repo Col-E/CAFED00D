@@ -2,7 +2,7 @@ package software.coley.cafedude.tree;
 
 import software.coley.cafedude.tree.insn.Insn;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 import java.util.List;
 
 /**

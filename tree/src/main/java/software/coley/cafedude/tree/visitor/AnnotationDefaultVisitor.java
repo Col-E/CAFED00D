@@ -2,8 +2,8 @@ package software.coley.cafedude.tree.visitor;
 
 import software.coley.cafedude.tree.Constant;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 /**
  * Visitor for visiting annotation default values.

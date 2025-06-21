@@ -3,7 +3,7 @@ package software.coley.cafedude.util;
 import software.coley.cafedude.classfile.instruction.Opcodes;
 import software.coley.cafedude.classfile.instruction.ReservedOpcodes;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.lang.reflect.Field;
 
 /**
