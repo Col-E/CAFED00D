@@ -6,7 +6,9 @@ import software.coley.cafedude.classfile.attribute.Attribute;
 import software.coley.cafedude.classfile.attribute.AttributeConstants;
 import software.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute;
 import software.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.BootstrapMethod;
+import software.coley.cafedude.classfile.attribute.CharacterRangeTableAttribute;
 import software.coley.cafedude.classfile.attribute.CodeAttribute;
+import software.coley.cafedude.classfile.attribute.CompilationIdAttribute;
 import software.coley.cafedude.classfile.attribute.ConstantValueAttribute;
 import software.coley.cafedude.classfile.attribute.DefaultAttribute;
 import software.coley.cafedude.classfile.attribute.EnclosingMethodAttribute;
@@ -26,7 +28,9 @@ import software.coley.cafedude.classfile.attribute.ModuleAttribute.Opens;
 import software.coley.cafedude.classfile.attribute.ModuleAttribute.Provides;
 import software.coley.cafedude.classfile.attribute.ModuleAttribute.Requires;
 import software.coley.cafedude.classfile.attribute.ModuleHashesAttribute;
+import software.coley.cafedude.classfile.attribute.ModuleMainClassAttribute;
 import software.coley.cafedude.classfile.attribute.ModulePackagesAttribute;
+import software.coley.cafedude.classfile.attribute.ModuleResolutionAttribute;
 import software.coley.cafedude.classfile.attribute.ModuleTargetAttribute;
 import software.coley.cafedude.classfile.attribute.NestHostAttribute;
 import software.coley.cafedude.classfile.attribute.NestMembersAttribute;
@@ -36,6 +40,7 @@ import software.coley.cafedude.classfile.attribute.RecordAttribute;
 import software.coley.cafedude.classfile.attribute.SignatureAttribute;
 import software.coley.cafedude.classfile.attribute.SourceDebugExtensionAttribute;
 import software.coley.cafedude.classfile.attribute.SourceFileAttribute;
+import software.coley.cafedude.classfile.attribute.SourceIdAttribute;
 import software.coley.cafedude.classfile.attribute.StackMapTableAttribute;
 import software.coley.cafedude.classfile.constant.CpClass;
 import software.coley.cafedude.classfile.constant.CpEntry;
@@ -47,6 +52,7 @@ import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -318,13 +324,38 @@ public class AttributeWriter {
 						out.write(entry.getValue());
 					}
 					break;
-				case AttributeConstants.SOURCE_ID:
 				case AttributeConstants.MODULE_MAIN_CLASS:
+					ModuleMainClassAttribute moduleMainClassAttribute = (ModuleMainClassAttribute) attribute;
+					out.writeShort(moduleMainClassAttribute.getMainClass().getIndex());
+					break;
 				case AttributeConstants.MODULE_RESOLUTION:
-				case AttributeConstants.CHARACTER_RANGE_TABLE:
+					ModuleResolutionAttribute moduleResolutionAttribute = (ModuleResolutionAttribute) attribute;
+					out.writeShort(moduleResolutionAttribute.getFlags());
+					break;
 				case AttributeConstants.COMPILATION_ID:
+					CompilationIdAttribute compilationIdAttribute = (CompilationIdAttribute) attribute;
+					out.writeShort(compilationIdAttribute.getName().getIndex());
+					break;
+				case AttributeConstants.SOURCE_ID:
+					SourceIdAttribute sourceIdAttribute = (SourceIdAttribute) attribute;
+					out.writeShort(sourceIdAttribute.getName().getIndex());
+					break;
+				case AttributeConstants.CHARACTER_RANGE_TABLE:
+					CharacterRangeTableAttribute characterRangeTableAttribute = (CharacterRangeTableAttribute) attribute;
+					List<CharacterRangeTableAttribute.CharacterRangeInfo> table = characterRangeTableAttribute.getCharacterRangeTable();
+					out.writeShort(table.size());
+					for (CharacterRangeTableAttribute.CharacterRangeInfo info : table) {
+						out.writeShort(info.getStartPc());
+						out.writeShort(info.getEndPc());
+						out.writeInt(info.getCharacterRangeStart());
+						out.writeInt(info.getCharacterRangeEnd());
+						out.writeShort(info.getFlags());
+					}
+					break;
 				case AttributeConstants.DEPRECATED:
 				case AttributeConstants.SYNTHETIC:
+					// These are empty and hold no values to write
+					break;
 				default:
 					break;
 			}

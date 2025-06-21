@@ -4,6 +4,7 @@ package software.coley.cafedude.classfile;
  * Constants for class file major versions.
  *
  * @author Matt Coley
+ * @see ClassFile#getVersionMajor()
  */
 public interface VersionConstants {
 	// TODO: Document and add TLDR what in the class file changed between each version

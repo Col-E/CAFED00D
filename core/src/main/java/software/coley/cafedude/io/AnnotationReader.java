@@ -133,7 +133,7 @@ public class AnnotationReader {
 			}
 			// Read each annotation
 			Set<String> usedAnnotationTypes = new HashSet<>();
-			List<Annotation> annotations = new ArrayList<>();
+			List<Annotation> annotations = new ArrayList<>(numAnnotations);
 			for (int i = 0; i < numAnnotations; i++) {
 				Annotation annotation = readAnnotation(new AnnotationScope());
 				if (reader.doDropDupeAnnotations()) {
@@ -173,8 +173,8 @@ public class AnnotationReader {
 			// Each parameter has its own number of annotations to parse
 			Map<Integer, List<Annotation>> parameterAnnotations = new LinkedHashMap<>();
 			for (int p = 0; p < numParameters; p++) {
-				List<Annotation> annotations = new ArrayList<>();
 				int numAnnotations = is.readUnsignedShort();
+				List<Annotation> annotations = new ArrayList<>(numAnnotations);
 				for (int i = 0; i < numAnnotations; i++)
 					annotations.add(readAnnotation(new AnnotationScope()));
 				parameterAnnotations.put(p, annotations);
@@ -202,7 +202,7 @@ public class AnnotationReader {
 				return null;
 			}
 			// Read each type annotation
-			List<Annotation> annotations = new ArrayList<>();
+			List<Annotation> annotations = new ArrayList<>(numAnnotations);
 			for (int i = 0; i < numAnnotations; i++)
 				annotations.add(readTypeAnnotation(new AnnotationScope()));
 			// Didn't throw exception, its valid
@@ -288,8 +288,8 @@ public class AnnotationReader {
 				break;
 			}
 			case LOCALVAR_TARGET: {
-				List<Variable> variables = new ArrayList<>();
 				int tableLength = is.readUnsignedShort();
+				List<Variable> variables = new ArrayList<>(tableLength);
 				for (int i = 0; i < tableLength; i++) {
 					int startPc = is.readUnsignedShort();
 					int length = is.readUnsignedShort();
@@ -334,7 +334,7 @@ public class AnnotationReader {
 	 */
 	private TypePath readTypePath() throws IOException {
 		int length = is.readUnsignedByte();
-		List<TypePathElement> elements = new ArrayList<>();
+		List<TypePathElement> elements = new ArrayList<>(length);
 		for (int i = 0; i < length; i++) {
 			int kind = is.readUnsignedByte();
 			int index = is.readUnsignedByte();
@@ -415,7 +415,7 @@ public class AnnotationReader {
 				return new AnnotationElementValue(tag, nestedAnnotation);
 			case '[': // Array
 				int numElements = is.readUnsignedShort();
-				List<ElementValue> arrayValues = new ArrayList<>();
+				List<ElementValue> arrayValues = new ArrayList<>(numElements);
 				for (int i = 0; i < numElements; i++)
 					arrayValues.add(readElementValue(scope.with("[")));
 				return new ArrayElementValue(tag, arrayValues);

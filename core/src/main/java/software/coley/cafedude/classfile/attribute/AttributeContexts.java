@@ -26,6 +26,7 @@ public class AttributeContexts implements AttributeConstants {
 	public static Collection<AttributeContext> getAllowedContexts(@Nonnull String attributeName) {
 		switch (attributeName) {
 			case BOOTSTRAP_METHODS:
+			case COMPILATION_ID:
 			case ENCLOSING_METHOD:
 			case INNER_CLASSES:
 			case MODULE:
@@ -38,6 +39,7 @@ public class AttributeContexts implements AttributeConstants {
 			case RECORD:
 			case SOURCE_DEBUG_EXTENSION:
 			case SOURCE_FILE:
+			case SOURCE_ID:
 				return EnumSet.of(AttributeContext.CLASS);
 			case CONSTANT_VALUE:
 				return EnumSet.of(AttributeContext.FIELD);
@@ -55,6 +57,7 @@ public class AttributeContexts implements AttributeConstants {
 			case LOCAL_VARIABLE_TABLE:
 			case LOCAL_VARIABLE_TYPE_TABLE:
 			case STACK_MAP_TABLE:
+			case CHARACTER_RANGE_TABLE:
 				return EnumSet.of(AttributeContext.ATTRIBUTE);
 			case RUNTIME_VISIBLE_ANNOTATIONS:
 			case RUNTIME_VISIBLE_TYPE_ANNOTATIONS:
