@@ -152,23 +152,27 @@ public class AttributeReader {
 	@Nullable
 	private Attribute read(@Nonnull AttributeContext context) throws IOException {
 		// Check for illegally inserted attributes from future versions
+		String attributeName = name.getText();
 		if (reader.doDropForwardVersioned()) {
-			int introducedAt = AttributeVersions.getIntroducedVersion(name.getText());
+			int introducedAt = AttributeVersions.getIntroducedVersion(attributeName);
 			if (introducedAt > builder.getVersionMajor()) {
 				logger.debug("Found '{}' on {} in class version {}, min supported is {}",
-						name.getText(), context.name(), builder.getVersionMajor(), introducedAt);
+						attributeName, context.name(), builder.getVersionMajor(), introducedAt);
 				return null;
 			}
 		}
 		// Check for attributes present in the wrong contexts.
 		if (reader.doDropBadContextAttributes()) {
-			Collection<AttributeContext> allowedContexts = AttributeContexts.getAllowedContexts(name.getText());
+			Collection<AttributeContext> allowedContexts = AttributeContexts.getAllowedContexts(attributeName);
 			if (!allowedContexts.contains(context)) {
-				logger.debug("Found '{}' in invalid context {}", name.getText(), context.name());
+				logger.debug("Found '{}' in invalid context {}", attributeName, context.name());
+				return null;
+			} else if (!builder.isModule() && attributeName.toLowerCase().startsWith("module")) {
+				logger.debug("Found '{}' in non-module class", attributeName);
 				return null;
 			}
 		}
-		switch (name.getText()) {
+		switch (attributeName) {
 			case AttributeConstants.CODE:
 				return readCode();
 			case AttributeConstants.CONSTANT_VALUE:

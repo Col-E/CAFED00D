@@ -169,6 +169,9 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			logger.debug("Found '{}' declared in illegal context {}, allowed contexts: {}",
 					name, context.name(), allowedContexts);
 			return false;
+		} else if (!Modifiers.has(clazz.getAccess(), Modifiers.ACC_MODULE) && name.toLowerCase().startsWith("module")) {
+			logger.debug("Found '{}' in non-module class", name);
+			return false;
 		}
 
 		// Check indices match certain types (key=cp_index, value=mask of allowed cp_tags)

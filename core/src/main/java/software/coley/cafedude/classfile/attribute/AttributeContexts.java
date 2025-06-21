@@ -31,6 +31,7 @@ public class AttributeContexts implements AttributeConstants {
 			case MODULE:
 			case MODULE_MAIN_CLASS:
 			case MODULE_PACKAGES:
+			case MODULE_RESOLUTION:
 			case NEST_HOST:
 			case NEST_MEMBERS:
 			case PERMITTED_SUBCLASSES:

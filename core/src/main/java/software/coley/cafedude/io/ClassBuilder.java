@@ -48,6 +48,13 @@ public class ClassBuilder {
 	}
 
 	/**
+	 * @return {@code true} when the access flags indicate the class is a module-info class.
+	 */
+	public boolean isModule() {
+		return Modifiers.has(access, Modifiers.ACC_MODULE);
+	}
+
+	/**
 	 * @return Class's constant pool.
 	 */
 	@Nonnull
