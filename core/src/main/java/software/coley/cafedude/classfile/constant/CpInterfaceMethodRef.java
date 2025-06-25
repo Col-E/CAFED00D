@@ -8,7 +8,7 @@ import jakarta.annotation.Nonnull;
  *
  * @author Matt Coley
  */
-public class CpInterfaceMethodRef extends ConstRef {
+public non-sealed class CpInterfaceMethodRef extends ConstRef {
 	/**
 	 * @param classRef
 	 * 		Constant pool entry holding the method's {@link CpClass defining class}.

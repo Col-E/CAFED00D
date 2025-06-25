@@ -3,6 +3,8 @@ package software.coley.cafedude.classfile;
 import software.coley.cafedude.classfile.constant.CpEntry;
 
 import jakarta.annotation.Nonnull;
+import software.coley.cafedude.classfile.constant.CpInternal;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -283,7 +285,7 @@ public class ConstPool implements List<CpEntry> {
 		return ImplWidePadding.INSTANCE;
 	}
 
-	private static class ImplZero extends CpEntry {
+	private static class ImplZero extends CpInternal {
 		private static final ImplZero INSTANCE = new ImplZero();
 
 		public ImplZero() {
@@ -296,7 +298,7 @@ public class ConstPool implements List<CpEntry> {
 		}
 	}
 
-	private static class ImplWidePadding extends CpEntry {
+	private static class ImplWidePadding extends CpInternal {
 		private static final ImplWidePadding INSTANCE = new ImplWidePadding();
 
 		public ImplWidePadding() {

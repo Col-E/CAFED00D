@@ -10,7 +10,7 @@ import java.util.List;
  *
  * @author Matt Coley
  */
-public class LineNumberTableAttribute extends Attribute {
+public non-sealed class LineNumberTableAttribute extends Attribute {
 	private List<LineEntry> entries;
 
 	/**

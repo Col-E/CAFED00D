@@ -18,7 +18,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class ClassFile implements Accessible, AttributeHolder, CpAccessor {
+public non-sealed class ClassFile implements Accessible, AttributeHolder, CpAccessor {
 	private final ConstPool pool;
 	private List<CpClass> interfaceClasses;
 	private List<Field> fields;

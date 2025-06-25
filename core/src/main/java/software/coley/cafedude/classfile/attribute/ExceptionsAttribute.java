@@ -13,7 +13,7 @@ import java.util.Set;
  *
  * @author JCWasmx86
  */
-public class ExceptionsAttribute extends Attribute {
+public non-sealed class ExceptionsAttribute extends Attribute {
 	private List<CpClass> exceptionTable;
 
 	/**

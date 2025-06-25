@@ -8,7 +8,7 @@ import jakarta.annotation.Nonnull;
  *
  * @author Matt Coley
  */
-public class CpFieldRef extends ConstRef {
+public non-sealed class CpFieldRef extends ConstRef {
 	/**
 	 * @param classRef
 	 * 		Constant pool entry holding the field's {@link CpClass defining class}.

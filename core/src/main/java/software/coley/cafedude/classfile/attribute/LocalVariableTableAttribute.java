@@ -14,7 +14,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class LocalVariableTableAttribute extends Attribute {
+public non-sealed class LocalVariableTableAttribute extends Attribute {
 	private List<VarEntry> entries;
 
 	/**

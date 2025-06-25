@@ -11,7 +11,7 @@ import java.util.Set;
  *
  * @author JCWasmx86
  */
-public class ConstantValueAttribute extends Attribute {
+public non-sealed class ConstantValueAttribute extends Attribute {
 	private CpEntry constantValue;
 
 	/**

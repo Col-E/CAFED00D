@@ -11,7 +11,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class SourceFileAttribute extends Attribute {
+public non-sealed class SourceFileAttribute extends Attribute {
 	private CpUtf8 sourceFilename;
 
 	/**

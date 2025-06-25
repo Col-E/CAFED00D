@@ -16,7 +16,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public abstract class ClassMember implements Accessible, AttributeHolder, CpAccessor {
+public abstract sealed class ClassMember implements Accessible, AttributeHolder, CpAccessor permits Field, Method {
 	private List<Attribute> attributes;
 	private int access;
 	private CpUtf8 name;

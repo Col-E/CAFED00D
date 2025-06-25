@@ -7,7 +7,7 @@ import jakarta.annotation.Nonnull;
  *
  * @author Matt Coley
  */
-public class CpMethodType extends CpEntry {
+public non-sealed class CpMethodType extends CpEntry {
 	private CpUtf8 descriptor;
 
 	/**

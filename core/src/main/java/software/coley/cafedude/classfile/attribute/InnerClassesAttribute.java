@@ -16,7 +16,7 @@ import java.util.Set;
  *
  * @author JCWasmx86
  */
-public class InnerClassesAttribute extends Attribute {
+public non-sealed class InnerClassesAttribute extends Attribute {
 	private List<InnerClass> innerClasses;
 
 	/**

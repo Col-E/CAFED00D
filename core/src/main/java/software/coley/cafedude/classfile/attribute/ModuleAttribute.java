@@ -18,7 +18,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class ModuleAttribute extends Attribute {
+public non-sealed class ModuleAttribute extends Attribute {
 	private CpModule module;
 	private int flags;
 	private CpUtf8 version;

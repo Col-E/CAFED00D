@@ -9,7 +9,7 @@ import jakarta.annotation.Nonnull;
  *
  * @author Matt Coley
  */
-public class DeprecatedAttribute extends Attribute {
+public non-sealed class DeprecatedAttribute extends Attribute {
 	/**
 	 * @param name
 	 * 		Constant pool entry holding the attribute name.

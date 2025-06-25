@@ -9,7 +9,7 @@ import jakarta.annotation.Nonnull;
  *
  * @author Matt Coley
  */
-public class DefaultAttribute extends Attribute {
+public non-sealed class DefaultAttribute extends Attribute {
 	private byte[] data;
 
 	/**

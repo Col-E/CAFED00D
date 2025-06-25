@@ -17,7 +17,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class AnnotationsAttribute extends Attribute {
+public non-sealed class AnnotationsAttribute extends Attribute {
 	private List<Annotation> annotations;
 	private boolean visible;
 

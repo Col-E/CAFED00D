@@ -9,7 +9,7 @@ import jakarta.annotation.Nonnull;
  *
  * @author Matt Coley
  */
-public class SyntheticAttribute extends Attribute {
+public non-sealed class SyntheticAttribute extends Attribute {
 	/**
 	 * @param name
 	 * 		Constant pool entry holding the attribute name.

@@ -12,7 +12,7 @@ import java.util.Set;
  *
  * @author Justus Garbe
  */
-public class CpRefInstruction extends BasicInstruction implements CpAccessor {
+public non-sealed class CpRefInstruction extends Instruction implements CpAccessor {
 	private CpEntry entry;
 
 	/**

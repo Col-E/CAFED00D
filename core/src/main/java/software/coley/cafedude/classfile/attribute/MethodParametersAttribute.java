@@ -13,7 +13,7 @@ import java.util.Set;
 /**
  * Method parameters attribute.
  */
-public class MethodParametersAttribute extends Attribute {
+public non-sealed class MethodParametersAttribute extends Attribute {
 	private List<Parameter> parameters;
 
 	/**

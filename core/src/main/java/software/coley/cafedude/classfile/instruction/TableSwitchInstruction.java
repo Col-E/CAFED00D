@@ -7,7 +7,7 @@ import java.util.List;
  *
  * @author xDark
  */
-public class TableSwitchInstruction extends BasicInstruction {
+public non-sealed class TableSwitchInstruction extends Instruction {
 	private int padding = -1;
 	private int dflt;
 	private int low;

@@ -5,7 +5,7 @@ package software.coley.cafedude.classfile;
  *
  * @author Matt Coley
  */
-public interface Accessible {
+public sealed interface Accessible permits ClassFile, ClassMember {
 	/**
 	 * @return Access modifiers mask.
 	 */

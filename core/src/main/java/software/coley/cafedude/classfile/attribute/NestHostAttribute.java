@@ -12,7 +12,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class NestHostAttribute extends Attribute {
+public non-sealed class NestHostAttribute extends Attribute {
 	private CpClass hostClass;
 
 	/**

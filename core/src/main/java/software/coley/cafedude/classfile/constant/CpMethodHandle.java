@@ -10,7 +10,7 @@ import jakarta.annotation.Nonnull;
  *
  * @author Matt Coley
  */
-public class CpMethodHandle extends CpEntry {
+public non-sealed class CpMethodHandle extends CpEntry {
 	/** Interpreted as {@link Opcodes#GETFIELD}. */
 	public static final int REF_GET_FIELD = 1;
 	/** Interpreted as {@link Opcodes#GETSTATIC}. */

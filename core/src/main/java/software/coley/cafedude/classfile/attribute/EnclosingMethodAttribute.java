@@ -14,7 +14,7 @@ import java.util.Set;
  *
  * @author JCWasmx86
  */
-public class EnclosingMethodAttribute extends Attribute {
+public non-sealed class EnclosingMethodAttribute extends Attribute {
 	private CpClass classEntry;
 	private CpNameType methodEntry;
 

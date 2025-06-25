@@ -24,7 +24,7 @@ import java.util.Set;
  *
  * @author x4e
  */
-public class StackMapTableAttribute
+public non-sealed class StackMapTableAttribute
 		extends Attribute
 		implements StackMapTableConstants {
 	/**

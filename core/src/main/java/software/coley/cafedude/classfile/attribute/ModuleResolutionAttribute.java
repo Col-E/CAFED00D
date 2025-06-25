@@ -9,7 +9,7 @@ import jakarta.annotation.Nonnull;
  *
  * @author Matt Coley
  */
-public class ModuleResolutionAttribute extends Attribute {
+public non-sealed class ModuleResolutionAttribute extends Attribute {
 	/**
 	 * Optional flag to disable aspects of module bootstrapping when consuming this module.
 	 * <br>

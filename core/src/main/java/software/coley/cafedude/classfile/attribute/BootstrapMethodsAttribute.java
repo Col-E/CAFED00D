@@ -15,7 +15,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class BootstrapMethodsAttribute extends Attribute {
+public non-sealed class BootstrapMethodsAttribute extends Attribute {
 	private List<BootstrapMethod> bootstrapMethods;
 
 	/**

@@ -13,7 +13,7 @@ import java.util.Set;
  *
  * @author Justus Garbe
  */
-public class ModuleMainClassAttribute extends Attribute implements CpAccessor {
+public non-sealed class ModuleMainClassAttribute extends Attribute implements CpAccessor {
 	private CpClass mainClass;
 
 	/**

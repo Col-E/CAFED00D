@@ -5,7 +5,7 @@ package software.coley.cafedude.classfile.constant;
  *
  * @author Matt Coley
  */
-public class CpDouble extends CpEntry {
+public non-sealed class CpDouble extends CpEntry {
 	private double value;
 
 	/**

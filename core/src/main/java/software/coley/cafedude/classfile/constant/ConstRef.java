@@ -10,7 +10,7 @@ import jakarta.annotation.Nonnull;
  *
  * @author Matt Coley
  */
-public abstract class ConstRef extends CpEntry {
+public abstract sealed class ConstRef extends CpEntry permits ConstRefInternal, CpFieldRef, CpInterfaceMethodRef, CpMethodRef {
 	private CpClass classRef;
 	private CpNameType nameType;
 

@@ -9,7 +9,7 @@ import jakarta.annotation.Nonnull;
  * @author Matt Coley
  * @author Wolfie / win32kbase
  */
-public abstract class ConstDynamic extends CpEntry {
+public abstract sealed class ConstDynamic extends CpEntry permits CpDynamic, CpInvokeDynamic {
 	private int bsmIndex;
 	private CpNameType nameType;
 

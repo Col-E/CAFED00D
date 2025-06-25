@@ -79,7 +79,7 @@ public class Placeholders {
 	/**
 	 * Placeholder for {@link ConstRef} entries.
 	 */
-	public static final ConstRef CONST_REF = new ConstRef(-1, CLASS, NAME_TYPE) {
+	public static final ConstRef CONST_REF = new ConstRefInternal( CLASS, NAME_TYPE) {
 		@Override
 		public String toString() {
 			return "Placeholder: ConstRef";

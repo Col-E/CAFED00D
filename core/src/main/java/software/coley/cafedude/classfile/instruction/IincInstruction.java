@@ -5,7 +5,7 @@ package software.coley.cafedude.classfile.instruction;
  *
  * @author xDark
  */
-public class IincInstruction extends BasicInstruction {
+public non-sealed class IincInstruction extends Instruction {
 	private int var;
 	private int increment;
 

@@ -17,7 +17,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class RecordAttribute extends Attribute {
+public non-sealed class RecordAttribute extends Attribute {
 	private List<RecordComponent> components;
 
 	/**
@@ -66,7 +66,7 @@ public class RecordAttribute extends Attribute {
 	/**
 	 * Component entry.
 	 */
-	public static class RecordComponent implements CpAccessor, AttributeHolder {
+	public non-sealed static class RecordComponent implements CpAccessor, AttributeHolder {
 		private CpUtf8 name;
 		private CpUtf8 desc;
 		private List<Attribute> attributes;

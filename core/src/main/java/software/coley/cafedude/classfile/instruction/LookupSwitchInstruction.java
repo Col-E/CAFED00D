@@ -7,7 +7,7 @@ import java.util.List;
  *
  * @author xDark
  */
-public class LookupSwitchInstruction extends BasicInstruction {
+public non-sealed class LookupSwitchInstruction extends Instruction {
 	private int padding = -1;
 	private int dflt;
 	private List<Integer> keys;

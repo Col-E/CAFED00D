@@ -14,7 +14,7 @@ import java.util.Set;
  *
  * @author Justus Garbe
  */
-public class ModulePackagesAttribute extends Attribute implements CpAccessor {
+public non-sealed class ModulePackagesAttribute extends Attribute implements CpAccessor {
 	private List<CpPackage> packages;
 
 	/**

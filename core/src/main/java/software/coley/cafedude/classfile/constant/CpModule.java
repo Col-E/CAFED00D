@@ -7,7 +7,7 @@ import jakarta.annotation.Nonnull;
  *
  * @author Matt Coley
  */
-public class CpModule extends CpEntry {
+public non-sealed class CpModule extends CpEntry {
 	private CpUtf8 name;
 
 	/**

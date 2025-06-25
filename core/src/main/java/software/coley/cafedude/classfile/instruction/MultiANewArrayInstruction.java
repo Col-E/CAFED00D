@@ -13,7 +13,7 @@ import java.util.Set;
  *
  * @author Justus Garbe
  */
-public class MultiANewArrayInstruction extends BasicInstruction implements CpAccessor {
+public non-sealed class MultiANewArrayInstruction extends Instruction implements CpAccessor {
 	private CpClass descriptor;
 	private int dimensions;
 

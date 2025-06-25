@@ -9,7 +9,7 @@ import jakarta.annotation.Nonnull;
  *
  * @author Matt Coley
  */
-public class SourceDebugExtensionAttribute extends Attribute {
+public non-sealed class SourceDebugExtensionAttribute extends Attribute {
 	private byte[] debugExtension;
 
 	/**

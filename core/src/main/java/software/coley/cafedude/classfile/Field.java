@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author Matt Coley
  */
-public class Field extends ClassMember {
+public non-sealed class Field extends ClassMember {
 	/**
 	 * @param attributes
 	 * 		Attributes of the field.

@@ -11,7 +11,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class ModuleTargetAttribute extends Attribute {
+public non-sealed class ModuleTargetAttribute extends Attribute {
 	private CpUtf8 platformName;
 
 	/**

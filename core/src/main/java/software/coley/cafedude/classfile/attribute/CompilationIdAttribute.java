@@ -14,7 +14,7 @@ import java.util.Set;
  * @author Matt Coley
  * @see SourceIdAttribute
  */
-public class CompilationIdAttribute extends Attribute {
+public non-sealed class CompilationIdAttribute extends Attribute {
 	private CpUtf8 compilationId;
 
 	/**

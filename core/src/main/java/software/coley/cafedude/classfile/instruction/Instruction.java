@@ -5,7 +5,8 @@ package software.coley.cafedude.classfile.instruction;
  *
  * @author xDark
  */
-public abstract class Instruction {
+public sealed abstract class Instruction permits BasicInstruction, CpRefInstruction, IincInstruction,
+		IntOperandInstruction, LookupSwitchInstruction, MultiANewArrayInstruction, TableSwitchInstruction, WideInstruction {
 	private int opcode;
 
 	/**
@@ -53,5 +54,10 @@ public abstract class Instruction {
 	@Override
 	public int hashCode() {
 		return opcode;
+	}
+
+	@Override
+	public String toString() {
+		return "insn(" + OpcodeNames.name(getOpcode()) + ")";
 	}
 }

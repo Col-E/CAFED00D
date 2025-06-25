@@ -17,7 +17,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class Method extends ClassMember {
+public non-sealed class Method extends ClassMember {
 	private static final Logger logger = LoggerFactory.getLogger(Method.class);
 
 	/**

@@ -1,10 +1,14 @@
 package software.coley.cafedude.classfile.behavior;
 
-import software.coley.cafedude.classfile.attribute.Attribute;
-import software.coley.cafedude.io.AttributeContext;
-
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import software.coley.cafedude.classfile.ClassFile;
+import software.coley.cafedude.classfile.ClassMember;
+import software.coley.cafedude.classfile.attribute.Attribute;
+import software.coley.cafedude.classfile.attribute.CodeAttribute;
+import software.coley.cafedude.classfile.attribute.RecordAttribute;
+import software.coley.cafedude.io.AttributeContext;
+
 import java.util.List;
 
 /**
@@ -12,7 +16,7 @@ import java.util.List;
  *
  * @author Matt Coley
  */
-public interface AttributeHolder {
+public sealed interface AttributeHolder permits ClassFile, ClassMember, CodeAttribute, RecordAttribute.RecordComponent {
 	/**
 	 * @return All attributes applied to the current object.
 	 */

@@ -13,7 +13,15 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public abstract class Attribute implements CpAccessor {
+public sealed abstract class Attribute implements CpAccessor permits AnnotationDefaultAttribute, AnnotationsAttribute,
+		BootstrapMethodsAttribute, CharacterRangeTableAttribute, CodeAttribute, CompilationIdAttribute,
+		ConstantValueAttribute, DefaultAttribute, DeprecatedAttribute, EnclosingMethodAttribute, ExceptionsAttribute,
+		InnerClassesAttribute, LineNumberTableAttribute, LocalVariableTableAttribute, LocalVariableTypeTableAttribute,
+		MethodParametersAttribute, ModuleAttribute, ModuleHashesAttribute, ModuleMainClassAttribute,
+		ModulePackagesAttribute, ModuleResolutionAttribute, ModuleTargetAttribute, NestHostAttribute,
+		NestMembersAttribute, ParameterAnnotationsAttribute, PermittedClassesAttribute, RecordAttribute,
+		SignatureAttribute, SourceDebugExtensionAttribute, SourceFileAttribute, SourceIdAttribute,
+		StackMapTableAttribute, SyntheticAttribute {
 	private final CpUtf8 name;
 
 	/**

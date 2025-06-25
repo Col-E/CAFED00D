@@ -5,7 +5,7 @@ package software.coley.cafedude.classfile.instruction;
  *
  * @author xDark
  */
-public class IntOperandInstruction extends BasicInstruction {
+public non-sealed class IntOperandInstruction extends Instruction {
 	private int operand;
 
 	/**

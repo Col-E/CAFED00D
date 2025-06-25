@@ -10,7 +10,7 @@ project:
   inceptionYear: 2020
   stereotype: none
   java:
-    version: 11
+    version: 17
     groupId: software.coley
     artifactId: cafedude
 

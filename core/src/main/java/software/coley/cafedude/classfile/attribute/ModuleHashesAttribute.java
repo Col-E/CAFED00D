@@ -12,7 +12,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class ModuleHashesAttribute extends Attribute {
+public non-sealed class ModuleHashesAttribute extends Attribute {
 	private Map<CpUtf8, byte[]> moduleHashes;
 	private CpUtf8 algorithmName;
 

@@ -18,7 +18,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class ParameterAnnotationsAttribute extends Attribute {
+public non-sealed class ParameterAnnotationsAttribute extends Attribute {
 	private Map<Integer, List<Annotation>> parameterAnnotations;
 	private boolean visible;
 

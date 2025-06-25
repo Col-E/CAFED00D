@@ -5,7 +5,7 @@ package software.coley.cafedude.classfile.instruction;
  *
  * @author xDark
  */
-public class WideInstruction extends BasicInstruction {
+public non-sealed class WideInstruction extends Instruction {
 	private final Instruction backing;
 
 	/**

@@ -19,7 +19,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class CodeAttribute extends Attribute implements AttributeHolder {
+public non-sealed class CodeAttribute extends Attribute implements AttributeHolder {
 	private List<ExceptionTableEntry> exceptionTable;
 	private List<Attribute> attributes;
 	private List<Instruction> instructions;

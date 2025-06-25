@@ -13,7 +13,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class PermittedClassesAttribute extends Attribute {
+public non-sealed class PermittedClassesAttribute extends Attribute {
 	private List<CpClass> classes;
 
 	/**

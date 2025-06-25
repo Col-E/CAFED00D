@@ -9,7 +9,7 @@ import jakarta.annotation.Nonnull;
  * @author Matt Coley
  * @author Wolfie / win32kbase
  */
-public class CpInvokeDynamic extends ConstDynamic {
+public non-sealed class CpInvokeDynamic extends ConstDynamic {
 	/**
 	 * @param bsmIndex
 	 * 		Index in the class's bootstrap method attribute-table.

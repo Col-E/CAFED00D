@@ -11,7 +11,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class SignatureAttribute extends Attribute {
+public non-sealed class SignatureAttribute extends Attribute {
 	private CpUtf8 signature;
 
 	/**

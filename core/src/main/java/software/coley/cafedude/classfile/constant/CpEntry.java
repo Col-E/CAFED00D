@@ -8,7 +8,8 @@ import software.coley.cafedude.classfile.ConstantPoolConstants;
  *
  * @author Matt Coley
  */
-public abstract class CpEntry implements ConstantPoolConstants {
+public sealed abstract class CpEntry implements ConstantPoolConstants permits ConstDynamic, ConstRef, CpClass, CpDouble,
+		CpFloat, CpInt, CpLong, CpMethodHandle, CpMethodType, CpModule, CpNameType, CpPackage, CpString, CpUtf8, CpInternal {
 	/**
 	 * Flag to validate {@link #getIndex()} when called.
 	 */

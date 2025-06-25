@@ -12,7 +12,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class AnnotationDefaultAttribute extends Attribute {
+public non-sealed class AnnotationDefaultAttribute extends Attribute {
 	private final ElementValue elementValue;
 
 	/**

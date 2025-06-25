@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author Matt Coley
  */
-public class CharacterRangeTableAttribute extends Attribute {
+public non-sealed class CharacterRangeTableAttribute extends Attribute {
 	private List<CharacterRangeInfo> characterRangeTable;
 
 	/**

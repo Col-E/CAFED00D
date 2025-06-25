@@ -13,7 +13,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class NestMembersAttribute extends Attribute {
+public non-sealed class NestMembersAttribute extends Attribute {
 	private List<CpClass> memberClasses;
 
 	/**
