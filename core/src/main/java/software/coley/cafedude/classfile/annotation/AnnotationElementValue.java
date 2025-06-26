@@ -11,7 +11,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class AnnotationElementValue extends ElementValue {
+public non-sealed class AnnotationElementValue extends ElementValue {
 	private Annotation annotation;
 
 	/**

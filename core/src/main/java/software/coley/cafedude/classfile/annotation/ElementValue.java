@@ -7,7 +7,8 @@ import software.coley.cafedude.classfile.behavior.CpAccessor;
  *
  * @author Matt Coley
  */
-public abstract class ElementValue implements CpAccessor {
+public sealed abstract class ElementValue implements CpAccessor permits AnnotationElementValue, ArrayElementValue,
+		ClassElementValue, EnumElementValue, PrimitiveElementValue, Utf8ElementValue {
 	private final char tag;
 
 	/**

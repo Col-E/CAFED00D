@@ -11,7 +11,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class PrimitiveElementValue extends ElementValue {
+public non-sealed class PrimitiveElementValue extends ElementValue {
 	private CpEntry value;
 
 	/**

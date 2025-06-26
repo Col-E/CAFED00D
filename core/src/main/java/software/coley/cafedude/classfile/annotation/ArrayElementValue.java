@@ -12,7 +12,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class ArrayElementValue extends ElementValue {
+public non-sealed class ArrayElementValue extends ElementValue {
 	private List<ElementValue> array;
 
 	/**

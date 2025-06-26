@@ -12,7 +12,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class EnumElementValue extends ElementValue {
+public non-sealed class EnumElementValue extends ElementValue {
 	private CpUtf8 type;
 	private CpUtf8 name;
 

@@ -12,7 +12,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public class ClassElementValue extends ElementValue {
+public non-sealed class ClassElementValue extends ElementValue {
 	private CpUtf8 classEntry;
 
 	/**
