@@ -8,11 +8,11 @@ project:
     - Matt Coley
   license: MIT
   inceptionYear: 2020
-  stereotype: none
-  java:
-    version: 17
-    groupId: software.coley
-    artifactId: cafedude
+  languages:
+    java:
+      version: 17
+      groupId: software.coley
+      artifactId: cafedude
 
 release:
   github:
@@ -35,12 +35,10 @@ signing:
 
 deploy:
   maven:
-    nexus2:
-      maven-central:
+    mavenCentral:
+      sonatype:
+        url: https://central.sonatype.com/api/v1/publisher
         active: RELEASE
-        url: https://s01.oss.sonatype.org/service/local
         applyMavenCentralRules: true
         stagingRepositories:
           - target/staging-deploy
-        closeRepository: true
-        releaseRepository: true
