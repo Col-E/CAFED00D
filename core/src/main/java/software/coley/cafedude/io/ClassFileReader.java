@@ -57,7 +57,7 @@ public class ClassFileReader {
 	/**
 	 * Fallback reader. Default to always failing on any input.
 	 */
-	protected Supplier<FallbackInstructionReader> fallbackReaderSupplier = FallbackInstructionReader::fail;
+	protected Supplier<FallbackInstructionReader> fallbackReaderSupplier;
 
 	/**
 	 * @param code
@@ -437,5 +437,16 @@ public class ClassFileReader {
 	 */
 	public void setCheckCodeLength(boolean checkCodeLength) {
 		this.checkCodeLength = checkCodeLength;
+	}
+
+	/**
+	 * @param builder
+	 * 		Builder to utilize for constant pool access.
+	 *
+	 * @return Reader to handle unsupported instructions.
+	 */
+	@Nonnull
+	public FallbackInstructionReader getFallbackInstructionReader(@Nonnull ClassBuilder builder) {
+		return FallbackInstructionReader.fail();
 	}
 }

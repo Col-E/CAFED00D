@@ -1,5 +1,6 @@
 package software.coley.cafedude.io;
 
+import jakarta.annotation.Nonnull;
 import software.coley.cafedude.InvalidClassException;
 import software.coley.cafedude.classfile.ClassFile;
 import software.coley.cafedude.classfile.ConstantPoolConstants;
@@ -26,7 +27,6 @@ import software.coley.cafedude.classfile.constant.CpUtf8;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.util.function.Supplier;
 
 /**
  * Class file format writer.
@@ -38,11 +38,7 @@ import java.util.function.Supplier;
 public class ClassFileWriter {
 	private DataOutputStream out;
 	private AttributeWriter attributeWriter;
-
-	/**
-	 * Fallback writer. Default to always failing on any input.
-	 */
-	protected Supplier<FallbackInstructionWriter> fallbackWriterSupplier = FallbackInstructionWriter::fail;
+	private FallbackInstructionWriter fallbackInstructionWriter;
 
 	/**
 	 * @param clazz
@@ -58,6 +54,7 @@ public class ClassFileWriter {
 		try (DataOutputStream out = new DataOutputStream(baos)) {
 			this.out = out;
 			attributeWriter = new AttributeWriter(this);
+			fallbackInstructionWriter = newFallbackInstructionWriter(clazz);
 
 			// Write magic header
 			out.writeInt(0xCAFEBABE);
@@ -223,5 +220,26 @@ public class ClassFileWriter {
 		out.writeShort(method.getAttributes().size());
 		for (Attribute attribute : method.getAttributes())
 			writeAttribute(attribute);
+	}
+
+	/**
+	 * Called when writing a class. Facilitates use of {@link #getFallbackInstructionWriter()}.
+	 *
+	 * @param classFile
+	 * 		Class file to utilize for constant pool access.
+	 *
+	 * @return Writer to handle unsupported instructions.
+	 */
+	@Nonnull
+	public FallbackInstructionWriter newFallbackInstructionWriter(@Nonnull ClassFile classFile) {
+		return FallbackInstructionWriter.fail();
+	}
+
+	/**
+	 * @return {@link #newFallbackInstructionWriter(ClassFile)}.
+	 */
+	@Nonnull
+	protected final FallbackInstructionWriter getFallbackInstructionWriter() {
+		return fallbackInstructionWriter;
 	}
 }

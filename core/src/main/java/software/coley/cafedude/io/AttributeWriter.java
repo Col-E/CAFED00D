@@ -1,5 +1,6 @@
 package software.coley.cafedude.io;
 
+import jakarta.annotation.Nonnull;
 import software.coley.cafedude.classfile.attribute.AnnotationDefaultAttribute;
 import software.coley.cafedude.classfile.attribute.AnnotationsAttribute;
 import software.coley.cafedude.classfile.attribute.Attribute;
@@ -69,7 +70,7 @@ public class AttributeWriter {
 	 * @param writer
 	 * 		Parent class writier.
 	 */
-	public AttributeWriter(ClassFileWriter writer) {
+	public AttributeWriter(@Nonnull ClassFileWriter writer) {
 		this.writer = writer;
 	}
 
@@ -84,11 +85,11 @@ public class AttributeWriter {
 	 * @throws IOException
 	 * 		When the stream cannot be written to.
 	 */
-	public byte[] writeAttribute(Attribute attribute) throws IOException {
+	@Nonnull
+	public byte[] writeAttribute(@Nonnull Attribute attribute) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		DataOutputStream out = new DataOutputStream(baos);
-		if (attribute instanceof DefaultAttribute) {
-			DefaultAttribute dflt = (DefaultAttribute) attribute;
+		if (attribute instanceof DefaultAttribute dflt) {
 			out.writeShort(dflt.getName().getIndex());
 			out.writeInt(dflt.getData().length);
 			out.write(dflt.getData());
@@ -119,7 +120,7 @@ public class AttributeWriter {
 					CodeAttribute code = (CodeAttribute) attribute;
 					out.writeShort(code.getMaxStack());
 					out.writeShort(code.getMaxLocals());
-					InstructionWriter instructionWriter = new InstructionWriter(writer.fallbackWriterSupplier.get());
+					InstructionWriter instructionWriter = new InstructionWriter(writer.getFallbackInstructionWriter());
 					byte[] codeBytes = instructionWriter.writeCode(code.getInstructions());
 					out.writeInt(codeBytes.length);
 					out.write(codeBytes);
@@ -370,13 +371,9 @@ public class AttributeWriter {
 
 	private void writeVerificationType(DataOutputStream out, StackMapTableAttribute.TypeInfo type) throws IOException {
 		out.writeByte(type.getTag());
-		if (type instanceof StackMapTableAttribute.ObjectVariableInfo) {
-			StackMapTableAttribute.ObjectVariableInfo objVar =
-					(StackMapTableAttribute.ObjectVariableInfo) type;
+		if (type instanceof StackMapTableAttribute.ObjectVariableInfo objVar) {
 			out.writeShort(objVar.getClassEntry().getIndex());
-		} else if (type instanceof StackMapTableAttribute.UninitializedVariableInfo) {
-			StackMapTableAttribute.UninitializedVariableInfo uninitVar =
-					(StackMapTableAttribute.UninitializedVariableInfo) type;
+		} else if (type instanceof StackMapTableAttribute.UninitializedVariableInfo uninitVar) {
 			out.writeShort(uninitVar.getOffset());
 		}
 	}
@@ -385,33 +382,21 @@ public class AttributeWriter {
 		out.writeShort(stackMapTable.getFrames().size());
 		for (StackMapTableAttribute.StackMapFrame frame : stackMapTable.getFrames()) {
 			out.writeByte(frame.getFrameType());
-			if (frame instanceof StackMapTableAttribute.SameLocalsOneStackItem) {
-				StackMapTableAttribute.SameLocalsOneStackItem sameLocals =
-						(StackMapTableAttribute.SameLocalsOneStackItem) frame;
+			if (frame instanceof StackMapTableAttribute.SameLocalsOneStackItem sameLocals) {
 				writeVerificationType(out, sameLocals.getStack());
-			} else if (frame instanceof StackMapTableAttribute.SameLocalsOneStackItemExtended) {
-				StackMapTableAttribute.SameLocalsOneStackItemExtended sameLocals =
-						(StackMapTableAttribute.SameLocalsOneStackItemExtended) frame;
+			} else if (frame instanceof StackMapTableAttribute.SameLocalsOneStackItemExtended sameLocals) {
 				out.writeShort(sameLocals.getOffsetDelta());
 				writeVerificationType(out, sameLocals.getStack());
-			} else if (frame instanceof StackMapTableAttribute.ChopFrame) {
-				StackMapTableAttribute.ChopFrame chopFrame =
-						(StackMapTableAttribute.ChopFrame) frame;
+			} else if (frame instanceof StackMapTableAttribute.ChopFrame chopFrame) {
 				out.writeShort(chopFrame.getOffsetDelta());
-			} else if (frame instanceof StackMapTableAttribute.SameFrameExtended) {
-				StackMapTableAttribute.SameFrameExtended sameFrame =
-						(StackMapTableAttribute.SameFrameExtended) frame;
+			} else if (frame instanceof StackMapTableAttribute.SameFrameExtended sameFrame) {
 				out.writeShort(sameFrame.getOffsetDelta());
-			} else if (frame instanceof StackMapTableAttribute.AppendFrame) {
-				StackMapTableAttribute.AppendFrame appendFrame =
-						(StackMapTableAttribute.AppendFrame) frame;
+			} else if (frame instanceof StackMapTableAttribute.AppendFrame appendFrame) {
 				out.writeShort(appendFrame.getOffsetDelta());
 				for (StackMapTableAttribute.TypeInfo type : appendFrame.getAdditionalLocals()) {
 					writeVerificationType(out, type);
 				}
-			} else if (frame instanceof StackMapTableAttribute.FullFrame) {
-				StackMapTableAttribute.FullFrame fullFrame =
-						(StackMapTableAttribute.FullFrame) frame;
+			} else if (frame instanceof StackMapTableAttribute.FullFrame fullFrame) {
 				out.writeShort(fullFrame.getOffsetDelta());
 				out.writeShort(fullFrame.getLocals().size());
 				for (StackMapTableAttribute.TypeInfo type : fullFrame.getLocals()) {

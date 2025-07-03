@@ -861,7 +861,7 @@ public class AttributeReader {
 			throw new IOException("Method code_length > 65536: " + codeLength);
 
 		// Read instructions
-		InstructionReader reader = new InstructionReader(this.reader.fallbackReaderSupplier.get());
+		InstructionReader reader = new InstructionReader(this.reader.getFallbackInstructionReader(builder));
 		List<Instruction> instructions = reader.read(is, cp, codeLength);
 
 		// Read exceptions
