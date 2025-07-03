@@ -1,8 +1,10 @@
 package software.coley.cafedude.classfile.constant;
 
+import jakarta.annotation.Nonnull;
 import software.coley.cafedude.classfile.ConstantPoolConstants;
 
-import jakarta.annotation.Nonnull;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Base reference pool entry. Points to a reference's {@link CpClass defining class}
@@ -10,7 +12,7 @@ import jakarta.annotation.Nonnull;
  *
  * @author Matt Coley
  */
-public abstract sealed class ConstRef extends CpEntry permits ConstRefInternal, CpFieldRef, CpInterfaceMethodRef, CpMethodRef {
+public abstract sealed class ConstRef extends CpEntry implements CrossCpReferencing permits ConstRefInternal, CpFieldRef, CpInterfaceMethodRef, CpMethodRef {
 	private CpClass classRef;
 	private CpNameType nameType;
 
@@ -60,6 +62,12 @@ public abstract sealed class ConstRef extends CpEntry permits ConstRefInternal, 
 	 */
 	public void setNameType(@Nonnull CpNameType nameType) {
 		this.nameType = nameType;
+	}
+
+	@Nonnull
+	@Override
+	public Collection<CpEntry> getReferences() {
+		return List.of(classRef, nameType);
 	}
 
 	@Override

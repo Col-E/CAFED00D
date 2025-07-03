@@ -4,13 +4,16 @@ import software.coley.cafedude.classfile.instruction.Opcodes;
 
 import jakarta.annotation.Nonnull;
 
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  * MethodHandle pool entry. Holds a byte to indicate behavior and points to a relevant reference constant
  * based on the byte's value.
  *
  * @author Matt Coley
  */
-public non-sealed class CpMethodHandle extends CpEntry {
+public non-sealed class CpMethodHandle extends CpEntry implements CrossCpReferencing {
 	/** Interpreted as {@link Opcodes#GETFIELD}. */
 	public static final int REF_GET_FIELD = 1;
 	/** Interpreted as {@link Opcodes#GETSTATIC}. */
@@ -79,6 +82,12 @@ public non-sealed class CpMethodHandle extends CpEntry {
 	 */
 	public void setReference(@Nonnull ConstRef reference) {
 		this.reference = reference;
+	}
+
+	@Nonnull
+	@Override
+	public Collection<CpEntry> getReferences() {
+		return Collections.singletonList(reference);
 	}
 
 	@Override

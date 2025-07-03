@@ -1,5 +1,6 @@
 package software.coley.cafedude.io;
 
+import jakarta.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.coley.cafedude.InvalidClassException;
@@ -29,9 +30,9 @@ import software.coley.cafedude.classfile.constant.CpNameType;
 import software.coley.cafedude.classfile.constant.CpPackage;
 import software.coley.cafedude.classfile.constant.CpString;
 import software.coley.cafedude.classfile.constant.CpUtf8;
+import software.coley.cafedude.classfile.constant.CrossCpReferencing;
 import software.coley.cafedude.classfile.constant.Placeholders;
 
-import jakarta.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -88,7 +89,7 @@ public class ClassFileReader {
 				int start = is.getIndex();
 				ConstPool constPool = builder.getPool();
 
-				// first pass
+				// First pass: Populate entries with placeholder references
 				for (int i = 1; i < numConstants; i++) {
 					CpEntry entry = readPoolEntryBasic();
 					constPool.add(entry);
@@ -97,11 +98,11 @@ public class ClassFileReader {
 					}
 				}
 
-				// rewind
+				// Rewind
 				int diff = is.getIndex() - start;
 				is.reset(diff);
 
-				// second pass
+				// Second pass: Fill entries with references to items in our pool
 				for (int i = 1; i < numConstants; i++) {
 					CpEntry entry = constPool.get(i);
 					readPoolEntryResolve(constPool, entry);
@@ -109,6 +110,10 @@ public class ClassFileReader {
 						i++;
 					}
 				}
+
+				// Prune garbage that wasn't parsed properly in the second pass
+				// - A CpClass that holds a bogus index pointing to a CpInt for instance
+				constPool.removeIf(Placeholders::containsPlaceholder);
 
 				// Flags
 				builder.setAccess(is.readUnsignedShort());
@@ -242,66 +247,68 @@ public class ClassFileReader {
 				is.readDouble();
 				break;
 			case ConstantPoolConstants.STRING: {
-				CpUtf8 utf8 = (CpUtf8) constPool.get(is.readUnsignedShort());
-				CpString string = (CpString) entry;
-				string.setString(utf8);
+				CpEntry param = constPool.get(is.readUnsignedShort());
+				if (entry instanceof CpString string && param instanceof CpUtf8 utf8)
+					string.setString(utf8);
 				break;
 			}
 			case ConstantPoolConstants.CLASS: {
-				CpUtf8 utf8 = (CpUtf8) constPool.get(is.readUnsignedShort());
-				CpClass clazz = (CpClass) entry;
-				clazz.setName(utf8);
+				CpEntry param = constPool.get(is.readUnsignedShort());
+				if (entry instanceof CpClass clazz && param instanceof CpUtf8 utf8)
+					clazz.setName(utf8);
 				break;
 			}
 			case ConstantPoolConstants.FIELD_REF:
 			case ConstantPoolConstants.METHOD_REF:
 			case ConstantPoolConstants.INTERFACE_METHOD_REF: {
-				CpClass clazz = (CpClass) constPool.get(is.readUnsignedShort());
-				CpNameType nameType = (CpNameType) constPool.get(is.readUnsignedShort());
-				ConstRef ref = (ConstRef) entry;
-				ref.setClassRef(clazz);
-				ref.setNameType(nameType);
+				CpEntry param1 = constPool.get(is.readUnsignedShort());
+				CpEntry param2 = constPool.get(is.readUnsignedShort());
+				if (entry instanceof ConstRef ref && param1 instanceof CpClass clazz && param2 instanceof CpNameType nameType) {
+					ref.setClassRef(clazz);
+					ref.setNameType(nameType);
+				}
 				break;
 			}
 			case ConstantPoolConstants.NAME_TYPE: {
-				CpUtf8 name = (CpUtf8) constPool.get(is.readUnsignedShort());
-				CpUtf8 type = (CpUtf8) constPool.get(is.readUnsignedShort());
-				CpNameType nameType = (CpNameType) entry;
-				nameType.setName(name);
-				nameType.setType(type);
+				CpEntry param1 = constPool.get(is.readUnsignedShort());
+				CpEntry param2 = constPool.get(is.readUnsignedShort());
+				if (entry instanceof CpNameType nameType && param1 instanceof CpUtf8 name && param2 instanceof CpUtf8 type) {
+					nameType.setName(name);
+					nameType.setType(type);
+				}
 				break;
 			}
 			case ConstantPoolConstants.DYNAMIC:
 			case ConstantPoolConstants.INVOKE_DYNAMIC: {
 				is.readUnsignedShort();
-				CpNameType nameType = (CpNameType) constPool.get(is.readUnsignedShort());
-				ConstDynamic dynamic = (ConstDynamic) entry;
-				dynamic.setNameType(nameType);
+				CpEntry param = constPool.get(is.readUnsignedShort());
+				if (entry instanceof ConstDynamic dynamic && param instanceof CpNameType nameType)
+					dynamic.setNameType(nameType);
 				break;
 			}
 			case ConstantPoolConstants.METHOD_HANDLE: {
 				is.readByte();
-				ConstRef ref = (ConstRef) constPool.get(is.readUnsignedShort());
-				CpMethodHandle methodHandle = (CpMethodHandle) entry;
-				methodHandle.setReference(ref);
+				CpEntry param = constPool.get(is.readUnsignedShort());
+				if (entry instanceof CpMethodHandle methodHandle && param instanceof ConstRef ref)
+					methodHandle.setReference(ref);
 				break;
 			}
 			case ConstantPoolConstants.METHOD_TYPE: {
-				CpUtf8 type = (CpUtf8) constPool.get(is.readUnsignedShort());
-				CpMethodType methodType = (CpMethodType) entry;
-				methodType.setDescriptor(type);
+				CpEntry param = constPool.get(is.readUnsignedShort());
+				if (entry instanceof CpMethodType methodType && param instanceof CpUtf8 type)
+					methodType.setDescriptor(type);
 				break;
 			}
 			case ConstantPoolConstants.MODULE: {
-				CpUtf8 name = (CpUtf8) constPool.get(is.readUnsignedShort());
-				CpModule module = (CpModule) entry;
-				module.setName(name);
+				CpEntry param = constPool.get(is.readUnsignedShort());
+				if (entry instanceof CpModule module && param instanceof CpUtf8 name)
+					module.setName(name);
 				break;
 			}
 			case ConstantPoolConstants.PACKAGE: {
-				CpUtf8 name = (CpUtf8) constPool.get(is.readUnsignedShort());
-				CpPackage pkg = (CpPackage) entry;
-				pkg.setPackageName(name);
+				CpEntry param = constPool.get(is.readUnsignedShort());
+				if (entry instanceof CpPackage pkg && param instanceof CpUtf8 name)
+					pkg.setPackageName(name);
 				break;
 			}
 			default:

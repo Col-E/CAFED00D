@@ -2,12 +2,15 @@ package software.coley.cafedude.classfile.constant;
 
 import jakarta.annotation.Nonnull;
 
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  * Method type pool entry. Points to an UTF constant.
  *
  * @author Matt Coley
  */
-public non-sealed class CpMethodType extends CpEntry {
+public non-sealed class CpMethodType extends CpEntry implements CrossCpReferencing {
 	private CpUtf8 descriptor;
 
 	/**
@@ -33,6 +36,12 @@ public non-sealed class CpMethodType extends CpEntry {
 	 */
 	public void setDescriptor(@Nonnull CpUtf8 descriptor) {
 		this.descriptor = descriptor;
+	}
+
+	@Nonnull
+	@Override
+	public Collection<CpEntry> getReferences() {
+		return Collections.singletonList(descriptor);
 	}
 
 	@Override

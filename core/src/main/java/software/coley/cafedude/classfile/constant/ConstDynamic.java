@@ -2,6 +2,9 @@ package software.coley.cafedude.classfile.constant;
 
 import jakarta.annotation.Nonnull;
 
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  * Base dynamic value pool entry. Points to a {@link CpNameType NameType} constant
  * and a bootstrap method index in the class's bootstrap-methods attribute.
@@ -9,7 +12,7 @@ import jakarta.annotation.Nonnull;
  * @author Matt Coley
  * @author Wolfie / win32kbase
  */
-public abstract sealed class ConstDynamic extends CpEntry permits CpDynamic, CpInvokeDynamic {
+public abstract sealed class ConstDynamic extends CpEntry implements CrossCpReferencing permits CpDynamic, CpInvokeDynamic {
 	private int bsmIndex;
 	private CpNameType nameType;
 
@@ -57,6 +60,12 @@ public abstract sealed class ConstDynamic extends CpEntry permits CpDynamic, CpI
 	 */
 	public void setNameType(@Nonnull CpNameType nameType) {
 		this.nameType = nameType;
+	}
+
+	@Nonnull
+	@Override
+	public Collection<CpEntry> getReferences() {
+		return Collections.singletonList(nameType);
 	}
 
 	@Override

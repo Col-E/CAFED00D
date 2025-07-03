@@ -2,12 +2,15 @@ package software.coley.cafedude.classfile.constant;
 
 import jakarta.annotation.Nonnull;
 
+import java.util.Collection;
+import java.util.List;
+
 /**
  * NameType pool entry. Points to two UTF constants.
  *
  * @author Matt Coley
  */
-public non-sealed class CpNameType extends CpEntry {
+public non-sealed class CpNameType extends CpEntry implements CrossCpReferencing {
 	private CpUtf8 name;
 	private CpUtf8 type;
 
@@ -53,6 +56,12 @@ public non-sealed class CpNameType extends CpEntry {
 	 */
 	public void setType(@Nonnull CpUtf8 type) {
 		this.type = type;
+	}
+
+	@Nonnull
+	@Override
+	public Collection<CpEntry> getReferences() {
+		return List.of(name, type);
 	}
 
 	@Override

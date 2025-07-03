@@ -2,12 +2,15 @@ package software.coley.cafedude.classfile.constant;
 
 import jakarta.annotation.Nonnull;
 
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  * String pool entry. Points to a UTF constant.
  *
  * @author Matt Coley
  */
-public non-sealed class CpString extends CpEntry {
+public non-sealed class CpString extends CpEntry implements CrossCpReferencing {
 	private CpUtf8 string;
 
 	/**
@@ -33,6 +36,12 @@ public non-sealed class CpString extends CpEntry {
 	 */
 	public void setString(@Nonnull CpUtf8 string) {
 		this.string = string;
+	}
+
+	@Nonnull
+	@Override
+	public Collection<CpEntry> getReferences() {
+		return Collections.singletonList(string);
 	}
 
 	@Override
