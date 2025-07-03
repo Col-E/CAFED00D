@@ -1,20 +1,59 @@
 package software.coley.cafedude.io;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.coley.cafedude.classfile.ConstPool;
 import software.coley.cafedude.classfile.InvalidCpIndexException;
-import software.coley.cafedude.classfile.attribute.*;
+import software.coley.cafedude.classfile.attribute.AnnotationDefaultAttribute;
+import software.coley.cafedude.classfile.attribute.AnnotationsAttribute;
+import software.coley.cafedude.classfile.attribute.Attribute;
+import software.coley.cafedude.classfile.attribute.AttributeConstants;
+import software.coley.cafedude.classfile.attribute.AttributeContexts;
+import software.coley.cafedude.classfile.attribute.AttributeVersions;
+import software.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute;
 import software.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.BootstrapMethod;
+import software.coley.cafedude.classfile.attribute.CharacterRangeTableAttribute;
+import software.coley.cafedude.classfile.attribute.CodeAttribute;
 import software.coley.cafedude.classfile.attribute.CodeAttribute.ExceptionTableEntry;
+import software.coley.cafedude.classfile.attribute.CompilationIdAttribute;
+import software.coley.cafedude.classfile.attribute.ConstantValueAttribute;
+import software.coley.cafedude.classfile.attribute.DefaultAttribute;
+import software.coley.cafedude.classfile.attribute.DeprecatedAttribute;
+import software.coley.cafedude.classfile.attribute.EnclosingMethodAttribute;
+import software.coley.cafedude.classfile.attribute.ExceptionsAttribute;
+import software.coley.cafedude.classfile.attribute.InnerClassesAttribute;
 import software.coley.cafedude.classfile.attribute.InnerClassesAttribute.InnerClass;
+import software.coley.cafedude.classfile.attribute.LineNumberTableAttribute;
 import software.coley.cafedude.classfile.attribute.LineNumberTableAttribute.LineEntry;
+import software.coley.cafedude.classfile.attribute.LocalVariableTableAttribute;
 import software.coley.cafedude.classfile.attribute.LocalVariableTableAttribute.VarEntry;
+import software.coley.cafedude.classfile.attribute.LocalVariableTypeTableAttribute;
 import software.coley.cafedude.classfile.attribute.LocalVariableTypeTableAttribute.VarTypeEntry;
+import software.coley.cafedude.classfile.attribute.MethodParametersAttribute;
+import software.coley.cafedude.classfile.attribute.ModuleAttribute;
 import software.coley.cafedude.classfile.attribute.ModuleAttribute.Exports;
 import software.coley.cafedude.classfile.attribute.ModuleAttribute.Opens;
 import software.coley.cafedude.classfile.attribute.ModuleAttribute.Provides;
 import software.coley.cafedude.classfile.attribute.ModuleAttribute.Requires;
+import software.coley.cafedude.classfile.attribute.ModuleHashesAttribute;
+import software.coley.cafedude.classfile.attribute.ModuleMainClassAttribute;
+import software.coley.cafedude.classfile.attribute.ModulePackagesAttribute;
+import software.coley.cafedude.classfile.attribute.ModuleResolutionAttribute;
+import software.coley.cafedude.classfile.attribute.ModuleTargetAttribute;
+import software.coley.cafedude.classfile.attribute.NestHostAttribute;
+import software.coley.cafedude.classfile.attribute.NestMembersAttribute;
+import software.coley.cafedude.classfile.attribute.ParameterAnnotationsAttribute;
+import software.coley.cafedude.classfile.attribute.PermittedClassesAttribute;
+import software.coley.cafedude.classfile.attribute.RecordAttribute;
+import software.coley.cafedude.classfile.attribute.SignatureAttribute;
+import software.coley.cafedude.classfile.attribute.SourceDebugExtensionAttribute;
+import software.coley.cafedude.classfile.attribute.SourceFileAttribute;
+import software.coley.cafedude.classfile.attribute.SourceIdAttribute;
+import software.coley.cafedude.classfile.attribute.StackMapTableAttribute;
+import software.coley.cafedude.classfile.attribute.StackMapTableConstants;
+import software.coley.cafedude.classfile.attribute.SyntheticAttribute;
 import software.coley.cafedude.classfile.constant.CpClass;
 import software.coley.cafedude.classfile.constant.CpEntry;
 import software.coley.cafedude.classfile.constant.CpMethodHandle;
@@ -24,8 +63,6 @@ import software.coley.cafedude.classfile.constant.CpPackage;
 import software.coley.cafedude.classfile.constant.CpUtf8;
 import software.coley.cafedude.classfile.instruction.Instruction;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -96,9 +133,10 @@ public class AttributeReader {
 	                                      @Nonnull DataInputStream is, @Nonnull AttributeContext context) {
 		try {
 			return new AttributeReader(reader, builder, is).read(context);
-		} catch (Exception ex) {
-			String message = ex.getMessage();
-			logger.debug("Dropping attribute on {}: {}", context.name(), message);
+		} catch (Throwable t) {
+			String message = t.getMessage();
+			if (message == null) message = t.getClass().getSimpleName();
+			logger.debug("Dropping attribute on {}, reason={}", context.name(), message);
 			return null;
 		}
 	}
@@ -248,6 +286,7 @@ public class AttributeReader {
 			default:
 				break;
 		}
+
 		// No known/unhandled attribute length is less than 2.
 		// So if that is given, we likely have an intentionally malformed attribute.
 		if (expectedContentLength < 2) {
@@ -255,6 +294,7 @@ public class AttributeReader {
 			is.skipBytes(expectedContentLength);
 			return null;
 		}
+
 		// Default handling, skip remaining bytes
 		is.skipBytes(expectedContentLength);
 		return new DefaultAttribute(name, is.getBuffer());
@@ -850,11 +890,15 @@ public class AttributeReader {
 	 */
 	@Nonnull
 	private CodeAttribute.ExceptionTableEntry readCodeException() throws IOException {
+		int startPc = is.readUnsignedShort();
+		int endPc = is.readUnsignedShort();
+		int handlerPc = is.readUnsignedShort();
+		int catchTypeCpIndex = is.readUnsignedShort();
 		return new CodeAttribute.ExceptionTableEntry(
-				is.readUnsignedShort(),
-				is.readUnsignedShort(),
-				is.readUnsignedShort(),
-				orNullInCp(is.readUnsignedShort())
+				startPc,
+				endPc,
+				handlerPc,
+				orNullInCp(catchTypeCpIndex) instanceof CpClass catchTypeClass ? catchTypeClass : null
 		);
 	}
 
