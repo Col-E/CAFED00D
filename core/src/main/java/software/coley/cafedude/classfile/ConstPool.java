@@ -1,13 +1,11 @@
 package software.coley.cafedude.classfile;
 
-import software.coley.cafedude.classfile.constant.CpEntry;
-
 import jakarta.annotation.Nonnull;
+import software.coley.cafedude.classfile.constant.CpEntry;
 import software.coley.cafedude.classfile.constant.CpInternal;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
@@ -61,89 +59,21 @@ public class ConstPool implements List<CpEntry> {
 
 	@Nonnull
 	@Override
-	public Iterator<CpEntry> iterator() {
+	public CpIterator iterator() {
 		return listIterator();
 	}
 
 	@Nonnull
 	@Override
-	public ListIterator<CpEntry> listIterator() {
+	public CpIterator listIterator() {
 		// Initialize index to one since the constant pool starts at one.
 		return listIterator(1);
 	}
 
 	@Nonnull
 	@Override
-	public ListIterator<CpEntry> listIterator(int index) {
-		return new ListIterator<CpEntry>() {
-			private int cursor = index;
-
-			@Override
-			public boolean hasNext() {
-				return cursor < size();
-			}
-
-			@Override
-			public CpEntry next() {
-				if (hasNext()) {
-					// Move forwards, skipping over padding entries.
-					CpEntry cp = backing.get(cursor);
-					cursor += cp.isWide() ? 2 : 1;
-					return cp;
-				}
-				throw new NoSuchElementException();
-			}
-
-			@Override
-			public boolean hasPrevious() {
-				return cursor > 1;
-			}
-
-			@Override
-			public CpEntry previous() {
-				if (hasPrevious()) {
-					// Move backwards, skipping over padding entries.
-					CpEntry cp = backing.get(cursor - 1);
-					if (cp.getTag() <= 0)
-						cp = backing.get(cursor - 2);
-					cursor -= cp.isWide() ? 2 : 1;
-					return cp;
-				}
-				throw new NoSuchElementException();
-			}
-
-			@Override
-			public int nextIndex() {
-				return Math.min(cursor + 1, size());
-			}
-
-			@Override
-			public int previousIndex() {
-				if (hasPrevious()) {
-					// Check the previous entry. If it is a valid entry the prev index is just -1.
-					// If the entry is not a valid tag, the prev index is -2.
-					CpEntry cp = backing.get(cursor - 1);
-					if (cp.getTag() <= 0)
-						return cp.getTag() <= 0 ? cursor - 2 : cursor - 1;
-				}
-				return -1;
-			}
-
-			@Override
-			public void remove() {
-				ConstPool.this.remove(cursor);
-			}
-
-			@Override
-			public void set(CpEntry cp) {
-				ConstPool.this.set(cursor, cp);
-			}
-
-			@Override
-			public void add(CpEntry cp) {
-				ConstPool.this.set(cursor, cp);
-			}
-		};
+	public CpIterator listIterator(int index) {
+		return new CpIterator(this, index);
 	}
 
 	@Nonnull
@@ -193,9 +123,9 @@ public class ConstPool implements List<CpEntry> {
 	@Override
 	public void add(int index, CpEntry cp) {
 		if (cp.isWide())
-			backing.add(ImplWidePadding.INSTANCE);
-		backing.add(cp);
-		cp.setIndex(index);
+			backing.add(index, ImplWidePadding.INSTANCE);
+		backing.add(index, cp);
+		fixIndices(index);
 	}
 
 	@Override
@@ -216,19 +146,17 @@ public class ConstPool implements List<CpEntry> {
 	@Override
 	public boolean remove(Object o) {
 		int i = indexOf(o);
-		if (i >= 1) {
-			CpEntry removed = backing.remove(i);
-			if (removed.isWide() && backing.get(i) instanceof ImplWidePadding)
-				backing.remove(i);
-		}
+		if (i >= 1)
+			return remove(i) != null;
 		return false;
 	}
 
 	@Override
-	public CpEntry remove(int i) {
-		CpEntry removed = backing.remove(i);
-		if (removed.isWide() && backing.get(i) instanceof ImplWidePadding)
-			backing.remove(i);
+	public CpEntry remove(int index) {
+		CpEntry removed = backing.remove(index);
+		if (removed.isWide() && backing.get(index) instanceof ImplWidePadding)
+			backing.remove(index);
+		fixIndices(index);
 		return removed;
 	}
 
@@ -280,9 +208,111 @@ public class ConstPool implements List<CpEntry> {
 		return backing.set(index, cp);
 	}
 
+	protected void fixIndices(int startingIndex) {
+		listIterator(startingIndex).forEach((i, entry) -> entry.setIndex(i));
+	}
+
 	@Nonnull
 	public static CpEntry getWideFiller() {
 		return ImplWidePadding.INSTANCE;
+	}
+
+	public static class CpIterator implements ListIterator<CpEntry> {
+		private final ConstPool pool;
+		private int cursor;
+
+		public CpIterator(@Nonnull ConstPool pool, int cursor) {
+			this.pool = pool;
+			this.cursor = cursor;
+		}
+
+		public void forEach(@Nonnull CpConsumer consumer) {
+			while (hasNext()) {
+				int i = cursor;
+				CpEntry next = next();
+				consumer.accept(i, next);
+			}
+		}
+
+		@Override
+		public boolean hasNext() {
+			return cursor < pool.size();
+		}
+
+		@Override
+		public CpEntry next() {
+			if (hasNext()) {
+				// Move forwards, skipping over padding entries.
+				CpEntry cp = pool.get(cursor);
+				if (cp == null)
+					throw new NoSuchElementException("No CP at " + cursor);
+				cursor += cp.isWide() ? 2 : 1;
+				return cp;
+			}
+			throw new NoSuchElementException("End of CP");
+		}
+
+		@Override
+		public boolean hasPrevious() {
+			return cursor > 1;
+		}
+
+		@Override
+		public CpEntry previous() {
+			if (hasPrevious()) {
+				// Move backwards, skipping over padding entries.
+				CpEntry cp = pool.get(cursor - 1);
+				if (cp == null)
+					throw new NoSuchElementException("No CP at " + (cursor - 1));
+				if (cp.getTag() <= 0)
+					cp = pool.get(cursor - 2);
+				if (cp == null)
+					throw new NoSuchElementException("No CP at " + (cursor - 2));
+				cursor -= cp.isWide() ? 2 : 1;
+				return cp;
+			}
+			throw new NoSuchElementException();
+		}
+
+		@Override
+		public int nextIndex() {
+			return Math.min(cursor + 1, pool.size());
+		}
+
+		@Override
+		public int previousIndex() {
+			if (hasPrevious()) {
+				// Check the previous entry. If it is a valid entry the prev index is just -1.
+				// If the entry is not a valid tag, the prev index is -2.
+				CpEntry cp = pool.get(cursor - 1);
+				if (cp == null)
+					return -1;
+				return cp.getTag() <= 0 ? cursor - 2 : cursor - 1;
+			}
+			return -1;
+		}
+
+		@Override
+		public void remove() {
+			int remove = previousIndex();
+			if (remove < 1)
+				throw new IllegalStateException();
+			pool.remove(remove);
+		}
+
+		@Override
+		public void set(CpEntry cp) {
+			pool.set(cursor, cp);
+		}
+
+		@Override
+		public void add(CpEntry cp) {
+			pool.set(cursor, cp);
+		}
+
+		public interface CpConsumer {
+			void accept(int index, @Nonnull CpEntry entry);
+		}
 	}
 
 	private static class ImplZero extends CpInternal {

@@ -30,7 +30,6 @@ import software.coley.cafedude.classfile.constant.CpNameType;
 import software.coley.cafedude.classfile.constant.CpPackage;
 import software.coley.cafedude.classfile.constant.CpString;
 import software.coley.cafedude.classfile.constant.CpUtf8;
-import software.coley.cafedude.classfile.constant.CrossCpReferencing;
 import software.coley.cafedude.classfile.constant.Placeholders;
 
 import java.io.IOException;
