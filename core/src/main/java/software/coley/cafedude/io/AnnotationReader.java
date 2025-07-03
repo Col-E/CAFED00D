@@ -1,5 +1,7 @@
 package software.coley.cafedude.io;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.coley.cafedude.classfile.ConstPool;
@@ -34,8 +36,6 @@ import software.coley.cafedude.classfile.attribute.ParameterAnnotationsAttribute
 import software.coley.cafedude.classfile.constant.CpEntry;
 import software.coley.cafedude.classfile.constant.CpUtf8;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -131,23 +131,33 @@ public class AnnotationReader {
 				logger.debug("Annotations attribute has 0 items, skipping");
 				return null;
 			}
+
 			// Read each annotation
 			Set<String> usedAnnotationTypes = new HashSet<>();
 			List<Annotation> annotations = new ArrayList<>(numAnnotations);
 			for (int i = 0; i < numAnnotations; i++) {
-				Annotation annotation = readAnnotation(new AnnotationScope());
-				if (reader.doDropDupeAnnotations()) {
-					// Only add if the type hasn't been used before
-					String type = annotation.getType().getText();
-					if (!usedAnnotationTypes.contains(type)) {
+				try {
+					Annotation annotation = readAnnotation(new AnnotationScope());
+					if (reader.doDropDupeAnnotations()) {
+						// Only add if the type hasn't been used before
+						String type = annotation.getType().getText();
+						if (!usedAnnotationTypes.contains(type)) {
+							annotations.add(annotation);
+							usedAnnotationTypes.add(type);
+						}
+					} else {
+						// Add unconditionally
 						annotations.add(annotation);
-						usedAnnotationTypes.add(type);
 					}
-				} else {
-					// Add unconditionally
-					annotations.add(annotation);
+				} catch (Throwable t) {
+					logger.debug("Illegally formatted Annotation, dropping");
 				}
 			}
+
+			// In case we dropped all the annotations (because they were invalid) we'll just not make an attribute.
+			if (annotations.isEmpty())
+				return null;
+
 			// Didn't throw exception, its valid
 			return new AnnotationsAttribute(name, annotations, visible);
 		} catch (Throwable t) {
@@ -170,6 +180,7 @@ public class AnnotationReader {
 				logger.debug("ParameterAnnotations attribute has 0 items, skipping");
 				return null;
 			}
+
 			// Each parameter has its own number of annotations to parse
 			Map<Integer, List<Annotation>> parameterAnnotations = new LinkedHashMap<>();
 			for (int p = 0; p < numParameters; p++) {
@@ -179,6 +190,7 @@ public class AnnotationReader {
 					annotations.add(readAnnotation(new AnnotationScope()));
 				parameterAnnotations.put(p, annotations);
 			}
+
 			// Didn't crash, its valid
 			return new ParameterAnnotationsAttribute(name, parameterAnnotations, visible);
 		} catch (Throwable t) {
@@ -201,10 +213,12 @@ public class AnnotationReader {
 				logger.debug("TypeAnnotations attribute has 0 items, skipping");
 				return null;
 			}
+
 			// Read each type annotation
 			List<Annotation> annotations = new ArrayList<>(numAnnotations);
 			for (int i = 0; i < numAnnotations; i++)
 				annotations.add(readTypeAnnotation(new AnnotationScope()));
+
 			// Didn't throw exception, its valid
 			return new AnnotationsAttribute(name, annotations, visible);
 		} catch (Throwable t) {
@@ -225,15 +239,17 @@ public class AnnotationReader {
 	@Nonnull
 	private Annotation readAnnotation(@Nonnull AnnotationScope scope) throws IOException {
 		int typeIndex = is.readUnsignedShort();
+
 		// Validate the type points to an entry in the constant pool that is valid UTF8 item
 		if (typeIndex > maxCpIndex) {
-			logger.warn("Illegally formatted Annotation item, out of CP bounds, type_index={} > {}",
-					typeIndex, maxCpIndex);
-			throw new IllegalArgumentException("Annotation type_index out of CP bounds!");
+			logger.warn("Illegally formatted Annotation item, out of CP bounds, type_index={} > {}", typeIndex, maxCpIndex);
+			throw new IllegalArgumentException("Annotation type_index out of CP bounds: " + typeIndex);
 		}
-		CpUtf8 type = (CpUtf8) cp.get(typeIndex);
-		Map<CpUtf8, ElementValue> values = readElementPairs(scope.with(type.getText()));
-		return new Annotation(type, values);
+		if (cp.get(typeIndex) instanceof CpUtf8 type) {
+			Map<CpUtf8, ElementValue> values = readElementPairs(scope.with(type.getText()));
+			return new Annotation(type, values);
+		}
+		throw new IllegalArgumentException("Annotation type_index out does not point to UTF8: " + typeIndex);
 	}
 
 	/**
@@ -250,9 +266,11 @@ public class AnnotationReader {
 		// Read target type (lets us know where the type annotation is located)
 		int targetType = is.readUnsignedByte();
 		AttributeContext expectedLocation = AttributeContext.fromAnnotationTargetType(targetType);
+
 		// Skip if context is not expected location.
 		if (!context.equals(expectedLocation))
 			throw new IllegalArgumentException("Annotation location does not match allowed locations for its type");
+
 		// Parse target info union
 		TargetInfoType targetInfoType = TargetInfoType.fromTargetType(targetType);
 		TargetInfo info;
@@ -318,12 +336,21 @@ public class AnnotationReader {
 			default:
 				throw new IllegalArgumentException("Invalid type argument target");
 		}
+
 		// Parse type path
 		TypePath typePath = readTypePath();
-		// Parse the stuff that populates a normal annotation
-		CpUtf8 type = (CpUtf8) cp.get(is.readUnsignedShort());
-		Map<CpUtf8, ElementValue> values = readElementPairs(scope);
-		return new TypeAnnotation(type, values, info, typePath);
+
+		// Parse the stuff that populates a normal annotation.
+		int typeIndex = is.readUnsignedShort();
+		if (typeIndex > maxCpIndex) {
+			logger.warn("Illegally formatted Annotation item, out of CP bounds, type_index={} > {}", typeIndex, maxCpIndex);
+			throw new IllegalArgumentException("Annotation type_index out of CP bounds: " + typeIndex);
+		}
+		if (cp.get(typeIndex) instanceof CpUtf8 type) {
+			Map<CpUtf8, ElementValue> values = readElementPairs(scope.with(type.getText()));
+			return new TypeAnnotation(type, values, info, typePath);
+		}
+		throw new IllegalArgumentException("Annotation type_index does not match allowed locations for its type");
 	}
 
 	/**
@@ -362,11 +389,15 @@ public class AnnotationReader {
 		int numPairs = is.readUnsignedShort();
 		Map<CpUtf8, ElementValue> values = new LinkedHashMap<>();
 		while (numPairs > 0) {
-			CpUtf8 name = (CpUtf8) cp.get(is.readUnsignedShort());
-			ElementValue value = readElementValue(scope);
-			if (values.containsKey(name))
-				throw new IllegalArgumentException("Element pairs already has field by name index: " + name);
-			values.put(name, value);
+			int nameIndex = is.readUnsignedShort();
+			ElementValue elementValue = readElementValue(scope);
+			if (cp.get(nameIndex) instanceof CpUtf8 elementName) {
+				if (values.containsKey(elementName))
+					throw new IllegalArgumentException("Element pairs already has field by name index: " + elementName);
+				values.put(elementName, elementValue);
+			} else {
+				throw new IllegalArgumentException("Element pair has invalid name specified by cp-index: " + nameIndex);
+			}
 			numPairs--;
 		}
 		return values;
