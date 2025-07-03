@@ -12,6 +12,8 @@ import software.coley.cafedude.classfile.instruction.Instruction;
 import software.coley.cafedude.classfile.instruction.IntOperandInstruction;
 import software.coley.cafedude.classfile.instruction.LookupSwitchInstruction;
 import software.coley.cafedude.classfile.instruction.ReservedOpcodes;
+import software.coley.cafedude.io.ClassBuilder;
+import software.coley.cafedude.io.ClassFileReader;
 import software.coley.cafedude.io.FallbackInstructionReader;
 import software.coley.cafedude.io.IndexableByteStream;
 
@@ -34,7 +36,7 @@ import static software.coley.cafedude.classfile.instruction.ReservedOpcodes.*;
  *
  * @author xDark
  * @see ReservedOpcodes Opcodes of reserved instructions.
- * @see IllegalStrippingTransformer Example usage.
+ * @see ClassFileReader#getFallbackInstructionReader(ClassBuilder)
  */
 public class IllegalRewritingInstructionsReader implements FallbackInstructionReader {
 	private static final Instruction NOP_INSN = new BasicInstruction(NOP);
