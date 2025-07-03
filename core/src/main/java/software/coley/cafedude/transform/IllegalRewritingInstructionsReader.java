@@ -1,5 +1,6 @@
 package software.coley.cafedude.transform;
 
+import jakarta.annotation.Nonnull;
 import software.coley.cafedude.classfile.ConstPool;
 import software.coley.cafedude.classfile.constant.CpDynamic;
 import software.coley.cafedude.classfile.constant.CpEntry;
@@ -9,12 +10,13 @@ import software.coley.cafedude.classfile.constant.CpString;
 import software.coley.cafedude.classfile.instruction.BasicInstruction;
 import software.coley.cafedude.classfile.instruction.Instruction;
 import software.coley.cafedude.classfile.instruction.IntOperandInstruction;
+import software.coley.cafedude.classfile.instruction.LookupSwitchInstruction;
 import software.coley.cafedude.classfile.instruction.ReservedOpcodes;
 import software.coley.cafedude.io.FallbackInstructionReader;
 import software.coley.cafedude.io.IndexableByteStream;
 
-import jakarta.annotation.Nonnull;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,14 +28,19 @@ import static software.coley.cafedude.classfile.instruction.ReservedOpcodes.*;
 
 /**
  * Illegal instruction rewriter.
+ * <p/>
+ * Some implementations of these instructions can be found in the
+ * <a href="src/hotspot/share/interpreter/bytecodes.cpp">hotspot interpreter source</a>.
  *
  * @author xDark
  * @see ReservedOpcodes Opcodes of reserved instructions.
  * @see IllegalStrippingTransformer Example usage.
  */
-final class IllegalRewritingInstructionsReader implements FallbackInstructionReader {
+public class IllegalRewritingInstructionsReader implements FallbackInstructionReader {
 	private static final Instruction NOP_INSN = new BasicInstruction(NOP);
 	private static final Instruction ALOAD_0_INSN = new BasicInstruction(ALOAD_0);
+	private static final Instruction ILOAD_0_INSN = new BasicInstruction(ILOAD_0);
+	private static final Instruction ILOAD_2_INSN = new BasicInstruction(ILOAD_2);
 	private static final Instruction RETURN_INSN = new BasicInstruction(RETURN);
 
 	private final ConstPool cp;
@@ -57,12 +64,40 @@ final class IllegalRewritingInstructionsReader implements FallbackInstructionRea
 				is.readByte(); // Breakpoint occupies two bytes.
 				return Arrays.asList(NOP_INSN, NOP_INSN); // Emit two nops
 			case fast_aload_0:
+			case fast_iaccess_0:
+			case fast_aaccess_0:
+			case fast_faccess_0:
 				rewritten = true;
 				return Collections.singletonList(ALOAD_0_INSN);
+			case fast_iload:
+				rewritten = true;
+				return Collections.singletonList(ILOAD_0_INSN);
+			case fast_iload2:
+				rewritten = true;
+				return Collections.singletonList(ILOAD_2_INSN);
+			case fast_linearswitch:
+			case fast_binaryswitch:
+				// These are read the exact same as a regular "lookupswitch" instruction
+				// - Extracting the per-insn reads to facilitate code-reuse would be nice to have later
+
+				rewritten = true;
+				int pos = is.getIndex();
+				// Skip padding.
+				is.skip((4 - pos & 3));
+				int dflt = is.readInt();
+				int keyCount = is.readInt();
+				List<Integer> keys = new ArrayList<>(keyCount);
+				List<Integer> offsets = new ArrayList<>(keyCount);
+				for (int i = 0; i < keyCount; i++) {
+					keys.add(is.readInt());
+					offsets.add(is.readInt());
+				}
+				LookupSwitchInstruction lswitch = new LookupSwitchInstruction(dflt, keys, offsets);
+				lswitch.notifyStartPosition(pos - 1); // Offset by 1 to accommodate for opcode
+				return Collections.singletonList(lswitch);
 			case fast_aldc:
 				rewritten = true;
-				return Collections.singletonList(new IntOperandInstruction(LDC,
-						rewriteIndex(is.readByte() & 0xFF)));
+				return Collections.singletonList(new IntOperandInstruction(LDC, rewriteIndex(is.readByte() & 0xFF)));
 			case fast_aldc_w:
 				rewritten = true;
 				short idx = is.readShort();
@@ -90,8 +125,7 @@ final class IllegalRewritingInstructionsReader implements FallbackInstructionRea
 			int index = 0;
 			int cpIndex = 1;
 			for (CpEntry item : cp) {
-				if (item instanceof CpString || item instanceof CpMethodHandle
-						|| item instanceof CpMethodType || item instanceof CpDynamic) {
+				if (item instanceof CpString || item instanceof CpMethodHandle || item instanceof CpMethodType || item instanceof CpDynamic) {
 					cpMap.put(index++, cpIndex);
 				}
 				cpIndex++;

@@ -32,7 +32,7 @@ public interface FallbackInstructionReader {
 	@Nonnull
 	static FallbackInstructionReader fail() {
 		return (opcode, buffer) -> {
-			throw new IllegalStateException("Unable to read: " + opcode);
+			throw new IllegalStateException("Unable to read instruction, opcode=" + opcode);
 		};
 	}
 }
