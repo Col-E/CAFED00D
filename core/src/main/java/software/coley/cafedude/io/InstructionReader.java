@@ -1,8 +1,10 @@
 package software.coley.cafedude.io;
 
+import jakarta.annotation.Nonnull;
 import software.coley.cafedude.classfile.ConstPool;
 import software.coley.cafedude.classfile.constant.ConstRef;
 import software.coley.cafedude.classfile.constant.CpClass;
+import software.coley.cafedude.classfile.constant.CpEntry;
 import software.coley.cafedude.classfile.constant.CpInvokeDynamic;
 import software.coley.cafedude.classfile.instruction.BasicInstruction;
 import software.coley.cafedude.classfile.instruction.CpRefInstruction;
@@ -11,10 +13,10 @@ import software.coley.cafedude.classfile.instruction.Instruction;
 import software.coley.cafedude.classfile.instruction.IntOperandInstruction;
 import software.coley.cafedude.classfile.instruction.LookupSwitchInstruction;
 import software.coley.cafedude.classfile.instruction.MultiANewArrayInstruction;
+import software.coley.cafedude.classfile.instruction.Opcodes;
 import software.coley.cafedude.classfile.instruction.TableSwitchInstruction;
 import software.coley.cafedude.classfile.instruction.WideInstruction;
 
-import jakarta.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +67,7 @@ public class InstructionReader {
 		List<Instruction> instructions = new ArrayList<>();
 		FallbackInstructionReader fallbackReader = this.fallbackReader;
 		while (is.getIndex() < end) {
-			int opcode = is.readByte() & 0xFF;
+			int opcode = is.readUnsignedByte();
 			switch (opcode) {
 				case NOP:
 				case ACONST_NULL:
@@ -92,18 +94,18 @@ public class InstructionReader {
 					instructions.add(new IntOperandInstruction(opcode, is.readShort()));
 					break;
 				case LDC:
-					instructions.add(new CpRefInstruction(opcode, pool.get(is.readByte() & 0xFF)));
+					instructions.add(readLdc(is, pool));
 					break;
 				case LDC_W:
 				case LDC2_W:
-					instructions.add(new CpRefInstruction(opcode, pool.get(is.readShort() & 0xFFFF)));
+					instructions.add(readLdcW(is, pool, opcode));
 					break;
 				case ILOAD:
 				case LLOAD:
 				case FLOAD:
 				case DLOAD:
 				case ALOAD:
-					instructions.add(new IntOperandInstruction(opcode, is.readByte() & 0xFF));
+					instructions.add(readXLoad(is, opcode));
 					break;
 				case ILOAD_0:
 				case ILOAD_1:
@@ -142,7 +144,7 @@ public class InstructionReader {
 				case FSTORE:
 				case DSTORE:
 				case ASTORE:
-					instructions.add(new IntOperandInstruction(opcode, is.readByte() & 0xFF));
+					instructions.add(new IntOperandInstruction(opcode, is.readUnsignedByte()));
 					break;
 				case ISTORE_0:
 				case ISTORE_1:
@@ -226,7 +228,7 @@ public class InstructionReader {
 					instructions.add(new BasicInstruction(opcode));
 					break;
 				case IINC:
-					instructions.add(new IincInstruction(is.readByte() & 0xFF, is.readByte()));
+					instructions.add(new IincInstruction(is.readUnsignedByte(), is.readByte()));
 					break;
 				case I2L:
 				case I2F:
@@ -277,7 +279,7 @@ public class InstructionReader {
 					instructions.add(new IntOperandInstruction(JSR, is.readShort()));
 					break;
 				case RET:
-					instructions.add(new IntOperandInstruction(RET, is.readByte() & 0xFF));
+					instructions.add(new IntOperandInstruction(RET, is.readUnsignedByte()));
 					break;
 				case TABLESWITCH: {
 					int pos = is.getIndex();
@@ -297,19 +299,7 @@ public class InstructionReader {
 					break;
 				}
 				case LOOKUPSWITCH: {
-					int pos = is.getIndex();
-					// Skip padding.
-					is.skip((4 - pos & 3));
-					int dflt = is.readInt();
-					int keyCount = is.readInt();
-					List<Integer> keys = new ArrayList<>(keyCount);
-					List<Integer> offsets = new ArrayList<>(keyCount);
-					for (int i = 0; i < keyCount; i++) {
-						keys.add(is.readInt());
-						offsets.add(is.readInt());
-					}
-					LookupSwitchInstruction lswitch = new LookupSwitchInstruction(dflt, keys, offsets);
-					lswitch.notifyStartPosition(pos - 1); // Offset by 1 to accommodate for opcode
+					LookupSwitchInstruction lswitch = readLookupSwitchInstruction(is);
 					instructions.add(lswitch);
 					break;
 				}
@@ -328,12 +318,11 @@ public class InstructionReader {
 				case INVOKEVIRTUAL:
 				case INVOKESPECIAL:
 				case INVOKESTATIC: {
-					ConstRef ref = (ConstRef) pool.get(is.readShort() & 0xFFFF);
-					instructions.add(new CpRefInstruction(opcode, ref));
+					instructions.add(readMemberReferenceInstruction(is, pool, opcode));
 					break;
 				}
 				case INVOKEINTERFACE: {
-					ConstRef ref = (ConstRef) pool.get(is.readShort() & 0xFFFF);
+					ConstRef ref = (ConstRef) pool.get(is.readUnsignedShort());
 
 					// 1 byte for arg-count
 					// 1 padding byte
@@ -343,7 +332,7 @@ public class InstructionReader {
 					break;
 				}
 				case INVOKEDYNAMIC: {
-					int index = is.readShort() & 0xFFFF;
+					int index = is.readUnsignedShort();
 
 					// 2 padding bytes
 					is.readShort();
@@ -356,11 +345,11 @@ public class InstructionReader {
 				case ANEWARRAY:
 				case CHECKCAST:
 				case INSTANCEOF:
-					CpClass clazz = (CpClass) pool.get(is.readShort() & 0xFFFF);
+					CpClass clazz = (CpClass) pool.get(is.readUnsignedShort());
 					instructions.add(new CpRefInstruction(opcode, clazz));
 					break;
 				case NEWARRAY:
-					instructions.add(new IntOperandInstruction(NEWARRAY, is.readByte() & 0xFF));
+					instructions.add(new IntOperandInstruction(NEWARRAY, is.readUnsignedByte()));
 					break;
 				case ARRAYLENGTH:
 					instructions.add(new BasicInstruction(ARRAYLENGTH));
@@ -373,7 +362,7 @@ public class InstructionReader {
 					instructions.add(new BasicInstruction(opcode));
 					break;
 				case WIDE:
-					int type = is.readByte() & 0xFF;
+					int type = is.readUnsignedByte();
 					switch (type) {
 						case ILOAD:
 						case FLOAD:
@@ -387,10 +376,10 @@ public class InstructionReader {
 						case DSTORE:
 						case RET:
 							instructions.add(new WideInstruction(new IntOperandInstruction(type,
-									is.readShort() & 0xFFFF)));
+									is.readUnsignedShort())));
 							break;
 						case IINC:
-							instructions.add(new WideInstruction(new IincInstruction(is.readShort() & 0xFFFF,
+							instructions.add(new WideInstruction(new IincInstruction(is.readUnsignedShort(),
 									is.readShort())));
 							break;
 						default:
@@ -398,8 +387,8 @@ public class InstructionReader {
 					}
 					break;
 				case MULTIANEWARRAY:
-					int index = is.readShort() & 0xFFFF;
-					int dimensions = is.readByte() & 0xFF;
+					int index = is.readUnsignedShort();
+					int dimensions = is.readUnsignedByte();
 					instructions.add(new MultiANewArrayInstruction((CpClass) pool.get(index),
 							dimensions));
 					break;
@@ -416,5 +405,106 @@ public class InstructionReader {
 			}
 		}
 		return instructions;
+	}
+
+	/**
+	 * @param is
+	 * 		Input to read from.
+	 * @param opcode
+	 * 		Load instruction opcode.
+	 *
+	 * @return Variable load instruction.
+	 *
+	 * @throws IOException
+	 * 		When the stream is unexpectedly closed or ends.
+	 */
+	@Nonnull
+	public static IntOperandInstruction readXLoad(@Nonnull IndexableByteStream is, int opcode) throws IOException {
+		return new IntOperandInstruction(opcode, is.readUnsignedByte());
+	}
+
+	/**
+	 * @param is
+	 * 		Input to read from.
+	 * @param pool
+	 * 		Constant pool to find loadable constants in.
+	 *
+	 * @return LDC instruction.
+	 *
+	 * @throws IOException
+	 * 		When the stream is unexpectedly closed or ends.
+	 */
+	@Nonnull
+	public static CpRefInstruction readLdc(@Nonnull IndexableByteStream is, @Nonnull ConstPool pool) throws IOException {
+		int index = is.readUnsignedByte();
+		CpEntry entry = pool.get(index);
+		return new CpRefInstruction(LDC, entry);
+	}
+
+	/**
+	 * @param is
+	 * 		Input to read from.
+	 * @param pool
+	 * 		Constant pool to find loadable constants in.
+	 * @param opcode
+	 * 		Wide LDC instruction opcode, {@link Opcodes#LDC_W} or {@link Opcodes#LDC2_W}.
+	 *
+	 * @return Wide LDC instruction.
+	 *
+	 * @throws IOException
+	 * 		When the stream is unexpectedly closed or ends.
+	 */
+	@Nonnull
+	public static CpRefInstruction readLdcW(@Nonnull IndexableByteStream is, @Nonnull ConstPool pool, int opcode) throws IOException {
+		int index = is.readUnsignedShort();
+		CpEntry entry = pool.get(index);
+		return new CpRefInstruction(opcode, entry);
+	}
+
+	/**
+	 * @param is
+	 * 		Input to read from.
+	 *
+	 * @return Lookup switch instruction.
+	 *
+	 * @throws IOException
+	 * 		When the stream is unexpectedly closed or ends.
+	 */
+	@Nonnull
+	public static LookupSwitchInstruction readLookupSwitchInstruction(@Nonnull IndexableByteStream is) throws IOException {
+		int pos = is.getIndex();
+		// Skip padding.
+		is.skip((4 - pos & 3));
+		int dflt = is.readInt();
+		int keyCount = is.readInt();
+		List<Integer> keys = new ArrayList<>(keyCount);
+		List<Integer> offsets = new ArrayList<>(keyCount);
+		for (int i = 0; i < keyCount; i++) {
+			keys.add(is.readInt());
+			offsets.add(is.readInt());
+		}
+		LookupSwitchInstruction lswitch = new LookupSwitchInstruction(dflt, keys, offsets);
+		lswitch.notifyStartPosition(pos - 1); // Offset by 1 to accommodate for opcode
+		return lswitch;
+	}
+
+	/**
+	 * @param is
+	 * 		Input to read from.
+	 * @param pool
+	 * 		Constant pool to find member references in.
+	 * @param opcode
+	 * 		Reference instruction opcode.
+	 *
+	 * @return Member reference instruction.
+	 *
+	 * @throws IOException
+	 * 		When the stream is unexpectedly closed or ends.
+	 */
+	@Nonnull
+	public static CpRefInstruction readMemberReferenceInstruction(@Nonnull IndexableByteStream is, @Nonnull ConstPool pool, int opcode) throws IOException {
+		int index = is.readUnsignedShort();
+		ConstRef ref = (ConstRef) pool.get(index);
+		return new CpRefInstruction(opcode, ref);
 	}
 }

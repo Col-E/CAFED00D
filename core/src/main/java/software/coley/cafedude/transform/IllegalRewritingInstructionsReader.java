@@ -2,28 +2,21 @@ package software.coley.cafedude.transform;
 
 import jakarta.annotation.Nonnull;
 import software.coley.cafedude.classfile.ConstPool;
-import software.coley.cafedude.classfile.constant.CpDynamic;
-import software.coley.cafedude.classfile.constant.CpEntry;
-import software.coley.cafedude.classfile.constant.CpMethodHandle;
-import software.coley.cafedude.classfile.constant.CpMethodType;
-import software.coley.cafedude.classfile.constant.CpString;
+import software.coley.cafedude.classfile.VersionConstants;
 import software.coley.cafedude.classfile.instruction.BasicInstruction;
 import software.coley.cafedude.classfile.instruction.Instruction;
 import software.coley.cafedude.classfile.instruction.IntOperandInstruction;
-import software.coley.cafedude.classfile.instruction.LookupSwitchInstruction;
+import software.coley.cafedude.classfile.instruction.Opcodes;
 import software.coley.cafedude.classfile.instruction.ReservedOpcodes;
 import software.coley.cafedude.io.ClassBuilder;
 import software.coley.cafedude.io.ClassFileReader;
 import software.coley.cafedude.io.FallbackInstructionReader;
 import software.coley.cafedude.io.IndexableByteStream;
+import software.coley.cafedude.io.InstructionReader;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static software.coley.cafedude.classfile.instruction.Opcodes.*;
 import static software.coley.cafedude.classfile.instruction.ReservedOpcodes.*;
@@ -31,117 +24,163 @@ import static software.coley.cafedude.classfile.instruction.ReservedOpcodes.*;
 /**
  * Illegal instruction rewriter.
  * <p/>
- * Some implementations of these instructions can be found in the
- * <a href="src/hotspot/share/interpreter/bytecodes.cpp">hotspot interpreter source</a>.
+ * Implementation details about these instructions can be found in the:
+ * <ul>
+ *     <li><a href="https://github.com/openjdk/jdk/blob/f2d2eef988c57cc9f6194a8fd5b2b422035ee68f/src/hotspot/share/interpreter/zero/bytecodeInterpreter.cpp">C++ {@code bytecodeInterpreter.cpp}</a></li>
+ *     <li><a href="https://github.com/openjdk/jdk/blob/5e40fb6bda1d56e3eba584b49aa0b68096b34169/src/hotspot/share/interpreter/bytecodes.cpp">C++ {@code bytecodes.cpp}</a>.</li>
+ *     <li><a href="https://github.com/openjdk/jdk/blob/5e40fb6bda1d56e3eba584b49aa0b68096b34169/src/jdk.hotspot.agent/share/classes/sun/jvm/hotspot/interpreter/Bytecodes.java">Java {@code Bytecodes.java}</a>.</li>
+ * </ul>
  *
  * @author xDark
+ * @author Matt Coley
  * @see ReservedOpcodes Opcodes of reserved instructions.
  * @see ClassFileReader#getFallbackInstructionReader(ClassBuilder)
  */
 public class IllegalRewritingInstructionsReader implements FallbackInstructionReader {
 	private static final Instruction NOP_INSN = new BasicInstruction(NOP);
 	private static final Instruction ALOAD_0_INSN = new BasicInstruction(ALOAD_0);
-	private static final Instruction ILOAD_0_INSN = new BasicInstruction(ILOAD_0);
-	private static final Instruction ILOAD_2_INSN = new BasicInstruction(ILOAD_2);
+	private static final Instruction CALOAD = new BasicInstruction(Opcodes.CALOAD);
 	private static final Instruction RETURN_INSN = new BasicInstruction(RETURN);
-
+	private final int classVersion;
 	private final ConstPool cp;
-	private Map<Integer, Integer> cpMap;
 	boolean rewritten;
 
 	/**
 	 * @param cp
 	 * 		Constant pool used to pull references from.
+	 * @param classVersion
+	 * 		Class version.
 	 */
-	public IllegalRewritingInstructionsReader(ConstPool cp) {
+	public IllegalRewritingInstructionsReader(@Nonnull ConstPool cp, int classVersion) {
 		this.cp = cp;
+		this.classVersion = classVersion;
 	}
 
 	@Nonnull
 	@Override
 	public List<Instruction> read(int opcode, @Nonnull IndexableByteStream is) throws IOException {
+		// Handle 'should-not-reach-here' which changes depending on the class version.
+		if ((classVersion <= VersionConstants.JAVA8 && opcode == shouldnotreachhere_v8)
+				|| (classVersion == VersionConstants.JAVA9 && opcode == shouldnotreachhere_v9)
+				|| classVersion >= VersionConstants.JAVA11 && opcode == shouldnotreachhere_v11) {
+			rewritten = true;
+			return Collections.singletonList(NOP_INSN);
+		}
+
+		// Format strings interpretation:
+		//
+		// b: bytecode
+		// c: signed constant, Java byte-ordering
+		// i: unsigned index , Java byte-ordering
+		// j: unsigned index , native byte-ordering
+		// o: branch offset  , Java byte-ordering
+		// _: unused/ignored
+		// w: wide bytecode
+		//
+		// JJ: unsigned short (cp entry)
 		switch (opcode) {
 			case breakpoint:
 				rewritten = true;
-				is.readByte(); // Breakpoint occupies two bytes.
-				return Arrays.asList(NOP_INSN, NOP_INSN); // Emit two nops
-			case fast_aload_0:
-			case fast_iaccess_0:
+				// Breakpoint occupies two bytes (op + arg).
+				// Two nops will replace a breakpoint.
+				is.readByte();
+				return List.of(NOP_INSN, NOP_INSN);
+			case fast_agetfield: // Format = bJJ
+			case fast_bgetfield:
+			case fast_cgetfield:
+			case fast_dgetfield:
+			case fast_fgetfield:
+			case fast_igetfield:
+			case fast_lgetfield:
+			case fast_sgetfield:
+			case nofast_getfield:
+				// Simple opcode swap
+				rewritten = true;
+				return Collections.singletonList(InstructionReader.readMemberReferenceInstruction(is, cp, GETFIELD));
+			case fast_aputfield: // Format = bJJ
+			case fast_bputfield:
+			case fast_cputfield:
+			case fast_dputfield:
+			case fast_fputfield:
+			case fast_iputfield:
+			case fast_lputfield:
+			case fast_sputfield:
+			case fast_zputfield:
+			case nofast_putfield:
+				// Simple opcode swap
+				rewritten = true;
+				return Collections.singletonList(InstructionReader.readMemberReferenceInstruction(is, cp, PUTFIELD));
+			case fast_aload_0: // Format = b
+			case nofast_aload_0:
+				// Simple opcode swap
+				rewritten = true;
+				return Collections.singletonList(ALOAD_0_INSN);
+			case fast_iload: // Format = bi
+			case nofast_iload:
+				// Simple opcode swap
+				rewritten = true;
+				return Collections.singletonList(InstructionReader.readXLoad(is, ILOAD));
+			case fast_aldc: // Format = bj
+				// Simple opcode swap
+				rewritten = true;
+				return Collections.singletonList(InstructionReader.readLdc(is, cp));
+			case fast_aldc_w:  // Format = bJJ
+				// Simple opcode swap
+				rewritten = true;
+				return Collections.singletonList(InstructionReader.readLdcW(is, cp, LDC_W));
+			case return_register_finalizer: // Format = b
+				// Simple opcode swap
+				rewritten = true;
+				return Collections.singletonList(RETURN_INSN);
+			case fast_invokevfinal: // Format = bJJ
+				// Interpreter rewrites 'invokevirtual' to 'invokevfinal' if the method is final.
+				rewritten = true;
+				return Collections.singletonList(InstructionReader.readMemberReferenceInstruction(is, cp, INVOKEVIRTUAL));
+			case fast_linearswitch: // Format is blank
+			case fast_binaryswitch:
+				// In 'bytecodes.cpp' these are both implemented as plain lookup-switches.
+				rewritten = true;
+				return Collections.singletonList(InstructionReader.readLookupSwitchInstruction(is));
+			case fast_iaccess_0: // Format = b_JJ
 			case fast_aaccess_0:
 			case fast_faccess_0:
 				rewritten = true;
-				return Collections.singletonList(ALOAD_0_INSN);
-			case fast_iload:
+				// Interpreter is rewriting the following patterns:
+				//  aload_0, fast_agetfield --> fast_aaccess_0
+				//  aload_0, fast_igetfield --> fast_iaccess_0
+				//  aload_0, fast_fgetfield --> fast_faccess_0
+				//
+				// Only the opcode for aload_0 changes.
+				is.readUnsignedByte();
+				return List.of(ALOAD_0_INSN, InstructionReader.readMemberReferenceInstruction(is, cp, GETFIELD));
+			case fast_iload2: // Format = bi_i
+				// Interpreter is rewriting the following patterns:
+				//  iload_x, iload_y --> fast_iload2
+				//
+				// Only the opcode for iload_x changes.
 				rewritten = true;
-				return Collections.singletonList(ILOAD_0_INSN);
-			case fast_iload2:
+				IntOperandInstruction iload1 = InstructionReader.readXLoad(is, ILOAD);
+				is.readUnsignedByte(); // Padding byte for '_' in format
+				IntOperandInstruction iload2 = InstructionReader.readXLoad(is, ILOAD);
+				return List.of(iload1, iload2);
+			case fast_icaload: // Format = bi_
+				// Interpreter is rewriting the following patterns:
+				//  iload_x, caload --> fast_icaload
+				//
+				// Only the opcode for iload_x changes.
 				rewritten = true;
-				return Collections.singletonList(ILOAD_2_INSN);
-			case fast_linearswitch:
-			case fast_binaryswitch:
-				// These are read the exact same as a regular "lookupswitch" instruction
-				// - Extracting the per-insn reads to facilitate code-reuse would be nice to have later
-
+				IntOperandInstruction iload = InstructionReader.readXLoad(is, ILOAD);
+				is.readUnsignedByte(); // Padding byte for '_' in format
+				return List.of(iload, CALOAD);
+			case invokehandle: // Format = bJJ
+				// This one is confusing...
+				// - 'sharedRuntime.cpp' implies there is no receiver for 'invokehandle' similar to 'invokestatic/dynamic'
+				// - But 'rewriter.cpp' seems to imply it is any of the invoke instructions
+				// - And 'bytecodes.cpp' says its basline is 'invokevirtual'
 				rewritten = true;
-				int pos = is.getIndex();
-				// Skip padding.
-				is.skip((4 - pos & 3));
-				int dflt = is.readInt();
-				int keyCount = is.readInt();
-				List<Integer> keys = new ArrayList<>(keyCount);
-				List<Integer> offsets = new ArrayList<>(keyCount);
-				for (int i = 0; i < keyCount; i++) {
-					keys.add(is.readInt());
-					offsets.add(is.readInt());
-				}
-				LookupSwitchInstruction lswitch = new LookupSwitchInstruction(dflt, keys, offsets);
-				lswitch.notifyStartPosition(pos - 1); // Offset by 1 to accommodate for opcode
-				return Collections.singletonList(lswitch);
-			case fast_aldc:
-				rewritten = true;
-				return Collections.singletonList(new IntOperandInstruction(LDC, rewriteIndex(is.readByte() & 0xFF)));
-			case fast_aldc_w:
-				rewritten = true;
-				short idx = is.readShort();
-				int newIndex = rewriteIndex(idx & 0xFFFF);
-				if (newIndex == -1)
-					newIndex = rewriteIndex(swap(idx) & 0xFFFF);
-				if (newIndex == -1)
-					throw new IllegalStateException("Failed to rewrite fast_aldc_w: " + idx);
-				return Collections.singletonList(new IntOperandInstruction(LDC_W, newIndex));
-			case return_register_finalizer:
-				rewritten = true;
-				return Collections.singletonList(RETURN_INSN);
-			case shouldnotreachhere:
-				rewritten = true;
-				return Collections.singletonList(NOP_INSN);
+				return Collections.singletonList(InstructionReader.readMemberReferenceInstruction(is, cp, INVOKEVIRTUAL));
 			default:
 				throw new IllegalStateException("Don't know how to rewrite " + opcode);
 		}
-	}
-
-	private int rewriteIndex(int idx) {
-		Map<Integer, Integer> cpMap = this.cpMap;
-		if (cpMap == null) {
-			cpMap = new HashMap<>();
-			int index = 0;
-			int cpIndex = 1;
-			for (CpEntry item : cp) {
-				if (item instanceof CpString || item instanceof CpMethodHandle || item instanceof CpMethodType || item instanceof CpDynamic) {
-					cpMap.put(index++, cpIndex);
-				}
-				cpIndex++;
-				if (item.isWide()) {
-					cpIndex++;
-				}
-			}
-			this.cpMap = cpMap;
-		}
-		Integer v = cpMap.get(idx);
-		return v == null ? -1 : v;
-	}
-
-	private static short swap(short x) {
-		return (short) (((x >> 8) & 0xFF) | (x << 8));
 	}
 }

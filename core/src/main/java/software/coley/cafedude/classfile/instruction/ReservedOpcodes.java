@@ -43,5 +43,22 @@ public interface ReservedOpcodes {
 	int fast_aldc_w = 231;
 	int return_register_finalizer = 232;
 	int invokehandle = 233;
-	int shouldnotreachhere = 234;
+	int nofast_getfield = 234;
+	int nofast_putfield = 235;
+	int nofast_aload_0 = 236;
+	int nofast_iload = 237;
+	/**
+	 * This is always the highest unused opcode per VM version. As new impl-specific instructions
+	 * are added this opcode's value changes. For example:
+	 * <ul>
+	 *     <li>Java 8: {@code shouldnotreachhere} = {@code 233}</li>
+	 *     <li>Java 9: {@code shouldnotreachhere} = {@code 234}</li>
+	 *     <li>Java 11: {@code shouldnotreachhere} = {@code 238}</li>
+	 * </ul>
+	 * Version specific constants will be defined below.
+	 */
+	int shouldnotreachhere = 238;
+	int shouldnotreachhere_v8 = 233;
+	int shouldnotreachhere_v9 = 234;
+	int shouldnotreachhere_v11 = 238;
 }
