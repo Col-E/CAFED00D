@@ -1,15 +1,19 @@
 package software.coley.cafedude;
 
-import software.coley.cafedude.classfile.ClassFile;
-import software.coley.cafedude.io.ClassFileReader;
-import software.coley.cafedude.io.ClassFileWriter;
-import software.coley.cafedude.transform.IllegalStrippingTransformer;
+import jakarta.annotation.Nonnull;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
+import software.coley.cafedude.classfile.ClassFile;
+import software.coley.cafedude.io.ClassBuilder;
+import software.coley.cafedude.io.ClassFileReader;
+import software.coley.cafedude.io.ClassFileWriter;
+import software.coley.cafedude.io.FallbackInstructionReader;
+import software.coley.cafedude.transform.IllegalRewritingInstructionsReader;
+import software.coley.cafedude.transform.IllegalStrippingTransformer;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,6 +21,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -24,6 +29,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * Test that asserts ASM-crashing obfuscated classes are written back without the offending attributes.
  */
 public class CrasherPatchingTest {
+	private static final Set<String> noverify_code = Set.of("sample35.class");
+
 	@ParameterizedTest
 	@MethodSource("supply")
 	public void testPatch(File sub) {
@@ -40,13 +47,15 @@ public class CrasherPatchingTest {
 			}, "Class does not break ASM: " + sub.getName());
 
 			// Patch obfuscated class
-			ClassFile cf = new ClassFileReader().read(code);
+			ClassFile cf = new ReservedOpcodeRewritingReader().read(code);
 			new IllegalStrippingTransformer(cf).transform();
 			byte[] modified = new ClassFileWriter().write(cf);
 
 			// Reading with ASM works
 			assertDoesNotThrow(() -> {
-				ClassWriter cw = new TestClassWriter(ClassWriter.COMPUTE_FRAMES);
+				// Don't do compute-frames if the sample contains unverifiable bytecode (stack height mismatching)
+				int writerFlags = noverify_code.contains(sub.getName()) ? 0 : ClassWriter.COMPUTE_FRAMES;
+				ClassWriter cw = new TestClassWriter(writerFlags);
 				ClassReader cr = new ClassReader(modified);
 				ClassNode node = new ClassNode(Opcodes.ASM9);
 				cr.accept(node, 0);
@@ -72,6 +81,21 @@ public class CrasherPatchingTest {
 				files.add(sub);
 		}
 		return files;
+	}
+
+	/**
+	 * Class reader that supports rewriting reserved Hotspot VM instructions.
+	 */
+	private static class ReservedOpcodeRewritingReader extends ClassFileReader {
+		IllegalRewritingInstructionsReader reader;
+
+		@Nonnull
+		@Override
+		public FallbackInstructionReader getFallbackInstructionReader(@Nonnull ClassBuilder builder) {
+			if (reader == null)
+				reader = new IllegalRewritingInstructionsReader(builder.getPool(), builder.getVersionMajor());
+			return reader;
+		}
 	}
 
 	/**
