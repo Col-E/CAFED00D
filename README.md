@@ -39,6 +39,12 @@ ClassFile cf = cr.read(code);
 code = new ClassFileWriter().write(cf);
 ```
 
+### Stripping reserved hotspot instructions from classes
+
+If you encounter a class using reserved hotspot instructions create subclass of `ClassFileReader` which provides `IllegalRewritingInstructionsReader`.
+
+An example of this can be found in [`CrasherPatchingTest.java`](core/src/test/java/software/coley/cafedude/CrasherPatchingTest.java)
+
 ### Stripping malformed attributes and data from classes
 
 Additional items can be removed via:
