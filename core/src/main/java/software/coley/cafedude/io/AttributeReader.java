@@ -706,11 +706,13 @@ public class AttributeReader {
 	@Nonnull
 	private NestMembersAttribute readNestMembers() throws IOException {
 		int count = is.readUnsignedShort();
-		List<CpClass> memberClassIndices = new ArrayList<>(count);
+		List<CpClass> memberClasses = new ArrayList<>(count);
 		for (int i = 0; i < count; i++) {
-			memberClassIndices.add((CpClass) cp.get(is.readUnsignedShort()));
+			CpEntry memberEntry = cp.get(is.readUnsignedShort());
+			if (memberEntry instanceof CpClass memberClass && !memberClasses.contains(memberClass))
+				memberClasses.add(memberClass);
 		}
-		return new NestMembersAttribute(name, memberClassIndices);
+		return new NestMembersAttribute(name, memberClasses);
 	}
 
 	/**
