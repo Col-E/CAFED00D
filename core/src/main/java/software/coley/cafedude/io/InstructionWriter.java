@@ -1,5 +1,6 @@
 package software.coley.cafedude.io;
 
+import jakarta.annotation.Nonnull;
 import software.coley.cafedude.classfile.Descriptor;
 import software.coley.cafedude.classfile.constant.ConstRef;
 import software.coley.cafedude.classfile.instruction.CpRefInstruction;
@@ -51,7 +52,8 @@ public class InstructionWriter {
 	 *
 	 * @return Content written.
 	 */
-	public byte[] writeCode(List<Instruction> list) {
+	@Nonnull
+	public byte[] writeCode(@Nonnull List<Instruction> list) {
 		GrowingByteBuffer buffer = new GrowingByteBuffer();
 		FallbackInstructionWriter fallbackWriter = this.fallbackWriter;
 		for (Instruction instruction : list) {

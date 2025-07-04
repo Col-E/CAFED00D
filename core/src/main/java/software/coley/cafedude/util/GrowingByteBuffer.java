@@ -1,5 +1,7 @@
 package software.coley.cafedude.util;
 
+import jakarta.annotation.Nonnull;
+
 import java.nio.ByteBuffer;
 
 /**
@@ -19,6 +21,7 @@ public class GrowingByteBuffer {
 	 *
 	 * @return This buffer, possibly expanded.
 	 */
+	@Nonnull
 	public GrowingByteBuffer ensureWriteable(int size) {
 		ByteBuffer buffer = this.buffer;
 		int capacity = buffer.capacity();
@@ -40,6 +43,7 @@ public class GrowingByteBuffer {
 	 *
 	 * @return This buffer.
 	 */
+	@Nonnull
 	public GrowingByteBuffer putBoolean(boolean value) {
 		ensureWriteable(1).buffer.put((byte) (value ? 1 : 0));
 		return this;
@@ -53,6 +57,7 @@ public class GrowingByteBuffer {
 	 *
 	 * @return This buffer.
 	 */
+	@Nonnull
 	public GrowingByteBuffer put(int value) {
 		ensureWriteable(1).buffer.put((byte) value);
 		return this;
@@ -66,6 +71,7 @@ public class GrowingByteBuffer {
 	 *
 	 * @return This buffer.
 	 */
+	@Nonnull
 	public GrowingByteBuffer putShort(int value) {
 		ensureWriteable(2).buffer.putShort((short) value);
 		return this;
@@ -79,6 +85,7 @@ public class GrowingByteBuffer {
 	 *
 	 * @return This buffer.
 	 */
+	@Nonnull
 	public GrowingByteBuffer putChar(char value) {
 		ensureWriteable(2).buffer.putChar(value);
 		return this;
@@ -92,6 +99,7 @@ public class GrowingByteBuffer {
 	 *
 	 * @return This buffer.
 	 */
+	@Nonnull
 	public GrowingByteBuffer putInt(int value) {
 		ensureWriteable(4).buffer.putInt(value);
 		return this;
@@ -105,6 +113,7 @@ public class GrowingByteBuffer {
 	 *
 	 * @return This buffer.
 	 */
+	@Nonnull
 	public GrowingByteBuffer putFloat(float value) {
 		ensureWriteable(4).buffer.putFloat(value);
 		return this;
@@ -118,6 +127,7 @@ public class GrowingByteBuffer {
 	 *
 	 * @return This buffer.
 	 */
+	@Nonnull
 	public GrowingByteBuffer putLong(long value) {
 		ensureWriteable(8).buffer.putLong(value);
 		return this;
@@ -131,6 +141,7 @@ public class GrowingByteBuffer {
 	 *
 	 * @return This buffer.
 	 */
+	@Nonnull
 	public GrowingByteBuffer putDouble(double value) {
 		ensureWriteable(8).buffer.putDouble(value);
 		return this;
@@ -151,6 +162,7 @@ public class GrowingByteBuffer {
 	 *
 	 * @return This buffer.
 	 */
+	@Nonnull
 	public GrowingByteBuffer skip(int bytes) {
 		ByteBuffer buffer = ensureWriteable(bytes).buffer;
 		buffer.position(buffer.position() + bytes);
@@ -160,6 +172,7 @@ public class GrowingByteBuffer {
 	/**
 	 * @return Underlying buffer.
 	 */
+	@Nonnull
 	public ByteBuffer unwrap() {
 		return buffer;
 	}

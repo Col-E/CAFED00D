@@ -1,5 +1,7 @@
 package software.coley.cafedude.transform;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.coley.cafedude.classfile.ClassFile;
@@ -53,14 +55,13 @@ import software.coley.cafedude.classfile.constant.CpEntry;
 import software.coley.cafedude.classfile.constant.CpUtf8;
 import software.coley.cafedude.io.AttributeContext;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -69,6 +70,7 @@ import java.util.stream.Collectors;
  * @author Matt Coley
  */
 public class IllegalStrippingTransformer extends Transformer implements ConstantPoolConstants {
+	private static final Pattern UTF8_WORD = Pattern.compile("[<>;/$\\w]+");
 	private static final Logger logger = LoggerFactory.getLogger(IllegalStrippingTransformer.class);
 
 	/**
@@ -535,6 +537,6 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 
 	@Nonnull
 	private Predicate<CpEntry> matchUtf8Word() {
-		return e -> e instanceof CpUtf8 && ((CpUtf8) e).getText().matches("[<>;/$\\w]+");
+		return e -> e instanceof CpUtf8 utf8 && UTF8_WORD.matcher(utf8.getText()).matches();
 	}
 }

@@ -72,6 +72,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Attribute reader for all attributes.
@@ -81,6 +82,7 @@ import java.util.Map;
  * @author Matt Coley
  */
 public class AttributeReader {
+	private static final Pattern NON_BS_ATTR_NAME = Pattern.compile("\\w{1,30}");
 	private static final Logger logger = LoggerFactory.getLogger(AttributeReader.class);
 	private final IndexableByteStream is;
 	private final ClassFileReader reader;
@@ -1114,7 +1116,7 @@ public class AttributeReader {
 		if (Placeholders.isPlaceholder(name))
 			return "<unknown>";
 		String name = this.name.getText();
-		if (!name.matches("\\w{1,30}"))
+		if (!NON_BS_ATTR_NAME.matcher(name).matches())
 			return "<unknown>"; // Sanity check against fake attribute names
 		return name;
 	}
