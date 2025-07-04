@@ -101,19 +101,20 @@ public class AttributeReader {
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	private AttributeReader(@Nonnull ClassFileReader reader, @Nonnull ClassBuilder builder,
-	                        @Nonnull DataInputStream is) throws IOException {
+	                        @Nonnull IndexableByteStream is) throws IOException {
 		this.reader = reader;
 		this.builder = builder;
 		this.cp = builder.getPool();
 
 		// Extract name/length
-		this.name = (CpUtf8) cp.get(is.readUnsignedShort());
+		CpEntry nameEntry = cp.get(is.readUnsignedShort());
+		this.name = nameEntry instanceof CpUtf8 utf ? utf : Placeholders.UTF8;
 		this.expectedContentLength = is.readInt();
 
-		// Create local stream
-		byte[] subsection = new byte[expectedContentLength];
-		is.readFully(subsection);
-		this.is = new IndexableByteStream(subsection);
+		// Create local stream, move parent stream to end
+		int index = is.getAbsoluteIndex();
+		this.is = new IndexableByteStream(is, expectedContentLength);
+		is.moveToAbsolute(index + expectedContentLength);
 	}
 
 	/**
