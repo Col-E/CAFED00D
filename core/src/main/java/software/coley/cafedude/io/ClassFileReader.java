@@ -71,83 +71,80 @@ public class ClassFileReader {
 	@Nonnull
 	public ClassFile read(@Nonnull byte[] code) throws InvalidClassException {
 		ClassBuilder builder = new ClassBuilder();
-		try {
-			try (IndexableByteStream is = new IndexableByteStream(code)) {
-				this.is = is;
+		try (IndexableByteStream is = new IndexableByteStream(code)) {
+			this.is = is;
 
-				// Read magic header
-				if (is.readInt() != 0xCAFEBABE)
-					throw new InvalidClassException("Does not start with 0xCAFEBABE");
+			// Read magic header
+			if (is.readInt() != 0xCAFEBABE)
+				throw new InvalidClassException("Does not start with 0xCAFEBABE");
 
-				// Version
-				builder.setVersionMinor(is.readUnsignedShort());
-				builder.setVersionMajor(is.readUnsignedShort());
+			// Version
+			builder.setVersionMinor(is.readUnsignedShort());
+			builder.setVersionMajor(is.readUnsignedShort());
 
-				// Constant pool
-				int numConstants = is.readUnsignedShort();
-				int start = is.getIndex();
-				ConstPool constPool = builder.getPool();
+			// Constant pool
+			int numConstants = is.readUnsignedShort();
+			int start = is.getIndex();
+			ConstPool constPool = builder.getPool();
 
-				// First pass: Populate entries with placeholder references
-				for (int i = 1; i < numConstants; i++) {
-					CpEntry entry = readPoolEntryBasic();
-					constPool.add(entry);
-					if (entry.isWide()) {
-						i++;
-					}
-				}
-
-				// Rewind
-				int diff = is.getIndex() - start;
-				is.reset(diff);
-
-				// Second pass: Fill entries with references to items in our pool
-				for (int i = 1; i < numConstants; i++) {
-					CpEntry entry = constPool.get(i);
-					readPoolEntryResolve(constPool, entry);
-					if (entry.isWide()) {
-						i++;
-					}
-				}
-
-				// Prune garbage that wasn't parsed properly in the second pass
-				// - A CpClass that holds a bogus index pointing to a CpInt for instance
-				constPool.removeIf(Placeholders::containsPlaceholder);
-
-				// Flags
-				builder.setAccess(is.readUnsignedShort());
-
-				// This/super classes
-				builder.setThisClass((CpClass) constPool.get(is.readUnsignedShort()));
-				builder.setSuperClass((CpClass) constPool.get(is.readUnsignedShort()));
-
-				// Interfaces
-				int numInterfaces = is.readUnsignedShort();
-				for (int i = 0; i < numInterfaces; i++)
-					builder.addInterface((CpClass) constPool.get(is.readUnsignedShort()));
-
-				// Fields
-				int numFields = is.readUnsignedShort();
-				for (int i = 0; i < numFields; i++)
-					builder.addField(readField(builder));
-
-				// Methods
-				int numMethods = is.readUnsignedShort();
-				for (int i = 0; i < numMethods; i++)
-					builder.addMethod(readMethod(builder));
-
-				// Attributes
-				int numAttributes = is.readUnsignedShort();
-				for (int i = 0; i < numAttributes; i++) {
-					Attribute attr = AttributeReader.readFromClass(this, builder, is, AttributeContext.CLASS);
-					if (attr != null)
-						builder.addAttribute(attr);
-				}
-				return builder.build();
-			} catch (IOException ex) {
-				logger.debug("IO error reading class", ex);
-				throw new InvalidClassException(ex);
+			// First pass: Populate entries with placeholder references
+			for (int i = 1; i < numConstants; i++) {
+				CpEntry entry = readPoolEntryBasic();
+				constPool.add(entry);
+				if (entry.isWide())
+					i++;
 			}
+
+			// Rewind
+			int diff = is.getIndex() - start;
+			is.moveBack(diff);
+
+			// Second pass: Fill entries with references to items in our pool
+			for (int i = 1; i < numConstants; i++) {
+				CpEntry entry = constPool.get(i);
+				readPoolEntryResolve(constPool, entry);
+				if (entry.isWide())
+					i++;
+			}
+
+			// Flags
+			builder.setAccess(is.readUnsignedShort());
+
+			// This/super classes
+			builder.setThisClass((CpClass) constPool.get(is.readUnsignedShort()));
+			builder.setSuperClass((CpClass) constPool.get(is.readUnsignedShort()));
+
+			// Interfaces
+			int numInterfaces = is.readUnsignedShort();
+			for (int i = 0; i < numInterfaces; i++)
+				builder.addInterface((CpClass) constPool.get(is.readUnsignedShort()));
+
+			// Fields
+			int numFields = is.readUnsignedShort();
+			for (int i = 0; i < numFields; i++)
+				builder.addField(readField(builder));
+
+			// Methods
+			int numMethods = is.readUnsignedShort();
+			for (int i = 0; i < numMethods; i++)
+				builder.addMethod(readMethod(builder));
+
+			// Attributes
+			int numAttributes = is.readUnsignedShort();
+			for (int i = 0; i < numAttributes; i++) {
+				Attribute attr = AttributeReader.readAttribute(this, builder, is, AttributeContext.CLASS);
+				if (attr != null)
+					builder.addAttribute(attr);
+			}
+
+			// Prune garbage that wasn't parsed properly in the second pass
+			// - A CpClass that holds a bogus index pointing to a CpInt for instance
+			constPool.removeIf(Placeholders::containsPlaceholder);
+
+			return builder.build();
+		} catch (IOException ex) {
+			logger.debug("IO error reading class", ex);
+			throw new InvalidClassException(ex);
 		} catch (Throwable t) {
 			logger.debug("Error reading class", t);
 			throw new InvalidClassException(t);
