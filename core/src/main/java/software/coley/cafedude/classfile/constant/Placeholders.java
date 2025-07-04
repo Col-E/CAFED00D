@@ -20,13 +20,21 @@ public class Placeholders {
 	 * {@code false} when it contains only valid/non-placeholder references.
 	 */
 	public static boolean containsPlaceholder(@Nonnull CpEntry entry) {
-		if (entry instanceof CrossCpReferencing referencing) {
-			for (CpEntry referenced : referencing.getReferences()) {
-				if (referenced == UTF8 || referenced == CLASS || referenced == NAME_TYPE || referenced == CONST_REF)
+		if (entry instanceof CrossCpReferencing referencing)
+			for (CpEntry referenced : referencing.getReferences())
+				if (isPlaceholder(referenced))
 					return true;
-			}
-		}
 		return false;
+	}
+
+	/**
+	 * @param entry
+	 * 		Entry to check.
+	 *
+	 * @return {@code true} when it is a placeholder entry, otherwise {@code false}.
+	 */
+	public static boolean isPlaceholder(@Nonnull CpEntry entry) {
+		return entry == UTF8 || entry == CLASS || entry == NAME_TYPE || entry == CONST_REF;
 	}
 
 	/**
