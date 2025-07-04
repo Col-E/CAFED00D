@@ -35,7 +35,6 @@ import software.coley.cafedude.classfile.constant.Placeholders;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * Class file format parser.
@@ -53,11 +52,6 @@ public class ClassFileReader {
 	private boolean dropEofAttributes = true;
 	private boolean dropDupeAnnotations = true;
 	private boolean checkCodeLength = true;
-
-	/**
-	 * Fallback reader. Default to always failing on any input.
-	 */
-	protected Supplier<FallbackInstructionReader> fallbackReaderSupplier;
 
 	/**
 	 * @param code
@@ -324,16 +318,22 @@ public class ClassFileReader {
 	@Nonnull
 	private Field readField(@Nonnull ClassBuilder builder) throws IOException {
 		int access = is.readUnsignedShort();
-		CpUtf8 name = (CpUtf8) builder.getPool().get(is.readUnsignedShort());
-		CpUtf8 type = (CpUtf8) builder.getPool().get(is.readUnsignedShort());
+		int nameIndex = is.readUnsignedShort();
+		int descIndex = is.readUnsignedShort();
 		int numAttributes = is.readUnsignedShort();
-		List<Attribute> attributes = new ArrayList<>();
+
+		List<Attribute> attributes = new ArrayList<>(numAttributes);
 		for (int i = 0; i < numAttributes; i++) {
-			Attribute attr = AttributeReader.readFromClass(this, builder, is, AttributeContext.FIELD);
+			Attribute attr = AttributeReader.readAttribute(this, builder, is, AttributeContext.FIELD);
 			if (attr != null)
 				attributes.add(attr);
 		}
-		return new Field(attributes, access, name, type);
+
+		CpEntry nameEntry = builder.getPool().get(nameIndex);
+		CpEntry descEntry = builder.getPool().get(descIndex);
+		if (nameEntry instanceof CpUtf8 name && descEntry instanceof CpUtf8 type)
+			return new Field(attributes, access, name, type);
+		throw new IOException("Field name/type index do not point to UTF8 values: " + nameIndex + "/" + descIndex);
 	}
 
 	/**
@@ -348,16 +348,22 @@ public class ClassFileReader {
 	@Nonnull
 	private Method readMethod(@Nonnull ClassBuilder builder) throws IOException {
 		int access = is.readUnsignedShort();
-		CpUtf8 name = (CpUtf8) builder.getPool().get(is.readUnsignedShort());
-		CpUtf8 type = (CpUtf8) builder.getPool().get(is.readUnsignedShort());
+		int nameIndex = is.readUnsignedShort();
+		int descIndex = is.readUnsignedShort();
 		int numAttributes = is.readUnsignedShort();
-		List<Attribute> attributes = new ArrayList<>();
+
+		List<Attribute> attributes = new ArrayList<>(numAttributes);
 		for (int i = 0; i < numAttributes; i++) {
-			Attribute attr = AttributeReader.readFromClass(this, builder, is, AttributeContext.METHOD);
+			Attribute attr = AttributeReader.readAttribute(this, builder, is, AttributeContext.METHOD);
 			if (attr != null)
 				attributes.add(attr);
 		}
-		return new Method(attributes, access, name, type);
+
+		CpEntry nameEntry = builder.getPool().get(nameIndex);
+		CpEntry descEntry = builder.getPool().get(descIndex);
+		if (nameEntry instanceof CpUtf8 name && descEntry instanceof CpUtf8 type)
+			return new Method(attributes, access, name, type);
+		throw new IOException("Method name/type index do not point to UTF8 values: " + nameIndex + "/" + descIndex);
 	}
 
 	/**
