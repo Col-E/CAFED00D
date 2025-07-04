@@ -655,7 +655,7 @@ public class AttributeReader {
 		List<CpClass> exceptions = new ArrayList<>(numberOfExceptionIndices);
 		for (int i = 0; i < numberOfExceptionIndices; i++) {
 			CpEntry exceptionEntry = cp.get(is.readUnsignedShort());
-			if (exceptionEntry instanceof CpClass exceptionClass)
+			if (exceptionEntry instanceof CpClass exceptionClass && !exceptions.contains(exceptionClass))
 				exceptions.add(exceptionClass);
 		}
 		return new ExceptionsAttribute(name, exceptions);
