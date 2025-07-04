@@ -61,6 +61,7 @@ import software.coley.cafedude.classfile.constant.CpModule;
 import software.coley.cafedude.classfile.constant.CpNameType;
 import software.coley.cafedude.classfile.constant.CpPackage;
 import software.coley.cafedude.classfile.constant.CpUtf8;
+import software.coley.cafedude.classfile.constant.Placeholders;
 import software.coley.cafedude.classfile.instruction.Instruction;
 
 import java.io.ByteArrayInputStream;
@@ -130,61 +131,65 @@ public class AttributeReader {
 	 * @return Read attribute, or {@code null} if it could not be parsed.
 	 */
 	@Nullable
-	public static Attribute readFromClass(@Nonnull ClassFileReader reader, @Nonnull ClassBuilder builder,
-	                                      @Nonnull DataInputStream is, @Nonnull AttributeContext context) {
+	public static Attribute readAttribute(@Nonnull ClassFileReader reader, @Nonnull ClassBuilder builder,
+	                                      @Nonnull IndexableByteStream is, @Nonnull AttributeContext context) throws IOException {
+		String attributeName = null;
+		int expectedContentLength = -1;
 		try {
-			return new AttributeReader(reader, builder, is).read(context);
-		} catch (Throwable t) {
-			String message = t.getMessage();
-			if (message == null) message = t.getClass().getSimpleName();
-			logger.debug("Dropping attribute on {}, reason={}", context.name(), message);
-			return null;
-		}
-	}
+			AttributeReader attributeReader = new AttributeReader(reader, builder, is);
+			attributeName = attributeReader.getAttributeName();
+			expectedContentLength = attributeReader.getExpectedContentLength();
 
-	/**
-	 * @param context
-	 * 		Where the attribute is applied to.
-	 *
-	 * @return Attribute.
-	 *
-	 * @throws IOException
-	 * 		When the stream is unexpectedly closed or ends.
-	 */
-	@Nullable
-	public Attribute readAttribute(@Nonnull AttributeContext context) throws IOException {
-		try {
-			Attribute attribute = read(context);
+			// Read the attribute, drop if illegal in the given context.
+			Attribute attribute = attributeReader.read(context);
 			if (attribute == null)
 				return null;
-			int read = is.getIndex();
-			if (read != expectedContentLength) {
-				logger.debug("Invalid '{}' on {}, claimed to be {} bytes, but was {}",
-						name.getText(), context.name(), expectedContentLength, read);
-				return null;
-			}
-			return attribute;
-		} catch (InvalidCpIndexException cpIndexException) {
-			if (name != null) {
-				logger.debug("Invalid '{}' on {}, invalid constant pool index: {}", name.getText(), context.name(),
-						cpIndexException.getIndex());
-			} else {
-				logger.debug("Invalid attribute on {}, invalid attribute name index", context.name());
-			}
 
-			return null;
-		} catch (Exception ex) {
-			if (reader.doDropEofAttributes()) {
-				if (name != null) {
-					logger.debug("Invalid '{}' on {}, EOF thrown when parsing attribute, expected {} bytes",
-							name.getText(), context.name(), expectedContentLength);
-				} else {
-					logger.debug("Invalid attribute on {}, invalid attribute name index", context.name());
+			// There are some attributes that can lie about their sizes when '-noverify' is used.
+			// The attribute has to be valid for us to consider correcting the reader, since the VM will
+			// otherwise have skipped the attribute or tossed the class as invalid.
+			int readerAbsolutePos = attributeReader.getAbsoluteReadPosition();
+			boolean hasCorrectedPosition = false;
+			if (context == AttributeContext.METHOD) {
+				// https://github.com/openjdk/jdk11/blob/master/src/hotspot/share/classfile/classFileParser.cpp#L2394
+				if (attributeName.equals(AttributeConstants.CODE)) {
+					is.moveToAbsolute(readerAbsolutePos);
+					hasCorrectedPosition = true;
 				}
 
+				// https://github.com/openjdk/jdk11/blob/master/src/hotspot/share/classfile/classFileParser.cpp#L2064
+				if (attributeName.equals(AttributeConstants.EXCEPTIONS)) {
+					is.moveToAbsolute(readerAbsolutePos);
+					hasCorrectedPosition = true;
+				}
+			} else if (context == AttributeContext.ATTRIBUTE) {
+				// https://github.com/openjdk/jdk11/blob/master/src/hotspot/share/classfile/classFileParser.cpp#L2064
+				if (attributeName.equals(AttributeConstants.LOCAL_VARIABLE_TABLE)) {
+					is.moveToAbsolute(readerAbsolutePos);
+					hasCorrectedPosition = true;
+				}
+			}
+
+			// Unless we had to correct the position based on the above block, we can verify
+			// that this attribute has not lied about its attribute length.
+			if (!hasCorrectedPosition) {
+				int readerRelativePos = attributeReader.getRelativeReadPosition();
+				if (readerRelativePos != expectedContentLength) {
+					logger.debug("Invalid '{}' on {}, claimed to be {} bytes, but was {}",
+							attributeName, context.name(), expectedContentLength, readerRelativePos);
+					return null;
+				}
+			}
+
+			return attribute;
+		} catch (InvalidCpIndexException ex) {
+			logger.debug("Invalid '{}' on {}, invalid constant pool index: {}", attributeName, context.name(), ex.getIndex());
+			return null;
+		} catch (IOException ex) {
+			if (reader.doDropEofAttributes()) {
+				logger.debug("Invalid '{}' on {}, EOF thrown when parsing attribute, expected {} bytes", attributeName, context.name(), expectedContentLength);
 				return null;
-			} else
-				throw ex;
+			} else throw ex;
 		}
 	}
 
@@ -200,6 +205,7 @@ public class AttributeReader {
 				return null;
 			}
 		}
+
 		// Check for attributes present in the wrong contexts.
 		if (reader.doDropBadContextAttributes()) {
 			Collection<AttributeContext> allowedContexts = AttributeContexts.getAllowedContexts(attributeName);
@@ -211,6 +217,11 @@ public class AttributeReader {
 				return null;
 			}
 		}
+
+		// Code cannot exist on a method in an @annotation type. Skip.
+		if (builder.isAnnotation() && attributeName.equals(AttributeConstants.CODE))
+			return null;
+
 		switch (attributeName) {
 			case AttributeConstants.CODE:
 				return readCode();
@@ -317,7 +328,7 @@ public class AttributeReader {
 			int numAttributes = is.readUnsignedShort();
 			List<Attribute> attributes = new ArrayList<>(numAttributes);
 			for (int x = 0; x < numAttributes; x++) {
-				Attribute attr = new AttributeReader(reader, builder, is).readAttribute(AttributeContext.ATTRIBUTE);
+				Attribute attr = readAttribute(reader, builder, is, AttributeContext.ATTRIBUTE);
 				if (attr != null)
 					attributes.add(attr);
 			}
@@ -864,8 +875,8 @@ public class AttributeReader {
 			throw new IOException("Method code_length > 65536: " + codeLength);
 
 		// Read instructions
-		InstructionReader reader = new InstructionReader(this.reader.getFallbackInstructionReader(builder));
-		List<Instruction> instructions = reader.read(is, cp, codeLength);
+		InstructionReader insnReader = new InstructionReader(reader.getFallbackInstructionReader(builder));
+		List<Instruction> instructions = insnReader.read(is, cp, codeLength);
 
 		// Read exceptions
 		int numExceptions = is.readUnsignedShort();
@@ -880,7 +891,7 @@ public class AttributeReader {
 		int numAttributes = is.readUnsignedShort();
 		List<Attribute> attributes = new ArrayList<>(numAttributes);
 		for (int i = 0; i < numAttributes; i++) {
-			Attribute attr = new AttributeReader(this.reader, builder, is).readAttribute(AttributeContext.ATTRIBUTE);
+			Attribute attr = readAttribute(reader, builder, is, AttributeContext.ATTRIBUTE);
 			if (attr != null)
 				attributes.add(attr);
 		}
@@ -1062,6 +1073,50 @@ public class AttributeReader {
 			default:
 				throw new IllegalArgumentException("Unknown verification type tag " + tag);
 		}
+	}
+
+	/**
+	 * This method will declare where the cursor in the {@link IndexableByteStream} is after reading an attribute.
+	 * Generally the cursor should match the following position: {@code startPos + u2_name + u4_length + [length * u1]}
+	 * <p/>
+	 * This contract breaks for some attributes and is accommodated for in
+	 * {@link #readAttribute(ClassFileReader, ClassBuilder, IndexableByteStream, AttributeContext)}.
+	 *
+	 * @return The position of the {@link IndexableByteStream} after parsing the attribute.
+	 */
+	public int getAbsoluteReadPosition() {
+		return is.getAbsoluteIndex();
+	}
+
+	/**
+	 * @return The relative position of the {@link IndexableByteStream} from the start of the attribute
+	 * read after parsing the attribute.
+	 */
+	public int getRelativeReadPosition() {
+		return is.getIndex();
+	}
+
+	/**
+	 * @return The expected number of bytes to have read.
+	 *
+	 * @see #getRelativeReadPosition()
+	 * @see #getAbsoluteReadPosition()
+	 */
+	public int getExpectedContentLength() {
+		return expectedContentLength;
+	}
+
+	/**
+	 * @return Parsed attribute name.
+	 */
+	@Nonnull
+	public String getAttributeName() {
+		if (Placeholders.isPlaceholder(name))
+			return "<unknown>";
+		String name = this.name.getText();
+		if (!name.matches("\\w{1,30}"))
+			return "<unknown>"; // Sanity check against fake attribute names
+		return name;
 	}
 
 	@Nullable
