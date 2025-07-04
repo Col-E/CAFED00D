@@ -183,6 +183,10 @@ public class AttributeReader {
 				}
 			}
 
+			// Drop the attribute if it references a placeholder constant pool entry.
+			if (attribute.cpAccesses().stream().anyMatch(Placeholders::isOrContainsPlaceholder))
+				return null;
+
 			return attribute;
 		} catch (InvalidCpIndexException ex) {
 			logger.debug("Invalid '{}' on {}, invalid constant pool index: {}", attributeName, context.name(), ex.getIndex());

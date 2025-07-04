@@ -16,6 +16,16 @@ public class Placeholders {
 	 * @param entry
 	 * 		Entry to check.
 	 *
+	 * @return {@code true} when the entry is a placeholder, or references a placeholder.
+	 */
+	public static boolean isOrContainsPlaceholder(@Nonnull CpEntry entry) {
+		return isPlaceholder(entry) || containsPlaceholder(entry);
+	}
+
+	/**
+	 * @param entry
+	 * 		Entry to check.
+	 *
 	 * @return {@code true} when it contains a reference to a placeholder entry.
 	 * {@code false} when it contains only valid/non-placeholder references.
 	 */
