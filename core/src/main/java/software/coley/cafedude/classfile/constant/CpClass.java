@@ -10,7 +10,7 @@ import java.util.Collections;
  *
  * @author Matt Coley
  */
-public non-sealed class CpClass extends CpEntry implements CrossCpReferencing {
+public non-sealed class CpClass extends CpEntry implements CrossCpReferencing, LoadableConstant {
 	private CpUtf8 name;
 
 	/**

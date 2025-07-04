@@ -13,7 +13,7 @@ import java.util.Collections;
  *
  * @author Matt Coley
  */
-public non-sealed class CpMethodHandle extends CpEntry implements CrossCpReferencing {
+public non-sealed class CpMethodHandle extends CpEntry implements CrossCpReferencing, LoadableConstant {
 	/** Interpreted as {@link Opcodes#GETFIELD}. */
 	public static final int REF_GET_FIELD = 1;
 	/** Interpreted as {@link Opcodes#GETSTATIC}. */

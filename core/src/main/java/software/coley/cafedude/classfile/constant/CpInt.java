@@ -5,7 +5,7 @@ package software.coley.cafedude.classfile.constant;
  *
  * @author Matt Coley
  */
-public non-sealed class CpInt extends CpEntry {
+public non-sealed class CpInt extends CpEntry implements LoadableConstant {
 	private int value;
 
 	/**
