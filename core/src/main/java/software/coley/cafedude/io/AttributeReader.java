@@ -641,7 +641,9 @@ public class AttributeReader {
 		int numberOfExceptionIndices = is.readUnsignedShort();
 		List<CpClass> exceptions = new ArrayList<>(numberOfExceptionIndices);
 		for (int i = 0; i < numberOfExceptionIndices; i++) {
-			exceptions.add((CpClass) cp.get(is.readUnsignedShort()));
+			CpEntry exceptionEntry = cp.get(is.readUnsignedShort());
+			if (exceptionEntry instanceof CpClass exceptionClass)
+				exceptions.add(exceptionClass);
 		}
 		return new ExceptionsAttribute(name, exceptions);
 	}
@@ -868,8 +870,11 @@ public class AttributeReader {
 		// Read exceptions
 		int numExceptions = is.readUnsignedShort();
 		List<ExceptionTableEntry> exceptions = new ArrayList<>(numExceptions);
-		for (int i = 0; i < numExceptions; i++)
-			exceptions.add(readCodeException());
+		for (int i = 0; i < numExceptions; i++) {
+			ExceptionTableEntry entry = readCodeException(codeLength);
+			if (entry != null)
+				exceptions.add(entry);
+		}
 
 		// Read attributes
 		int numAttributes = is.readUnsignedShort();
@@ -884,22 +889,43 @@ public class AttributeReader {
 	}
 
 	/**
-	 * @return Exception table entry for code attribute.
+	 * @param codeLength
+	 * 		Code length, used to validate the exception table entry offsets.
+	 *
+	 * @return Exception table entry for code attribute. {@code null} if the entry contained junk.
 	 *
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
-	@Nonnull
-	private CodeAttribute.ExceptionTableEntry readCodeException() throws IOException {
+	@Nullable
+	private CodeAttribute.ExceptionTableEntry readCodeException(int codeLength) throws IOException {
 		int startPc = is.readUnsignedShort();
 		int endPc = is.readUnsignedShort();
 		int handlerPc = is.readUnsignedShort();
 		int catchTypeCpIndex = is.readUnsignedShort();
+
+		// Out of bounds check
+		if (startPc >= codeLength || endPc > codeLength || handlerPc > codeLength)
+			return null;
+
+		// Zero-length entries can be tossed
+		if (startPc == endPc)
+			return null;
+
+		CpEntry typeEntry = orNullInCp(catchTypeCpIndex);
+		if (typeEntry instanceof CpClass exceptionType)
+			return new CodeAttribute.ExceptionTableEntry(
+					startPc,
+					endPc,
+					handlerPc,
+					exceptionType
+			);
+
 		return new CodeAttribute.ExceptionTableEntry(
 				startPc,
 				endPc,
 				handlerPc,
-				orNullInCp(catchTypeCpIndex) instanceof CpClass catchTypeClass ? catchTypeClass : null
+				null
 		);
 	}
 
