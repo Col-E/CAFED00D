@@ -18,8 +18,11 @@ public interface AttributeConstants {
 	 * @see BootstrapMethodsAttribute
 	 */
 	String BOOTSTRAP_METHODS = "BootstrapMethods";
-	// TODO: Internal attribute?
-	/** Attribute string value, used to indicate an attribute's type when parsed. */
+	/**
+	 * Attribute string value, used to indicate an attribute's type when parsed.
+	 *
+	 * @see CharacterRangeTableAttribute
+	 */
 	String CHARACTER_RANGE_TABLE = "CharacterRangeTable";
 	/**
 	 * Attribute string value, used to indicate an attribute's type when parsed.
@@ -33,8 +36,11 @@ public interface AttributeConstants {
 	 * @see ConstantValueAttribute
 	 */
 	String CONSTANT_VALUE = "ConstantValue";
-	// TODO: Internal attribute?
-	/** Attribute string value, used to indicate an attribute's type when parsed. */
+	/**
+	 * Attribute string value, used to indicate an attribute's type when parsed.
+	 *
+	 * @see CompilationIdAttribute
+	 */
 	String COMPILATION_ID = "CompilationID";
 	/**
 	 * Attribute string value, used to indicate an attribute's type when parsed.
@@ -90,8 +96,11 @@ public interface AttributeConstants {
 	 * @see ModuleAttribute
 	 */
 	String MODULE = "Module";
-	// TODO: Internal attribute?
-	/** Attribute string value, used to indicate an attribute's type when parsed. */
+	/**
+	 * Attribute string value, used to indicate an attribute's type when parsed.
+	 *
+	 * @see ModuleHashesAttribute
+	 */
 	String MODULE_HASHES = "ModuleHashes";
 	/**
 	 * Attribute string value, used to indicate an attribute's type when parsed.
@@ -105,11 +114,17 @@ public interface AttributeConstants {
 	 * @see ModulePackagesAttribute
 	 */
 	String MODULE_PACKAGES = "ModulePackages";
-	// TODO: Internal attribute?
-	/** Attribute string value, used to indicate an attribute's type when parsed. */
+	/**
+	 * Attribute string value, used to indicate an attribute's type when parsed
+	 *
+	 * @see ModuleResolutionAttribute
+	 */
 	String MODULE_RESOLUTION = "ModuleResolution";
-	// TODO: Internal attribute?
-	/** Attribute string value, used to indicate an attribute's type when parsed. */
+	/**
+	 * Attribute string value, used to indicate an attribute's type when parsed.
+	 *
+	 * @see ModuleTargetAttribute
+	 */
 	String MODULE_TARGET = "ModuleTarget";
 	/**
 	 * Attribute string value, used to indicate an attribute's type when parsed.
@@ -189,8 +204,11 @@ public interface AttributeConstants {
 	 * @see SourceFileAttribute
 	 */
 	String SOURCE_FILE = "SourceFile";
-	// TODO: Internal attribute?
-	/** Attribute string value, used to indicate an attribute's type when parsed. */
+	/**
+	 * Attribute string value, used to indicate an attribute's type when parsed.
+	 *
+	 * @see SourceIdAttribute
+	 */
 	String SOURCE_ID = "SourceID";
 	/**
 	 * Attribute string value, used to indicate an attribute's type when parsed.
