@@ -82,4 +82,10 @@ public abstract sealed class ConstDynamic extends CpEntry implements CrossCpRefe
 		result = 31 * result + nameType.hashCode();
 		return result;
 	}
+
+	@Override
+	public String toString() {
+		return "dynamic-bsm=" + bsmIndex +
+				", dynamic-sig=" + nameType.getName().getText() + "." + nameType.getType().getText();
+	}
 }

@@ -8,7 +8,7 @@ import software.coley.cafedude.classfile.ConstPool;
  *
  * @author Matt Coley
  */
-public non-sealed class CpInternal extends CpEntry{
+public non-sealed class CpInternal extends CpEntry {
 	/**
 	 * Create base attribute.
 	 *
@@ -17,5 +17,10 @@ public non-sealed class CpInternal extends CpEntry{
 	 */
 	public CpInternal(int tag) {
 		super(tag);
+	}
+
+	@Override
+	public String toString() {
+		return "<INTERNAL>";
 	}
 }

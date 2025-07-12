@@ -78,4 +78,9 @@ public non-sealed class CpNameType extends CpEntry implements CrossCpReferencing
 		result = 31 * result + type.hashCode();
 		return result;
 	}
+
+	@Override
+	public String toString() {
+		return "name=" + name.getText() + ", type=" + type.getText();
+	}
 }

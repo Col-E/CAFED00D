@@ -44,4 +44,9 @@ public non-sealed class CpFloat extends CpEntry implements LoadableConstant {
 	public int hashCode() {
 		return Float.hashCode(value);
 	}
+
+	@Override
+	public String toString() {
+		return "float=" + value;
+	}
 }

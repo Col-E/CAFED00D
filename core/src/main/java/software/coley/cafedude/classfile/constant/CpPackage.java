@@ -58,4 +58,9 @@ public non-sealed class CpPackage extends CpEntry implements CrossCpReferencing 
 	public int hashCode() {
 		return packageName.hashCode();
 	}
+
+	@Override
+	public String toString() {
+		return "package=" + getPackageName().getText();
+	}
 }

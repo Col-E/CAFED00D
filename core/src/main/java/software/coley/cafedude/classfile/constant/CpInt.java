@@ -44,4 +44,9 @@ public non-sealed class CpInt extends CpEntry implements LoadableConstant {
 	public int hashCode() {
 		return Integer.hashCode(value);
 	}
+
+	@Override
+	public String toString() {
+		return "int=" + value;
+	}
 }

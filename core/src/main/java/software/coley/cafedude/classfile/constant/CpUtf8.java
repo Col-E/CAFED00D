@@ -52,6 +52,6 @@ public non-sealed class CpUtf8 extends CpEntry {
 
 	@Override
 	public String toString() {
-		return text;
+		return "utf8=" + text;
 	}
 }

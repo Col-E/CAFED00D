@@ -58,4 +58,9 @@ public non-sealed class CpMethodType extends CpEntry implements CrossCpReferenci
 	public int hashCode() {
 		return descriptor.hashCode();
 	}
+
+	@Override
+	public String toString() {
+		return "method-type=" + descriptor.getText();
+	}
 }

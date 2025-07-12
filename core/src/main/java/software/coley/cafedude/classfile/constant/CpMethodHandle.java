@@ -1,8 +1,7 @@
 package software.coley.cafedude.classfile.constant;
 
-import software.coley.cafedude.classfile.instruction.Opcodes;
-
 import jakarta.annotation.Nonnull;
+import software.coley.cafedude.classfile.instruction.Opcodes;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -106,5 +105,10 @@ public non-sealed class CpMethodHandle extends CpEntry implements CrossCpReferen
 		int result = reference.hashCode();
 		result = 31 * result + (int) kind;
 		return result;
+	}
+
+	@Override
+	public String toString() {
+		return "method-handle=" + getReference() + ", kind=" + kind;
 	}
 }

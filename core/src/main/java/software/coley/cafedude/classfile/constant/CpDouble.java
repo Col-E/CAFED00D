@@ -49,4 +49,9 @@ public non-sealed class CpDouble extends CpEntry implements LoadableConstant {
 	public int hashCode() {
 		return Double.hashCode(value);
 	}
+
+	@Override
+	public String toString() {
+		return "double=" + value;
+	}
 }

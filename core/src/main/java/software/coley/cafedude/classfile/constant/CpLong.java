@@ -49,4 +49,9 @@ public non-sealed class CpLong extends CpEntry implements LoadableConstant {
 	public int hashCode() {
 		return Long.hashCode(value);
 	}
+
+	@Override
+	public String toString() {
+		return "long=" + value;
+	}
 }

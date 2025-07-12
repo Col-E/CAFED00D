@@ -58,4 +58,9 @@ public non-sealed class CpModule extends CpEntry implements CrossCpReferencing {
 	public int hashCode() {
 		return name.hashCode();
 	}
+
+	@Override
+	public String toString() {
+		return "module=" + name.getText();
+	}
 }

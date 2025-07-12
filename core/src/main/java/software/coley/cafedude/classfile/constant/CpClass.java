@@ -58,4 +58,9 @@ public non-sealed class CpClass extends CpEntry implements CrossCpReferencing, L
 	public int hashCode() {
 		return name.hashCode();
 	}
+
+	@Override
+	public String toString() {
+		return "class=" + name.getText();
+	}
 }

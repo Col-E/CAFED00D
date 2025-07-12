@@ -87,4 +87,10 @@ public abstract sealed class ConstRef extends CpEntry implements CrossCpReferenc
 		result = 31 * result + nameType.hashCode();
 		return result;
 	}
+
+	@Override
+	public String toString() {
+		return "ref-owner=" + classRef.getName().getText() +
+				" ref-name-type=" + nameType.getName().getText() + "." + nameType.getType().getText();
+	}
 }
