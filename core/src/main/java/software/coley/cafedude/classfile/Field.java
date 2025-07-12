@@ -32,4 +32,9 @@ public non-sealed class Field extends ClassMember {
 	public AttributeContext getHolderType() {
 		return AttributeContext.FIELD;
 	}
+
+	@Override
+	public String toString() {
+		return getName().getText() + " " + getType().getText();
+	}
 }

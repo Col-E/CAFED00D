@@ -57,4 +57,9 @@ public non-sealed class Method extends ClassMember {
 		}
 		return set;
 	}
+
+	@Override
+	public String toString() {
+		return getName().getText() + getType().getText();
+	}
 }
