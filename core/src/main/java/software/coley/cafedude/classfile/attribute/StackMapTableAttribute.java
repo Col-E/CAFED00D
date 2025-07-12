@@ -1,11 +1,11 @@
 package software.coley.cafedude.classfile.attribute;
 
+import jakarta.annotation.Nonnull;
 import software.coley.cafedude.classfile.behavior.CpAccessor;
 import software.coley.cafedude.classfile.constant.CpClass;
 import software.coley.cafedude.classfile.constant.CpEntry;
 import software.coley.cafedude.classfile.constant.CpUtf8;
 
-import jakarta.annotation.Nonnull;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -86,7 +86,9 @@ public non-sealed class StackMapTableAttribute
 	 * which type is in use, followed by zero or more bytes, giving more
 	 * information about the tag.
 	 */
-	public abstract static class TypeInfo implements CpAccessor {
+	public sealed abstract static class TypeInfo implements CpAccessor permits DoubleVariableInfo, FloatVariableInfo,
+			IntegerVariableInfo, LongVariableInfo, NullVariableInfo, ObjectVariableInfo, TopVariableInfo,
+			UninitializedThisVariableInfo, UninitializedVariableInfo {
 		/**
 		 * @return The one byte tag representing this type.
 		 */
@@ -110,7 +112,7 @@ public non-sealed class StackMapTableAttribute
 	/**
 	 * Indicates that the local variable has the verification type top.
 	 */
-	public static class TopVariableInfo extends TypeInfo {
+	public static non-sealed class TopVariableInfo extends TypeInfo {
 		/**
 		 * @return The one byte tag representing this type.
 		 */
@@ -123,7 +125,7 @@ public non-sealed class StackMapTableAttribute
 	/**
 	 * Indicates that the location has the verification type int.
 	 */
-	public static class IntegerVariableInfo extends TypeInfo {
+	public static non-sealed class IntegerVariableInfo extends TypeInfo {
 		/**
 		 * @return The one byte tag representing this type.
 		 */
@@ -136,7 +138,7 @@ public non-sealed class StackMapTableAttribute
 	/**
 	 * Indicates that the location has the verification type float.
 	 */
-	public static class FloatVariableInfo extends TypeInfo {
+	public static non-sealed class FloatVariableInfo extends TypeInfo {
 		/**
 		 * @return The one byte tag representing this type.
 		 */
@@ -149,7 +151,7 @@ public non-sealed class StackMapTableAttribute
 	/**
 	 * Indicates that the location has the verification type null.
 	 */
-	public static class NullVariableInfo extends TypeInfo {
+	public static non-sealed class NullVariableInfo extends TypeInfo {
 		/**
 		 * @return The one byte tag representing this type.
 		 */
@@ -162,7 +164,7 @@ public non-sealed class StackMapTableAttribute
 	/**
 	 * Indicates that the location has the verification type uninitializedThis.
 	 */
-	public static class UninitializedThisVariableInfo extends TypeInfo {
+	public static non-sealed class UninitializedThisVariableInfo extends TypeInfo {
 		/**
 		 * @return The one byte tag representing this type.
 		 */
@@ -176,7 +178,7 @@ public non-sealed class StackMapTableAttribute
 	 * Indicates that the location has the verification type which is the class
 	 * represented by the CONSTANT_Class_info found at classIndex.
 	 */
-	public static class ObjectVariableInfo extends TypeInfo {
+	public static non-sealed class ObjectVariableInfo extends TypeInfo {
 		/**
 		 * @return The one byte tag representing this type.
 		 */
@@ -231,7 +233,7 @@ public non-sealed class StackMapTableAttribute
 	/**
 	 * Indicates that the location has the verification type uninitialized.
 	 */
-	public static class UninitializedVariableInfo extends TypeInfo {
+	public static non-sealed class UninitializedVariableInfo extends TypeInfo {
 		/**
 		 * @return The one byte tag representing this type.
 		 */
@@ -282,7 +284,7 @@ public non-sealed class StackMapTableAttribute
 	/**
 	 * Indicates the verification type long.
 	 */
-	public static class LongVariableInfo extends TypeInfo {
+	public static non-sealed class LongVariableInfo extends TypeInfo {
 		/**
 		 * @return The one byte tag representing this type.
 		 */
@@ -295,7 +297,7 @@ public non-sealed class StackMapTableAttribute
 	/**
 	 * Indicates the verification type double.
 	 */
-	public static class DoubleVariableInfo extends TypeInfo {
+	public static non-sealed class DoubleVariableInfo extends TypeInfo {
 		/**
 		 * @return The one byte tag representing this type.
 		 */
@@ -316,7 +318,8 @@ public non-sealed class StackMapTableAttribute
 	 * initial frame of the method. In that case, the bytecode offset at which the
 	 * stack map frame applies is the value {@code offset_delta} specified in the frame.
 	 */
-	public abstract static class StackMapFrame implements CpAccessor {
+	public sealed abstract static class StackMapFrame implements CpAccessor permits AppendFrame, ChopFrame, FullFrame,
+			SameFrame, SameFrameExtended, SameLocalsOneStackItem, SameLocalsOneStackItemExtended {
 		private int offsetDelta;
 
 		/**
@@ -366,7 +369,7 @@ public non-sealed class StackMapTableAttribute
 	 * This frame type indicates that the frame has exactly the same local
 	 * variables as the previous frame and that the operand stack is empty.
 	 */
-	public static class SameFrame extends StackMapFrame {
+	public static non-sealed class SameFrame extends StackMapFrame {
 		/**
 		 * @param offsetDelta
 		 * 		The offset delta of this frame.
@@ -391,7 +394,7 @@ public non-sealed class StackMapTableAttribute
 	 * <br>
 	 * The verification type of the one stack entry appears after the frame type.
 	 */
-	public static class SameLocalsOneStackItem extends StackMapFrame {
+	public static non-sealed class SameLocalsOneStackItem extends StackMapFrame {
 		private TypeInfo stack;
 
 		/**
@@ -448,7 +451,7 @@ public non-sealed class StackMapTableAttribute
 	/**
 	 * Same as {@link SameLocalsOneStackItem} except has an explicit {@code offsetDelta}.
 	 */
-	public static class SameLocalsOneStackItemExtended extends StackMapFrame {
+	public static non-sealed class SameLocalsOneStackItemExtended extends StackMapFrame {
 		private TypeInfo stack;
 
 		/**
@@ -508,7 +511,7 @@ public non-sealed class StackMapTableAttribute
 	 * the previous frame except that a given number of the last local variables
 	 * are absent, and that the operand stack is empty.
 	 */
-	public static class ChopFrame extends StackMapFrame {
+	public static non-sealed class ChopFrame extends StackMapFrame {
 		private int absentVariables;
 
 		/**
@@ -562,7 +565,7 @@ public non-sealed class StackMapTableAttribute
 	 * This frame type indicates that the frame has exactly the same local
 	 * variables as the previous frame and that the operand stack is empty.
 	 */
-	public static class SameFrameExtended extends StackMapFrame {
+	public static non-sealed class SameFrameExtended extends StackMapFrame {
 		/**
 		 * @param offsetDelta
 		 * 		The offset delta of this frame.
@@ -594,7 +597,7 @@ public non-sealed class StackMapTableAttribute
 	 * previous frame except that a number of additional locals are defined, and
 	 * that the operand stack is empty.
 	 */
-	public static class AppendFrame extends StackMapFrame {
+	public static non-sealed class AppendFrame extends StackMapFrame {
 		private List<TypeInfo> additionalLocals;
 
 		/**
@@ -659,7 +662,7 @@ public non-sealed class StackMapTableAttribute
 	/**
 	 * Contains the full types of the current frame.
 	 */
-	public static class FullFrame extends StackMapFrame {
+	public static non-sealed class FullFrame extends StackMapFrame {
 		private List<TypeInfo> locals;
 		private List<TypeInfo> stack;
 
