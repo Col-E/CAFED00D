@@ -44,4 +44,9 @@ public non-sealed class WideInstruction extends Instruction {
 		// indexbyte2
 		return 4;
 	}
+
+	@Override
+	public String toString() {
+		return super.toString() + "backing=" + backing;
+	}
 }

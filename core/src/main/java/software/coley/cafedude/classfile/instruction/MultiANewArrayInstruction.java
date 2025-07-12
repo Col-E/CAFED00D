@@ -1,10 +1,10 @@
 package software.coley.cafedude.classfile.instruction;
 
+import jakarta.annotation.Nonnull;
 import software.coley.cafedude.classfile.behavior.CpAccessor;
 import software.coley.cafedude.classfile.constant.CpClass;
 import software.coley.cafedude.classfile.constant.CpEntry;
 
-import jakarta.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Set;
 
@@ -68,6 +68,12 @@ public non-sealed class MultiANewArrayInstruction extends Instruction implements
 		return 4;
 	}
 
+	@Nonnull
+	@Override
+	public Set<CpEntry> cpAccesses() {
+		return Collections.singleton(descriptor);
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -88,9 +94,8 @@ public non-sealed class MultiANewArrayInstruction extends Instruction implements
 		return result;
 	}
 
-	@Nonnull
 	@Override
-	public Set<CpEntry> cpAccesses() {
-		return Collections.singleton(descriptor);
+	public String toString() {
+		return super.toString() + " dimensions=" + dimensions + ", descriptor=" + descriptor.getName().getText();
 	}
 }

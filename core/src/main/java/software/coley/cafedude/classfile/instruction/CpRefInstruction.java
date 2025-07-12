@@ -1,9 +1,9 @@
 package software.coley.cafedude.classfile.instruction;
 
+import jakarta.annotation.Nonnull;
 import software.coley.cafedude.classfile.behavior.CpAccessor;
 import software.coley.cafedude.classfile.constant.CpEntry;
 
-import jakarta.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Set;
 
@@ -75,6 +75,11 @@ public non-sealed class CpRefInstruction extends Instruction implements CpAccess
 		int result = super.hashCode();
 		result = 31 * result + entry.hashCode();
 		return result;
+	}
+
+	@Override
+	public String toString() {
+		return super.toString() + " entry=" + entry;
 	}
 
 	@Nonnull

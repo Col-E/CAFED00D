@@ -1,6 +1,7 @@
 package software.coley.cafedude.classfile.instruction;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Table Switch instruction.
@@ -148,6 +149,12 @@ public non-sealed class TableSwitchInstruction extends Instruction {
 		result = 31 * result + high;
 		result = 31 * result + offsets.hashCode();
 		return result;
+	}
+
+	@Override
+	public String toString() {
+		String offsetsStr = offsets.stream().map(String::valueOf).collect(Collectors.joining(", "));
+		return super.toString() + " range=[" + low + " --> " + high + "] offsets=[" + offsetsStr + "] default=" + dflt;
 	}
 
 	@Override

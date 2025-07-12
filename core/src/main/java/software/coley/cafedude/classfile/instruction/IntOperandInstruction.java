@@ -81,7 +81,7 @@ public non-sealed class IntOperandInstruction extends Instruction {
 
 	@Override
 	public String toString() {
-		return "insn(" + OpcodeNames.name(getOpcode()) + ": " + operand + ")";
+		return super.toString() + " operand=" + operand;
 	}
 
 }

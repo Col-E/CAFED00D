@@ -128,6 +128,17 @@ public non-sealed class LookupSwitchInstruction extends Instruction {
 	}
 
 	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < keys.size(); i++) {
+			if (!sb.isEmpty()) sb.append(", ");
+			sb.append(keys.get(i)).append("=").append(offsets.get(i));
+		}
+		sb.append(" default=").append(dflt);
+		return super.toString() + " " + sb;
+	}
+
+	@Override
 	public int computeSize() {
 		if (padding < 0)
 			throw new IllegalStateException("Padding size not computed!");

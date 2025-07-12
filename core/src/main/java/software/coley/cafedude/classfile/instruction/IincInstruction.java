@@ -82,7 +82,7 @@ public non-sealed class IincInstruction extends Instruction {
 
 	@Override
 	public String toString() {
-		return "insn(" + OpcodeNames.name(getOpcode()) + ": " + var + ", " + increment + ")";
+		return super.toString() + " var=" + var + ", incr=" + increment;
 	}
 
 }
