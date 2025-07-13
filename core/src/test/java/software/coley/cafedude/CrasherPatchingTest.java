@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Test that asserts ASM-crashing obfuscated classes are written back without the offending attributes.
  */
 public class CrasherPatchingTest {
-	private static final Set<String> noverify_code = Set.of("sample35.class");
+	private static final Set<String> noverify_code = Set.of("sample35.class", "sample36.class");
 
 	@ParameterizedTest
 	@MethodSource("supply")

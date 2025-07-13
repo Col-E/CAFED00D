@@ -53,6 +53,11 @@ import software.coley.cafedude.classfile.behavior.AttributeHolder;
 import software.coley.cafedude.classfile.constant.CpClass;
 import software.coley.cafedude.classfile.constant.CpEntry;
 import software.coley.cafedude.classfile.constant.CpUtf8;
+import software.coley.cafedude.classfile.instruction.BasicInstruction;
+import software.coley.cafedude.classfile.instruction.Instruction;
+import software.coley.cafedude.classfile.instruction.IntOperandInstruction;
+import software.coley.cafedude.classfile.instruction.LookupSwitchInstruction;
+import software.coley.cafedude.classfile.instruction.TableSwitchInstruction;
 import software.coley.cafedude.io.AttributeContext;
 
 import java.util.Collection;
@@ -63,6 +68,8 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static software.coley.cafedude.classfile.instruction.Opcodes.*;
 
 /**
  * A transformer to remove illegal attributes and data from a class.
@@ -103,13 +110,68 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		clazz.getAttributes().removeIf(attribute -> !isValidWrapped(clazz, attribute));
 		for (Field field : clazz.getFields())
 			field.getAttributes().removeIf(attribute -> !isValidWrapped(field, attribute));
-		for (Method method : clazz.getMethods())
+		for (Method method : clazz.getMethods()) {
 			method.getAttributes().removeIf(attribute -> !isValidWrapped(method, attribute));
+			CodeAttribute code = method.getAttribute(CodeAttribute.class);
+			if (code != null)
+				removeInvalidInstructions(code);
+		}
 
 		// Record filtered CP refs, the difference of the sets are the indices that were referenced
 		// by removed attributes/data.
 		Set<CpEntry> filteredCpAccesses = clazz.cpAccesses();
 		cpAccesses.removeAll(filteredCpAccesses);
+	}
+
+	protected void removeInvalidInstructions(@Nonnull CodeAttribute code) {
+		List<Instruction> instructions = code.getInstructions();
+		if (instructions.size() <= 1)
+			return;
+		int maxPc = code.computeOffsetOf(instructions.get(instructions.size() - 1));
+
+		// Remove junk try-catch entries with bogus offsets
+		List<ExceptionTableEntry> exceptions = code.getExceptionTable();
+		for (int i = exceptions.size() - 1; i >= 0; i--) {
+			ExceptionTableEntry entry = exceptions.get(i);
+			if (entry.getStartPc() > maxPc || entry.getEndPc() > maxPc || entry.getHandlerPc() > maxPc)
+				exceptions.remove(i);
+		}
+
+		// Remove any jump instructions that point to bogus offsets
+		// - The code is already unverifiable, so when we stub out the instruction with
+		//   a 'return' the code is still unverifiable but fixes the ASM crash.
+		// - The number of bytes if kept the same, so valid jump instructions elsewhere
+		//   in the method are not broken.
+		// - This de-syncs the stack-frame entries for some reason I haven't looked into but
+		//   since the code that relies on these tricks already requires use of -noverify
+		//   I don't really feel like looking into it. Just use SKIP_FRAMES with ASM on these classes.
+		for (int i = instructions.size() - 1; i >= 0; i--) {
+			Instruction instruction = instructions.get(i);
+			int op = instruction.getOpcode();
+			if (((op >= IFEQ && op <= JSR) || (op == GOTO_W || op == JSR_W)) && instruction instanceof IntOperandInstruction jump) {
+				int jumpOffset = jump.getOperand();
+				if (jumpOffset > maxPc) {
+					int size = instruction.computeSize();
+					instructions.set(i, new BasicInstruction(RETURN));
+					for (int j = 0; j < size - 1; j++)
+						instructions.add(i, new BasicInstruction(NOP));
+				}
+			} else if (instruction instanceof TableSwitchInstruction tswitch) {
+				if (tswitch.getDefault() > maxPc || tswitch.getOffsets().stream().anyMatch(o -> o > maxPc)) {
+					int size = instruction.computeSize();
+					instructions.set(i, new BasicInstruction(RETURN));
+					for (int j = 0; j < size - 1; j++)
+						instructions.add(i, new BasicInstruction(NOP));
+				}
+			} else if (instruction instanceof LookupSwitchInstruction lswitch) {
+				if (lswitch.getDefault() > maxPc || lswitch.getOffsets().stream().anyMatch(o -> o > maxPc)) {
+					int size = instruction.computeSize();
+					instructions.set(i, new BasicInstruction(RETURN));
+					for (int j = 0; j < size - 1; j++)
+						instructions.add(i, new BasicInstruction(NOP));
+				}
+			}
+		}
 	}
 
 	private void removeInvalidBootstrapMethodAttribute() {
