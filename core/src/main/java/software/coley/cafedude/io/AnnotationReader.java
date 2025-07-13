@@ -424,23 +424,35 @@ public class AnnotationReader {
 			case 'J': // long
 			case 'S': // short
 			case 'Z': // boolean
+			{
 				int index = is.readUnsignedShort();
 				CpEntry entry = cp.get(index);
-				return new PrimitiveElementValue(tag, entry);
+				if (entry != null)
+					return new PrimitiveElementValue(tag, entry);
+				throw new IOException("Invalid element: " + tag);
+			}
 			case 's': // String
+			{
 				int utfIndex = is.readUnsignedShort();
-				CpUtf8 utf = (CpUtf8) cp.get(utfIndex);
-				return new Utf8ElementValue(tag, utf);
+				CpEntry entry = cp.get(utfIndex);
+				if (entry instanceof CpUtf8 utf)
+					return new Utf8ElementValue(tag, utf);
+				throw new IOException("Invalid element: String");
+			}
 			case 'e': // Enum
 				int typename = is.readUnsignedShort();
 				int constname = is.readUnsignedShort();
-				CpUtf8 type = (CpUtf8) cp.get(typename);
-				CpUtf8 constant = (CpUtf8) cp.get(constname);
-				return new EnumElementValue(tag, type, constant);
+				CpEntry entryType = cp.get(typename);
+				CpEntry entryConstant = cp.get(constname);
+				if (entryType instanceof CpUtf8 type && entryConstant instanceof CpUtf8 constant)
+					return new EnumElementValue(tag, type, constant);
+				throw new IOException("Invalid element: Enum");
 			case 'c': // Class
 				int classInfoIndex = is.readUnsignedShort();
-				CpUtf8 classInfo = (CpUtf8) cp.get(classInfoIndex);
-				return new ClassElementValue(tag, classInfo);
+				CpEntry entry = cp.get(classInfoIndex);
+				if (entry instanceof CpUtf8 className)
+					return new ClassElementValue(tag, className);
+				throw new IOException("Invalid element: Class");
 			case '@': // Annotation
 				Annotation nestedAnnotation = readAnnotation(scope);
 				return new AnnotationElementValue(tag, nestedAnnotation);
