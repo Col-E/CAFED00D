@@ -58,6 +58,6 @@ public sealed abstract class Instruction permits BasicInstruction, CpRefInstruct
 
 	@Override
 	public String toString() {
-		return "insn(" + OpcodeNames.name(getOpcode()) + ")";
+		return OpcodeNames.name(getOpcode());
 	}
 }
