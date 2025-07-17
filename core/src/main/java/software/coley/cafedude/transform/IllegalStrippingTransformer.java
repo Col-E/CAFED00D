@@ -113,8 +113,10 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		for (Method method : clazz.getMethods()) {
 			method.getAttributes().removeIf(attribute -> !isValidWrapped(method, attribute));
 			CodeAttribute code = method.getAttribute(CodeAttribute.class);
-			if (code != null)
+			if (code != null) {
 				removeInvalidInstructions(code);
+				removeInvalidVariables(code);
+			}
 		}
 
 		// Record filtered CP refs, the difference of the sets are the indices that were referenced
@@ -174,7 +176,18 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		}
 	}
 
-	private void removeInvalidBootstrapMethodAttribute() {
+	protected void removeInvalidVariables(@Nonnull CodeAttribute code) {
+		// In ASM's ClassReader.readCode(...) the startPc + length are used as labels[pc+length] which can be OOB.
+		Instruction lastInstruction = code.getInstructions().get(code.getInstructions().size() - 1);
+		int maxPc = code.computeOffsetOf(lastInstruction) + lastInstruction.computeSize();
+
+		LocalVariableTableAttribute lvta = code.getAttribute(LocalVariableTableAttribute.class);
+		LocalVariableTypeTableAttribute lvtta = code.getAttribute(LocalVariableTypeTableAttribute.class);
+		if (lvta != null) lvta.getEntries().removeIf(e -> e.getStartPc() + e.getLength() > maxPc);
+		if (lvtta != null) lvtta.getEntries().removeIf(e -> e.getStartPc() + e.getLength() > maxPc);
+	}
+
+	protected void removeInvalidBootstrapMethodAttribute() {
 		// ASM will try to read this attribute if any CP entry exists for DYNAMIC or INVOKE_DYNAMIC.
 		// If no methods actually refer to those CP entries, this attribute can be filled with garbage,
 		// in which case we will want to remove it.
@@ -199,6 +212,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			return false;
 		}
 	}
+
 	protected boolean isValid(@Nonnull AttributeHolder holder, @Nonnull Attribute attribute) {
 		Map<CpEntry, Predicate<Integer>> expectedTypeMasks = new HashMap<>();
 		Map<CpEntry, Predicate<CpEntry>> cpEntryValidators = new HashMap<>();
@@ -456,9 +470,9 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	}
 
 	protected void addAnnotationValidation(@Nullable AttributeHolder holder,
-	                                     @Nonnull Map<CpEntry, Predicate<Integer>> expectedTypeMasks,
-	                                     @Nonnull Map<CpEntry, Predicate<CpEntry>> cpEntryValidators,
-	                                     @Nonnull Annotation anno) {
+	                                       @Nonnull Map<CpEntry, Predicate<Integer>> expectedTypeMasks,
+	                                       @Nonnull Map<CpEntry, Predicate<CpEntry>> cpEntryValidators,
+	                                       @Nonnull Annotation anno) {
 		expectedTypeMasks.put(anno.getType(), i -> i == UTF8);
 		cpEntryValidators.put(anno.getType(), matchUtf8FieldDescriptor());
 		for (Map.Entry<CpUtf8, ElementValue> entry : anno.getValues().entrySet()) {
@@ -525,8 +539,8 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	}
 
 	protected void addElementValueValidation(@Nonnull Map<CpEntry, Predicate<Integer>> expectedTypeMasks,
-	                                       @Nonnull Map<CpEntry, Predicate<CpEntry>> cpEntryValidators,
-	                                       @Nonnull ElementValue elementValue) {
+	                                         @Nonnull Map<CpEntry, Predicate<CpEntry>> cpEntryValidators,
+	                                         @Nonnull ElementValue elementValue) {
 		if (elementValue instanceof ClassElementValue) {
 			CpUtf8 classIndex = ((ClassElementValue) elementValue).getClassEntry();
 			cpEntryValidators.put(classIndex, matchUtf8ValidQualifiedName());

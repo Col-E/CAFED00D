@@ -361,27 +361,6 @@ public class AttributeReader {
 	}
 
 	/**
-	 * @return Variable type table.
-	 *
-	 * @throws IOException
-	 * 		When the stream is unexpectedly closed or ends.
-	 */
-	@Nonnull
-	private LocalVariableTypeTableAttribute readLocalVariableTypes() throws IOException {
-		int count = is.readUnsignedShort();
-		List<VarTypeEntry> entries = new ArrayList<>(count);
-		for (int i = 0; i < count; i++) {
-			int startPc = is.readUnsignedShort();
-			int length = is.readUnsignedShort();
-			CpUtf8 name = (CpUtf8) cp.get(is.readUnsignedShort());
-			CpUtf8 sig = (CpUtf8) cp.get(is.readUnsignedShort());
-			int index = is.readUnsignedShort();
-			entries.add(new VarTypeEntry(startPc, length, name, sig, index));
-		}
-		return new LocalVariableTypeTableAttribute(name, entries);
-	}
-
-	/**
 	 * @return Variable table.
 	 *
 	 * @throws IOException
@@ -394,12 +373,43 @@ public class AttributeReader {
 		for (int i = 0; i < count; i++) {
 			int startPc = is.readUnsignedShort();
 			int length = is.readUnsignedShort();
-			CpUtf8 name = (CpUtf8) cp.get(is.readUnsignedShort());
-			CpUtf8 desc = (CpUtf8) cp.get(is.readUnsignedShort());
+			int nameIndex = is.readUnsignedShort();
+			int descIndex = is.readUnsignedShort();
 			int index = is.readUnsignedShort();
-			entries.add(new VarEntry(startPc, length, name, desc, index));
+			CpEntry name = cp.get(nameIndex);
+			CpEntry desc = cp.get(descIndex);
+			if (name instanceof CpUtf8 nameUtf && desc instanceof CpUtf8 descUtf)
+				// In ASM's ClassReader.readCode(...) junk variables can crash during reading
+				// since name/descriptors can evaluate to 'null' when the nameIndex/descIndex == 0.
+				// ASM assumes these names are non-null, and will write them to its symbol-table class, which crashes.
+				entries.add(new VarEntry(startPc, length, nameUtf, descUtf, index));
 		}
 		return new LocalVariableTableAttribute(name, entries);
+	}
+
+	/**
+	 * @return Variable type table.
+	 *
+	 * @throws IOException
+	 * 		When the stream is unexpectedly closed or ends.
+	 */
+	@Nonnull
+	private LocalVariableTypeTableAttribute readLocalVariableTypes() throws IOException {
+		int count = is.readUnsignedShort();
+		List<VarTypeEntry> entries = new ArrayList<>(count);
+		for (int i = 0; i < count; i++) {
+			int startPc = is.readUnsignedShort();
+			int length = is.readUnsignedShort();
+			int nameIndex = is.readUnsignedShort();
+			int signatureIndex = is.readUnsignedShort();
+			int index = is.readUnsignedShort();
+			CpEntry name = cp.get(nameIndex);
+			CpEntry sig = cp.get(signatureIndex);
+			if (name instanceof CpUtf8 nameUtf && sig instanceof CpUtf8 sigUtf)
+				// Same check for the reason for regular LVT.
+				entries.add(new VarTypeEntry(startPc, length, nameUtf, sigUtf, index));
+		}
+		return new LocalVariableTypeTableAttribute(name, entries);
 	}
 
 	/**
@@ -431,7 +441,7 @@ public class AttributeReader {
 		int count = is.readUnsignedByte();
 		List<MethodParametersAttribute.Parameter> entries = new ArrayList<>(count);
 		for (int i = 0; i < count; i++) {
-			CpUtf8 name = orNullInCp(is.readUnsignedShort());
+			CpUtf8 name = orNullInCp(CpUtf8.class, is.readUnsignedShort());
 			int accessFlags = is.readUnsignedShort();
 			entries.add(new MethodParametersAttribute.Parameter(accessFlags, name));
 		}
@@ -450,14 +460,14 @@ public class AttributeReader {
 		if (module == null)
 			return null;
 		int flags = is.readUnsignedShort();
-		CpUtf8 version = orNullInCp(is.readUnsignedShort());
+		CpUtf8 version = orNullInCp(CpUtf8.class, is.readUnsignedShort());
 		int count = is.readUnsignedShort();
 		List<Requires> requires = new ArrayList<>(count);
 		for (int i = 0; i < count; i++) {
 			CpModule reqModule = (CpModule) cp.get(is.readUnsignedShort());
 			if (reqModule != null) {
 				int reqFlags = is.readUnsignedShort();
-				CpUtf8 reqVersion = orNullInCp(is.readUnsignedShort());
+				CpUtf8 reqVersion = orNullInCp(CpUtf8.class, is.readUnsignedShort());
 				requires.add(new Requires(reqModule, reqFlags, reqVersion));
 			}
 		}
@@ -605,10 +615,12 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
-	@Nonnull
+	@Nullable
 	private SourceFileAttribute readSourceFile() throws IOException {
-		CpUtf8 sourceFile = (CpUtf8) cp.get(is.readUnsignedShort());
-		return new SourceFileAttribute(name, sourceFile);
+		CpEntry sourceEntry = cp.get(is.readUnsignedShort());
+		if (sourceEntry instanceof CpUtf8 sourceFileUtf)
+			return new SourceFileAttribute(name, sourceFileUtf);
+		return null;
 	}
 
 	/**
@@ -617,10 +629,12 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
-	@Nonnull
+	@Nullable
 	private CompilationIdAttribute readCompileId() throws IOException {
-		CpUtf8 sourceFile = (CpUtf8) cp.get(is.readUnsignedShort());
-		return new CompilationIdAttribute(name, sourceFile);
+		CpEntry idEntry = cp.get(is.readUnsignedShort());
+		if (idEntry instanceof CpUtf8 idEntryUtf)
+			return new CompilationIdAttribute(name, idEntryUtf);
+		return null;
 	}
 
 	/**
@@ -629,9 +643,12 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
+	@Nullable
 	private SourceIdAttribute readSourceId() throws IOException {
-		CpUtf8 sourceFile = (CpUtf8) cp.get(is.readUnsignedShort());
-		return new SourceIdAttribute(name, sourceFile);
+		CpEntry idEntry = cp.get(is.readUnsignedShort());
+		if (idEntry instanceof CpUtf8 idEntryUtf)
+			return new SourceIdAttribute(name, idEntryUtf);
+		return null;
 	}
 
 	/**
@@ -640,11 +657,13 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
-	@Nonnull
+	@Nullable
 	private EnclosingMethodAttribute readEnclosingMethod() throws IOException {
-		CpClass enclosingClass = (CpClass) cp.get(is.readUnsignedShort());
-		CpNameType enclosingMethod = orNullInCp(is.readUnsignedShort());
-		return new EnclosingMethodAttribute(name, enclosingClass, enclosingMethod);
+		CpEntry enclosingClass = cp.get(is.readUnsignedShort());
+		CpNameType enclosingMethod = orNullInCp(CpNameType.class, is.readUnsignedShort());
+		if (enclosingClass instanceof CpClass classEntry)
+			return new EnclosingMethodAttribute(name, classEntry, enclosingMethod);
+		return null;
 	}
 
 	/**
@@ -677,8 +696,8 @@ public class AttributeReader {
 		List<InnerClass> innerClasses = new ArrayList<>(numberOfInnerClasses);
 		for (int i = 0; i < numberOfInnerClasses; i++) {
 			CpClass innerClass = (CpClass) cp.get(is.readUnsignedShort());
-			CpClass outerClass = orNullInCp(is.readUnsignedShort());
-			CpUtf8 innerName = orNullInCp(is.readUnsignedShort());
+			CpClass outerClass = orNullInCp(CpClass.class, is.readUnsignedShort());
+			CpUtf8 innerName = orNullInCp(CpUtf8.class, is.readUnsignedShort());
 			int innerClassAccessFlags = is.readUnsignedShort();
 			innerClasses.add(new InnerClass(innerClass, outerClass, innerName, innerClassAccessFlags));
 		}
@@ -931,20 +950,12 @@ public class AttributeReader {
 		if (startPc == endPc)
 			return null;
 
-		CpEntry typeEntry = orNullInCp(catchTypeCpIndex);
-		if (typeEntry instanceof CpClass exceptionType)
-			return new CodeAttribute.ExceptionTableEntry(
-					startPc,
-					endPc,
-					handlerPc,
-					exceptionType
-			);
-
+		CpClass exceptionType = orNullInCp(CpClass.class, catchTypeCpIndex);
 		return new CodeAttribute.ExceptionTableEntry(
 				startPc,
 				endPc,
 				handlerPc,
-				null
+				exceptionType
 		);
 	}
 
@@ -1129,8 +1140,12 @@ public class AttributeReader {
 
 	@Nullable
 	@SuppressWarnings("unchecked")
-	private <T extends CpEntry> T orNullInCp(int index) {
+	private <T extends CpEntry> T orNullInCp(@Nonnull Class<T> type, int index) {
 		// If the index is 0, that's an edge case where we want to use 'null'
-		return index == 0 ? null : (T) cp.get(index);
+		if (index == 0) return null;
+		CpEntry entry = cp.get(index);
+		if (entry == null) return null;
+		if (entry.getClass().isAssignableFrom(type)) return (T) entry;
+		return null;
 	}
 }
