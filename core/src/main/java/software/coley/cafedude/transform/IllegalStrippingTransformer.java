@@ -189,7 +189,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		}
 	}
 
-	private boolean isValidWrapped(@Nonnull AttributeHolder holder, @Nonnull Attribute attribute) {
+	protected boolean isValidWrapped(@Nonnull AttributeHolder holder, @Nonnull Attribute attribute) {
 		try {
 			return isValid(holder, attribute);
 		} catch (Exception ex) {
@@ -199,18 +199,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			return false;
 		}
 	}
-
-	private static boolean isInvalidDesc(@Nonnull CpUtf8 descEntry) {
-		try {
-			String descUtf8 = descEntry.getText();
-			Descriptor parsed = Descriptor.from(descUtf8);
-			return parsed.getKind() == Descriptor.Kind.ILLEGAL;
-		} catch (Throwable t) {
-			return true;
-		}
-	}
-
-	private boolean isValid(@Nonnull AttributeHolder holder, @Nonnull Attribute attribute) {
+	protected boolean isValid(@Nonnull AttributeHolder holder, @Nonnull Attribute attribute) {
 		Map<CpEntry, Predicate<Integer>> expectedTypeMasks = new HashMap<>();
 		Map<CpEntry, Predicate<CpEntry>> cpEntryValidators = new HashMap<>();
 
@@ -466,7 +455,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		return true;
 	}
 
-	private void addAnnotationValidation(@Nullable AttributeHolder holder,
+	protected void addAnnotationValidation(@Nullable AttributeHolder holder,
 	                                     @Nonnull Map<CpEntry, Predicate<Integer>> expectedTypeMasks,
 	                                     @Nonnull Map<CpEntry, Predicate<CpEntry>> cpEntryValidators,
 	                                     @Nonnull Annotation anno) {
@@ -535,7 +524,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		}
 	}
 
-	private void addElementValueValidation(@Nonnull Map<CpEntry, Predicate<Integer>> expectedTypeMasks,
+	protected void addElementValueValidation(@Nonnull Map<CpEntry, Predicate<Integer>> expectedTypeMasks,
 	                                       @Nonnull Map<CpEntry, Predicate<CpEntry>> cpEntryValidators,
 	                                       @Nonnull ElementValue elementValue) {
 		if (elementValue instanceof ClassElementValue) {
@@ -570,12 +559,12 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	}
 
 	@Nonnull
-	private Predicate<CpEntry> matchClass() {
+	protected Predicate<CpEntry> matchClass() {
 		return e -> e instanceof CpClass && matchUtf8ValidQualifiedName().test(((CpClass) e).getName());
 	}
 
 	@Nonnull
-	private Predicate<CpEntry> matchUtf8ValidQualifiedName() {
+	protected Predicate<CpEntry> matchUtf8ValidQualifiedName() {
 		return e -> {
 			if (!(e instanceof CpUtf8)) return false;
 			String text = ((CpUtf8) e).getText();
@@ -588,17 +577,28 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	}
 
 	@Nonnull
-	private Predicate<CpEntry> matchUtf8FieldDescriptor() {
+	protected Predicate<CpEntry> matchUtf8FieldDescriptor() {
 		return e -> (e instanceof CpUtf8) && !isInvalidDesc((CpUtf8) e);
 	}
 
 	@Nonnull
-	private Predicate<CpEntry> matchUtf8NonEmpty() {
+	protected Predicate<CpEntry> matchUtf8NonEmpty() {
 		return e -> e instanceof CpUtf8 && !((CpUtf8) e).getText().isEmpty();
 	}
 
 	@Nonnull
-	private Predicate<CpEntry> matchUtf8Word() {
+	protected Predicate<CpEntry> matchUtf8Word() {
 		return e -> e instanceof CpUtf8 utf8 && UTF8_WORD.matcher(utf8.getText()).matches();
 	}
+
+	protected static boolean isInvalidDesc(@Nonnull CpUtf8 descEntry) {
+		try {
+			String descUtf8 = descEntry.getText();
+			Descriptor parsed = Descriptor.from(descUtf8);
+			return parsed.getKind() == Descriptor.Kind.ILLEGAL;
+		} catch (Throwable t) {
+			return true;
+		}
+	}
+
 }
