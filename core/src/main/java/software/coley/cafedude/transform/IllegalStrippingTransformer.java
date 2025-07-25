@@ -50,24 +50,28 @@ import software.coley.cafedude.classfile.attribute.RecordAttribute;
 import software.coley.cafedude.classfile.attribute.SignatureAttribute;
 import software.coley.cafedude.classfile.attribute.SourceFileAttribute;
 import software.coley.cafedude.classfile.behavior.AttributeHolder;
+import software.coley.cafedude.classfile.constant.ConstDynamic;
 import software.coley.cafedude.classfile.constant.CpClass;
 import software.coley.cafedude.classfile.constant.CpEntry;
 import software.coley.cafedude.classfile.constant.CpUtf8;
 import software.coley.cafedude.classfile.instruction.BasicInstruction;
+import software.coley.cafedude.classfile.instruction.CpRefInstruction;
 import software.coley.cafedude.classfile.instruction.Instruction;
 import software.coley.cafedude.classfile.instruction.IntOperandInstruction;
 import software.coley.cafedude.classfile.instruction.LookupSwitchInstruction;
 import software.coley.cafedude.classfile.instruction.TableSwitchInstruction;
-import software.coley.cafedude.io.AttributeContext;
+import software.coley.cafedude.io.AttributeHolderType;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static software.coley.cafedude.classfile.instruction.Opcodes.*;
 
@@ -103,21 +107,23 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		clazz.getFields().removeIf(field -> isInvalidDesc(field.getType()));
 		clazz.getMethods().removeIf(method -> isInvalidDesc(method.getType()));
 
-		// Strip BSM class attribute if it is unused.
-		removeInvalidBootstrapMethodAttribute();
-
 		// Strip attributes that are not valid.
 		clazz.getAttributes().removeIf(attribute -> !isValidWrapped(clazz, attribute));
 		for (Field field : clazz.getFields())
 			field.getAttributes().removeIf(attribute -> !isValidWrapped(field, attribute));
+		Set<ConstDynamic> dynamicCpReferences = Collections.newSetFromMap(new IdentityHashMap<>());
 		for (Method method : clazz.getMethods()) {
 			method.getAttributes().removeIf(attribute -> !isValidWrapped(method, attribute));
 			CodeAttribute code = method.getAttribute(CodeAttribute.class);
 			if (code != null) {
 				removeInvalidInstructions(code);
 				removeInvalidVariables(code);
+				collectDynamicCpReferences(code, dynamicCpReferences);
 			}
 		}
+
+		// Strip BSM class attribute if it is unused.
+		removeInvalidBootstrapMethodAttribute(dynamicCpReferences);
 
 		// Record filtered CP refs, the difference of the sets are the indices that were referenced
 		// by removed attributes/data.
@@ -187,19 +193,27 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		if (lvtta != null) lvtta.getEntries().removeIf(e -> e.getStartPc() + e.getLength() > maxPc);
 	}
 
-	protected void removeInvalidBootstrapMethodAttribute() {
+	protected void collectDynamicCpReferences(@Nonnull CodeAttribute code, @Nonnull Set<ConstDynamic> dynamicCpReferences) {
+		for (Instruction instruction : code.getInstructions())
+			if (instruction instanceof CpRefInstruction cpRefInstruction
+					&& cpRefInstruction.getEntry() instanceof ConstDynamic referencedDynamic)
+				dynamicCpReferences.add(referencedDynamic);
+	}
+
+	@Deprecated
+	protected void removeInvalidBootstrapMethodAttribute(@Nonnull Set<ConstDynamic> dynamicCpReferences) {
 		// ASM will try to read this attribute if any CP entry exists for DYNAMIC or INVOKE_DYNAMIC.
 		// If no methods actually refer to those CP entries, this attribute can be filled with garbage,
 		// in which case we will want to remove it.
-		BootstrapMethodsAttribute bsmAttribute = clazz.getAttribute(BootstrapMethodsAttribute.class);
-		if (bsmAttribute != null) {
-			List<CpEntry> dynamicCpAccesses = clazz.getMethods().stream()
-					.flatMap(m -> m.cpAccesses().stream())
-					.filter(cp -> cp != null && (cp.getTag() == CpEntry.DYNAMIC || cp.getTag() == CpEntry.INVOKE_DYNAMIC))
-					.collect(Collectors.toList());
-			if (dynamicCpAccesses.isEmpty())
+		if (dynamicCpReferences.isEmpty()) {
+			// There are no dynamic references found in any method's code. Remove the BSM attribute.
+			BootstrapMethodsAttribute bsmAttribute = clazz.getAttribute(BootstrapMethodsAttribute.class);
+			if (bsmAttribute != null)
 				clazz.getAttributes().remove(bsmAttribute);
 		}
+
+		// Remove any unused dynamic cp references in the constant pool.
+		pool.removeIf(c -> c instanceof ConstDynamic cd && !dynamicCpReferences.contains(cd));
 	}
 
 	protected boolean isValidWrapped(@Nonnull AttributeHolder holder, @Nonnull Attribute attribute) {
@@ -230,11 +244,11 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		String name = attribute.getName().getText();
 
 		// Check for illegal usage contexts
-		Collection<AttributeContext> allowedContexts = AttributeContexts.getAllowedContexts(name);
-		AttributeContext context = holder.getHolderType();
-		if (!allowedContexts.contains(context)) {
+		EnumSet<AttributeHolderType> allowedContexts = AttributeContexts.getAllowedContexts(name);
+		AttributeHolderType holderType = holder.getHolderType();
+		if (!allowedContexts.contains(holderType)) {
 			logger.debug("Found '{}' declared in illegal context {}, allowed contexts: {}",
-					name, context.name(), allowedContexts);
+					name, holderType.name(), allowedContexts);
 			return false;
 		} else if (!Modifiers.has(clazz.getAccess(), Modifiers.ACC_MODULE) && name.toLowerCase().startsWith("module")) {
 			logger.debug("Found '{}' in non-module class", name);
@@ -259,7 +273,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			case AttributeConstants.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS:
 			case AttributeConstants.RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS: {
 				// Sanity check
-				if (context != AttributeContext.METHOD)
+				if (holderType != AttributeHolderType.METHOD)
 					return false;
 				ParameterAnnotationsAttribute paramAnnotations = (ParameterAnnotationsAttribute) attribute;
 
@@ -332,7 +346,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				break;
 			case AttributeConstants.CODE: {
 				// Sanity check
-				if (context != AttributeContext.METHOD)
+				if (holderType != AttributeHolderType.METHOD)
 					return false;
 
 				// Method cannot be abstract
@@ -451,13 +465,13 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			// cpEntryValidators
 			if (cpEntry == null) {
 				logger.debug("Invalid '{}' attribute on {}, contains CP reference to null!",
-						name, context.name());
+						name, holderType.name());
 				return false;
 			}
 			int tag = cpEntry.getTag();
 			if (!entry.getValue().test(tag)) {
 				logger.debug("Invalid '{}' attribute on {}, contains CP reference to index with wrong type!",
-						name, context.name());
+						name, holderType.name());
 				return false;
 			}
 			if (cpEntryValidators.containsKey(cpEntry) && !cpEntryValidators.get(cpEntry).test(cpEntry)) {
