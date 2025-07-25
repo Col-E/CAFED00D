@@ -746,8 +746,15 @@ public class AttributeReader {
 	 */
 	@Nullable
 	private SourceDebugExtensionAttribute readSourceDebugExtension() throws IOException {
-		byte[] debugExtension = new byte[expectedContentLength];
-		is.readFully(debugExtension);
+		byte[] debugExtension = new byte[expectedContentLength + 2];
+
+		// Insert u2_length of string
+		debugExtension[0] = (byte) ((expectedContentLength >>> 8) & 0xFF);
+		debugExtension[1] = (byte) (expectedContentLength & 0xFF);
+
+		// Fill string contents
+		is.readFully(debugExtension, 2, expectedContentLength);
+
 		// Validate data represents UTF text
 		try {
 			new DataInputStream(new ByteArrayInputStream(debugExtension)).readUTF();
