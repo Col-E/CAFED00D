@@ -268,7 +268,7 @@ public class AnnotationReader {
 		AttributeHolderType expectedLocation = AttributeHolderType.fromAnnotationTargetType(targetType);
 
 		// Skip if context is not expected location.
-		if (!context.equals(expectedLocation))
+		if (context.type() != expectedLocation)
 			throw new IllegalArgumentException("Annotation location does not match allowed locations for its type");
 
 		// Parse target info union

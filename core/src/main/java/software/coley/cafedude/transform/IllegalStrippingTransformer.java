@@ -200,7 +200,6 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				dynamicCpReferences.add(referencedDynamic);
 	}
 
-	@Deprecated
 	protected void removeInvalidBootstrapMethodAttribute(@Nonnull Set<ConstDynamic> dynamicCpReferences) {
 		// ASM will try to read this attribute if any CP entry exists for DYNAMIC or INVOKE_DYNAMIC.
 		// If no methods actually refer to those CP entries, this attribute can be filled with garbage,

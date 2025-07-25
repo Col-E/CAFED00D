@@ -699,10 +699,12 @@ public class AttributeReader {
 		int numberOfInnerClasses = is.readUnsignedShort();
 		List<InnerClass> innerClasses = new ArrayList<>(numberOfInnerClasses);
 		for (int i = 0; i < numberOfInnerClasses; i++) {
-			CpClass innerClass = (CpClass) cp.get(is.readUnsignedShort());
+			CpClass innerClass = orNullInCp(CpClass.class, is.readUnsignedShort());
 			CpClass outerClass = orNullInCp(CpClass.class, is.readUnsignedShort());
 			CpUtf8 innerName = orNullInCp(CpUtf8.class, is.readUnsignedShort());
 			int innerClassAccessFlags = is.readUnsignedShort();
+			if (innerClass == null) // Skip if inner-class reference was bogus
+				continue;
 			innerClasses.add(new InnerClass(innerClass, outerClass, innerName, innerClassAccessFlags));
 		}
 		return new InnerClassesAttribute(name, innerClasses);
