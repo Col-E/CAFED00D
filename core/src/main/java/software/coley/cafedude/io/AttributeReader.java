@@ -67,6 +67,7 @@ import software.coley.cafedude.classfile.instruction.Instruction;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.PushbackInputStream;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -165,7 +166,7 @@ public class AttributeReader {
 					is.moveToAbsolute(readerAbsolutePos);
 					hasCorrectedPosition = true;
 				}
-			} else if (context .isAttribute()) {
+			} else if (context.isAttribute()) {
 				// https://github.com/openjdk/jdk11/blob/master/src/hotspot/share/classfile/classFileParser.cpp#L2064
 				if (attributeName.equals(AttributeConstants.LOCAL_VARIABLE_TABLE)) {
 					is.moveToAbsolute(readerAbsolutePos);
@@ -752,18 +753,15 @@ public class AttributeReader {
 	 */
 	@Nullable
 	private SourceDebugExtensionAttribute readSourceDebugExtension() throws IOException {
-		byte[] debugExtension = new byte[expectedContentLength + 2];
-
-		// Insert u2_length of string
-		debugExtension[0] = (byte) ((expectedContentLength >>> 8) & 0xFF);
-		debugExtension[1] = (byte) (expectedContentLength & 0xFF);
-
-		// Fill string contents
-		is.readFully(debugExtension, 2, expectedContentLength);
+		byte[] debugExtension = new byte[expectedContentLength];
+		is.readFully(debugExtension);
 
 		// Validate data represents UTF text
 		try {
-			new DataInputStream(new ByteArrayInputStream(debugExtension)).readUTF();
+			PushbackInputStream in = new PushbackInputStream(new ByteArrayInputStream(debugExtension), 2);
+			in.unread((byte) ((expectedContentLength >>> 8) & 0xFF));
+			in.unread((byte) (expectedContentLength & 0xFF));
+			new DataInputStream(in).readUTF();
 		} catch (Throwable t) {
 			logger.debug("Invalid SourceDebugExtension, not a valid UTF");
 			return null;
