@@ -356,28 +356,18 @@ public class Descriptor {
 	 */
 	@Nonnull
 	public static Descriptor from(char desc) {
-		switch (desc) {
-			case 'V':
-				return VOID;
-			case 'Z':
-				return BOOLEAN;
-			case 'B':
-				return BYTE;
-			case 'C':
-				return CHAR;
-			case 'S':
-				return SHORT;
-			case 'I':
-				return INT;
-			case 'F':
-				return FLOAT;
-			case 'D':
-				return DOUBLE;
-			case 'J':
-				return LONG;
-			default:
-				return new Descriptor(Kind.ILLEGAL, String.valueOf(desc));
-		}
+		return switch (desc) {
+			case 'V' -> VOID;
+			case 'Z' -> BOOLEAN;
+			case 'B' -> BYTE;
+			case 'C' -> CHAR;
+			case 'S' -> SHORT;
+			case 'I' -> INT;
+			case 'F' -> FLOAT;
+			case 'D' -> DOUBLE;
+			case 'J' -> LONG;
+			default -> new Descriptor(Kind.ILLEGAL, String.valueOf(desc));
+		};
 	}
 
 	/**
@@ -394,28 +384,18 @@ public class Descriptor {
 		if (clazz.isArray()) {
 			return Objects.requireNonNull(from(descriptor), "Failed to parse array descriptor from class reference");
 		} else if (clazz.isPrimitive()) {
-			switch (descriptor) {
-				case "void":
-					return VOID;
-				case "boolean":
-					return BOOLEAN;
-				case "byte":
-					return BYTE;
-				case "char":
-					return CHAR;
-				case "short":
-					return SHORT;
-				case "int":
-					return INT;
-				case "float":
-					return FLOAT;
-				case "double":
-					return DOUBLE;
-				case "long":
-					return LONG;
-				default:
-					throw new IllegalArgumentException("Unknown primitive type: " + descriptor);
-			}
+			return switch (descriptor) {
+				case "void" -> VOID;
+				case "boolean" -> BOOLEAN;
+				case "byte" -> BYTE;
+				case "char" -> CHAR;
+				case "short" -> SHORT;
+				case "int" -> INT;
+				case "float" -> FLOAT;
+				case "double" -> DOUBLE;
+				case "long" -> LONG;
+				default -> throw new IllegalArgumentException("Unknown primitive type: " + descriptor);
+			};
 		} else {
 			return Objects.requireNonNull(from("L" + descriptor + ";"), "Failed to parse object descriptor from class reference");
 		}
@@ -440,20 +420,10 @@ public class Descriptor {
 	 * @return {@code true} if it denotes a primitive.
 	 */
 	public static boolean isPrimitive(char desc) {
-		switch (desc) {
-			case 'V':
-			case 'Z':
-			case 'B':
-			case 'C':
-			case 'S':
-			case 'I':
-			case 'F':
-			case 'D':
-			case 'J':
-				return true;
-			default:
-				return false;
-		}
+		return switch (desc) {
+			case 'V', 'Z', 'B', 'C', 'S', 'I', 'F', 'D', 'J' -> true;
+			default -> false;
+		};
 	}
 
 	/**

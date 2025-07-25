@@ -58,10 +58,8 @@ public non-sealed class IincInstruction extends Instruction {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof IincInstruction)) return false;
+		if (!(o instanceof IincInstruction that)) return false;
 		if (!super.equals(o)) return false;
-
-		IincInstruction that = (IincInstruction) o;
 
 		if (var != that.var) return false;
 		return increment == that.increment;

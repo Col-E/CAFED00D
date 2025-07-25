@@ -4,6 +4,7 @@ import jakarta.annotation.Nonnull;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
 /**
  * Package pool entry. Points to an UTF constant.
@@ -47,11 +48,9 @@ public non-sealed class CpPackage extends CpEntry implements CrossCpReferencing 
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof CpPackage)) return false;
+		if (!(o instanceof CpPackage cpPackage)) return false;
 
-		CpPackage cpPackage = (CpPackage) o;
-
-		return packageName.equals(cpPackage.packageName);
+		return Objects.equals(packageName, cpPackage.packageName);
 	}
 
 	@Override

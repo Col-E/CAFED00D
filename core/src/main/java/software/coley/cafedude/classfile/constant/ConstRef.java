@@ -5,6 +5,7 @@ import software.coley.cafedude.classfile.ConstantPoolConstants;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Base reference pool entry. Points to a reference's {@link CpClass defining class}
@@ -73,12 +74,10 @@ public abstract sealed class ConstRef extends CpEntry implements CrossCpReferenc
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof ConstRef)) return false;
+		if (!(o instanceof ConstRef constRef)) return false;
 
-		ConstRef constRef = (ConstRef) o;
-
-		if (!classRef.equals(constRef.classRef)) return false;
-		return nameType.equals(constRef.nameType);
+		if (!Objects.equals(classRef, constRef.classRef)) return false;
+		return Objects.equals(nameType, constRef.nameType);
 	}
 
 	@Override

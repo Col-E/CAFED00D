@@ -5,6 +5,7 @@ import software.coley.cafedude.classfile.instruction.Opcodes;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
 /**
  * MethodHandle pool entry. Holds a byte to indicate behavior and points to a relevant reference constant
@@ -92,12 +93,10 @@ public non-sealed class CpMethodHandle extends CpEntry implements CrossCpReferen
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof CpMethodHandle)) return false;
-
-		CpMethodHandle that = (CpMethodHandle) o;
+		if (!(o instanceof CpMethodHandle that)) return false;
 
 		if (kind != that.kind) return false;
-		return reference.equals(that.reference);
+		return Objects.equals(reference, that.reference);
 	}
 
 	@Override

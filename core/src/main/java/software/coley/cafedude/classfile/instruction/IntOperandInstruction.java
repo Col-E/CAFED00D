@@ -39,10 +39,8 @@ public non-sealed class IntOperandInstruction extends Instruction {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof IntOperandInstruction)) return false;
+		if (!(o instanceof IntOperandInstruction that)) return false;
 		if (!super.equals(o)) return false;
-
-		IntOperandInstruction that = (IntOperandInstruction) o;
 
 		return operand == that.operand;
 	}

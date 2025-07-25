@@ -38,17 +38,12 @@ public enum TypePathKind {
 	 */
 	@Nonnull
 	public static TypePathKind fromValue(int value) {
-		switch (value) {
-			case 0:
-				return ARRAY_DEEPER;
-			case 1:
-				return NESTED_DEEPER;
-			case 2:
-				return WILDCARD_BOUND;
-			case 3:
-				return TYPE_ARGUMENT;
-			default:
-				throw new IllegalArgumentException("Invalid type path kind: " + value);
-		}
+		return switch (value) {
+			case 0 -> ARRAY_DEEPER;
+			case 1 -> NESTED_DEEPER;
+			case 2 -> WILDCARD_BOUND;
+			case 3 -> TYPE_ARGUMENT;
+			default -> throw new IllegalArgumentException("Invalid type path kind: " + value);
+		};
 	}
 }

@@ -44,9 +44,7 @@ public sealed abstract class Instruction permits BasicInstruction, CpRefInstruct
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof Instruction)) return false;
-
-		Instruction that = (Instruction) o;
+		if (!(o instanceof Instruction that)) return false;
 
 		return opcode == that.opcode;
 	}

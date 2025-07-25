@@ -201,9 +201,7 @@ public non-sealed class CharacterRangeTableAttribute extends Attribute {
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) return true;
-			if (!(o instanceof CharacterRangeInfo)) return false;
-
-			CharacterRangeInfo that = (CharacterRangeInfo) o;
+			if (!(o instanceof CharacterRangeInfo that)) return false;
 
 			if (startPc != that.startPc) return false;
 			if (endPc != that.endPc) return false;

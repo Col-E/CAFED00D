@@ -4,6 +4,7 @@ import jakarta.annotation.Nonnull;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
 /**
  * Module pool entry. Points to an UTF constant.
@@ -47,11 +48,9 @@ public non-sealed class CpModule extends CpEntry implements CrossCpReferencing {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof CpModule)) return false;
+		if (!(o instanceof CpModule cpModule)) return false;
 
-		CpModule cpModule = (CpModule) o;
-
-		return name.equals(cpModule.name);
+		return Objects.equals(name, cpModule.name);
 	}
 
 	@Override

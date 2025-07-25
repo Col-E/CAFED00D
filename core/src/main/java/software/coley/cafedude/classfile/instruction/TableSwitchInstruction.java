@@ -1,6 +1,7 @@
 package software.coley.cafedude.classfile.instruction;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -130,15 +131,14 @@ public non-sealed class TableSwitchInstruction extends Instruction {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof TableSwitchInstruction)) return false;
+		if (!(o instanceof TableSwitchInstruction that)) return false;
 		if (!super.equals(o)) return false;
 
-		TableSwitchInstruction that = (TableSwitchInstruction) o;
-
+		if (padding != that.padding) return false;
 		if (dflt != that.dflt) return false;
 		if (low != that.low) return false;
 		if (high != that.high) return false;
-		return offsets.equals(that.offsets);
+		return Objects.equals(offsets, that.offsets);
 	}
 
 	@Override

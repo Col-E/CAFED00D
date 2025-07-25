@@ -6,6 +6,7 @@ import software.coley.cafedude.classfile.constant.CpClass;
 import software.coley.cafedude.classfile.constant.CpEntry;
 
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -77,13 +78,11 @@ public non-sealed class MultiANewArrayInstruction extends Instruction implements
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof MultiANewArrayInstruction)) return false;
+		if (!(o instanceof MultiANewArrayInstruction that)) return false;
 		if (!super.equals(o)) return false;
 
-		MultiANewArrayInstruction that = (MultiANewArrayInstruction) o;
-
 		if (dimensions != that.dimensions) return false;
-		return descriptor.equals(that.descriptor);
+		return Objects.equals(descriptor, that.descriptor);
 	}
 
 	@Override

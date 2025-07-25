@@ -554,20 +554,19 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	protected void addElementValueValidation(@Nonnull Map<CpEntry, Predicate<Integer>> expectedTypeMasks,
 	                                         @Nonnull Map<CpEntry, Predicate<CpEntry>> cpEntryValidators,
 	                                         @Nonnull ElementValue elementValue) {
-		if (elementValue instanceof ClassElementValue) {
-			CpUtf8 classIndex = ((ClassElementValue) elementValue).getClassEntry();
+		if (elementValue instanceof ClassElementValue classElement) {
+			CpUtf8 classIndex = classElement.getClassEntry();
 			cpEntryValidators.put(classIndex, matchUtf8ValidQualifiedName());
-		} else if (elementValue instanceof EnumElementValue) {
-			EnumElementValue enumElementValue = (EnumElementValue) elementValue;
-			cpEntryValidators.put(enumElementValue.getType(), matchUtf8FieldDescriptor());
-		} else if (elementValue instanceof PrimitiveElementValue) {
-			CpEntry primitiveEntry = ((PrimitiveElementValue) elementValue).getValue();
+		} else if (elementValue instanceof EnumElementValue enumElement) {
+			cpEntryValidators.put(enumElement.getType(), matchUtf8FieldDescriptor());
+		} else if (elementValue instanceof PrimitiveElementValue primitive) {
+			CpEntry primitiveEntry = primitive.getValue();
 			expectedTypeMasks.put(primitiveEntry, i -> (i >= INTEGER && i <= DOUBLE));
-		} else if (elementValue instanceof AnnotationElementValue) {
-			Annotation annotation = ((AnnotationElementValue) elementValue).getAnnotation();
+		} else if (elementValue instanceof AnnotationElementValue annotationElement) {
+			Annotation annotation = annotationElement.getAnnotation();
 			addAnnotationValidation(null, expectedTypeMasks, cpEntryValidators, annotation);
-		} else if (elementValue instanceof ArrayElementValue) {
-			List<ElementValue> array = ((ArrayElementValue) elementValue).getArray();
+		} else if (elementValue instanceof ArrayElementValue arrayElement) {
+			List<ElementValue> array = arrayElement.getArray();
 			for (ElementValue arrayValue : array)
 				addElementValueValidation(expectedTypeMasks, cpEntryValidators, arrayValue);
 		}

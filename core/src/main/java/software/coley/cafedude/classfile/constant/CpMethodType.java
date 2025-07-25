@@ -4,6 +4,7 @@ import jakarta.annotation.Nonnull;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 
 /**
  * Method type pool entry. Points to an UTF constant.
@@ -47,11 +48,9 @@ public non-sealed class CpMethodType extends CpEntry implements CrossCpReferenci
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof CpMethodType)) return false;
+		if (!(o instanceof CpMethodType that)) return false;
 
-		CpMethodType that = (CpMethodType) o;
-
-		return descriptor.equals(that.descriptor);
+		return Objects.equals(descriptor, that.descriptor);
 	}
 
 	@Override

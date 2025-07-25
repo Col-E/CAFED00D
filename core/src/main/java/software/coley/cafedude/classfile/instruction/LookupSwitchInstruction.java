@@ -1,6 +1,7 @@
 package software.coley.cafedude.classfile.instruction;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Lookup Switch instruction.
@@ -108,14 +109,13 @@ public non-sealed class LookupSwitchInstruction extends Instruction {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof LookupSwitchInstruction)) return false;
+		if (!(o instanceof LookupSwitchInstruction that)) return false;
 		if (!super.equals(o)) return false;
 
-		LookupSwitchInstruction that = (LookupSwitchInstruction) o;
-
+		if (padding != that.padding) return false;
 		if (dflt != that.dflt) return false;
-		if (!keys.equals(that.keys)) return false;
-		return offsets.equals(that.offsets);
+		if (!Objects.equals(keys, that.keys)) return false;
+		return Objects.equals(offsets, that.offsets);
 	}
 
 	@Override

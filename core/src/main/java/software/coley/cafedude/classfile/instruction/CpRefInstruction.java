@@ -5,6 +5,7 @@ import software.coley.cafedude.classfile.behavior.CpAccessor;
 import software.coley.cafedude.classfile.constant.CpEntry;
 
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -62,12 +63,10 @@ public non-sealed class CpRefInstruction extends Instruction implements CpAccess
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof CpRefInstruction)) return false;
+		if (!(o instanceof CpRefInstruction that)) return false;
 		if (!super.equals(o)) return false;
 
-		CpRefInstruction that = (CpRefInstruction) o;
-
-		return entry.equals(that.entry);
+		return Objects.equals(entry, that.entry);
 	}
 
 	@Override
