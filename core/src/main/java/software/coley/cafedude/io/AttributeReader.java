@@ -74,6 +74,7 @@ import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
@@ -844,17 +845,21 @@ public class AttributeReader {
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
-	@Nonnull
+	@Nullable
 	private BootstrapMethodsAttribute readBoostrapMethods() throws IOException {
 		int bsmCount = is.readUnsignedShort();
 		List<BootstrapMethod> bootstrapMethods = new ArrayList<>(bsmCount);
 		for (int i = 0; i < bsmCount; i++) {
-			CpMethodHandle methodRef = (CpMethodHandle) cp.get(is.readUnsignedShort());
+			// Read the method handle + args
+			CpMethodHandle methodRef = orNullInCp(CpMethodHandle.class, is.readUnsignedShort());
 			int argCount = is.readUnsignedShort();
 			List<CpEntry> args = new ArrayList<>(argCount);
-			for (int j = 0; j < argCount; j++) {
-				args.add(cp.get(is.readUnsignedShort()));
-			}
+			for (int j = 0; j < argCount; j++)
+				args.add(orNullInCp(CpEntry.class, is.readUnsignedShort()));
+
+			// Add the entry, or drop the entire attribute if the entry was malformed
+			if (methodRef == null || args.stream().anyMatch(Objects::isNull))
+				return null;
 			bootstrapMethods.add(new BootstrapMethod(methodRef, args));
 		}
 		return new BootstrapMethodsAttribute(name, bootstrapMethods);
@@ -886,6 +891,7 @@ public class AttributeReader {
 	/**
 	 * @param context
 	 * 		Location the code attribute is defined in.
+	 *
 	 * @return Code attribute.
 	 *
 	 * @throws IOException
@@ -1158,7 +1164,7 @@ public class AttributeReader {
 		if (index == 0) return null;
 		CpEntry entry = cp.get(index);
 		if (entry == null) return null;
-		if (entry.getClass().isAssignableFrom(type)) return (T) entry;
+		if (type.isAssignableFrom(entry.getClass())) return (T) entry;
 		return null;
 	}
 }
