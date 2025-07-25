@@ -232,6 +232,9 @@ public class AttributeReader {
 			case AttributeConstants.CODE:
 				return readCode();
 			case AttributeConstants.CONSTANT_VALUE:
+				// Spec says constant-value is ignored on non-static fields, so we drop it.
+				if (!Modifier.isStatic(context.memberAccess()))
+					return null;
 				return readConstantValue();
 			case AttributeConstants.DEPRECATED:
 				return new DeprecatedAttribute(name);
