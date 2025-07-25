@@ -8,7 +8,7 @@ import software.coley.cafedude.classfile.constant.CpClass;
 import software.coley.cafedude.classfile.constant.CpEntry;
 import software.coley.cafedude.classfile.constant.CpUtf8;
 import software.coley.cafedude.classfile.instruction.Instruction;
-import software.coley.cafedude.io.AttributeContext;
+import software.coley.cafedude.io.AttributeHolderType;
 
 import java.util.Collections;
 import java.util.List;
@@ -167,8 +167,8 @@ public non-sealed class CodeAttribute extends Attribute implements AttributeHold
 
 	@Nonnull
 	@Override
-	public AttributeContext getHolderType() {
-		return AttributeContext.ATTRIBUTE;
+	public AttributeHolderType getHolderType() {
+		return AttributeHolderType.ATTRIBUTE;
 	}
 
 	@Nonnull

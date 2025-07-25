@@ -67,8 +67,9 @@ import software.coley.cafedude.classfile.instruction.Instruction;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -152,7 +153,7 @@ public class AttributeReader {
 			// otherwise have skipped the attribute or tossed the class as invalid.
 			int readerAbsolutePos = attributeReader.getAbsoluteReadPosition();
 			boolean hasCorrectedPosition = false;
-			if (context == AttributeContext.METHOD) {
+			if (context.isMethod()) {
 				// https://github.com/openjdk/jdk11/blob/master/src/hotspot/share/classfile/classFileParser.cpp#L2394
 				if (attributeName.equals(AttributeConstants.CODE)) {
 					is.moveToAbsolute(readerAbsolutePos);
@@ -164,7 +165,7 @@ public class AttributeReader {
 					is.moveToAbsolute(readerAbsolutePos);
 					hasCorrectedPosition = true;
 				}
-			} else if (context == AttributeContext.ATTRIBUTE) {
+			} else if (context .isAttribute()) {
 				// https://github.com/openjdk/jdk11/blob/master/src/hotspot/share/classfile/classFileParser.cpp#L2064
 				if (attributeName.equals(AttributeConstants.LOCAL_VARIABLE_TABLE)) {
 					is.moveToAbsolute(readerAbsolutePos);
@@ -214,8 +215,8 @@ public class AttributeReader {
 
 		// Check for attributes present in the wrong contexts.
 		if (reader.doDropBadContextAttributes()) {
-			Collection<AttributeContext> allowedContexts = AttributeContexts.getAllowedContexts(attributeName);
-			if (!allowedContexts.contains(context)) {
+			EnumSet<AttributeHolderType> allowedContexts = AttributeContexts.getAllowedContexts(attributeName);
+			if (!allowedContexts.contains(context.type())) {
 				logger.debug("Found '{}' in invalid context {}", attributeName, context.name());
 				return null;
 			} else if (!builder.isModule() && attributeName.toLowerCase().startsWith("module")) {
@@ -230,7 +231,7 @@ public class AttributeReader {
 
 		switch (attributeName) {
 			case AttributeConstants.CODE:
-				return readCode();
+				return readCode(context);
 			case AttributeConstants.CONSTANT_VALUE:
 				// Spec says constant-value is ignored on non-static fields, so we drop it.
 				if (!Modifier.isStatic(context.memberAccess()))
@@ -337,7 +338,7 @@ public class AttributeReader {
 			int numAttributes = is.readUnsignedShort();
 			List<Attribute> attributes = new ArrayList<>(numAttributes);
 			for (int x = 0; x < numAttributes; x++) {
-				Attribute attr = readAttribute(reader, builder, is, AttributeContext.ATTRIBUTE);
+				Attribute attr = readAttribute(reader, builder, is, new AttributeContext(AttributeHolderType.RECORD_COMPONENT, Modifier.PUBLIC | Modifier.FINAL));
 				if (attr != null)
 					attributes.add(attr);
 			}
@@ -778,7 +779,7 @@ public class AttributeReader {
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	@Nullable
-	private AnnotationsAttribute readAnnotations(AttributeContext context, boolean visible) throws IOException {
+	private AnnotationsAttribute readAnnotations(@Nonnull AttributeContext context, boolean visible) throws IOException {
 		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, name, context, visible)
 				.readAnnotations();
 	}
@@ -793,7 +794,7 @@ public class AttributeReader {
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	@Nullable
-	private ParameterAnnotationsAttribute readParameterAnnotations(AttributeContext context, boolean visible)
+	private ParameterAnnotationsAttribute readParameterAnnotations(@Nonnull AttributeContext context, boolean visible)
 			throws IOException {
 		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, name, context, visible)
 				.readParameterAnnotations();
@@ -809,7 +810,7 @@ public class AttributeReader {
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	@Nullable
-	private AnnotationsAttribute readTypeAnnotations(AttributeContext context, boolean visible) throws IOException {
+	private AnnotationsAttribute readTypeAnnotations(@Nonnull AttributeContext context, boolean visible) throws IOException {
 		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, name, context, visible)
 				.readTypeAnnotations();
 	}
@@ -824,7 +825,7 @@ public class AttributeReader {
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	@Nullable
-	private AnnotationDefaultAttribute readAnnotationDefault(AttributeContext context) throws IOException {
+	private AnnotationDefaultAttribute readAnnotationDefault(@Nonnull AttributeContext context) throws IOException {
 		return new AnnotationReader(reader, builder.getPool(), is, expectedContentLength, name, context, true)
 				.readAnnotationDefault();
 	}
@@ -883,13 +884,15 @@ public class AttributeReader {
 	}
 
 	/**
+	 * @param context
+	 * 		Location the code attribute is defined in.
 	 * @return Code attribute.
 	 *
 	 * @throws IOException
 	 * 		When the stream is unexpectedly closed or ends.
 	 */
 	@Nonnull
-	private CodeAttribute readCode() throws IOException {
+	private CodeAttribute readCode(@Nonnull AttributeContext context) throws IOException {
 		int maxStack = -1;
 		int maxLocals = -1;
 		int codeLength = -1;
@@ -928,7 +931,7 @@ public class AttributeReader {
 		int numAttributes = is.readUnsignedShort();
 		List<Attribute> attributes = new ArrayList<>(numAttributes);
 		for (int i = 0; i < numAttributes; i++) {
-			Attribute attr = readAttribute(reader, builder, is, AttributeContext.ATTRIBUTE);
+			Attribute attr = readAttribute(reader, builder, is, new AttributeContext(AttributeHolderType.ATTRIBUTE, context.memberAccess()));
 			if (attr != null)
 				attributes.add(attr);
 		}

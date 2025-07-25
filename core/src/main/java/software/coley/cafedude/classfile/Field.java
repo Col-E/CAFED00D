@@ -2,7 +2,7 @@ package software.coley.cafedude.classfile;
 
 import software.coley.cafedude.classfile.attribute.Attribute;
 import software.coley.cafedude.classfile.constant.CpUtf8;
-import software.coley.cafedude.io.AttributeContext;
+import software.coley.cafedude.io.AttributeHolderType;
 
 import jakarta.annotation.Nonnull;
 import java.util.List;
@@ -29,8 +29,8 @@ public non-sealed class Field extends ClassMember {
 
 	@Nonnull
 	@Override
-	public AttributeContext getHolderType() {
-		return AttributeContext.FIELD;
+	public AttributeHolderType getHolderType() {
+		return AttributeHolderType.FIELD;
 	}
 
 	@Override

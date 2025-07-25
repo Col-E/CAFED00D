@@ -126,7 +126,7 @@ public class ClassFileReader {
 			// Attributes
 			int numAttributes = is.readUnsignedShort();
 			for (int i = 0; i < numAttributes; i++) {
-				Attribute attr = AttributeReader.readAttribute(this, builder, is, AttributeContext.CLASS);
+				Attribute attr = AttributeReader.readAttribute(this, builder, is, new AttributeContext(AttributeHolderType.CLASS, 0));
 				if (attr != null)
 					builder.addAttribute(attr);
 			}
@@ -324,7 +324,7 @@ public class ClassFileReader {
 
 		List<Attribute> attributes = new ArrayList<>(numAttributes);
 		for (int i = 0; i < numAttributes; i++) {
-			Attribute attr = AttributeReader.readAttribute(this, builder, is, AttributeContext.FIELD);
+			Attribute attr = AttributeReader.readAttribute(this, builder, is, new AttributeContext(AttributeHolderType.FIELD, access));
 			if (attr != null)
 				attributes.add(attr);
 		}
@@ -354,7 +354,7 @@ public class ClassFileReader {
 
 		List<Attribute> attributes = new ArrayList<>(numAttributes);
 		for (int i = 0; i < numAttributes; i++) {
-			Attribute attr = AttributeReader.readAttribute(this, builder, is, AttributeContext.METHOD);
+			Attribute attr = AttributeReader.readAttribute(this, builder, is, new AttributeContext(AttributeHolderType.METHOD, access));
 			if (attr != null)
 				attributes.add(attr);
 		}

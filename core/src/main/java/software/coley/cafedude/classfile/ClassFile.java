@@ -5,7 +5,7 @@ import software.coley.cafedude.classfile.behavior.AttributeHolder;
 import software.coley.cafedude.classfile.behavior.CpAccessor;
 import software.coley.cafedude.classfile.constant.CpClass;
 import software.coley.cafedude.classfile.constant.CpEntry;
-import software.coley.cafedude.io.AttributeContext;
+import software.coley.cafedude.io.AttributeHolderType;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -255,8 +255,8 @@ public non-sealed class ClassFile implements Accessible, AttributeHolder, CpAcce
 
 	@Nonnull
 	@Override
-	public AttributeContext getHolderType() {
-		return AttributeContext.CLASS;
+	public AttributeHolderType getHolderType() {
+		return AttributeHolderType.CLASS;
 	}
 
 	/**

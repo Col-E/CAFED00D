@@ -4,7 +4,7 @@ import software.coley.cafedude.classfile.behavior.AttributeHolder;
 import software.coley.cafedude.classfile.behavior.CpAccessor;
 import software.coley.cafedude.classfile.constant.CpEntry;
 import software.coley.cafedude.classfile.constant.CpUtf8;
-import software.coley.cafedude.io.AttributeContext;
+import software.coley.cafedude.io.AttributeHolderType;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -140,8 +140,8 @@ public non-sealed class RecordAttribute extends Attribute {
 
 		@Nonnull
 		@Override
-		public AttributeContext getHolderType() {
-			return AttributeContext.RECORD_COMPONENT;
+		public AttributeHolderType getHolderType() {
+			return AttributeHolderType.RECORD_COMPONENT;
 		}
 
 		@Nonnull

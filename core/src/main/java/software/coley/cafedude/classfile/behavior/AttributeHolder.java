@@ -7,7 +7,7 @@ import software.coley.cafedude.classfile.ClassMember;
 import software.coley.cafedude.classfile.attribute.Attribute;
 import software.coley.cafedude.classfile.attribute.CodeAttribute;
 import software.coley.cafedude.classfile.attribute.RecordAttribute;
-import software.coley.cafedude.io.AttributeContext;
+import software.coley.cafedude.io.AttributeHolderType;
 
 import java.util.List;
 
@@ -46,5 +46,5 @@ public sealed interface AttributeHolder permits ClassFile, ClassMember, CodeAttr
 	 * @return The type of the holder.
 	 */
 	@Nonnull
-	AttributeContext getHolderType();
+	AttributeHolderType getHolderType();
 }
