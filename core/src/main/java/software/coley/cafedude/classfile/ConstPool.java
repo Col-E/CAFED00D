@@ -219,6 +219,7 @@ public class ConstPool implements List<CpEntry> {
 
 	public static class CpIterator implements ListIterator<CpEntry> {
 		private final ConstPool pool;
+		private int lastCursor;
 		private int cursor;
 
 		public CpIterator(@Nonnull ConstPool pool, int cursor) {
@@ -246,6 +247,7 @@ public class ConstPool implements List<CpEntry> {
 				CpEntry cp = pool.get(cursor);
 				if (cp == null)
 					throw new NoSuchElementException("No CP at " + cursor);
+				lastCursor = cursor;
 				cursor += cp.isWide() ? 2 : 1;
 				return cp;
 			}
@@ -268,6 +270,7 @@ public class ConstPool implements List<CpEntry> {
 					cp = pool.get(cursor - 2);
 				if (cp == null)
 					throw new NoSuchElementException("No CP at " + (cursor - 2));
+				lastCursor = cursor;
 				cursor -= cp.isWide() ? 2 : 1;
 				return cp;
 			}
@@ -298,6 +301,7 @@ public class ConstPool implements List<CpEntry> {
 			if (remove < 1)
 				throw new IllegalStateException();
 			pool.remove(remove);
+			cursor = lastCursor;
 		}
 
 		@Override
