@@ -157,22 +157,30 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			Instruction instruction = instructions.get(i);
 			int op = instruction.getOpcode();
 			if (((op >= IFEQ && op <= JSR) || (op == GOTO_W || op == JSR_W)) && instruction instanceof IntOperandInstruction jump) {
-				int jumpOffset = jump.getOperand();
-				if (jumpOffset > maxPc) {
+				int jumpOffset = code.computeOffsetOf(jump) + jump.getOperand();
+				if (jumpOffset > maxPc || jumpOffset < 0) {
 					int size = instruction.computeSize();
 					instructions.set(i, new BasicInstruction(RETURN));
 					for (int j = 0; j < size - 1; j++)
 						instructions.add(i, new BasicInstruction(NOP));
 				}
 			} else if (instruction instanceof TableSwitchInstruction tswitch) {
-				if (tswitch.getDefault() > maxPc || tswitch.getOffsets().stream().anyMatch(o -> o > maxPc)) {
+				int switchOffset = code.computeOffsetOf(tswitch);
+				if (switchOffset + tswitch.getDefault() > maxPc
+						|| switchOffset + tswitch.getDefault() < 0
+						|| tswitch.getOffsets().stream().anyMatch(o -> switchOffset + o > maxPc)
+						|| tswitch.getOffsets().stream().anyMatch(o -> switchOffset + o < 0)) {
 					int size = instruction.computeSize();
 					instructions.set(i, new BasicInstruction(RETURN));
 					for (int j = 0; j < size - 1; j++)
 						instructions.add(i, new BasicInstruction(NOP));
 				}
 			} else if (instruction instanceof LookupSwitchInstruction lswitch) {
-				if (lswitch.getDefault() > maxPc || lswitch.getOffsets().stream().anyMatch(o -> o > maxPc)) {
+				int switchOffset = code.computeOffsetOf(lswitch);
+				if (switchOffset + lswitch.getDefault() > maxPc
+						|| switchOffset + lswitch.getDefault() < 0
+						|| lswitch.getOffsets().stream().anyMatch(o -> switchOffset + o > maxPc)
+						|| lswitch.getOffsets().stream().anyMatch(o -> switchOffset + o < 0)) {
 					int size = instruction.computeSize();
 					instructions.set(i, new BasicInstruction(RETURN));
 					for (int j = 0; j < size - 1; j++)
