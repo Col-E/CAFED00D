@@ -30,6 +30,7 @@ import software.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute;
 import software.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute.BootstrapMethod;
 import software.coley.cafedude.classfile.attribute.CodeAttribute;
 import software.coley.cafedude.classfile.attribute.CodeAttribute.ExceptionTableEntry;
+import software.coley.cafedude.classfile.attribute.CodeUtilities;
 import software.coley.cafedude.classfile.attribute.ConstantValueAttribute;
 import software.coley.cafedude.classfile.attribute.DefaultAttribute;
 import software.coley.cafedude.classfile.attribute.EnclosingMethodAttribute;
@@ -54,6 +55,8 @@ import software.coley.cafedude.classfile.constant.ConstDynamic;
 import software.coley.cafedude.classfile.constant.CpClass;
 import software.coley.cafedude.classfile.constant.CpEntry;
 import software.coley.cafedude.classfile.constant.CpUtf8;
+import software.coley.cafedude.classfile.constant.LoadableConstant;
+import software.coley.cafedude.classfile.constant.Placeholders;
 import software.coley.cafedude.classfile.instruction.BasicInstruction;
 import software.coley.cafedude.classfile.instruction.CpRefInstruction;
 import software.coley.cafedude.classfile.instruction.Instruction;
@@ -61,7 +64,11 @@ import software.coley.cafedude.classfile.instruction.IntOperandInstruction;
 import software.coley.cafedude.classfile.instruction.LookupSwitchInstruction;
 import software.coley.cafedude.classfile.instruction.TableSwitchInstruction;
 import software.coley.cafedude.io.AttributeHolderType;
+import software.coley.cafedude.io.IndexableByteStream;
+import software.coley.cafedude.io.InstructionReader;
+import software.coley.cafedude.io.InstructionWriter;
 
+import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -69,10 +76,13 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
+import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
+import static software.coley.cafedude.classfile.attribute.CodeUtilities.*;
 import static software.coley.cafedude.classfile.instruction.Opcodes.*;
 
 /**
@@ -83,6 +93,7 @@ import static software.coley.cafedude.classfile.instruction.Opcodes.*;
 public class IllegalStrippingTransformer extends Transformer implements ConstantPoolConstants {
 	private static final Pattern UTF8_WORD = Pattern.compile("[<>;/$\\w]+");
 	private static final Logger logger = LoggerFactory.getLogger(IllegalStrippingTransformer.class);
+	protected int reinterpretationPasses = 4;
 
 	/**
 	 * @param clazz
@@ -118,6 +129,8 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			if (code != null) {
 				removeInvalidInstructions(code);
 				removeInvalidVariables(code);
+				//removeInstructionReinterpretation(code, 0);
+				//removeDeadInstructions(code);
 				collectDynamicCpReferences(code, dynamicCpReferences);
 			}
 		}
@@ -131,6 +144,252 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		cpAccesses.removeAll(filteredCpAccesses);
 	}
 
+	/**
+	 * Replaces dead code with {@code NOP} instructions.
+	 *
+	 * @param code
+	 * 		Code to visit.
+	 */
+	protected void removeDeadInstructions(@Nonnull CodeAttribute code) {
+		// Compute which instructions are visited by walking the method's control flow.
+		Set<Instruction> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+
+		// Visit from the start + try-catch handler blocks
+		Queue<Integer> offsetsToVisit = new ArrayDeque<>();
+		offsetsToVisit.add(0);
+		for (ExceptionTableEntry e : code.getExceptionTable())
+			offsetsToVisit.add(e.getHandlerPc());
+
+		// Visit flow
+		List<Instruction> instructions = code.getInstructions();
+		int instructionCount = instructions.size();
+		while (!offsetsToVisit.isEmpty()) {
+			int offset = offsetsToVisit.remove();
+			Instruction instruction = code.getInstructionAtOffset(offset);
+			if (instruction == null)
+				continue;
+			int insnIndex = code.indexOf(instruction);
+			if (insnIndex < 0)
+				continue;
+			for (int i = insnIndex; i < instructionCount; i++) {
+				instruction = instructions.get(i);
+				if (!visited.add(instruction))
+					break;
+
+				// Add new offsets for control flow branches.
+				if (isBranch(instruction) && instruction instanceof IntOperandInstruction jump) {
+					int base = code.computeOffsetOf(jump);
+					offsetsToVisit.add(base + jump.getOperand());
+				} else if (instruction instanceof TableSwitchInstruction table) {
+					int base = code.computeOffsetOf(table);
+					offsetsToVisit.add(base + table.getDefault());
+					table.getOffsets().forEach(off -> offsetsToVisit.add(base + off));
+				} else if (instruction instanceof LookupSwitchInstruction lookup) {
+					int base = code.computeOffsetOf(lookup);
+					offsetsToVisit.add(base + lookup.getDefault());
+					lookup.getOffsets().forEach(off -> offsetsToVisit.add(base + off));
+				}
+
+				// Abort sequential stepping if this instruction is terminal or always-take branching.
+				if (isTerminalOrAlwaysTakeFlowControl(instruction))
+					break;
+			}
+		}
+
+		// Replace any unvisited instructions with NOP
+		BasicInstruction nop = new BasicInstruction(NOP);
+		for (int i = instructions.size() - 1; i >= 0; i--) {
+			Instruction instruction = instructions.get(i);
+			if (!visited.contains(instruction)) {
+				int extraNops = instruction.computeSize() - 1;
+				instructions.set(i, nop);
+				for (int j = 0; j < extraNops; j++) {
+					instructions.add(i, nop);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Replaces illegal jumps into instruction operand bytes with valid instruction sequences.
+	 * This technique is only viable with {@code noverify}.
+	 *
+	 * @param code
+	 * 		Code to visit.
+	 * @param passCount
+	 * 		Current visit pass count.
+	 */
+	protected void removeInstructionReinterpretation(@Nonnull CodeAttribute code, int passCount) {
+		List<Instruction> instructions = code.getInstructions();
+		int instructionCount = instructions.size();
+		for (int i = 0; i < instructionCount; i++) {
+			Instruction instruction = instructions.get(i);
+			if (isBranch(instruction) && instruction instanceof IntOperandInstruction jump) {
+				// Compute jump destination
+				int currentOffset = code.computeOffsetOf(instruction);
+				int relativeJumpOffset = jump.getOperand();
+				int absoluteJumpOffset = currentOffset + relativeJumpOffset;
+				Instruction instructionAtOffset = code.getInstructionAtOffset(absoluteJumpOffset);
+
+				// If no such instruction starts at the given offset, we've jumped into the middle of an instruction
+				// and this is illegally re-interpreting the operand bytes as its own instruction.
+				if (instructionAtOffset == null) {
+					// Get the instruction we've jumped into
+					instructionAtOffset = code.getContainingInstructionAtOffset(absoluteJumpOffset);
+					if (instructionAtOffset == null) {
+						logger.warn("Reinterpretation lookup went out-of-bounds");
+						return;
+					}
+
+					// Compute how many bytes into the instruction we've jumped into
+					int offsetOfContainingInstruction = code.computeOffsetOf(instructionAtOffset);
+					int offsetDifference = absoluteJumpOffset - offsetOfContainingInstruction;
+
+					// Reinterpret the bytecode with our illegal offset
+					byte[] methodBytecode = new InstructionWriter().writeCode(instructions);
+					int methodBytecodeOffset = offsetOfContainingInstruction + offsetDifference;
+					List<Instruction> reinrerpreted = Collections.emptyList();
+					try {
+						// Continue expanding the reinterpreted block until:
+						// - We encounter a failure with reinterpretation
+						// - Hit the end of the method
+						// - Hit code that aligns with our existing instruction model
+						int next = i + 1;
+						int tempSequenceLength = instructionAtOffset.computeSize();
+						int tempInsnIndexToCheckForAlignment = 1;
+						while (next <= instructionCount) {
+							IndexableByteStream is = new IndexableByteStream(methodBytecode);
+							is.moveTo(methodBytecodeOffset);
+							reinrerpreted = new InstructionReader().read(is, pool, tempSequenceLength - offsetDifference);
+
+							// If we observe that we hit the end of the method, this block is complete.
+							if (next >= instructionCount) break;
+
+							// Step forward and try again.
+							tempSequenceLength += instructions.get(next++).computeSize();
+
+							// If we observe that we hit code that aligns with the normal interpretation then this block is complete.
+							CodeAttribute tmpCode = new CodeAttribute(Placeholders.UTF8, 0, 0, reinrerpreted, Collections.emptyList(), Collections.emptyList());
+							for (int j = tempInsnIndexToCheckForAlignment; j < reinrerpreted.size(); j++) {
+								// Get the offset of this reinterpreted instruction in terms of the original method bytecode
+								Instruction reinterpretedInsn = reinrerpreted.get(j);
+								int tmpOffset = tmpCode.computeOffsetOf(reinterpretedInsn);
+								int offsetInOriginalMethod = tmpOffset + offsetOfContainingInstruction + offsetDifference;
+
+								// If the offset of this instruction is a match for an offset in the original code
+								// then we've completed the block of reinterpreted instructions.
+								if (code.getInstructionAtOffset(offsetInOriginalMethod) != null) {
+									if (j < reinrerpreted.size())
+										reinrerpreted = reinrerpreted.subList(0, j);
+									next = Integer.MAX_VALUE;
+									break;
+								}
+								tempInsnIndexToCheckForAlignment = Math.max(tempInsnIndexToCheckForAlignment, j);
+							}
+						}
+					} catch (Throwable ignored) {
+						// TODO: Once this pass is finalized, we will actually ignore this.
+						//  - For now with the samples on-hand there are still some cases where they
+						//    seemingly have the wrong offsets on reinterpreted 'goto' instructions.
+						//  - These problems get ignored at runtime since they usually are within opaque-predicate
+						//    dead code which prevents the VM from freaking out.
+						logger.warn("Reinterpretation encountered an exception", ignored);
+					}
+
+					// Sanity check we have at least one reinterpreted instruction.
+					int reinrerpretedBlockSize = wrap(reinrerpreted).computeSize();
+					if (reinrerpreted.isEmpty()) {
+						logger.error("Reinterpretation block fill failure");
+						return;
+					}
+
+					// Modify the jump target to point to the end of the method (current code size in bytes).
+					// We will copy the patched block to the end of the method.
+					int reinterpretedBlockOffset = code.computeSize();
+					int newRelativeJumpOffset = reinterpretedBlockOffset - code.computeOffsetOf(jump);
+					jump.setOperand(newRelativeJumpOffset);
+
+					// TODO: Rewrite 'goto' as 'goto_w' when the distance between the original location
+					//  and the rewritten block location is too large.
+					//  - Ensure our handling of 'reinterpretedBlockOffset' allows for this
+					instructions.addAll(reinrerpreted);
+
+					// Sanity check
+					if (code.getInstructionAtOffset(newRelativeJumpOffset + currentOffset) != reinrerpreted.get(0)) {
+						logger.error("Reinterpretation block redirect failure");
+						return;
+					}
+
+					// Now that the reinterpreted code block has been copied to the end of the method,
+					// we need to fix any relative offsets in the block that are outside the bounds of the block
+					// to point back to where the reinterpreted code originates from.
+					//
+					//  1. Compute how many bytes into the reinterpreted instruction we are (mid-insn-shift)
+					//  2. Based on the current position, plus the mid-insn-shift so that we are "relative"
+					//     to the reinterpreted jump's base instruction offset,
+					//     compute difference from offset where reinterpreted block was added.
+					//  3. For any relative jump in the reinterpreted block that is not self-contained in the block
+					//     add the difference to each jump so that they are now relative to where they would have
+					//     been from the reinterpreted instruction.
+					shiftJumps(reinrerpreted,
+							// Filter: Only shift jumps that are outside the reinterpreted block boundaries
+							blockRelativeOffset -> blockRelativeOffset < 0 || blockRelativeOffset >= reinrerpretedBlockSize,
+							// Shift calculator: Add the block-shift to each affected jump
+							//  minus the bytes of preceding instructions in the block (since we are retargeting to jump backwards)
+							(jumpInsnOffset, jumpOperand) ->
+							{
+								// Compute where the jump originally was going to land in the context of it being
+								// evaluated from the reinterpreted instructions.
+								int originalJumpTarget = (absoluteJumpOffset + jumpInsnOffset + jumpOperand);
+								int thisJumpInsnOffset = reinterpretedBlockOffset + jumpInsnOffset;
+
+								// The new jump operand will be the difference between the current jump instruction
+								// offset and the original destination the jump at its original location would
+								// have landed at.
+								return (originalJumpTarget) - (thisJumpInsnOffset);
+							}
+					);
+
+					// Debug sanity checks
+					//  checkInvalidJumpUpTo(code, currentOffset);
+					//  checkInvalidJumpFrom(code, reinterpretedBlockOffset);
+
+					//
+					Instruction lastReinterpretedBlockInsn = reinrerpreted.get(reinrerpreted.size() - 1);
+					if (isTerminalOrAlwaysTakeFlowControl(lastReinterpretedBlockInsn)) {
+						// Execution naturally ends, no need to make changes
+					} else if (isBranch(lastReinterpretedBlockInsn)) {
+						// Handle fall-through cases of branches (these are likely bogus opaque-predicates, but just in case)
+						int currentCodeSize = code.computeSize();
+						int nextExpectedOffset = absoluteJumpOffset + reinrerpretedBlockSize;
+						int diff = nextExpectedOffset - currentCodeSize;
+						instructions.add(new IntOperandInstruction(GOTO_W, diff));
+					} else {
+						// Handle natural fall-through
+						int reinterpretedInstructionIndex = code.indexOf(instructionAtOffset);
+						int nextExpectedOffset = code.computeOffsetOf(instructions.get(reinterpretedInstructionIndex + 1));
+						int diff = nextExpectedOffset - code.computeSize();
+						instructions.add(new IntOperandInstruction(GOTO_W, diff));
+						// TODO: These two blocks are *very* similar and can probably be combined.
+						//  - Need more test cases to verify for certain
+					}
+				}
+			}
+		}
+
+		// It is possible to stack reinterpretation, so we will allow multiple passes.
+		if (checkInvalidJumpUpTo(code, Integer.MAX_VALUE) && passCount < reinterpretationPasses)
+			removeInstructionReinterpretation(code, passCount + 1);
+	}
+
+	/**
+	 * Removes instructions with illegal operands <i>(That won't work even with {@code noverify})</i>.
+	 * These generally are included in dead-code blocks and thus don't cause problems since
+	 * they are not eagerly verified.
+	 *
+	 * @param code
+	 * 		Code to visit.
+	 */
 	protected void removeInvalidInstructions(@Nonnull CodeAttribute code) {
 		List<Instruction> instructions = code.getInstructions();
 		if (instructions.size() <= 1)
@@ -156,6 +415,8 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		for (int i = instructions.size() - 1; i >= 0; i--) {
 			Instruction instruction = instructions.get(i);
 			int op = instruction.getOpcode();
+
+			// Jumps that go out of bounds of the method
 			if (((op >= IFEQ && op <= JSR) || (op == GOTO_W || op == JSR_W)) && instruction instanceof IntOperandInstruction jump) {
 				int jumpOffset = code.computeOffsetOf(jump) + jump.getOperand();
 				if (jumpOffset > maxPc || jumpOffset < 0) {
@@ -187,13 +448,27 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 						instructions.add(i, new BasicInstruction(NOP));
 				}
 			}
+			// LDC that does not have loadable content
+			else if ((op == LDC || op == LDC_W || op == LDC2_W)
+					&& instruction instanceof CpRefInstruction ldc
+					&& !(ldc.getEntry() instanceof LoadableConstant)) {
+				int size = instruction.computeSize();
+				instructions.set(i, new BasicInstruction(RETURN));
+				for (int j = 0; j < size - 1; j++)
+					instructions.add(i, new BasicInstruction(NOP));
+			}
 		}
 	}
 
+	/**
+	 * Removes local variable table entries with invalid data.
+	 *
+	 * @param code
+	 * 		Code to visit.
+	 */
 	protected void removeInvalidVariables(@Nonnull CodeAttribute code) {
 		// In ASM's ClassReader.readCode(...) the startPc + length are used as labels[pc+length] which can be OOB.
-		Instruction lastInstruction = code.getInstructions().get(code.getInstructions().size() - 1);
-		int maxPc = code.computeOffsetOf(lastInstruction) + lastInstruction.computeSize();
+		int maxPc = code.computeSize();
 
 		LocalVariableTableAttribute lvta = code.getAttribute(LocalVariableTableAttribute.class);
 		LocalVariableTypeTableAttribute lvtta = code.getAttribute(LocalVariableTypeTableAttribute.class);
@@ -201,6 +476,14 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		if (lvtta != null) lvtta.getEntries().removeIf(e -> e.getStartPc() + e.getLength() > maxPc);
 	}
 
+	/**
+	 * Finds any {@link ConstDynamic} usage in the given method bytecode, and adds them to the given set.
+	 *
+	 * @param code
+	 * 		Code to visit.
+	 * @param dynamicCpReferences
+	 * 		Set to add results into.
+	 */
 	protected void collectDynamicCpReferences(@Nonnull CodeAttribute code, @Nonnull Set<ConstDynamic> dynamicCpReferences) {
 		for (Instruction instruction : code.getInstructions())
 			if (instruction instanceof CpRefInstruction cpRefInstruction
@@ -208,6 +491,12 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				dynamicCpReferences.add(referencedDynamic);
 	}
 
+	/**
+	 * Remove any bootstrap method content that is unused.
+	 *
+	 * @param dynamicCpReferences
+	 * 		Set of dynamic CP references that were found in method bytecode.
+	 */
 	protected void removeInvalidBootstrapMethodAttribute(@Nonnull Set<ConstDynamic> dynamicCpReferences) {
 		// ASM will try to read this attribute if any CP entry exists for DYNAMIC or INVOKE_DYNAMIC.
 		// If no methods actually refer to those CP entries, this attribute can be filled with garbage,
@@ -223,6 +512,19 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		pool.removeIf(c -> c instanceof ConstDynamic cd && !dynamicCpReferences.contains(cd));
 	}
 
+	/**
+	 * Generic checks for any given attribute.
+	 * <p/>
+	 * Any exception observed when handling {@link #isValid(AttributeHolder, Attribute)}
+	 * results in the dropping of the attribute.
+	 *
+	 * @param holder
+	 * 		The thing declaring the attribute.
+	 * @param attribute
+	 * 		The attribute to validate/
+	 *
+	 * @return {@code true} when valid. {@code false} when invalid, and the attribute should be stripped.
+	 */
 	protected boolean isValidWrapped(@Nonnull AttributeHolder holder, @Nonnull Attribute attribute) {
 		try {
 			return isValid(holder, attribute);
@@ -234,6 +536,16 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		}
 	}
 
+	/**
+	 * Generic checks for any given attribute.
+	 *
+	 * @param holder
+	 * 		The thing declaring the attribute.
+	 * @param attribute
+	 * 		The attribute to validate/
+	 *
+	 * @return {@code true} when valid. {@code false} when invalid, and the attribute should be stripped.
+	 */
 	protected boolean isValid(@Nonnull AttributeHolder holder, @Nonnull Attribute attribute) {
 		Map<CpEntry, Predicate<Integer>> expectedTypeMasks = new HashMap<>();
 		Map<CpEntry, Predicate<CpEntry>> cpEntryValidators = new HashMap<>();
@@ -346,9 +658,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 
 					// 0 if anonymous, otherwise name index
 					expectedTypeMasks.put(innerClass.getInnerName(), i -> i == 0 || i == UTF8);
-					allow0Case |= innerClass.getInnerClassInfo() == null
-							|| innerClass.getOuterClassInfo() == null
-							|| innerClass.getInnerName() == null;
+					allow0Case |= innerClass.getOuterClassInfo() == null || innerClass.getInnerName() == null;
 				}
 				break;
 			case AttributeConstants.CODE: {
@@ -457,7 +767,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			case AttributeConstants.SOURCE_ID:
 			case AttributeConstants.STACK_MAP_TABLE:
 			default:
-				// TODO: The rest of these when each has their own attribute class
+				// TODO: The rest of these
 				break;
 		}
 		for (Map.Entry<CpEntry, Predicate<Integer>> entry : expectedTypeMasks.entrySet()) {
@@ -501,8 +811,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			cpEntryValidators.put(elementTypeIndex, matchUtf8ValidQualifiedName());
 			addElementValueValidation(expectedTypeMasks, cpEntryValidators, entry.getValue());
 		}
-		if (anno instanceof TypeAnnotation) {
-			TypeAnnotation typeAnnotation = (TypeAnnotation) anno;
+		if (anno instanceof TypeAnnotation typeAnnotation) {
 			TargetInfo targetInfo = typeAnnotation.getTargetInfo();
 			switch (targetInfo.getTargetTypeKind()) {
 				case TYPE_PARAMETER_BOUND_TARGET:
@@ -539,9 +848,9 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 					break;
 
 				case CATCH_TARGET:
-					if (holder instanceof CodeAttribute) {
-						CodeAttribute code = (CodeAttribute) holder;
+					if (holder instanceof CodeAttribute code) {
 						CatchTargetInfo catchTargetInfo = (CatchTargetInfo) targetInfo;
+
 						// Enforce table range
 						if (catchTargetInfo.getExceptionTableIndex() >= code.getExceptionTable().size()) {
 							expectedTypeMasks.put(null, i -> false);
@@ -625,6 +934,12 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		return e -> e instanceof CpUtf8 utf8 && UTF8_WORD.matcher(utf8.getText()).matches();
 	}
 
+	/**
+	 * @param descEntry
+	 * 		CP entry to validate as a descriptor.
+	 *
+	 * @return {@code true} when invalid.
+	 */
 	protected static boolean isInvalidDesc(@Nonnull CpUtf8 descEntry) {
 		try {
 			String descUtf8 = descEntry.getText();
@@ -635,4 +950,132 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		}
 	}
 
+	/**
+	 * @param code
+	 * 		Code to visit.
+	 * @param max
+	 * 		Max bytecode offset to visit up to.
+	 *
+	 * @return {@code true} when any visited control flow instruction has an invalid jump target.
+	 * IE, does not point to the beginning of a valid instruction.
+	 *
+	 * @see #checkInvalidJumpFrom(CodeAttribute, int)
+	 */
+	protected static boolean checkInvalidJumpUpTo(@Nonnull CodeAttribute code, int max) {
+		int offset = 0;
+		List<Instruction> instructions = code.getInstructions();
+		for (int i = 0; i < instructions.size(); i++) {
+			Instruction instruction = instructions.get(i);
+			if (offset > max)
+				break;
+			if (isBranch(instruction) && instruction instanceof IntOperandInstruction jump) {
+				int target = offset + jump.getOperand();
+				if (code.getInstructionAtOffset(target) == null) {
+					return true;
+				}
+			}
+			offset += instruction.computeSize();
+		}
+		return false;
+	}
+
+	/**
+	 * @param code
+	 * 		Code to visit.
+	 * @param min
+	 * 		Min bytecode offset to visit from.
+	 *
+	 * @return {@code true} when any visited control flow instruction has an invalid jump target.
+	 * IE, does not point to the beginning of a valid instruction.
+	 *
+	 * @see #checkInvalidJumpUpTo(CodeAttribute, int)
+	 */
+	protected static boolean checkInvalidJumpFrom(@Nonnull CodeAttribute code, int min) {
+		int offset = 0;
+		List<Instruction> instructions = code.getInstructions();
+		for (int i = 0; i < instructions.size(); i++) {
+			Instruction instruction = instructions.get(i);
+			if (offset > min)
+				if (isBranch(instruction) && instruction instanceof IntOperandInstruction jump) {
+					int target = offset + jump.getOperand();
+					if (code.getInstructionAtOffset(target) == null) {
+						return true;
+					}
+				}
+			offset += instruction.computeSize();
+		}
+		return false;
+	}
+
+	/**
+	 * Updates control flow instructions in the given block.
+	 *
+	 * @param instructions
+	 * 		Sequence of instructions to modify.
+	 * @param blockRelativeJumpPredicate
+	 * 		Predicate operating on jump targets, relative to the start of the block
+	 * 		<i>(Defined by the given {@code instructions}, where the first instruction
+	 * 		starts at offset 0)</i>
+	 * @param rewriter
+	 * 		Function that takes in the jump instruction offset and its operand value,
+	 * 		and provides a replacement operand value.
+	 */
+	protected static void shiftJumps(@Nonnull List<Instruction> instructions,
+	                                 @Nonnull IntPredicate blockRelativeJumpPredicate,
+	                                 @Nonnull JumpRewriter rewriter) {
+		int instructionOffset = 0;
+		for (Instruction instruction : instructions) {
+			if (CodeUtilities.isBranch(instruction)
+					&& instruction instanceof IntOperandInstruction jump
+					&& blockRelativeJumpPredicate.test(instructionOffset + jump.getOperand())) {
+				jump.setOperand(rewriter.rewrite(instructionOffset, jump.getOperand()));
+			} else if (instruction instanceof LookupSwitchInstruction switchInsn) {
+				int dflt = switchInsn.getDefault();
+				if (blockRelativeJumpPredicate.test(instructionOffset + dflt))
+					switchInsn.setDefault(rewriter.rewrite(instructionOffset, dflt));
+				List<Integer> switchOffsets = switchInsn.getOffsets();
+				for (int i = 0; i < switchOffsets.size(); i++) {
+					int operand = switchOffsets.get(i);
+					if (blockRelativeJumpPredicate.test(instructionOffset + operand))
+						switchOffsets.set(i, rewriter.rewrite(instructionOffset, operand));
+				}
+			} else if (instruction instanceof TableSwitchInstruction switchInsn) {
+				int dflt = switchInsn.getDefault();
+				if (blockRelativeJumpPredicate.test(instructionOffset + dflt))
+					switchInsn.setDefault(rewriter.rewrite(instructionOffset, dflt));
+				List<Integer> switchOffsets = switchInsn.getOffsets();
+				for (int i = 0; i < switchOffsets.size(); i++) {
+					int operand = switchOffsets.get(i);
+					if (blockRelativeJumpPredicate.test(instructionOffset + operand))
+						switchOffsets.set(i, rewriter.rewrite(instructionOffset, operand));
+				}
+			}
+			instructionOffset += instruction.computeSize();
+		}
+	}
+
+	/**
+	 * @param code
+	 * 		Code to disassemble.
+	 *
+	 * @return Disassembly.
+	 */
+	@Nonnull
+	protected static String disassemble(@Nonnull CodeAttribute code) {
+		String dis;
+		StringBuilder sb = new StringBuilder();
+		for (Instruction instruction : code.getInstructions()) {
+			sb.append(code.computeOffsetOf(instruction)).append(": ").append(instruction).append('\n');
+		}
+		dis = sb.toString();
+		return dis;
+	}
+
+	/**
+	 * @see #shiftJumps(List, IntPredicate, JumpRewriter)
+	 */
+	public interface JumpRewriter {
+		int rewrite(int instructionOffset, int jumpOperand);
+	}
 }
+
