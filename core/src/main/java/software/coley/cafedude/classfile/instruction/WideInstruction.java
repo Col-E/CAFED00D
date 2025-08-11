@@ -30,7 +30,7 @@ public non-sealed class WideInstruction extends Instruction {
 			// IINC is unique in that it becomes 6 bytes:
 			//   https://docs.oracle.com/javase/specs/jvms/se21/html/jvms-6.html#jvms-6.5.wide
 			//
-			// opcode
+			// opcode (wide)
 			// iinc
 			// indexbyte1
 			// indexbyte2
@@ -38,8 +38,9 @@ public non-sealed class WideInstruction extends Instruction {
 			// constbyte2
 			return 6;
 		}
-		// opcode
-		// input opcode
+
+		// opcode (wide)
+		// opcode (of backing instruction)
 		// indexbyte1
 		// indexbyte2
 		return 4;

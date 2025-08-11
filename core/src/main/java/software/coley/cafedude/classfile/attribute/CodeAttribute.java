@@ -19,7 +19,7 @@ import java.util.Set;
  *
  * @author Matt Coley
  */
-public non-sealed class CodeAttribute extends Attribute implements AttributeHolder {
+public non-sealed class CodeAttribute extends Attribute implements AttributeHolder, CodeUtilities {
 	private List<ExceptionTableEntry> exceptionTable;
 	private List<Attribute> attributes;
 	private List<Instruction> instructions;
@@ -48,38 +48,6 @@ public non-sealed class CodeAttribute extends Attribute implements AttributeHold
 		this.instructions = instructions;
 		this.exceptionTable = exceptionTable;
 		this.attributes = attributes;
-	}
-
-	/**
-	 * A instance matching index-of since the standard {@link List#indexOf(Object)} uses object equality.
-	 *
-	 * @param instruction
-	 * 		A specific instruction in the code.
-	 *
-	 * @return Index in the instructions list where the code appears.
-	 */
-	public int indexOf(@Nonnull Instruction instruction) {
-		// We have our own index-of because 'list.indexOf' uses 'item.equals(other)' which is not what we want.
-		for (int i = 0; i < instructions.size(); i++)
-			if (instructions.get(i) == instruction)
-				return i;
-		return -1;
-	}
-
-	/**
-	 * @param instruction
-	 * 		A specific instruction in the code.
-	 *
-	 * @return Method bytecode offset of the instruction.
-	 */
-	public int computeOffsetOf(@Nonnull Instruction instruction) {
-		int index = indexOf(instruction);
-		if (index == 0) return 0;
-		if (index < 0) return -1;
-		int offset = 0;
-		for (int i = 0; i < index; i++)
-			offset += instructions.get(i).computeSize();
-		return offset;
 	}
 
 	/**
