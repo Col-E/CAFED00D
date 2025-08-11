@@ -354,7 +354,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 					//  checkInvalidJumpUpTo(code, currentOffset);
 					//  checkInvalidJumpFrom(code, reinterpretedBlockOffset);
 
-					//
+					// Append trailing instructions to make sure we don't fall off the end of the method.
 					Instruction lastReinterpretedBlockInsn = reinrerpreted.get(reinrerpreted.size() - 1);
 					if (isTerminalOrAlwaysTakeFlowControl(lastReinterpretedBlockInsn)) {
 						// Execution naturally ends, no need to make changes
@@ -417,7 +417,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			int op = instruction.getOpcode();
 
 			// Jumps that go out of bounds of the method
-			if (((op >= IFEQ && op <= JSR) || (op == GOTO_W || op == JSR_W)) && instruction instanceof IntOperandInstruction jump) {
+			if (isBranch(instruction) && instruction instanceof IntOperandInstruction jump) {
 				int jumpOffset = code.computeOffsetOf(jump) + jump.getOperand();
 				if (jumpOffset > maxPc || jumpOffset < 0) {
 					int size = instruction.computeSize();
