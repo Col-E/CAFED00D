@@ -129,6 +129,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			if (code != null) {
 				removeInvalidInstructions(code);
 				removeInvalidVariables(code);
+				removeInvalidTypeAnnotations(code);
 				//removeInstructionReinterpretation(code, 0);
 				//removeDeadInstructions(code);
 				collectDynamicCpReferences(code, dynamicCpReferences);
@@ -474,6 +475,49 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		LocalVariableTypeTableAttribute lvtta = code.getAttribute(LocalVariableTypeTableAttribute.class);
 		if (lvta != null) lvta.getEntries().removeIf(e -> e.getStartPc() + e.getLength() > maxPc);
 		if (lvtta != null) lvtta.getEntries().removeIf(e -> e.getStartPc() + e.getLength() > maxPc);
+	}
+
+	/**
+	 * Removes type annotations with invalid local variable target ranges.
+	 *
+	 * @param code
+	 * 		Code to visit.
+	 */
+	protected void removeInvalidTypeAnnotations(@Nonnull CodeAttribute code) {
+		int maxPc = code.computeSize();
+		List<Attribute> attributes = code.getAttributes();
+		for (int i = attributes.size() - 1; i >= 0; i--) {
+			// Only care about type annotations.
+			Attribute attribute = attributes.get(i);
+			String name = attribute.getName().getText();
+			if (!AttributeConstants.RUNTIME_INVISIBLE_TYPE_ANNOTATIONS.equals(name) &&
+					!AttributeConstants.RUNTIME_VISIBLE_TYPE_ANNOTATIONS.equals(name))
+				continue;
+			if (!(attribute instanceof AnnotationsAttribute annotations))
+				continue;
+
+			annotations.getAnnotations().removeIf(annotation -> {
+				// Skip non-type annotations.
+				if (!(annotation instanceof TypeAnnotation typeAnnotation))
+					return false;
+
+				// Validate local variable target ranges.
+				// If any of the ranges are out of bounds, remove the annotation.
+				if (typeAnnotation.getTargetInfo() instanceof TargetInfo.LocalVarTargetInfo localVarTargetInfo) {
+					for (TargetInfo.LocalVarTargetInfo.Variable variable : localVarTargetInfo.getVariableTable()) {
+						long endPc = (long) variable.getStartPc() + variable.getLength();
+						if (variable.getStartPc() > maxPc || endPc > maxPc)
+							return true;
+					}
+				}
+
+				return false;
+			});
+
+			// Drop the attribute if it has no annotations left.
+			if (annotations.getAnnotations().isEmpty())
+				attributes.remove(i);
+		}
 	}
 
 	/**
@@ -823,7 +867,6 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				case TYPE_ARGUMENT_TARGET:
 					break;
 				case LOCALVAR_TARGET:
-					// TODO: Ensure variables outline matches what is in code's variables attribute
 					break;
 				case THROWS_TARGET:
 					// TODO: Verify with a sample what the target holder type should be
@@ -1078,4 +1121,3 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		int rewrite(int instructionOffset, int jumpOperand);
 	}
 }
-

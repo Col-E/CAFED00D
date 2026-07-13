@@ -1,6 +1,8 @@
 package software.coley.cafedude;
 
 import jakarta.annotation.Nonnull;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.objectweb.asm.ClassReader;
@@ -19,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -34,9 +37,9 @@ public class CrasherPatchingTest {
 	@ParameterizedTest
 	@MethodSource("supply")
 	public void testPatch(File sub) {
+		String name = sub.getName();
 		try {
 			byte[] code = Files.readAllBytes(sub.toPath());
-
 			// Reading with ASM fails or produces incorrect representation...
 			assertThrows(Throwable.class, () -> {
 				ClassWriter cw = new TestClassWriter(ClassWriter.COMPUTE_FRAMES);
@@ -44,7 +47,7 @@ public class CrasherPatchingTest {
 				ClassNode node = new ClassNode(Opcodes.ASM9);
 				cr.accept(node, 0);
 				node.accept(cw);
-			}, "Class does not break ASM: " + sub.getName());
+			}, "Class does not break ASM: " + name);
 
 			// Patch obfuscated class
 			ClassFile cf = new ReservedOpcodeRewritingReader().read(code);
@@ -54,19 +57,19 @@ public class CrasherPatchingTest {
 			// Reading with ASM works
 			assertDoesNotThrow(() -> {
 				// Don't do compute-frames if the sample contains unverifiable bytecode (stack height mismatching)
-				int writerFlags = noverify_code.contains(sub.getName()) ? 0 : ClassWriter.COMPUTE_FRAMES;
+				int writerFlags = noverify_code.contains(name) ? 0 : ClassWriter.COMPUTE_FRAMES;
 				ClassWriter cw = new TestClassWriter(writerFlags);
 				ClassReader cr = new ClassReader(modified);
 				ClassNode node = new ClassNode(Opcodes.ASM9);
 				cr.accept(node, 0);
 				node.accept(cw);
-			}, "Failure to patch class: " + sub.getName());
+			}, "Failure to patch class: " + name);
 		} catch (IOException e) {
 			fail("Failed to read class, IO error", e);
 		} catch (InvalidClassException e) {
 			fail("Failed to read obfuscated class, invalid class", e);
 		} catch (Exception ex) {
-			fail("Unexpected error while testing class " + sub.getName(), ex);
+			fail("Unexpected error while testing class " + name, ex);
 		}
 	}
 
