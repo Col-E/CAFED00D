@@ -53,6 +53,10 @@ import software.coley.cafedude.classfile.attribute.SourceFileAttribute;
 import software.coley.cafedude.classfile.behavior.AttributeHolder;
 import software.coley.cafedude.classfile.constant.ConstDynamic;
 import software.coley.cafedude.classfile.constant.CpClass;
+import software.coley.cafedude.classfile.constant.CpFieldRef;
+import software.coley.cafedude.classfile.constant.CpInterfaceMethodRef;
+import software.coley.cafedude.classfile.constant.CpMethodHandle;
+import software.coley.cafedude.classfile.constant.CpMethodRef;
 import software.coley.cafedude.classfile.constant.CpEntry;
 import software.coley.cafedude.classfile.constant.CpUtf8;
 import software.coley.cafedude.classfile.constant.LoadableConstant;
@@ -138,6 +142,9 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 
 		// Strip BSM class attribute if it is unused.
 		removeInvalidBootstrapMethodAttribute(dynamicCpReferences);
+
+		// Invalid handles are unusable even when they are otherwise unreferenced.
+		pool.removeIf(entry -> entry instanceof CpMethodHandle handle && !isValidMethodHandle(handle));
 
 		// Record filtered CP refs, the difference of the sets are the indices that were referenced
 		// by removed attributes/data.
@@ -454,10 +461,22 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 						instructions.add(i, new BasicInstruction(NOP));
 				}
 			}
-			// LDC that does not have loadable content
+
+			// Dynamic constants must point to an existing, valid bootstrap method.
+			else if (instruction instanceof CpRefInstruction cpRef
+					&& cpRef.getEntry() instanceof ConstDynamic dynamic
+					&& !isValidDynamic(dynamic)) {
+				int size = instruction.computeSize();
+				instructions.set(i, new BasicInstruction(RETURN));
+				for (int j = 0; j < size - 1; j++)
+					instructions.add(i, new BasicInstruction(NOP));
+			}
+
+			// LDC content must be loadable and method handles must match their reference kind.
 			else if ((op == LDC || op == LDC_W || op == LDC2_W)
 					&& instruction instanceof CpRefInstruction ldc
-					&& !(ldc.getEntry() instanceof LoadableConstant)) {
+					&& (!(ldc.getEntry() instanceof LoadableConstant) ||
+					ldc.getEntry() instanceof CpMethodHandle handle && !isValidMethodHandle(handle))) {
 				int size = instruction.computeSize();
 				instructions.set(i, new BasicInstruction(RETURN));
 				for (int j = 0; j < size - 1; j++)
@@ -559,6 +578,52 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 
 		// Remove any unused dynamic cp references in the constant pool.
 		pool.removeIf(c -> c instanceof ConstDynamic cd && !dynamicCpReferences.contains(cd));
+	}
+
+	/**
+	 * Checks that a dynamic constant resolves to a usable bootstrap method.
+	 *
+	 * @param dynamic
+	 * 		Dynamic constant to check.
+	 *
+	 * @return {@code true} when the bootstrap method exists and has a valid handle.
+	 */
+	private boolean isValidDynamic(@Nonnull ConstDynamic dynamic) {
+		// If there isn't a bootstrap method attribute, then there is no way to resolve the dynamic constant.
+		BootstrapMethodsAttribute attribute = clazz.getAttribute(BootstrapMethodsAttribute.class);
+		if (attribute == null)
+			return false;
+
+		// Index must be in bounds and the method handle must match its reference kind.
+		int index = dynamic.getBsmIndex();
+		List<BootstrapMethod> methods = attribute.getBootstrapMethods();
+		return index >= 0
+				&& index < methods.size()
+				&& isValidMethodHandle(methods.get(index).getBsmMethodRef());
+	}
+
+	/**
+	 * Checks that a method handle kind matches its referenced constant type.
+	 *
+	 * @param handle
+	 * 		Method handle to check.
+	 *
+	 * @return {@code true} when the kind and reference type agree.
+	 */
+	private boolean isValidMethodHandle(@Nonnull CpMethodHandle handle) {
+		return switch (handle.getKind()) {
+			case CpMethodHandle.REF_GET_FIELD,
+					CpMethodHandle.REF_GET_STATIC,
+					CpMethodHandle.REF_PUT_FIELD,
+					CpMethodHandle.REF_PUT_STATIC -> handle.getReference() instanceof CpFieldRef;
+			case CpMethodHandle.REF_INVOKE_VIRTUAL,
+					CpMethodHandle.REF_NEW_INVOKE_SPECIAL -> handle.getReference() instanceof CpMethodRef;
+			case CpMethodHandle.REF_INVOKE_STATIC,
+					CpMethodHandle.REF_INVOKE_SPECIAL -> handle.getReference() instanceof CpMethodRef ||
+					clazz.getVersionMajor() >= 52 && handle.getReference() instanceof CpInterfaceMethodRef;
+			case CpMethodHandle.REF_INVOKE_INTERFACE -> handle.getReference() instanceof CpInterfaceMethodRef;
+			default -> false;
+		};
 	}
 
 	/**
@@ -758,9 +823,15 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			case AttributeConstants.BOOTSTRAP_METHODS:
 				BootstrapMethodsAttribute bootstrapMethodsAttribute = (BootstrapMethodsAttribute) attribute;
 				for (BootstrapMethod bsm : bootstrapMethodsAttribute.getBootstrapMethods()) {
+					if (!isValidMethodHandle(bsm.getBsmMethodRef()))
+						return false;
 					expectedTypeMasks.put(bsm.getBsmMethodRef(), i -> i == METHOD_HANDLE);
 					// Arguments must be loadable types
 					for (CpEntry arg : bsm.getArgs()) {
+						if (arg instanceof CpMethodHandle handle && !isValidMethodHandle(handle))
+							return false;
+						if (arg instanceof ConstDynamic dynamic && !isValidDynamic(dynamic))
+							return false;
 						expectedTypeMasks.put(arg, i ->
 								(i >= INTEGER && i <= STRING) ||
 										(i >= METHOD_HANDLE && i <= DYNAMIC));
