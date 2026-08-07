@@ -9,7 +9,9 @@ import software.coley.cafedude.classfile.ConstPool;
 import software.coley.cafedude.classfile.ConstantPoolConstants;
 import software.coley.cafedude.classfile.Field;
 import software.coley.cafedude.classfile.Method;
+import software.coley.cafedude.classfile.Modifiers;
 import software.coley.cafedude.classfile.attribute.Attribute;
+import software.coley.cafedude.classfile.attribute.AttributeConstants;
 import software.coley.cafedude.classfile.constant.ConstDynamic;
 import software.coley.cafedude.classfile.constant.ConstRef;
 import software.coley.cafedude.classfile.constant.CpClass;
@@ -52,6 +54,7 @@ public class ClassFileReader {
 	private boolean dropEofAttributes = true;
 	private boolean dropDupeAnnotations = true;
 	private boolean checkCodeLength = true;
+	private boolean dropModuleAccess = true;
 
 	/**
 	 * @param code
@@ -102,34 +105,54 @@ public class ClassFileReader {
 			}
 
 			// Flags
+			// - Capture the original flag because tolerant handling clears it only after all structural checks.
 			builder.setAccess(is.readUnsignedShort());
+			boolean moduleAccess = builder.isModule();
+			boolean dropModuleContent = false;
 
 			// This/super classes
+			// - Module classes have no superclass, fields, or methods.
+			//   If any of those are present, the class is structurally invalid and should be downgraded to an ordinary class.
 			builder.setThisClass((CpClass) constPool.get(is.readUnsignedShort()));
-			builder.setSuperClass((CpClass) constPool.get(is.readUnsignedShort()));
+			int superClassIndex = is.readUnsignedShort();
+			dropModuleContent |= checkModuleStructure(moduleAccess, superClassIndex, "super_class");
+			builder.setSuperClass((CpClass) constPool.get(superClassIndex));
 
 			// Interfaces
 			int numInterfaces = is.readUnsignedShort();
+			dropModuleContent |= checkModuleStructure(moduleAccess, numInterfaces, "interfaces_count");
 			for (int i = 0; i < numInterfaces; i++)
 				builder.addInterface((CpClass) constPool.get(is.readUnsignedShort()));
 
 			// Fields
 			int numFields = is.readUnsignedShort();
+			dropModuleContent |= checkModuleStructure(moduleAccess, numFields, "fields_count");
 			for (int i = 0; i < numFields; i++)
 				builder.addField(readField(builder));
 
 			// Methods
 			int numMethods = is.readUnsignedShort();
+			dropModuleContent |= checkModuleStructure(moduleAccess, numMethods, "methods_count");
 			for (int i = 0; i < numMethods; i++)
 				builder.addMethod(readMethod(builder));
+
+			// A structurally ordinary class must not retain module identity or metadata.
+			if (dropModuleContent) {
+				builder.setAccess(builder.getAccess() & ~Modifiers.ACC_MODULE);
+				logger.debug("Dropping ACC_MODULE and module metadata from structurally invalid module class");
+			}
 
 			// Attributes
 			int numAttributes = is.readUnsignedShort();
 			for (int i = 0; i < numAttributes; i++) {
 				Attribute attr = AttributeReader.readAttribute(this, builder, is, new AttributeContext(AttributeHolderType.CLASS, 0));
-				if (attr != null)
+				if (attr != null && (!dropModuleContent || !isModuleAttribute(attr)))
 					builder.addAttribute(attr);
 			}
+
+			// Module and package constants cannot be referenced after all module attributes are gone.
+			if (dropModuleContent)
+				constPool.removeIf(entry -> entry instanceof CpModule || entry instanceof CpPackage);
 
 			// Prune garbage that wasn't parsed properly in the second pass
 			// - A CpClass that holds a bogus index pointing to a CpInt for instance
@@ -366,6 +389,48 @@ public class ClassFileReader {
 		throw new IOException("Method name/type index do not point to UTF8 values: " + nameIndex + "/" + descIndex);
 	}
 
+
+	/**
+	 * Handles a module-only structural value that must be zero.
+	 *
+	 * @param moduleAccess
+	 * 		{@code true} when the original class access contains {@link Modifiers#ACC_MODULE}.
+	 * @param value
+	 * 		Structural value to validate.
+	 * @param name
+	 * 		Structural value name for diagnostics.
+	 *
+	 * @return {@code true} when module content should be dropped.
+	 *
+	 * @throws IOException
+	 * 		When the value is invalid and module access dropping is disabled.
+	 */
+	private boolean checkModuleStructure(boolean moduleAccess, int value, @Nonnull String name) throws IOException {
+		if (!moduleAccess || value == 0)
+			return false;
+		if (!dropModuleAccess)
+			throw new IOException("ACC_MODULE class has non-zero " + name + ": " + value);
+		return true;
+	}
+
+	/**
+	 * @param attribute
+	 * 		Attribute to inspect.
+	 *
+	 * @return {@code true} when the attribute carries module metadata.
+	 */
+	private static boolean isModuleAttribute(@Nonnull Attribute attribute) {
+		return switch (attribute.getName().getText()) {
+			case AttributeConstants.MODULE,
+			     AttributeConstants.MODULE_HASHES,
+			     AttributeConstants.MODULE_MAIN_CLASS,
+			     AttributeConstants.MODULE_PACKAGES,
+			     AttributeConstants.MODULE_RESOLUTION,
+			     AttributeConstants.MODULE_TARGET -> true;
+			default -> false;
+		};
+	}
+
 	/**
 	 * @return {@code true} if attributes declared from future versions should be removed.
 	 */
@@ -440,6 +505,22 @@ public class ClassFileReader {
 	 */
 	public void setCheckCodeLength(boolean checkCodeLength) {
 		this.checkCodeLength = checkCodeLength;
+	}
+
+	/**
+	 * @return {@code true} when structurally invalid module classes are downgraded to ordinary classes.
+	 */
+	public boolean doDropModuleAccess() {
+		return dropModuleAccess;
+	}
+
+	/**
+	 * @param dropModuleAccess
+	 * 		{@code true} to clear {@link Modifiers#ACC_MODULE} and remove module metadata when a module class
+	 * 		declares a superclass, interface, field, or method.
+	 */
+	public void setDropModuleAccess(boolean dropModuleAccess) {
+		this.dropModuleAccess = dropModuleAccess;
 	}
 
 	/**
