@@ -71,10 +71,12 @@ import java.io.PushbackInputStream;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -124,6 +126,8 @@ public class AttributeReader {
 	}
 
 	/**
+	 * Reads a single attribute from the stream.
+	 *
 	 * @param reader
 	 * 		Parent class reader.
 	 * @param builder
@@ -203,6 +207,104 @@ public class AttributeReader {
 				return null;
 			} else throw ex;
 		}
+	}
+
+	/**
+	 * Reads and normalizes a series of attributes in a bounded attribute table.
+	 *
+	 * @param reader
+	 * 		Parent class reader.
+	 * @param builder
+	 * 		Class being built/read into.
+	 * @param is
+	 * 		Parent stream.
+	 * @param count
+	 * 		Number of attributes in the table.
+	 * @param context
+	 * 		Where the attributes are applied.
+	 *
+	 * @return Parsed attributes in their original order, with singleton duplicates removed.
+	 *
+	 * @throws IOException
+	 * 		When the stream is unexpectedly closed or ends.
+	 */
+	public static List<Attribute> readAttributes(@Nonnull ClassFileReader reader, @Nonnull ClassBuilder builder,
+	                                             @Nonnull IndexableByteStream is, int count,
+	                                             @Nonnull AttributeContext context) throws IOException {
+		List<Attribute> attributes = new ArrayList<>(count);
+		Map<String, Class<?>> singletonTypes = new LinkedHashMap<>();
+		Set<String> conflictingSingletons = new HashSet<>();
+		for (int i = 0; i < count; i++) {
+			Attribute attribute = readAttribute(reader, builder, is, context);
+			if (attribute == null)
+				continue;
+
+			// Some attributes are only allowed to exist once per holder table.
+			// If we find multiple of the same type, we will keep the first one, and discard the rest.
+			String attributeName = attribute.getName().getText();
+			if (!isSingletonAttribute(attributeName)) {
+				attributes.add(attribute);
+				continue;
+			}
+
+			// Skip any attributes that have already been marked as conflicting.
+			if (conflictingSingletons.contains(attributeName))
+				continue;
+
+			// If we have already seen a singleton attribute of this name, check that the type matches.
+			Class<?> firstType = singletonTypes.get(attributeName);
+			if (firstType == null) {
+				singletonTypes.put(attributeName, attribute.getClass());
+				attributes.add(attribute);
+			} else if (firstType == attribute.getClass()) {
+				logger.debug("Discarding duplicate singleton attribute '{}'", attributeName);
+			} else {
+				attributes.removeIf(existing -> existing.getName().getText().equals(attributeName));
+				singletonTypes.remove(attributeName);
+				conflictingSingletons.add(attributeName);
+				logger.debug("Discarding incompatible singleton attributes '{}'", attributeName);
+			}
+		}
+		return attributes;
+	}
+
+	/**
+	 * Checks whether an attribute name is limited to one instance per holder table.
+	 *
+	 * @param attributeName
+	 * 		Attribute name to check.
+	 *
+	 * @return {@code true} when the name identifies a singleton attribute.
+	 */
+	public static boolean isSingletonAttribute(@Nonnull String attributeName) {
+		return switch (attributeName) {
+			case AttributeConstants.CODE,
+			     AttributeConstants.CONSTANT_VALUE,
+			     AttributeConstants.EXCEPTIONS,
+			     AttributeConstants.INNER_CLASSES,
+			     AttributeConstants.ENCLOSING_METHOD,
+			     AttributeConstants.SIGNATURE,
+			     AttributeConstants.SOURCE_FILE,
+			     AttributeConstants.SOURCE_DEBUG_EXTENSION,
+			     AttributeConstants.RUNTIME_VISIBLE_ANNOTATIONS,
+			     AttributeConstants.RUNTIME_INVISIBLE_ANNOTATIONS,
+			     AttributeConstants.RUNTIME_VISIBLE_PARAMETER_ANNOTATIONS,
+			     AttributeConstants.RUNTIME_INVISIBLE_PARAMETER_ANNOTATIONS,
+			     AttributeConstants.RUNTIME_VISIBLE_TYPE_ANNOTATIONS,
+			     AttributeConstants.RUNTIME_INVISIBLE_TYPE_ANNOTATIONS,
+			     AttributeConstants.ANNOTATION_DEFAULT,
+			     AttributeConstants.BOOTSTRAP_METHODS,
+			     AttributeConstants.METHOD_PARAMETERS,
+			     AttributeConstants.MODULE,
+			     AttributeConstants.MODULE_PACKAGES,
+			     AttributeConstants.MODULE_MAIN_CLASS,
+			     AttributeConstants.NEST_HOST,
+			     AttributeConstants.NEST_MEMBERS,
+			     AttributeConstants.RECORD,
+			     AttributeConstants.PERMITTED_SUBCLASSES,
+			     AttributeConstants.STACK_MAP_TABLE -> true;
+			default -> false;
+		};
 	}
 
 	@Nullable
@@ -341,12 +443,8 @@ public class AttributeReader {
 			CpUtf8 name = (CpUtf8) cp.get(is.readUnsignedShort());
 			CpUtf8 descriptor = (CpUtf8) cp.get(is.readUnsignedShort());
 			int numAttributes = is.readUnsignedShort();
-			List<Attribute> attributes = new ArrayList<>(numAttributes);
-			for (int x = 0; x < numAttributes; x++) {
-				Attribute attr = readAttribute(reader, builder, is, new AttributeContext(AttributeHolderType.RECORD_COMPONENT, Modifier.PUBLIC | Modifier.FINAL));
-				if (attr != null)
-					attributes.add(attr);
-			}
+			List<Attribute> attributes = readAttributes(reader, builder, is, numAttributes,
+					new AttributeContext(AttributeHolderType.RECORD_COMPONENT, Modifier.PUBLIC | Modifier.FINAL));
 			components.add(new RecordAttribute.RecordComponent(name, descriptor, attributes));
 		}
 		return new RecordAttribute(name, components);
@@ -938,13 +1036,8 @@ public class AttributeReader {
 
 		// Read attributes
 		int numAttributes = is.readUnsignedShort();
-		List<Attribute> attributes = new ArrayList<>(numAttributes);
-		for (int i = 0; i < numAttributes; i++) {
-			Attribute attr = readAttribute(reader, builder, is, new AttributeContext(AttributeHolderType.ATTRIBUTE, context.memberAccess()));
-			if (attr != null)
-				attributes.add(attr);
-		}
-
+		List<Attribute> attributes = readAttributes(reader, builder, is, numAttributes,
+				new AttributeContext(AttributeHolderType.ATTRIBUTE, context.memberAccess()));
 		return new CodeAttribute(name, maxStack, maxLocals, instructions, exceptions, attributes);
 	}
 

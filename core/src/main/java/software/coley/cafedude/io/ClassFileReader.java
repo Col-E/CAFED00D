@@ -144,11 +144,11 @@ public class ClassFileReader {
 
 			// Attributes
 			int numAttributes = is.readUnsignedShort();
-			for (int i = 0; i < numAttributes; i++) {
-				Attribute attr = AttributeReader.readAttribute(this, builder, is, new AttributeContext(AttributeHolderType.CLASS, 0));
-				if (attr != null && (!dropModuleContent || !isModuleAttribute(attr)))
+			List<Attribute> attributes = AttributeReader.readAttributes(this, builder, is, numAttributes,
+					new AttributeContext(AttributeHolderType.CLASS, 0));
+			for (Attribute attr : attributes)
+				if (!dropModuleContent || !isModuleAttribute(attr))
 					builder.addAttribute(attr);
-			}
 
 			// Module and package constants cannot be referenced after all module attributes are gone.
 			if (dropModuleContent)
@@ -345,12 +345,8 @@ public class ClassFileReader {
 		int descIndex = is.readUnsignedShort();
 		int numAttributes = is.readUnsignedShort();
 
-		List<Attribute> attributes = new ArrayList<>(numAttributes);
-		for (int i = 0; i < numAttributes; i++) {
-			Attribute attr = AttributeReader.readAttribute(this, builder, is, new AttributeContext(AttributeHolderType.FIELD, access));
-			if (attr != null)
-				attributes.add(attr);
-		}
+		List<Attribute> attributes = AttributeReader.readAttributes(this, builder, is, numAttributes,
+				new AttributeContext(AttributeHolderType.FIELD, access));
 
 		CpEntry nameEntry = builder.getPool().get(nameIndex);
 		CpEntry descEntry = builder.getPool().get(descIndex);
@@ -375,12 +371,8 @@ public class ClassFileReader {
 		int descIndex = is.readUnsignedShort();
 		int numAttributes = is.readUnsignedShort();
 
-		List<Attribute> attributes = new ArrayList<>(numAttributes);
-		for (int i = 0; i < numAttributes; i++) {
-			Attribute attr = AttributeReader.readAttribute(this, builder, is, new AttributeContext(AttributeHolderType.METHOD, access));
-			if (attr != null)
-				attributes.add(attr);
-		}
+		List<Attribute> attributes = AttributeReader.readAttributes(this, builder, is, numAttributes,
+				new AttributeContext(AttributeHolderType.METHOD, access));
 
 		CpEntry nameEntry = builder.getPool().get(nameIndex);
 		CpEntry descEntry = builder.getPool().get(descIndex);

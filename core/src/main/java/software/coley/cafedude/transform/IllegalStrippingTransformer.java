@@ -71,15 +71,18 @@ import software.coley.cafedude.classfile.instruction.IntOperandInstruction;
 import software.coley.cafedude.classfile.instruction.LookupSwitchInstruction;
 import software.coley.cafedude.classfile.instruction.TableSwitchInstruction;
 import software.coley.cafedude.io.AttributeHolderType;
+import software.coley.cafedude.io.AttributeReader;
 import software.coley.cafedude.io.IndexableByteStream;
 import software.coley.cafedude.io.InstructionReader;
 import software.coley.cafedude.io.InstructionWriter;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -127,11 +130,15 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 
 		// Strip attributes that are not valid.
 		clazz.getAttributes().removeIf(attribute -> !isValidWrapped(clazz, attribute));
-		for (Field field : clazz.getFields())
+		deduplicateAttributes(clazz);
+		for (Field field : clazz.getFields()) {
 			field.getAttributes().removeIf(attribute -> !isValidWrapped(field, attribute));
+			deduplicateAttributes(field);
+		}
 		Set<ConstDynamic> dynamicCpReferences = Collections.newSetFromMap(new IdentityHashMap<>());
 		for (Method method : clazz.getMethods()) {
 			method.getAttributes().removeIf(attribute -> !isValidWrapped(method, attribute));
+			deduplicateAttributes(method);
 			CodeAttribute code = method.getAttribute(CodeAttribute.class);
 			if (code != null) {
 				removeInvalidInstructions(code);
@@ -689,6 +696,57 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 					attribute.getClass().getName(),
 					holder.getHolderType().name());
 			return false;
+		}
+	}
+
+	/**
+	 * Removes duplicate singleton attributes from a holder and its nested tables.
+	 *
+	 * @param holder
+	 * 		Holder whose attribute table should be normalized.
+	 */
+	private void deduplicateAttributes(@Nonnull AttributeHolder holder) {
+		List<Attribute> attributes = holder.getAttributes();
+		Map<String, Class<?>> singletonTypes = new HashMap<>();
+		Set<String> conflictingSingletons = new HashSet<>();
+		List<Attribute> normalized = new ArrayList<>(attributes.size());
+		for (Attribute attribute : attributes) {
+			String attributeName = attribute.getName().getText();
+
+			// Skip non-singleton attributes, they are allowed to be duplicated.
+			if (!AttributeReader.isSingletonAttribute(attributeName)) {
+				normalized.add(attribute);
+				continue;
+			}
+
+			// Skip if we have already seen a conflicting singleton attribute, since they are all discarded.
+			if (conflictingSingletons.contains(attributeName))
+				continue;
+
+			// Check if we have already seen a singleton attribute of this name, and if so check that the type matches.
+			Class<?> firstType = singletonTypes.get(attributeName);
+			if (firstType == null) {
+				singletonTypes.put(attributeName, attribute.getClass());
+				normalized.add(attribute);
+			} else if (firstType == attribute.getClass()) {
+				logger.debug("Discarding duplicate singleton attribute '{}'", attributeName);
+			} else {
+				normalized.removeIf(existing -> existing.getName().getText().equals(attributeName));
+				singletonTypes.remove(attributeName);
+				conflictingSingletons.add(attributeName);
+				logger.debug("Discarding incompatible singleton attributes '{}'", attributeName);
+			}
+		}
+		holder.setAttributes(normalized);
+
+		// Recurse only into retained nested tables, which have independent cardinality rules.
+		for (Attribute attribute : normalized) {
+			if (attribute instanceof CodeAttribute code)
+				deduplicateAttributes(code);
+			else if (attribute instanceof RecordAttribute record) {
+				for (RecordAttribute.RecordComponent component : record.getComponents())
+					deduplicateAttributes(component);
+			}
 		}
 	}
 
