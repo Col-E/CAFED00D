@@ -393,17 +393,22 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	 */
 	protected void removeInvalidInstructions(@Nonnull CodeAttribute code) {
 		List<Instruction> instructions = code.getInstructions();
+		int codeLength = code.computeSize();
+
+		// Exception ranges and handlers must point to instruction boundaries.
+		List<ExceptionTableEntry> exceptions = code.getExceptionTable();
+		exceptions.removeIf(entry ->
+				entry.getStartPc() >= entry.getEndPc() ||
+						entry.getStartPc() >= codeLength ||
+						entry.getHandlerPc() >= codeLength ||
+						code.getInstructionAtOffset(entry.getStartPc()) == null ||
+						code.getInstructionAtOffset(entry.getHandlerPc()) == null ||
+						(entry.getEndPc() != codeLength && code.getInstructionAtOffset(entry.getEndPc()) == null));
+
+		// Skip if there is only one instruction.
 		if (instructions.size() <= 1)
 			return;
 		int maxPc = code.computeOffsetOf(instructions.get(instructions.size() - 1));
-
-		// Remove junk try-catch entries with bogus offsets
-		List<ExceptionTableEntry> exceptions = code.getExceptionTable();
-		for (int i = exceptions.size() - 1; i >= 0; i--) {
-			ExceptionTableEntry entry = exceptions.get(i);
-			if (entry.getStartPc() > maxPc || entry.getEndPc() > maxPc || entry.getHandlerPc() > maxPc)
-				exceptions.remove(i);
-		}
 
 		// Remove any jump instructions that point to bogus offsets
 		// - The code is already unverifiable, so when we stub out the instruction with
