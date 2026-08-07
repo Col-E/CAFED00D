@@ -37,6 +37,7 @@ import software.coley.cafedude.classfile.attribute.EnclosingMethodAttribute;
 import software.coley.cafedude.classfile.attribute.ExceptionsAttribute;
 import software.coley.cafedude.classfile.attribute.InnerClassesAttribute;
 import software.coley.cafedude.classfile.attribute.InnerClassesAttribute.InnerClass;
+import software.coley.cafedude.classfile.attribute.LineNumberTableAttribute;
 import software.coley.cafedude.classfile.attribute.LocalVariableTableAttribute;
 import software.coley.cafedude.classfile.attribute.LocalVariableTableAttribute.VarEntry;
 import software.coley.cafedude.classfile.attribute.LocalVariableTypeTableAttribute;
@@ -53,11 +54,11 @@ import software.coley.cafedude.classfile.attribute.SourceFileAttribute;
 import software.coley.cafedude.classfile.behavior.AttributeHolder;
 import software.coley.cafedude.classfile.constant.ConstDynamic;
 import software.coley.cafedude.classfile.constant.CpClass;
+import software.coley.cafedude.classfile.constant.CpEntry;
 import software.coley.cafedude.classfile.constant.CpFieldRef;
 import software.coley.cafedude.classfile.constant.CpInterfaceMethodRef;
 import software.coley.cafedude.classfile.constant.CpMethodHandle;
 import software.coley.cafedude.classfile.constant.CpMethodRef;
-import software.coley.cafedude.classfile.constant.CpEntry;
 import software.coley.cafedude.classfile.constant.CpUtf8;
 import software.coley.cafedude.classfile.constant.LoadableConstant;
 import software.coley.cafedude.classfile.constant.Placeholders;
@@ -133,6 +134,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			if (code != null) {
 				removeInvalidInstructions(code);
 				removeInvalidVariables(code);
+				removeInvalidLineNumbers(code);
 				removeInvalidTypeAnnotations(code);
 				//removeInstructionReinterpretation(code, 0);
 				//removeDeadInstructions(code);
@@ -483,6 +485,22 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 					instructions.add(i, new BasicInstruction(NOP));
 			}
 		}
+	}
+
+	/**
+	 * Removes line number entries that point outside the instruction stream.
+	 *
+	 * @param code
+	 * 		Code to visit.
+	 */
+	protected void removeInvalidLineNumbers(@Nonnull CodeAttribute code) {
+		LineNumberTableAttribute lines = code.getAttribute(LineNumberTableAttribute.class);
+		if (lines == null)
+			return;
+
+		int codeLength = code.computeSize();
+		lines.getEntries().removeIf(entry ->
+				!isInstructionBoundary(code, codeLength, entry.getStartPc()));
 	}
 
 	/**
