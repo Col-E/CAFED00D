@@ -19,7 +19,9 @@ import software.coley.cafedude.classfile.annotation.EnumElementValue;
 import software.coley.cafedude.classfile.annotation.PrimitiveElementValue;
 import software.coley.cafedude.classfile.annotation.TargetInfo;
 import software.coley.cafedude.classfile.annotation.TargetInfo.CatchTargetInfo;
+import software.coley.cafedude.classfile.annotation.TargetInfo.OffsetTargetInfo;
 import software.coley.cafedude.classfile.annotation.TargetInfo.SuperTypeTargetInfo;
+import software.coley.cafedude.classfile.annotation.TargetInfo.TypeArgumentTargetInfo;
 import software.coley.cafedude.classfile.annotation.TypeAnnotation;
 import software.coley.cafedude.classfile.attribute.AnnotationDefaultAttribute;
 import software.coley.cafedude.classfile.attribute.AnnotationsAttribute;
@@ -511,22 +513,33 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	 */
 	protected void removeInvalidVariables(@Nonnull CodeAttribute code) {
 		// In ASM's ClassReader.readCode(...) the startPc + length are used as labels[pc+length] which can be OOB.
-		int maxPc = code.computeSize();
+		int codeLength = code.computeSize();
 
-		LocalVariableTableAttribute lvta = code.getAttribute(LocalVariableTableAttribute.class);
-		LocalVariableTypeTableAttribute lvtta = code.getAttribute(LocalVariableTypeTableAttribute.class);
-		if (lvta != null) lvta.getEntries().removeIf(e -> e.getStartPc() + e.getLength() > maxPc);
-		if (lvtta != null) lvtta.getEntries().removeIf(e -> e.getStartPc() + e.getLength() > maxPc);
+		// Strip invalid entries from the local variable table.
+		//  - The range must be bounded by the code length.
+		//  - The local variable index must be within the max locals of the method.
+		LocalVariableTableAttribute lvt = code.getAttribute(LocalVariableTableAttribute.class);
+		if (lvt != null)
+			lvt.getEntries().removeIf(entry ->
+					!isValidCodeRange(code, codeLength, entry.getStartPc(), entry.getLength())
+							|| entry.getIndex() >= code.getMaxLocals());
+
+		// Same rules apply to the local variable type table.
+		LocalVariableTypeTableAttribute lvtt = code.getAttribute(LocalVariableTypeTableAttribute.class);
+		if (lvtt != null)
+			lvtt.getEntries().removeIf(entry ->
+					!isValidCodeRange(code, codeLength, entry.getStartPc(), entry.getLength())
+							|| entry.getIndex() >= code.getMaxLocals());
 	}
 
 	/**
-	 * Removes type annotations with invalid local variable target ranges.
+	 * Removes type annotations with invalid code ranges.
 	 *
 	 * @param code
 	 * 		Code to visit.
 	 */
 	protected void removeInvalidTypeAnnotations(@Nonnull CodeAttribute code) {
-		int maxPc = code.computeSize();
+		int codeLength = code.computeSize();
 		List<Attribute> attributes = code.getAttributes();
 		for (int i = attributes.size() - 1; i >= 0; i--) {
 			// Only care about type annotations.
@@ -542,16 +555,27 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				// Skip non-type annotations.
 				if (!(annotation instanceof TypeAnnotation typeAnnotation))
 					return false;
+				TargetInfo targetInfo = typeAnnotation.getTargetInfo();
 
-				// Validate local variable target ranges.
-				// If any of the ranges are out of bounds, remove the annotation.
-				if (typeAnnotation.getTargetInfo() instanceof TargetInfo.LocalVarTargetInfo localVarTargetInfo) {
+				// Local-variable targets duplicate the range rules of LocalVariableTable.
+				//  - The range must be bounded by the code length.
+				//  - The local variable index must be within the max locals of the method.
+				if (targetInfo instanceof TargetInfo.LocalVarTargetInfo localVarTargetInfo) {
 					for (TargetInfo.LocalVarTargetInfo.Variable variable : localVarTargetInfo.getVariableTable()) {
-						long endPc = (long) variable.getStartPc() + variable.getLength();
-						if (variable.getStartPc() > maxPc || endPc > maxPc)
+						if (!isValidCodeRange(code, codeLength, variable.getStartPc(), variable.getLength())
+								|| variable.getIndex() >= code.getMaxLocals()) {
 							return true;
+						}
 					}
 				}
+
+				// Code offsets must be aligned to instruction boundaries.
+				if (targetInfo instanceof OffsetTargetInfo offsetTarget)
+					return !isInstructionBoundary(code, codeLength, offsetTarget.getOffset());
+
+				// Catch targets must be aligned to instruction boundaries.
+				if (targetInfo instanceof TypeArgumentTargetInfo typeArgumentTarget)
+					return !isInstructionBoundary(code, codeLength, typeArgumentTarget.getOffset());
 
 				return false;
 			});
@@ -631,13 +655,13 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	private boolean isValidMethodHandle(@Nonnull CpMethodHandle handle) {
 		return switch (handle.getKind()) {
 			case CpMethodHandle.REF_GET_FIELD,
-					CpMethodHandle.REF_GET_STATIC,
-					CpMethodHandle.REF_PUT_FIELD,
-					CpMethodHandle.REF_PUT_STATIC -> handle.getReference() instanceof CpFieldRef;
+			     CpMethodHandle.REF_GET_STATIC,
+			     CpMethodHandle.REF_PUT_FIELD,
+			     CpMethodHandle.REF_PUT_STATIC -> handle.getReference() instanceof CpFieldRef;
 			case CpMethodHandle.REF_INVOKE_VIRTUAL,
-					CpMethodHandle.REF_NEW_INVOKE_SPECIAL -> handle.getReference() instanceof CpMethodRef;
+			     CpMethodHandle.REF_NEW_INVOKE_SPECIAL -> handle.getReference() instanceof CpMethodRef;
 			case CpMethodHandle.REF_INVOKE_STATIC,
-					CpMethodHandle.REF_INVOKE_SPECIAL -> handle.getReference() instanceof CpMethodRef ||
+			     CpMethodHandle.REF_INVOKE_SPECIAL -> handle.getReference() instanceof CpMethodRef ||
 					clazz.getVersionMajor() >= 52 && handle.getReference() instanceof CpInterfaceMethodRef;
 			case CpMethodHandle.REF_INVOKE_INTERFACE -> handle.getReference() instanceof CpInterfaceMethodRef;
 			default -> false;
@@ -1189,6 +1213,44 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			}
 			instructionOffset += instruction.computeSize();
 		}
+	}
+
+	/**
+	 * Checks a debug range against the decoded instruction boundaries.
+	 *
+	 * @param code
+	 * 		Code containing the range.
+	 * @param codeLength
+	 * 		Length of the decoded code.
+	 * @param startPc
+	 * 		Range start.
+	 * @param length
+	 * 		Range length.
+	 *
+	 * @return {@code true} when the range is bounded and aligned.
+	 */
+	protected static boolean isValidCodeRange(@Nonnull CodeAttribute code, int codeLength, int startPc, int length) {
+		long endPc = (long) startPc + length;
+		return startPc < codeLength &&
+				endPc <= codeLength &&
+				isInstructionBoundary(code, codeLength, startPc) &&
+				(endPc == codeLength || isInstructionBoundary(code, codeLength, (int) endPc));
+	}
+
+	/**
+	 * Checks whether an offset identifies an instruction start.
+	 *
+	 * @param code
+	 * 		Code containing the offset.
+	 * @param codeLength
+	 * 		Length of the decoded code.
+	 * @param offset
+	 * 		Offset to check.
+	 *
+	 * @return {@code true} when the offset is an instruction boundary.
+	 */
+	protected static boolean isInstructionBoundary(@Nonnull CodeAttribute code, int codeLength, int offset) {
+		return offset >= 0 && offset < codeLength && code.getInstructionAtOffset(offset) != null;
 	}
 
 	/**
