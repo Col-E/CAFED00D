@@ -297,11 +297,12 @@ public class ConstPool implements List<CpEntry> {
 
 		@Override
 		public void remove() {
-			int remove = previousIndex();
-			if (remove < 1)
+			if (lastCursor < 1)
 				throw new IllegalStateException();
+			int remove = lastCursor;
 			pool.remove(remove);
-			cursor = lastCursor;
+			cursor = remove;
+			lastCursor = -1;
 		}
 
 		@Override
