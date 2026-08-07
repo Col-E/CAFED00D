@@ -194,6 +194,9 @@ public class AttributeReader {
 		} catch (InvalidCpIndexException ex) {
 			logger.debug("Invalid '{}' on {}, invalid constant pool index: {}", attributeName, context.name(), ex.getIndex());
 			return null;
+		} catch (IllegalArgumentException ex) {
+			logger.debug("Invalid '{}' on {}, malformed attribute content: {}", attributeName, context.name(), ex.getMessage());
+			return null;
 		} catch (IOException ex) {
 			if (reader.doDropEofAttributes()) {
 				logger.debug("Invalid '{}' on {}, EOF thrown when parsing attribute, expected {} bytes", attributeName, context.name(), expectedContentLength);
