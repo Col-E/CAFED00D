@@ -165,7 +165,7 @@ public class ConstPool implements List<CpEntry> {
 		boolean res = false;
 		for (Object o : c)
 			if (o instanceof CpEntry)
-				res |= add((CpEntry) o);
+				res |= remove(o);
 		return res;
 	}
 
