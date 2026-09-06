@@ -3,6 +3,10 @@ package software.coley.cafedude.classfile.constant;
 import jakarta.annotation.Nonnull;
 import software.coley.cafedude.io.ClassFileReader;
 
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
+
 /**
  * Placeholders to be used in {@link ClassFileReader} when constructing {@link CpEntry} values
  * with temporally unknown values.
@@ -26,13 +30,19 @@ public class Placeholders {
 	 * @param entry
 	 * 		Entry to check.
 	 *
-	 * @return {@code true} when it contains a reference to a placeholder entry.
+	 * @return {@code true} when it contains a reference to a placeholder entry, transitively through the constant pool reference graph.
 	 * {@code false} when it contains only valid/non-placeholder references.
 	 */
 	public static boolean containsPlaceholder(@Nonnull CpEntry entry) {
+		return containsPlaceholder(entry, Collections.newSetFromMap(new IdentityHashMap<>()));
+	}
+
+	private static boolean containsPlaceholder(@Nonnull CpEntry entry, @Nonnull Set<CpEntry> visited) {
+		if (!visited.add(entry))
+			return false;
 		if (entry instanceof CrossCpReferencing referencing)
 			for (CpEntry referenced : referencing.getReferences())
-				if (isPlaceholder(referenced))
+				if (isPlaceholder(referenced) || containsPlaceholder(referenced, visited))
 					return true;
 		return false;
 	}
