@@ -145,8 +145,15 @@ public class ConstPool implements List<CpEntry> {
 
 	@Override
 	public boolean addAll(int index, Collection<? extends CpEntry> c) {
-		for (CpEntry cp : c)
-			add(index, cp);
+		requireValidInsertion(index);
+		if (c.isEmpty())
+			return false;
+
+		int offset = 0;
+		for (CpEntry cp : c) {
+			add(index + offset, cp);
+			offset += cp.isWide() ? 2 : 1;
+		}
 		return true;
 	}
 

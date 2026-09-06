@@ -6,7 +6,10 @@ import software.coley.cafedude.classfile.constant.CpLong;
 import software.coley.cafedude.classfile.constant.CpUtf8;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -217,5 +220,45 @@ public class ConstPoolTest {
 		assertEquals(b, it.previous());
 		assertEquals(longEntry, it.previous());
 		assertEquals(a, it.previous());
+	}
+
+	@Test
+	public void testIndexedAddAllPreservesOrder() {
+		ConstPool pool = new ConstPool();
+		CpUtf8 seed = new CpUtf8("seed");
+		pool.add(seed);
+
+		CpUtf8 a = new CpUtf8("a");
+		CpLong longEntry = new CpLong(1L);
+		CpUtf8 b = new CpUtf8("b");
+
+		pool.addAll(2, List.of(a, longEntry, b));
+
+		// Backing is [zero, seed, a, long, padding, b]; collection order is preserved.
+		assertEquals(6, pool.size());
+		assertEquals(seed, pool.get(1));
+		assertEquals(a, pool.get(2));
+		assertEquals(longEntry, pool.get(3));
+		assertNull(pool.get(4));
+		assertEquals(b, pool.get(5));
+		assertEquals(2, a.getIndex());
+		assertEquals(3, longEntry.getIndex());
+		assertEquals(5, b.getIndex());
+	}
+
+	@Test
+	public void testIndexedAddAllEmptyReturnsFalse() {
+		ConstPool pool = new ConstPool();
+		CpUtf8 seed = new CpUtf8("seed");
+		pool.add(seed);
+
+		assertFalse(pool.addAll(1, List.of()));
+		assertEquals(2, pool.size());
+	}
+
+	@Test
+	public void testIndexedAddAllRejectsZeroSlot() {
+		ConstPool pool = new ConstPool();
+		assertThrows(IndexOutOfBoundsException.class, () -> pool.addAll(0, List.of(new CpInt(1))));
 	}
 }
