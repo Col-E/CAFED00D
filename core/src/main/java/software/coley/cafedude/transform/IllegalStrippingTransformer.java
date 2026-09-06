@@ -525,22 +525,26 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	protected void removeInvalidVariables(@Nonnull CodeAttribute code) {
 		// In ASM's ClassReader.readCode(...) the startPc + length are used as labels[pc+length] which can be OOB.
 		int codeLength = code.computeSize();
+		int maxLocals = code.getMaxLocals();
 
 		// Strip invalid entries from the local variable table.
 		//  - The range must be bounded by the code length.
 		//  - The local variable index must be within the max locals of the method.
+		//  - A long/double occupies two slots, so its second slot must also be in range.
 		LocalVariableTableAttribute lvt = code.getAttribute(LocalVariableTableAttribute.class);
 		if (lvt != null)
 			lvt.getEntries().removeIf(entry ->
 					!isValidCodeRange(code, codeLength, entry.getStartPc(), entry.getLength())
-							|| entry.getIndex() >= code.getMaxLocals());
+							|| entry.getIndex() >= maxLocals
+							|| isWideType(entry.getDesc()) && entry.getIndex() + 1 >= maxLocals);
 
 		// Same rules apply to the local variable type table.
 		LocalVariableTypeTableAttribute lvtt = code.getAttribute(LocalVariableTypeTableAttribute.class);
 		if (lvtt != null)
 			lvtt.getEntries().removeIf(entry ->
 					!isValidCodeRange(code, codeLength, entry.getStartPc(), entry.getLength())
-							|| entry.getIndex() >= code.getMaxLocals());
+							|| entry.getIndex() >= maxLocals
+							|| isWideType(entry.getSignature()) && entry.getIndex() + 1 >= maxLocals);
 	}
 
 	/**
@@ -803,12 +807,21 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	 * @param dynamic
 	 * 		Dynamic constant to check.
 	 *
-	 * @return {@code true} when the dynamic constant's field descriptor is {@code J} or {@code D},
-	 * marking it as a two-slot long/double constant.
+	 * @return {@code true} when the dynamic constant's field descriptor is a two-slot {@code long}/{@code double} value.
 	 */
 	private static boolean isWideDynamic(@Nonnull ConstDynamic dynamic) {
-		String descriptor = dynamic.getNameType().getType().getText();
-		return "J".equals(descriptor) || "D".equals(descriptor);
+		return isWideType(dynamic.getNameType().getType());
+	}
+
+	/**
+	 * @param type
+	 * 		Field descriptor.
+	 *
+	 * @return {@code true} when the type is a two-slot {@code long}/{@code double} value.
+	 */
+	private static boolean isWideType(@Nonnull CpUtf8 type) {
+		String text = type.getText();
+		return "J".equals(text) || "D".equals(text);
 	}
 
 	/**
