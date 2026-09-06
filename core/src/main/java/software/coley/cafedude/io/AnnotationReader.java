@@ -186,10 +186,19 @@ public class AnnotationReader {
 			for (int p = 0; p < numParameters; p++) {
 				int numAnnotations = is.readUnsignedShort();
 				List<Annotation> annotations = new ArrayList<>(numAnnotations);
-				for (int i = 0; i < numAnnotations; i++)
-					annotations.add(readAnnotation(new AnnotationScope()));
+				for (int i = 0; i < numAnnotations; i++) {
+					try {
+						annotations.add(readAnnotation(new AnnotationScope()));
+					} catch (Throwable t) {
+						logger.debug("Illegally formatted Parameter Annotation, dropping");
+					}
+				}
 				parameterAnnotations.put(p, annotations);
 			}
+
+			// If every entry was malformed, drop the attribute.
+			if (parameterAnnotations.values().stream().allMatch(List::isEmpty))
+				return null;
 
 			// Didn't crash, its valid
 			return new ParameterAnnotationsAttribute(name, parameterAnnotations, visible);
@@ -216,10 +225,18 @@ public class AnnotationReader {
 
 			// Read each type annotation
 			List<Annotation> annotations = new ArrayList<>(numAnnotations);
-			for (int i = 0; i < numAnnotations; i++)
-				annotations.add(readTypeAnnotation(new AnnotationScope()));
+			for (int i = 0; i < numAnnotations; i++) {
+				try {
+					annotations.add(readTypeAnnotation(new AnnotationScope()));
+				} catch (Throwable t) {
+					logger.debug("Illegally formatted TypeAnnotation, dropping");
+				}
+			}
 
-			// Didn't throw exception, its valid
+			// If every entry was malformed, drop the attribute.
+			if (annotations.isEmpty())
+				return null;
+
 			return new AnnotationsAttribute(name, annotations, visible);
 		} catch (Throwable t) {
 			logger.debug("Illegally formatted TypeAnnotations, dropping");
