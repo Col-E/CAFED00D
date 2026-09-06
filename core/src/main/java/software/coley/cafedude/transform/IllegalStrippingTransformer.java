@@ -57,9 +57,11 @@ import software.coley.cafedude.classfile.attribute.SourceFileAttribute;
 import software.coley.cafedude.classfile.behavior.AttributeHolder;
 import software.coley.cafedude.classfile.constant.ConstDynamic;
 import software.coley.cafedude.classfile.constant.CpClass;
+import software.coley.cafedude.classfile.constant.CpDouble;
 import software.coley.cafedude.classfile.constant.CpEntry;
 import software.coley.cafedude.classfile.constant.CpFieldRef;
 import software.coley.cafedude.classfile.constant.CpInterfaceMethodRef;
+import software.coley.cafedude.classfile.constant.CpLong;
 import software.coley.cafedude.classfile.constant.CpMethodHandle;
 import software.coley.cafedude.classfile.constant.CpMethodRef;
 import software.coley.cafedude.classfile.constant.CpUtf8;
@@ -484,11 +486,11 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 					instructions.add(i, new BasicInstruction(NOP));
 			}
 
-			// LDC content must be loadable and method handles must match their reference kind.
+			// LDC content must match the opcode's constant-kind rules and method handles must match their reference kind.
 			else if ((op == LDC || op == LDC_W || op == LDC2_W)
 					&& instruction instanceof CpRefInstruction ldc
-					&& (!(ldc.getEntry() instanceof LoadableConstant) ||
-					ldc.getEntry() instanceof CpMethodHandle handle && !isValidMethodHandle(handle))) {
+					&& (!isValidLdcEntry(op, ldc.getEntry())
+					|| ldc.getEntry() instanceof CpMethodHandle handle && !isValidMethodHandle(handle))) {
 				int size = instruction.computeSize();
 				instructions.set(i, new BasicInstruction(RETURN));
 				for (int j = 0; j < size - 1; j++)
@@ -767,6 +769,41 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			case CpMethodHandle.REF_INVOKE_INTERFACE -> handle.getReference() instanceof CpInterfaceMethodRef;
 			default -> false;
 		};
+	}
+
+	/**
+	 * Checks that a constant pool entry satisfies the constant-kind rules of the given LDC opcode (JVMS 6.5).
+	 *
+	 * @param opcode
+	 * 		LDC opcode to validate against.
+	 * @param entry
+	 * 		Constant pool entry referenced by the instruction.
+	 *
+	 * @return {@code true} when the entry's constant kind is legal for the opcode.
+	 */
+	private static boolean isValidLdcEntry(int opcode, @Nonnull CpEntry entry) {
+		// Check for wide + dynamic wide constants.
+		if (opcode == LDC2_W)
+			return entry instanceof CpLong
+					|| entry instanceof CpDouble
+					|| entry instanceof ConstDynamic dynamic && isWideDynamic(dynamic);
+
+		// Other LDC forms cannot load wide constants, and cannot load dynamic constants with wide descriptors.
+		if (!(entry instanceof LoadableConstant) || entry instanceof CpLong || entry instanceof CpDouble)
+			return false;
+		return !(entry instanceof ConstDynamic dynamic) || !isWideDynamic(dynamic);
+	}
+
+	/**
+	 * @param dynamic
+	 * 		Dynamic constant to check.
+	 *
+	 * @return {@code true} when the dynamic constant's field descriptor is {@code J} or {@code D},
+	 * marking it as a two-slot long/double constant.
+	 */
+	private static boolean isWideDynamic(@Nonnull ConstDynamic dynamic) {
+		String descriptor = dynamic.getNameType().getType().getText();
+		return "J".equals(descriptor) || "D".equals(descriptor);
 	}
 
 	/**
