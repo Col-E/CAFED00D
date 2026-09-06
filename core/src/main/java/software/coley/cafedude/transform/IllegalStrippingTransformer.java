@@ -126,8 +126,8 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		// Remove members with illegal descriptors.
 		// If any of these exist the class isn't going to ever be loaded (without throwing a LinkageError)
 		// so its fair game to toss this stuff just to make ASM happy.
-		clazz.getFields().removeIf(field -> isInvalidDesc(field.getType()));
-		clazz.getMethods().removeIf(method -> isInvalidDesc(method.getType()));
+		clazz.getFields().removeIf(field -> !matchUtf8FieldDescriptor().test(field.getType()));
+		clazz.getMethods().removeIf(method -> !matchUtf8MethodDescriptor().test(method.getType()));
 
 		// Strip attributes that are not valid.
 		clazz.getAttributes().removeIf(attribute -> !isValidWrapped(clazz, attribute));
@@ -1034,14 +1034,14 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				for (VarEntry entry : varTable.getEntries()) {
 					expectedTypeMasks.put(entry.getName(), i -> i == UTF8);
 					expectedTypeMasks.put(entry.getDesc(), i -> i == UTF8);
-					cpEntryValidators.put(entry.getName(), matchUtf8ValidQualifiedName().and(matchUtf8Word()));
+					cpEntryValidators.put(entry.getName(), matchUtf8ValidUnqualifiedName().and(matchUtf8Word()));
 					cpEntryValidators.put(entry.getDesc(), matchUtf8FieldDescriptor());
 				}
 				break;
 			case AttributeConstants.LOCAL_VARIABLE_TYPE_TABLE:
 				LocalVariableTypeTableAttribute typeTable = (LocalVariableTypeTableAttribute) attribute;
 				for (VarTypeEntry entry : typeTable.getEntries()) {
-					cpEntryValidators.put(entry.getName(), matchUtf8ValidQualifiedName().and(matchUtf8Word()));
+					cpEntryValidators.put(entry.getName(), matchUtf8ValidUnqualifiedName().and(matchUtf8Word()));
 					cpEntryValidators.put(entry.getSignature(), matchUtf8NonEmpty());
 				}
 				break;
@@ -1144,7 +1144,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		cpEntryValidators.put(anno.getType(), matchUtf8FieldDescriptor());
 		for (Map.Entry<CpUtf8, ElementValue> entry : anno.getValues().entrySet()) {
 			CpUtf8 elementTypeIndex = entry.getKey();
-			cpEntryValidators.put(elementTypeIndex, matchUtf8ValidQualifiedName());
+			cpEntryValidators.put(elementTypeIndex, matchUtf8ValidUnqualifiedName());
 			addElementValueValidation(expectedTypeMasks, cpEntryValidators, entry.getValue());
 		}
 		if (anno instanceof TypeAnnotation typeAnnotation) {
@@ -1240,19 +1240,14 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 
 	@Nonnull
 	protected Predicate<CpEntry> matchClass() {
-		return e -> e instanceof CpClass && matchUtf8ValidQualifiedName().test(((CpClass) e).getName());
+		return e -> e instanceof CpClass && matchUtf8ValidClassName().test(((CpClass) e).getName());
 	}
 
 	@Nonnull
-	protected Predicate<CpEntry> matchUtf8ValidQualifiedName() {
+	protected Predicate<CpEntry> matchUtf8ValidClassName() {
 		return e -> {
-			if (!(e instanceof CpUtf8)) return false;
-			String text = ((CpUtf8) e).getText();
-			return !text.isEmpty()
-					// From #jvms-4.2.2 - Class names cannot contain any of these characters
-					&& text.indexOf('.') < 0
-					&& text.indexOf(';') < 0
-					&& text.indexOf('[') < 0;
+			if (!(e instanceof CpUtf8 utf8)) return false;
+			return isValidClassName(utf8.getText());
 		};
 	}
 
@@ -1267,7 +1262,20 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 
 	@Nonnull
 	protected Predicate<CpEntry> matchUtf8FieldDescriptor() {
-		return e -> (e instanceof CpUtf8) && !isInvalidDesc((CpUtf8) e);
+		return e -> {
+			if (!(e instanceof CpUtf8 utf8)) return false;
+			Descriptor d = Descriptor.from(utf8.getText());
+			return switch (d.getKind()) {
+				case OBJECT, ARRAY -> true;
+				case PRIMITIVE -> !"V".equals(d.getDescriptor()); // Void doesn't count.
+				default -> false;
+			};
+		};
+	}
+
+	@Nonnull
+	protected Predicate<CpEntry> matchUtf8MethodDescriptor() {
+		return e -> e instanceof CpUtf8 utf8 && Descriptor.from(utf8.getText()).getKind() == Descriptor.Kind.METHOD;
 	}
 
 	@Nonnull
@@ -1296,22 +1304,6 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	}
 
 	/**
-	 * @param descEntry
-	 * 		CP entry to validate as a descriptor.
-	 *
-	 * @return {@code true} when invalid.
-	 */
-	protected static boolean isInvalidDesc(@Nonnull CpUtf8 descEntry) {
-		try {
-			String descUtf8 = descEntry.getText();
-			Descriptor parsed = Descriptor.from(descUtf8);
-			return parsed.getKind() == Descriptor.Kind.ILLEGAL;
-		} catch (Throwable t) {
-			return true;
-		}
-	}
-
-	/**
 	 * @param text
 	 * 		Text to validate as an unqualified name.
 	 *
@@ -1326,6 +1318,24 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		for (int i = 0; i < text.length(); i++) {
 			char c = text.charAt(i);
 			if (c == '.' || c == ';' || c == '[' || c == '/')
+				return false;
+		}
+		return true;
+	}
+
+	/**
+	 * @param text
+	 * 		Text to validate as an internal binary class name.
+	 *
+	 * @return {@code true} when valid.
+	 */
+	public static boolean isValidClassName(@Nonnull String text) {
+		if (text.isEmpty())
+			return false;
+
+		// A binary name in internal form splits into non-empty unqualified-name components on '/'.
+		for (String component : text.split("/", -1)) {
+			if (!isValidUnqualifiedName(component))
 				return false;
 		}
 		return true;
