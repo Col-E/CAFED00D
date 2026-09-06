@@ -155,7 +155,7 @@ public non-sealed class CharacterRangeTableAttribute extends Attribute {
 		 * 		Column of start character position in the source file.
 		 */
 		public void setCharacterRangeStart(int line, int column) {
-			setCharacterRangeStart(line << 10 + column);
+			setCharacterRangeStart((line << 10) + column);
 		}
 
 		/**
@@ -180,7 +180,7 @@ public non-sealed class CharacterRangeTableAttribute extends Attribute {
 		 * 		Column of end character position in the source file.
 		 */
 		public void setCharacterRangeEnd(int line, int column) {
-			setCharacterRangeStart(line << 10 + column);
+			setCharacterRangeEnd((line << 10) + column);
 		}
 
 		/**
