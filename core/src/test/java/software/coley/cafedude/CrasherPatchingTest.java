@@ -10,6 +10,13 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
 import software.coley.cafedude.classfile.ClassFile;
+import software.coley.cafedude.classfile.Method;
+import software.coley.cafedude.classfile.attribute.BootstrapMethodsAttribute;
+import software.coley.cafedude.classfile.attribute.CodeAttribute;
+import software.coley.cafedude.classfile.constant.ConstDynamic;
+import software.coley.cafedude.classfile.constant.CpMethodRef;
+import software.coley.cafedude.classfile.instruction.CpRefInstruction;
+import software.coley.cafedude.classfile.instruction.Instruction;
 import software.coley.cafedude.io.ClassBuilder;
 import software.coley.cafedude.io.ClassFileReader;
 import software.coley.cafedude.io.ClassFileWriter;
@@ -21,8 +28,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Base64;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -71,6 +79,80 @@ public class CrasherPatchingTest {
 		} catch (Exception ex) {
 			fail("Unexpected error while testing class " + name, ex);
 		}
+	}
+
+	@Test
+	public void testSelectiveBootstrapMethodStripping() throws IOException, InvalidClassException {
+		// Sample has a partially malformed bootstrap table, where one entry is a method reference instead of a method handle.
+		// - CpMethodRef is not a loadable type and is thus an invalid bootstrap method argument.
+		// - CpMethodHandle which is used in the other entries is valid and should be retained.
+		File sample = new File("src/test/resources/samples/obfuscated/crasher-asm/sample59.class");
+		ClassFile classFile = new ReservedOpcodeRewritingReader().read(Files.readAllBytes(sample.toPath()));
+		BootstrapMethodsAttribute originalAttribute = classFile.getAttribute(BootstrapMethodsAttribute.class);
+		assertNotNull(originalAttribute);
+		List<BootstrapMethodsAttribute.BootstrapMethod> originalMethods = new ArrayList<>(originalAttribute.getBootstrapMethods());
+
+		// Locate the malformed entry without depending on a hard-coded table position.
+		int invalidIndex = -1;
+		for (int i = 0; i < originalMethods.size(); i++) {
+			if (originalMethods.get(i).getArgs().stream().anyMatch(CpMethodRef.class::isInstance)) {
+				invalidIndex = i;
+				break;
+			}
+		}
+		assertTrue(invalidIndex >= 0, "Sample does not contain an invalid bootstrap entry");
+
+		// Remember original dynamic indices by identity because filtering mutates their table indices.
+		Map<ConstDynamic, Integer> originalDynamicIndices = new IdentityHashMap<>();
+		int originalDynamicUses = 0;
+		int invalidDynamicUses = 0;
+		for (Method method : classFile.getMethods()) {
+			CodeAttribute code = method.getAttribute(CodeAttribute.class);
+			if (code == null)
+				continue;
+			for (Instruction instruction : code.getInstructions()) {
+				if (instruction instanceof CpRefInstruction cpRef && cpRef.getEntry() instanceof ConstDynamic dynamic) {
+					originalDynamicIndices.put(dynamic, dynamic.getBsmIndex());
+					originalDynamicUses++;
+					if (dynamic.getBsmIndex() == invalidIndex)
+						invalidDynamicUses++;
+				}
+			}
+		}
+
+		// Run the stripping transformer. Should remove the illegal table entry while retaining the valid ones.
+		new IllegalStrippingTransformer(classFile).transform();
+
+		// Get the filtered table and confirm that the invalid entry was removed.
+		BootstrapMethodsAttribute filteredAttribute = classFile.getAttribute(BootstrapMethodsAttribute.class);
+		assertNotNull(filteredAttribute);
+		List<BootstrapMethodsAttribute.BootstrapMethod> filteredMethods = filteredAttribute.getBootstrapMethods();
+		assertEquals(originalMethods.size() - 1, filteredMethods.size());
+		for (int originalIndex = 0, filteredIndex = 0; originalIndex < originalMethods.size(); originalIndex++) {
+			if (originalIndex == invalidIndex)
+				continue;
+			assertSame(originalMethods.get(originalIndex), filteredMethods.get(filteredIndex++));
+		}
+
+		// Valid invokedynamic references retain their targets, while the malformed target is removed.
+		int retainedDynamicUses = 0;
+		for (Method method : classFile.getMethods()) {
+			CodeAttribute code = method.getAttribute(CodeAttribute.class);
+			if (code == null)
+				continue;
+			for (Instruction instruction : code.getInstructions()) {
+				if (instruction instanceof CpRefInstruction cpRef && cpRef.getEntry() instanceof ConstDynamic dynamic) {
+					Integer originalIndex = originalDynamicIndices.get(dynamic);
+					assertNotNull(originalIndex, "Unknown dynamic constant survived transformation");
+					assertNotEquals(invalidIndex, originalIndex);
+					int expectedIndex = originalIndex > invalidIndex ? originalIndex - 1 : originalIndex;
+					assertEquals(expectedIndex, dynamic.getBsmIndex());
+					assertTrue(dynamic.getBsmIndex() < filteredMethods.size());
+					retainedDynamicUses++;
+				}
+			}
+		}
+		assertEquals(originalDynamicUses - invalidDynamicUses, retainedDynamicUses);
 	}
 
 	/**

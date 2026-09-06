@@ -609,6 +609,67 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	}
 
 	/**
+	 * Checks whether a bootstrap method entry can be retained.
+	 *
+	 * @param bsm
+	 * 		Bootstrap method entry to check.
+	 *
+	 * @return {@code true} when the entry has a valid method handle and only loadable arguments.
+	 */
+	private boolean isValidBootstrapMethod(@Nullable BootstrapMethod bsm) {
+		if (bsm == null || bsm.getBsmMethodRef() == null || !isValidMethodHandle(bsm.getBsmMethodRef()))
+			return false;
+
+		for (CpEntry arg : bsm.getArgs()) {
+			// Bootstrap arguments must be constants that the VM can load.
+			// JVMS 4.4-C:
+			//  - 3:  CONSTANT_Integer
+			//  - 4:  CONSTANT_Float
+			//  - 5:  CONSTANT_Long
+			//  - 6:  CONSTANT_Double
+			//  - 7:  CONSTANT_Class
+			//  - 8:  CONSTANT_String
+			//  - 15: CONSTANT_MethodHandle
+			//  - 16: CONSTANT_MethodType
+			//  - 17: CONSTANT_Dynamic
+			if (arg == null) return false;
+			int tag = arg.getTag();
+			if (!((tag >= INTEGER && tag <= STRING) || (tag >= METHOD_HANDLE && tag <= DYNAMIC)))
+				return false;
+
+			// Method handles and dynamic constants have additional bootstrap-specific validity rules.
+			if (arg instanceof CpMethodHandle handle && !isValidMethodHandle(handle))
+				return false;
+			if (arg instanceof ConstDynamic dynamic && !isValidDynamic(dynamic))
+				return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Rewrites dynamic constant bootstrap indices after invalid table entries are removed.
+	 *
+	 * @param retained
+	 * 		Flags identifying the original table entries that remain.
+	 */
+	private void remapBootstrapMethodIndices(@Nonnull boolean[] retained) {
+		// Build an old-index to new-index map, using -1 for entries that no longer exist.
+		int[] indexMap = new int[retained.length];
+		int nextIndex = 0;
+		for (int i = 0; i < retained.length; i++)
+			indexMap[i] = retained[i] ? nextIndex++ : -1;
+
+		// Rewrite every dynamic pool entry before bytecode validation checks its bootstrap target.
+		for (CpEntry entry : pool) {
+			if (!(entry instanceof ConstDynamic dynamic))
+				continue;
+			int oldIndex = dynamic.getBsmIndex();
+			int newIndex = oldIndex >= 0 && oldIndex < indexMap.length ? indexMap[oldIndex] : -1;
+			dynamic.setBsmIndex(newIndex);
+		}
+	}
+
+	/**
 	 * Remove any bootstrap method content that is unused.
 	 *
 	 * @param dynamicCpReferences
@@ -922,20 +983,34 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				break;
 			case AttributeConstants.BOOTSTRAP_METHODS:
 				BootstrapMethodsAttribute bootstrapMethodsAttribute = (BootstrapMethodsAttribute) attribute;
-				for (BootstrapMethod bsm : bootstrapMethodsAttribute.getBootstrapMethods()) {
-					if (!isValidMethodHandle(bsm.getBsmMethodRef()))
-						return false;
+				List<BootstrapMethod> methods = bootstrapMethodsAttribute.getBootstrapMethods();
+				boolean[] retained = new boolean[methods.size()];
+				List<BootstrapMethod> retainedMethods = new ArrayList<>(methods.size());
+
+				// Filter out invalid bootstrap methods, and retain the valid ones.
+				for (int i = 0; i < methods.size(); i++) {
+					BootstrapMethod bsm = methods.get(i);
+					if (!isValidBootstrapMethod(bsm)) {
+						logger.debug("Discarding invalid bootstrap method at index {}", i);
+						continue;
+					}
+					retained[i] = true;
+					retainedMethods.add(bsm);
+				}
+
+				// Compact the table and rewrite every dynamic constant that used an original index.
+				if (retainedMethods.size() != methods.size()) {
+					remapBootstrapMethodIndices(retained);
+					bootstrapMethodsAttribute.setBootstrapMethods(retainedMethods);
+				}
+
+				// Validate references from entries that survived filtering.
+				for (BootstrapMethod bsm : retainedMethods) {
 					expectedTypeMasks.put(bsm.getBsmMethodRef(), i -> i == METHOD_HANDLE);
-					// Arguments must be loadable types
-					for (CpEntry arg : bsm.getArgs()) {
-						if (arg instanceof CpMethodHandle handle && !isValidMethodHandle(handle))
-							return false;
-						if (arg instanceof ConstDynamic dynamic && !isValidDynamic(dynamic))
-							return false;
+					for (CpEntry arg : bsm.getArgs())
 						expectedTypeMasks.put(arg, i ->
 								(i >= INTEGER && i <= STRING) ||
 										(i >= METHOD_HANDLE && i <= DYNAMIC));
-					}
 				}
 				break;
 			case AttributeConstants.LOCAL_VARIABLE_TABLE:
