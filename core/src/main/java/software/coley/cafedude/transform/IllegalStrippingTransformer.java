@@ -937,8 +937,9 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			return false;
 		}
 
-		// Check indices match certain types (key=cp_index, value=mask of allowed cp_tags)
-		boolean allow0Case = false;
+		// Check indices match certain types (key=cp_index, value=mask of allowed cp_tags).
+		// The exception is when the index is zero, which is used to indicate "not present"
+		// or other special cases in some attributes.
 		switch (name) {
 			case AttributeConstants.CONSTANT_VALUE:
 				CpEntry valueIndex = ((ConstantValueAttribute) attribute).getConstantValue();
@@ -1009,7 +1010,6 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				//   or class variable initializer
 				// Otherwise it points to the method name_type value
 				expectedTypeMasks.put(enclosingMethod.getMethodEntry(), i -> i == 0 || i == NAME_TYPE);
-				allow0Case = (enclosingMethod.getMethodEntry() == null);
 				break;
 			case AttributeConstants.EXCEPTIONS:
 				ExceptionsAttribute exceptions = (ExceptionsAttribute) attribute;
@@ -1020,7 +1020,8 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			case AttributeConstants.INNER_CLASSES:
 				InnerClassesAttribute innerClasses = (InnerClassesAttribute) attribute;
 				for (InnerClass innerClass : innerClasses.getInnerClasses()) {
-					expectedTypeMasks.put(innerClass.getInnerClassInfo(), i -> i == 0 || i == CLASS);
+					// Must be a valid nonzero CONSTANT_Class identifying the class being described.
+					expectedTypeMasks.put(innerClass.getInnerClassInfo(), i -> i == CLASS);
 					cpEntryValidators.put(innerClass.getInnerClassInfo(), matchClass());
 
 					// 0 if the defining class is the top-level class
@@ -1028,7 +1029,6 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 
 					// 0 if anonymous, otherwise name index
 					expectedTypeMasks.put(innerClass.getInnerName(), i -> i == 0 || i == UTF8);
-					allow0Case |= innerClass.getOuterClassInfo() == null || innerClass.getInnerName() == null;
 				}
 				break;
 			case AttributeConstants.CODE: {
@@ -1050,11 +1050,10 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				// Ensure exception indices are valid
 				for (ExceptionTableEntry entry : code.getExceptionTable()) {
 					CpClass catchType = entry.getCatchType();
-					if (catchType == null) {
-						allow0Case = true;
-					} else {
+					if (catchType != null) {
+						// A null catch_type is a catch-all handler and is implicitly valid.
 						cpEntryValidators.put(catchType, matchClass());
-						expectedTypeMasks.put(catchType, i -> i == 0 || i == CLASS);
+						expectedTypeMasks.put(catchType, i -> i == CLASS);
 					}
 				}
 				break;
@@ -1070,8 +1069,6 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			case AttributeConstants.MODULE:
 				ModuleAttribute moduleAttribute = (ModuleAttribute) attribute;
 				expectedTypeMasks.put(moduleAttribute.getVersion(), i -> i == 0 || i == UTF8);
-				if (moduleAttribute.getVersion() == null)
-					allow0Case = true;
 				for (Requires requires : moduleAttribute.getRequires()) {
 					expectedTypeMasks.put(requires.getVersion(), i -> i == 0 || i == UTF8);
 				}
@@ -1165,11 +1162,17 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		for (Map.Entry<CpEntry, Predicate<Integer>> entry : expectedTypeMasks.entrySet()) {
 			CpEntry cpEntry = entry.getKey();
 
-			// A null reference is only permitted where the attribute explicitly allows it.
-			//  - Yes, the CP doesn't start at 0, but there are special cases where it is allowed.
-			if (allow0Case && cpEntry == null)
-				continue;
+			// A null reference is allowed if the entry's own mask accepts 0,
+			// which is used to indicate "not present" or other special cases in some attributes.
+			// The masks that accept 0 are:
+			//  - EnclosingMethod.method_index: 0 when the class is immediately enclosed (4.7.7)
+			//  - InnerClasses.outer_class_info_index: 0 for top-level/local/anonymous classes (4.7.6)
+			//  - InnerClasses.inner_name_index: 0 for anonymous classes (4.7.6)
+			//  - Module.module_version_index: 0 when there is no version info (4.7.25)
+			//  - Module.Requires.requires_version_index: 0 when there is no version info (4.7.25)
 			if (cpEntry == null) {
+				if (entry.getValue().test(0))
+					continue;
 				logger.debug("Invalid '{}' attribute on {}, contains CP reference to null / 0!", name, holderType.name());
 				return false;
 			}
