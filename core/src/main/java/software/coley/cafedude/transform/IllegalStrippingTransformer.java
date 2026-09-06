@@ -618,6 +618,10 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	 * @return {@code true} when the entry has a valid method handle and only loadable arguments.
 	 */
 	private boolean isValidBootstrapMethod(@Nullable BootstrapMethod bsm) {
+		return isValidBootstrapMethod(bsm, Collections.newSetFromMap(new IdentityHashMap<>()));
+	}
+
+	private boolean isValidBootstrapMethod(@Nullable BootstrapMethod bsm, @Nonnull Set<ConstDynamic> active) {
 		if (bsm == null || bsm.getBsmMethodRef() == null || !isValidMethodHandle(bsm.getBsmMethodRef()))
 			return false;
 
@@ -641,7 +645,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			// Method handles and dynamic constants have additional bootstrap-specific validity rules.
 			if (arg instanceof CpMethodHandle handle && !isValidMethodHandle(handle))
 				return false;
-			if (arg instanceof ConstDynamic dynamic && !isValidDynamic(dynamic))
+			if (arg instanceof ConstDynamic dynamic && !isValidDynamic(dynamic, active))
 				return false;
 		}
 		return true;
@@ -712,17 +716,33 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	 * @return {@code true} when the bootstrap method exists and has a valid handle.
 	 */
 	private boolean isValidDynamic(@Nonnull ConstDynamic dynamic) {
+		return isValidDynamic(dynamic, Collections.newSetFromMap(new IdentityHashMap<>()));
+	}
+
+	private boolean isValidDynamic(@Nonnull ConstDynamic dynamic, @Nonnull Set<ConstDynamic> active) {
+		// A dynamic constant may syntactically reference itself (§4.4.10), so guard against cycles.
+		if (!active.add(dynamic))
+			return true;
+
+		// The name-and-type descriptor must match the constant kind.
+		CpUtf8 descriptor = dynamic.getNameType().getType();
+		boolean validDescriptor = dynamic.getTag() == DYNAMIC
+				? matchUtf8FieldDescriptor().test(descriptor)
+				: matchUtf8MethodDescriptor().test(descriptor);
+		if (!validDescriptor)
+			return false;
+
 		// If there isn't a bootstrap method attribute, then there is no way to resolve the dynamic constant.
 		BootstrapMethodsAttribute attribute = clazz.getAttribute(BootstrapMethodsAttribute.class);
 		if (attribute == null)
 			return false;
 
-		// Index must be in bounds and the method handle must match its reference kind.
+		// Index must be in bounds, and the whole selected entry (including its arguments) must be valid.
 		int index = dynamic.getBsmIndex();
 		List<BootstrapMethod> methods = attribute.getBootstrapMethods();
-		return index >= 0
-				&& index < methods.size()
-				&& isValidMethodHandle(methods.get(index).getBsmMethodRef());
+		if (index < 0 || index >= methods.size())
+			return false;
+		return isValidBootstrapMethod(methods.get(index), active);
 	}
 
 	/**
