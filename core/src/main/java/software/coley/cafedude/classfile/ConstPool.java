@@ -116,14 +116,21 @@ public class ConstPool implements List<CpEntry> {
 		backing.add(cp);
 		cp.setIndex(index);
 		if (cp.isWide())
-			backing.add(ImplWidePadding.INSTANCE);
+			backing.add(getWideFiller());
 		return true;
 	}
 
 	@Override
 	public void add(int index, CpEntry cp) {
+		if (cp == null)
+			throw new IllegalArgumentException("Cannot add null");
+		requireValidInsertion(index);
+
+		// Insert the padding slot first so a wide constant lands as [entry, padding].
 		if (cp.isWide())
-			backing.add(index, ImplWidePadding.INSTANCE);
+			backing.add(index, getWideFiller());
+
+		// Insert the entry and reindex all entries after it.
 		backing.add(index, cp);
 		fixIndices(index);
 	}
@@ -153,9 +160,16 @@ public class ConstPool implements List<CpEntry> {
 
 	@Override
 	public CpEntry remove(int index) {
+		requireValidIndex(index);
+
+		// Remove the entry.
 		CpEntry removed = backing.remove(index);
-		if (removed.isWide() && backing.get(index) instanceof ImplWidePadding)
+
+		// Remove the following padding slot if the removed entry was wide.
+		if (removed.isWide())
 			backing.remove(index);
+
+		// Reindex all entries after the removed entry.
 		fixIndices(index);
 		return removed;
 	}
@@ -203,15 +217,84 @@ public class ConstPool implements List<CpEntry> {
 	public CpEntry set(int index, CpEntry cp) {
 		if (cp == null)
 			throw new IllegalArgumentException("Cannot set null");
-		if (index < 1 || index >= size())
-			return null;
-		return backing.set(index, cp);
+		requireValidIndex(index);
+
+		// Check width of the old and new entries. If they differ, we need to add/remove a padding slot.
+		CpEntry old = backing.get(index);
+		boolean oldWide = old.isWide();
+		boolean newWide = cp.isWide();
+
+		// Replace the entry and reindex all entries after it if the width changed.
+		backing.set(index, cp);
+		cp.setIndex(index);
+		if (oldWide != newWide) {
+			if (newWide)
+				backing.add(index + 1, getWideFiller());
+			else
+				backing.remove(index + 1);
+		}
+		fixIndices(index + 1);
+		return old;
 	}
 
+	/**
+	 * Recomputes the index of each entry in the backing list starting at the given index.
+	 *
+	 * @param startingIndex
+	 * 		Index to start reindexing at.
+	 */
 	protected void fixIndices(int startingIndex) {
-		listIterator(startingIndex).forEach((i, entry) -> entry.setIndex(i));
+		// Recompute each real entry's index from its backing position, skipping
+		// the reserved zero slot and wide padding slots. Walking the backing list
+		// directly avoids the iterator's cursor/padding edge cases.
+		for (int i = Math.max(startingIndex, 1); i < backing.size(); i++) {
+			CpEntry entry = backing.get(i);
+			if (!(entry instanceof CpInternal))
+				entry.setIndex(i);
+		}
 	}
 
+	/**
+	 * @param index
+	 * 		Index to check.
+	 *
+	 * @throws IndexOutOfBoundsException
+	 * 		When the index is the reserved zero slot, a wide padding slot, or out of range.
+	 */
+	protected void requireValidIndex(int index) {
+		if (index < 1 || index >= size())
+			throw new IndexOutOfBoundsException("Constant index out of range: " + index);
+		if (isFiller(index))
+			throw new IndexOutOfBoundsException("Cannot access a reserved wide padding slot: " + index);
+	}
+
+	/**
+	 * @param index
+	 * 		Insertion index to check.
+	 *
+	 * @throws IndexOutOfBoundsException
+	 * 		When the index precedes the reserved zero slot or sits inside a wide padding slot.
+	 */
+	protected void requireValidInsertion(int index) {
+		if (index < 1 || index > size())
+			throw new IndexOutOfBoundsException("Constant insertion index out of range: " + index);
+		if (index < size() && isFiller(index))
+			throw new IndexOutOfBoundsException("Cannot insert into a wide padding slot: " + index);
+	}
+
+	/**
+	 * @param index
+	 * 		Backing index to check.
+	 *
+	 * @return {@code true} when the slot is the reserved zero entry or a wide padding entry.
+	 */
+	protected boolean isFiller(int index) {
+		return backing.get(index) instanceof CpInternal;
+	}
+
+	/**
+	 * @return Singleton for wide padding entries.
+	 */
 	@Nonnull
 	public static CpEntry getWideFiller() {
 		return ImplWidePadding.INSTANCE;
@@ -261,20 +344,21 @@ public class ConstPool implements List<CpEntry> {
 
 		@Override
 		public CpEntry previous() {
-			if (hasPrevious()) {
-				// Move backwards, skipping over padding entries.
-				CpEntry cp = pool.get(cursor - 1);
-				if (cp == null)
-					throw new NoSuchElementException("No CP at " + (cursor - 1));
-				if (cp.getTag() <= 0)
-					cp = pool.get(cursor - 2);
-				if (cp == null)
-					throw new NoSuchElementException("No CP at " + (cursor - 2));
-				lastCursor = cursor;
-				cursor -= cp.isWide() ? 2 : 1;
-				return cp;
+			if (!hasPrevious())
+				throw new NoSuchElementException();
+			// The slot before the cursor may be a wide entry's padding, so step
+			// over it to the entry that owns that slot.
+			int prevIndex = cursor - 1;
+			CpEntry cp = pool.get(prevIndex);
+			if (cp == null) {
+				prevIndex--;
+				cp = pool.get(prevIndex);
 			}
-			throw new NoSuchElementException();
+			if (cp == null)
+				throw new NoSuchElementException("No CP before " + cursor);
+			lastCursor = prevIndex;
+			cursor = prevIndex;
+			return cp;
 		}
 
 		@Override
@@ -298,21 +382,39 @@ public class ConstPool implements List<CpEntry> {
 		@Override
 		public void remove() {
 			if (lastCursor < 1)
-				throw new IllegalStateException();
-			int remove = lastCursor;
-			pool.remove(remove);
-			cursor = remove;
+				throw new IllegalStateException("No last returned entry to remove");
+
+			// Removing the last returned entry shifts everything after it down by
+			// its width, so move the cursor back by the same amount.
+			int width = pool.get(lastCursor).isWide() ? 2 : 1;
+			pool.remove(lastCursor);
+			if (lastCursor < cursor)
+				cursor -= width;
+
 			lastCursor = -1;
 		}
 
 		@Override
 		public void set(CpEntry cp) {
-			pool.set(cursor, cp);
+			if (lastCursor < 1)
+				throw new IllegalStateException("No last returned entry to set");
+
+			// Replace the last returned entry. If its width changes, the padding
+			// slot count changes and entries after it shift, so adjust the cursor.
+			int oldWidth = pool.get(lastCursor).isWide() ? 2 : 1;
+			int newWidth = cp.isWide() ? 2 : 1;
+			pool.set(lastCursor, cp);
+			if (lastCursor < cursor)
+				cursor += newWidth - oldWidth;
 		}
 
 		@Override
 		public void add(CpEntry cp) {
-			pool.set(cursor, cp);
+			// Insert at the cursor position and advance past it. Clearing
+			// lastCursor makes a subsequent remove() target this new entry.
+			pool.add(cursor, cp);
+			cursor += cp.isWide() ? 2 : 1;
+			lastCursor = -1;
 		}
 
 		public interface CpConsumer {
