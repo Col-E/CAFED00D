@@ -39,9 +39,9 @@ public interface AnnotationConstants {
 	 */
 	int BOUND_TYPE_PARAMETER_OF_METHOD = 0x12;
 	/**
-	 * Type in field declaration.
+	 * Type in field or record component declaration.
 	 * <br> Indicates type: {@link TargetInfoType#EMPTY_TARGET}
-	 * <br> Location: Field
+	 * <br> Location: Field, record component
 	 */
 	int FIELD = 0x13;
 	/**

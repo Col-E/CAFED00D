@@ -265,10 +265,9 @@ public class AnnotationReader {
 	private TypeAnnotation readTypeAnnotation(@Nonnull AnnotationScope scope) throws IOException {
 		// Read target type (lets us know where the type annotation is located)
 		int targetType = is.readUnsignedByte();
-		AttributeHolderType expectedLocation = AttributeHolderType.fromAnnotationTargetType(targetType);
 
 		// Skip if context is not expected location.
-		if (context.type() != expectedLocation)
+		if (!AttributeHolderType.isAnnotationTargetTypeValidIn(targetType, context.type()))
 			throw new IllegalArgumentException("Annotation location does not match allowed locations for its type");
 
 		// Parse target info union
