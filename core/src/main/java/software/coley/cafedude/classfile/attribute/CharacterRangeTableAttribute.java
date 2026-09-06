@@ -52,7 +52,7 @@ public non-sealed class CharacterRangeTableAttribute extends Attribute {
 		//   s4 char_range_end;
 		//   u2 flags;
 		// ]
-		return 2 * (14 * characterRangeTable.size());
+		return 2 + 14 * characterRangeTable.size();
 	}
 
 	/**
