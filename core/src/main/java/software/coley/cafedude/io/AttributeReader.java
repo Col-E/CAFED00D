@@ -1074,12 +1074,13 @@ public class AttributeReader {
 		int handlerPc = is.readUnsignedShort();
 		int catchTypeCpIndex = is.readUnsignedShort();
 
-		// Out of bounds check
-		if (startPc >= codeLength || endPc > codeLength || handlerPc > codeLength)
+		// Out of bounds check. The handler must point inside the code array, so it is
+		// strictly less than code_length (unlike end_pc, which may equal it).
+		if (startPc >= codeLength || endPc > codeLength || handlerPc >= codeLength)
 			return null;
 
-		// Zero-length entries can be tossed
-		if (startPc == endPc)
+		// The range must be non-empty and non-reversed.
+		if (endPc <= startPc)
 			return null;
 
 		CpClass exceptionType = orNullInCp(CpClass.class, catchTypeCpIndex);
