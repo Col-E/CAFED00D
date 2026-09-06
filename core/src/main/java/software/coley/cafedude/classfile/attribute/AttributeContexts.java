@@ -29,9 +29,11 @@ public class AttributeContexts implements AttributeConstants {
 			case ENCLOSING_METHOD:
 			case INNER_CLASSES:
 			case MODULE:
+			case MODULE_HASHES:
 			case MODULE_MAIN_CLASS:
 			case MODULE_PACKAGES:
 			case MODULE_RESOLUTION:
+			case MODULE_TARGET:
 			case NEST_HOST:
 			case NEST_MEMBERS:
 			case PERMITTED_SUBCLASSES:
@@ -59,10 +61,14 @@ public class AttributeContexts implements AttributeConstants {
 			case CHARACTER_RANGE_TABLE:
 				return EnumSet.of(AttributeHolderType.ATTRIBUTE);
 			case RUNTIME_VISIBLE_ANNOTATIONS:
-			case RUNTIME_VISIBLE_TYPE_ANNOTATIONS:
 			case RUNTIME_INVISIBLE_ANNOTATIONS:
-			case RUNTIME_INVISIBLE_TYPE_ANNOTATIONS:
 			case SIGNATURE:
+				return EnumSet.of(AttributeHolderType.CLASS,
+						AttributeHolderType.FIELD,
+						AttributeHolderType.METHOD,
+						AttributeHolderType.RECORD_COMPONENT);
+			case RUNTIME_VISIBLE_TYPE_ANNOTATIONS:
+			case RUNTIME_INVISIBLE_TYPE_ANNOTATIONS:
 				return EnumSet.allOf(AttributeHolderType.class);
 			default:
 				break;
