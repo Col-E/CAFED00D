@@ -1083,7 +1083,14 @@ public class AttributeReader {
 		if (endPc <= startPc)
 			return null;
 
-		CpClass exceptionType = orNullInCp(CpClass.class, catchTypeCpIndex);
+		// catch_type == 0 is catch-all (represented by Throwable in source form).
+		// Any other index must resolve to a class.
+		CpClass exceptionType = null;
+		if (catchTypeCpIndex != 0) {
+			exceptionType = orNullInCp(CpClass.class, catchTypeCpIndex);
+			if (exceptionType == null)
+				return null;
+		}
 		return new CodeAttribute.ExceptionTableEntry(
 				startPc,
 				endPc,
