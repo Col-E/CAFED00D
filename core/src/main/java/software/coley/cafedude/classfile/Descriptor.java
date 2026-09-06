@@ -286,65 +286,133 @@ public class Descriptor {
 			return new Descriptor(Kind.ILLEGAL, "");
 		if (desc.isEmpty())
 			return new Descriptor(Kind.ILLEGAL, desc);
-		char first = desc.charAt(0);
-		switch (first) {
-			case 'V':
-				return VOID;
-			case 'Z':
-				return BOOLEAN;
-			case 'B':
-				return BYTE;
-			case 'C':
-				return CHAR;
-			case 'S':
-				return SHORT;
-			case 'I':
-				return INT;
-			case 'F':
-				return FLOAT;
-			case 'D':
-				return DOUBLE;
-			case 'J':
-				return LONG;
-			default:
-				if (first == '[') {
-					int max = desc.length();
-					int i = 1;
-					while (i < max && desc.charAt(i) == '[')
-						i++;
 
-					// Validate the element type is legitimate
-					Descriptor d = from(desc.substring(i));
-					if (d.kind == Kind.ILLEGAL)
-						return new Descriptor(Kind.ILLEGAL, desc);
-					return new Descriptor(Kind.ARRAY, desc, i);
-				} else if (first == '(') {
-					// Validate closing ')' exists and isn't the last char
-					int end = desc.indexOf(')');
-					if (end < 0 || end == desc.length() - 1)
-						return new Descriptor(Kind.ILLEGAL, desc);
-					Descriptor d = new Descriptor(Kind.METHOD, desc);
+		// 'V' is the complete void return descriptor.
+		if (desc.equals("V"))
+			return VOID;
+		if (desc.charAt(0) == '(')
+			return parseMethod(desc);
 
-					// Validate return type
-					Descriptor returnDesc = d.getReturnDesc();
-					if (returnDesc.kind == Kind.ILLEGAL)
-						return new Descriptor(Kind.ILLEGAL, desc);
+		// Otherwise it must be a field type: primitive, object, or array.
+		int[] cursor = {0};
+		Descriptor parsed = parseFieldType(desc, cursor);
+		if (parsed == null || cursor[0] != desc.length())
+			return new Descriptor(Kind.ILLEGAL, desc);
+		return parsed;
+	}
 
-					// Validate parameter count
-					if (d.getParameterCount() < 0)
-						return new Descriptor(Kind.ILLEGAL, desc);
-					return d;
-				} else if (first == 'L') {
-					int end = desc.indexOf(';');
+	/**
+	 * Parses a complete method descriptor {@code (parameters)return}.
+	 *
+	 * @param desc
+	 * 		Descriptor to parse. Must start with {@code (}.
+	 *
+	 * @return Method descriptor, or {@link Kind#ILLEGAL} when malformed.
+	 */
+	@Nonnull
+	private static Descriptor parseMethod(@Nonnull String desc) {
+		int[] cursor = {1};  // skip '('
+		int units = 0;
 
-					// Validate ';' exists and there is at least one char between 'L' and ';'
-					if (end < 0 || end == 1)
-						return new Descriptor(Kind.ILLEGAL, desc);
-					return new Descriptor(Kind.OBJECT, desc);
-				} else {
-					return new Descriptor(Kind.ILLEGAL, desc);
-				}
+		// Parse parameters until the closing ')'.
+		while (true) {
+			if (cursor[0] >= desc.length())
+				return new Descriptor(Kind.ILLEGAL, desc);  // missing ')'
+			char c = desc.charAt(cursor[0]);
+			if (c == ')') {
+				cursor[0]++;
+				break;
+			}
+			Descriptor param = parseFieldType(desc, cursor);
+			if (param == null)
+				return new Descriptor(Kind.ILLEGAL, desc);
+			units += param.isWide() ? 2 : 1;
+			if (units > 255)
+				return new Descriptor(Kind.ILLEGAL, desc); // JVMS limits parameter units to 255
 		}
+
+		// Parse the return descriptor: 'V' or a field type.
+		if (cursor[0] >= desc.length())
+			return new Descriptor(Kind.ILLEGAL, desc); // missing return
+		if (desc.charAt(cursor[0]) == 'V')
+			cursor[0]++;
+		else if (parseFieldType(desc, cursor) == null)
+			return new Descriptor(Kind.ILLEGAL, desc);
+
+		// The whole string must have been consumed.
+		if (cursor[0] != desc.length())
+			return new Descriptor(Kind.ILLEGAL, desc); // trailing data
+
+		return new Descriptor(Kind.METHOD, desc);
+	}
+
+	/**
+	 * Parses a field type (primitive, object, or array) at the cursor, advancing it past the type.
+	 * Void ({@code V}) is not a field type and is rejected here.
+	 *
+	 * @param desc
+	 * 		Descriptor being parsed.
+	 * @param cursor
+	 * 		Parse position. Advanced past the field type on success.
+	 *
+	 * @return Parsed descriptor, or {@code null} when the input is not a field type.
+	 */
+	@Nullable
+	private static Descriptor parseFieldType(@Nonnull String desc, @Nonnull int[] cursor) {
+		int i = cursor[0];
+		if (i >= desc.length())
+			return null;
+		char c = desc.charAt(i);
+		if (c == 'L') {
+			int end = desc.indexOf(';', i + 1);
+			if (end < 0 || end == i + 1)
+				return null; // missing terminator or empty class name
+			if (!isValidClassName(desc.substring(i + 1, end)))
+				return null; // illegal characters in class name
+			cursor[0] = end + 1;
+			return new Descriptor(Kind.OBJECT, desc.substring(i, end + 1));
+		}
+		if (c == '[') {
+			int start = i;
+			int depth = 0;
+			while (i < desc.length() && desc.charAt(i) == '[') {
+				depth++;
+				i++;
+			}
+			if (depth > 255)
+				return null; // JVMS limits array descriptors to 255 dimensions
+			cursor[0] = i;
+			Descriptor component = parseFieldType(desc, cursor);
+			if (component == null)
+				return null;
+			return new Descriptor(Kind.ARRAY, desc.substring(start, cursor[0]), depth);
+		}
+		if (c == 'V')
+			return null; // void is only legal as a return descriptor
+		Descriptor primitive = from(c);
+		if (primitive.getKind() == Kind.ILLEGAL)
+			return null;
+		cursor[0] = i + 1;
+		return primitive;
+	}
+
+	/**
+	 * @param name
+	 * 		Binary class name in internal form, without the surrounding {@code L...;}.
+	 *
+	 * @return {@code true} when the name contains none of the source/generic/array characters
+	 * that cannot appear in an internal binary name.
+	 */
+	private static boolean isValidClassName(@Nonnull String name) {
+		for (int i = 0; i < name.length(); i++) {
+			switch (name.charAt(i)) {
+				case '.', '[', '<', '>':
+					return false;
+				default:
+					break;
+			}
+		}
+		return true;
 	}
 
 	/**

@@ -99,10 +99,33 @@ public class DescTest {
 			"(L)V",
 			"(L;)V",
 			"(K)V",
+			"Vjunk",
+			"Ijunk",
+			"Ljava/lang/Object;garbage",
+			"[V",
+			"(I)Vjunk",
+			"(V)I",
+			"([V)I",
+			"Lfoo.bar;",
+			"Lfoo[bar;",
+			"Lfoo<bar>;",
 	})
 	public void testParseIllegal(String desc) {
 		Descriptor d = Descriptor.from(desc);
 		assertEquals(Descriptor.Kind.ILLEGAL, d.getKind());
+	}
+
+	@Test
+	public void testLimits() {
+		// 255 dimensions is the maximum allowed array depth.
+		assertEquals(Descriptor.Kind.ARRAY, Descriptor.from("[".repeat(255) + "I").getKind());
+		// 256 dimensions is too many.
+		assertEquals(Descriptor.Kind.ILLEGAL, Descriptor.from("[".repeat(256) + "I").getKind());
+
+		// 127 longs (254 units) plus one int is exactly 255 parameter units.
+		assertEquals(Descriptor.Kind.METHOD, Descriptor.from("(" + "J".repeat(127) + "I)V").getKind());
+		// 128 longs (256 units) exceeds the 255 unit limit.
+		assertEquals(Descriptor.Kind.ILLEGAL, Descriptor.from("(" + "J".repeat(128) + ")V").getKind());
 	}
 
 	@Test
