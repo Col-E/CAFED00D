@@ -957,10 +957,10 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				if (holderType != AttributeHolderType.METHOD)
 					return false;
 
-				// Method cannot be abstract
+				// Method cannot be abstract or native (JVMS 4.7.3).
 				Method method = (Method) holder;
-				if ((method.getAccess() & Modifiers.ACC_ABSTRACT) > 0) {
-					logger.debug("Illegal 'Code' attribute on abstract method {}", method.getName().getText());
+				if ((method.getAccess() & (Modifiers.ACC_ABSTRACT | Modifiers.ACC_NATIVE)) != 0) {
+					logger.debug("Illegal 'Code' attribute on abstract/native method {}", method.getName().getText());
 					return false;
 				}
 				CodeAttribute code = (CodeAttribute) attribute;
