@@ -1081,30 +1081,37 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				// TODO: The rest of these
 				break;
 		}
+
+		// Check referenced entries have the required constant-pool kind.
 		for (Map.Entry<CpEntry, Predicate<Integer>> entry : expectedTypeMasks.entrySet()) {
-			// Referenced pool entry must be in pool range
-			//  - Yes, the CP doesn't start at 0, but there are special cases where it is allowed.
 			CpEntry cpEntry = entry.getKey();
 
-			// Referenced entry must match type
+			// A null reference is only permitted where the attribute explicitly allows it.
+			//  - Yes, the CP doesn't start at 0, but there are special cases where it is allowed.
 			if (allow0Case && cpEntry == null)
-				continue; // skip edge case
-
-			// cpEntryValidators
+				continue;
 			if (cpEntry == null) {
-				logger.debug("Invalid '{}' attribute on {}, contains CP reference to null!",
-						name, holderType.name());
+				logger.debug("Invalid '{}' attribute on {}, contains CP reference to null / 0!", name, holderType.name());
 				return false;
 			}
+
 			int tag = cpEntry.getTag();
 			if (!entry.getValue().test(tag)) {
 				logger.debug("Invalid '{}' attribute on {}, contains CP reference to index with wrong type!",
 						name, holderType.name());
 				return false;
 			}
-			if (cpEntryValidators.containsKey(cpEntry) && !cpEntryValidators.get(cpEntry).test(cpEntry)) {
-				logger.debug("Invalid '{}' attribute," +
-						" contains CP reference to item that does not match criteria at index: {}", name, cpEntry);
+		}
+
+		// Apply content predicates independently of the type masks, so validators without a mask still get applied.
+		for (Map.Entry<CpEntry, Predicate<CpEntry>> entry : cpEntryValidators.entrySet()) {
+			CpEntry cpEntry = entry.getKey();
+			if (cpEntry == null) {
+				logger.debug("Invalid '{}' attribute on {}, contains CP reference to null / 0!", name, holderType.name());
+				return false;
+			}
+			if (!entry.getValue().test(cpEntry)) {
+				logger.debug("Invalid '{}' attribute on {}, contains CP reference that does not match criteria at index: {}", name, holderType.name(), cpEntry);
 				return false;
 			}
 		}
@@ -1201,7 +1208,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	                                         @Nonnull ElementValue elementValue) {
 		if (elementValue instanceof ClassElementValue classElement) {
 			CpUtf8 classIndex = classElement.getClassEntry();
-			cpEntryValidators.put(classIndex, matchUtf8ValidQualifiedName());
+			cpEntryValidators.put(classIndex, matchUtf8ReturnDescriptor());
 		} else if (elementValue instanceof EnumElementValue enumElement) {
 			cpEntryValidators.put(enumElement.getType(), matchUtf8FieldDescriptor());
 		} else if (elementValue instanceof PrimitiveElementValue primitive) {
@@ -1250,6 +1257,21 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	@Nonnull
 	protected Predicate<CpEntry> matchUtf8FieldDescriptor() {
 		return e -> (e instanceof CpUtf8) && !isInvalidDesc((CpUtf8) e);
+	}
+
+	@Nonnull
+	protected Predicate<CpEntry> matchUtf8ReturnDescriptor() {
+		return e -> {
+			if (!(e instanceof CpUtf8 utf8))
+				return false;
+
+			// A return descriptor is 'V' or a field type, never a full method descriptor.
+			Descriptor d = Descriptor.from(utf8.getText());
+			return switch (d.getKind()) {
+				case PRIMITIVE, OBJECT, ARRAY -> true;
+				default -> false;
+			};
+		};
 	}
 
 	@Nonnull
