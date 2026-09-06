@@ -11,7 +11,7 @@ import software.coley.cafedude.classfile.Field;
 import software.coley.cafedude.classfile.Method;
 import software.coley.cafedude.classfile.Modifiers;
 import software.coley.cafedude.classfile.attribute.Attribute;
-import software.coley.cafedude.classfile.attribute.AttributeConstants;
+import software.coley.cafedude.classfile.attribute.AttributeContexts;
 import software.coley.cafedude.classfile.constant.ConstDynamic;
 import software.coley.cafedude.classfile.constant.ConstRef;
 import software.coley.cafedude.classfile.constant.CpClass;
@@ -35,7 +35,6 @@ import software.coley.cafedude.classfile.constant.CpUtf8;
 import software.coley.cafedude.classfile.constant.Placeholders;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -147,7 +146,7 @@ public class ClassFileReader {
 			List<Attribute> attributes = AttributeReader.readAttributes(this, builder, is, numAttributes,
 					new AttributeContext(AttributeHolderType.CLASS, 0));
 			for (Attribute attr : attributes)
-				if (!dropModuleContent || !isModuleAttribute(attr))
+				if (!dropModuleContent || !AttributeContexts.isModuleAttribute(attr.getName().getText()))
 					builder.addAttribute(attr);
 
 			// Module and package constants cannot be referenced after all module attributes are gone.
@@ -381,12 +380,11 @@ public class ClassFileReader {
 		throw new IOException("Method name/type index do not point to UTF8 values: " + nameIndex + "/" + descIndex);
 	}
 
-
 	/**
 	 * Handles a module-only structural value that must be zero.
 	 *
 	 * @param moduleAccess
-	 * 		{@code true} when the original class access contains {@link Modifiers#ACC_MODULE}.
+	 *        {@code true} when the original class access contains {@link Modifiers#ACC_MODULE}.
 	 * @param value
 	 * 		Structural value to validate.
 	 * @param name
@@ -403,24 +401,6 @@ public class ClassFileReader {
 		if (!dropModuleAccess)
 			throw new IOException("ACC_MODULE class has non-zero " + name + ": " + value);
 		return true;
-	}
-
-	/**
-	 * @param attribute
-	 * 		Attribute to inspect.
-	 *
-	 * @return {@code true} when the attribute carries module metadata.
-	 */
-	private static boolean isModuleAttribute(@Nonnull Attribute attribute) {
-		return switch (attribute.getName().getText()) {
-			case AttributeConstants.MODULE,
-			     AttributeConstants.MODULE_HASHES,
-			     AttributeConstants.MODULE_MAIN_CLASS,
-			     AttributeConstants.MODULE_PACKAGES,
-			     AttributeConstants.MODULE_RESOLUTION,
-			     AttributeConstants.MODULE_TARGET -> true;
-			default -> false;
-		};
 	}
 
 	/**
@@ -508,7 +488,7 @@ public class ClassFileReader {
 
 	/**
 	 * @param dropModuleAccess
-	 * 		{@code true} to clear {@link Modifiers#ACC_MODULE} and remove module metadata when a module class
+	 *        {@code true} to clear {@link Modifiers#ACC_MODULE} and remove module metadata when a module class
 	 * 		declares a superclass, interface, field, or method.
 	 */
 	public void setDropModuleAccess(boolean dropModuleAccess) {

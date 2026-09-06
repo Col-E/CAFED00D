@@ -327,7 +327,7 @@ public class AttributeReader {
 			if (!allowedContexts.contains(context.type())) {
 				logger.debug("Found '{}' in invalid context {}", attributeName, context.name());
 				return null;
-			} else if (!builder.isModule() && attributeName.toLowerCase().startsWith("module")) {
+			} else if (!builder.isModule() && AttributeContexts.isModuleAttribute(attributeName)) {
 				logger.debug("Found '{}' in non-module class", attributeName);
 				return null;
 			}

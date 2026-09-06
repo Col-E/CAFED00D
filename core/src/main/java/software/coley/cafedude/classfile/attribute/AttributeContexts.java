@@ -70,4 +70,19 @@ public class AttributeContexts implements AttributeConstants {
 		// Default behavior for unknown attribute, allow anywhere
 		return EnumSet.allOf(AttributeHolderType.class);
 	}
+
+	/**
+	 * @param attributeName
+	 * 		Name of attribute, see {@link AttributeConstants}.
+	 *
+	 * @return {@code true} when the name identifies a known module attribute, otherwise {@code false}.
+	 */
+	public static boolean isModuleAttribute(@Nonnull String attributeName) {
+		// We only expect to see these in a module-info.class
+		// If we see them elsewhere, it's junk.
+		return switch (attributeName) {
+			case MODULE, MODULE_HASHES, MODULE_MAIN_CLASS, MODULE_PACKAGES, MODULE_RESOLUTION, MODULE_TARGET -> true;
+			default -> false;
+		};
+	}
 }

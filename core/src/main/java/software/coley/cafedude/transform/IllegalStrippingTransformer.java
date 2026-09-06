@@ -857,7 +857,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			logger.debug("Found '{}' declared in illegal context {}, allowed contexts: {}",
 					name, holderType.name(), allowedContexts);
 			return false;
-		} else if (!Modifiers.has(clazz.getAccess(), Modifiers.ACC_MODULE) && name.toLowerCase().startsWith("module")) {
+		} else if (!Modifiers.has(clazz.getAccess(), Modifiers.ACC_MODULE) && AttributeContexts.isModuleAttribute(name)) {
 			logger.debug("Found '{}' in non-module class", name);
 			return false;
 		}
