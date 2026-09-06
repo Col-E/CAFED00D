@@ -1211,6 +1211,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			cpEntryValidators.put(classIndex, matchUtf8ReturnDescriptor());
 		} else if (elementValue instanceof EnumElementValue enumElement) {
 			cpEntryValidators.put(enumElement.getType(), matchUtf8FieldDescriptor());
+			cpEntryValidators.put(enumElement.getName(), matchUtf8ValidUnqualifiedName());
 		} else if (elementValue instanceof PrimitiveElementValue primitive) {
 			CpEntry primitiveEntry = primitive.getValue();
 			int requiredTag = PrimitiveElementValue.requiredConstantTag(primitive.getTag());
@@ -1252,6 +1253,15 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 					&& text.indexOf('.') < 0
 					&& text.indexOf(';') < 0
 					&& text.indexOf('[') < 0;
+		};
+	}
+
+	@Nonnull
+	protected Predicate<CpEntry> matchUtf8ValidUnqualifiedName() {
+		return e -> {
+			if (!(e instanceof CpUtf8 utf8)) return false;
+			String text = utf8.getText();
+			return isValidUnqualifiedName(text);
 		};
 	}
 
@@ -1299,6 +1309,26 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		} catch (Throwable t) {
 			return true;
 		}
+	}
+
+	/**
+	 * @param text
+	 * 		Text to validate as an unqualified name.
+	 *
+	 * @return {@code true} when valid.
+	 */
+	public static boolean isValidUnqualifiedName(@Nonnull String text) {
+		// Cannot be empty.
+		if (text.isEmpty())
+			return false;
+
+		// From #jvms-4.2.2 - An unqualified name must not contain '.', ';', '[', or '/'.
+		for (int i = 0; i < text.length(); i++) {
+			char c = text.charAt(i);
+			if (c == '.' || c == ';' || c == '[' || c == '/')
+				return false;
+		}
+		return true;
 	}
 
 	/**

@@ -5,6 +5,7 @@ import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.coley.cafedude.classfile.ConstPool;
+import software.coley.cafedude.classfile.Descriptor;
 import software.coley.cafedude.classfile.annotation.Annotation;
 import software.coley.cafedude.classfile.annotation.AnnotationElementValue;
 import software.coley.cafedude.classfile.annotation.ArrayElementValue;
@@ -35,6 +36,7 @@ import software.coley.cafedude.classfile.attribute.AnnotationsAttribute;
 import software.coley.cafedude.classfile.attribute.ParameterAnnotationsAttribute;
 import software.coley.cafedude.classfile.constant.CpEntry;
 import software.coley.cafedude.classfile.constant.CpUtf8;
+import software.coley.cafedude.transform.IllegalStrippingTransformer;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -460,7 +462,9 @@ public class AnnotationReader {
 				int constname = is.readUnsignedShort();
 				CpEntry entryType = cp.get(typename);
 				CpEntry entryConstant = cp.get(constname);
-				if (entryType instanceof CpUtf8 type && entryConstant instanceof CpUtf8 constant)
+				if (entryType instanceof CpUtf8 type && entryConstant instanceof CpUtf8 constant
+						&& isValidEnumTypeDescriptor(type.getText())
+						&& IllegalStrippingTransformer.isValidUnqualifiedName(constant.getText()))
 					return new EnumElementValue(tag, type, constant);
 				throw new IOException("Invalid element: Enum");
 			case 'c': // Class
@@ -483,6 +487,16 @@ public class AnnotationReader {
 				break;
 		}
 		throw new IllegalArgumentException("Unrecognized tag for annotation element value: " + tag);
+	}
+
+	/**
+	 * @param text
+	 * 		Enum type name text.
+	 *
+	 * @return {@code true} when the text is an object field descriptor (JVMS 4.7.16.1).
+	 */
+	private static boolean isValidEnumTypeDescriptor(@Nonnull String text) {
+		return Descriptor.from(text).getKind() == Descriptor.Kind.OBJECT;
 	}
 
 	static class AnnotationScope extends ArrayList<String> {
