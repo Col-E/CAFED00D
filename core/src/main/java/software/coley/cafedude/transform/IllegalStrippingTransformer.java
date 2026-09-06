@@ -1213,7 +1213,8 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			cpEntryValidators.put(enumElement.getType(), matchUtf8FieldDescriptor());
 		} else if (elementValue instanceof PrimitiveElementValue primitive) {
 			CpEntry primitiveEntry = primitive.getValue();
-			expectedTypeMasks.put(primitiveEntry, i -> (i >= INTEGER && i <= DOUBLE));
+			int requiredTag = PrimitiveElementValue.requiredConstantTag(primitive.getTag());
+			expectedTypeMasks.put(primitiveEntry, i -> i == requiredTag);
 		} else if (elementValue instanceof AnnotationElementValue annotationElement) {
 			Annotation annotation = annotationElement.getAnnotation();
 			addAnnotationValidation(null, expectedTypeMasks, cpEntryValidators, annotation);

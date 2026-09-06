@@ -443,7 +443,7 @@ public class AnnotationReader {
 			{
 				int index = is.readUnsignedShort();
 				CpEntry entry = cp.get(index);
-				if (entry != null)
+				if (entry != null && entry.getTag() == PrimitiveElementValue.requiredConstantTag(tag))
 					return new PrimitiveElementValue(tag, entry);
 				throw new IOException("Invalid element: " + tag);
 			}

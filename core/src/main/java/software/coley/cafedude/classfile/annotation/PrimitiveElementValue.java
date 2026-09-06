@@ -1,5 +1,6 @@
 package software.coley.cafedude.classfile.annotation;
 
+import software.coley.cafedude.classfile.ConstantPoolConstants;
 import software.coley.cafedude.classfile.constant.CpEntry;
 
 import jakarta.annotation.Nonnull;
@@ -22,7 +23,26 @@ public non-sealed class PrimitiveElementValue extends ElementValue {
 	 */
 	public PrimitiveElementValue(char tag, @Nonnull CpEntry value) {
 		super(tag);
+		if (requiredConstantTag(tag) != value.getTag())
+			throw new IllegalArgumentException("Primitive tag '" + tag + "' has a mismatched constant kind: " + value.getTag());
 		this.value = value;
+	}
+
+	/**
+	 * @param tag
+	 * 		ASCII tag representation of the primitive type.
+	 *
+	 * @return The constant-pool tag the value must use, or {@code -1} when the tag is not a
+	 * primitive element-value tag (JVMS 4.7.16.1, Table 4.7.16.1-A).
+	 */
+	public static int requiredConstantTag(char tag) {
+		return switch (tag) {
+			case 'B', 'C', 'I', 'S', 'Z' -> ConstantPoolConstants.INTEGER;
+			case 'F' -> ConstantPoolConstants.FLOAT;
+			case 'J' -> ConstantPoolConstants.LONG;
+			case 'D' -> ConstantPoolConstants.DOUBLE;
+			default -> -1;
+		};
 	}
 
 	/**
