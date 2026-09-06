@@ -968,6 +968,10 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 				break;
 			}
 			case AttributeConstants.ANNOTATION_DEFAULT:
+				if (!Modifiers.has(clazz.getAccess(), Modifiers.ACC_ANNOTATION)) {
+					logger.debug("Found 'AnnotationDefault' on a non-annotation-interface method");
+					return false;
+				}
 				AnnotationDefaultAttribute annotationDefault = (AnnotationDefaultAttribute) attribute;
 				ElementValue elementValue = annotationDefault.getElementValue();
 				addElementValueValidation(expectedTypeMasks, cpEntryValidators, elementValue);
