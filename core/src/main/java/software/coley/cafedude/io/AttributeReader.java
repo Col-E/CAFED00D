@@ -1034,9 +1034,9 @@ public class AttributeReader {
 			codeLength = is.readInt();
 		}
 
-		// The JVMLS states method code shall not be longer than an unsigned short.
-		if (reader.doCheckCodeLength() && codeLength > 65536)
-			throw new IOException("Method code_length > 65536: " + codeLength);
+		// JVMS 4.7.3 requires a non-empty code array shorter than 65536 bytes.
+		if (reader.doCheckCodeLength() && (codeLength <= 0 || codeLength >= 65536))
+			throw new IOException("Method code_length out of range: " + codeLength);
 
 		// Read instructions
 		InstructionReader insnReader = new InstructionReader(reader.getFallbackInstructionReader(builder));
