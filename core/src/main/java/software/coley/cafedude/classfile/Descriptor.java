@@ -5,7 +5,6 @@ import jakarta.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Descriptor parsing utility.
@@ -380,11 +379,12 @@ public class Descriptor {
 	 */
 	@Nonnull
 	public static Descriptor from(@Nonnull Class<?> clazz) {
-		String descriptor = clazz.toGenericString().replace('.', '/');
+		String name = clazz.getName();
 		if (clazz.isArray()) {
-			return Objects.requireNonNull(from(descriptor), "Failed to parse array descriptor from class reference");
+			// Arrays are almost in the correct form as-is, like: [Ljava.lang.String;
+			return from(name.replace('.', '/'));
 		} else if (clazz.isPrimitive()) {
-			return switch (descriptor) {
+			return switch (name) {
 				case "void" -> VOID;
 				case "boolean" -> BOOLEAN;
 				case "byte" -> BYTE;
@@ -394,10 +394,10 @@ public class Descriptor {
 				case "float" -> FLOAT;
 				case "double" -> DOUBLE;
 				case "long" -> LONG;
-				default -> throw new IllegalArgumentException("Unknown primitive type: " + descriptor);
+				default -> throw new IllegalArgumentException("Unknown primitive type: " + name);
 			};
 		} else {
-			return Objects.requireNonNull(from("L" + descriptor + ";"), "Failed to parse object descriptor from class reference");
+			return from("L" + name.replace('.', '/') + ";");
 		}
 	}
 

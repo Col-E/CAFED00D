@@ -104,4 +104,21 @@ public class DescTest {
 		Descriptor d = Descriptor.from(desc);
 		assertEquals(Descriptor.Kind.ILLEGAL, d.getKind());
 	}
+
+	@Test
+	public void testFromClass() {
+		// Primitives
+		assertEquals("I", Descriptor.from(int.class).getDescriptor());
+		assertEquals("J", Descriptor.from(long.class).getDescriptor());
+		assertEquals("V", Descriptor.from(void.class).getDescriptor());
+
+		// Reference types
+		assertEquals("Ljava/lang/String;", Descriptor.from(String.class).getDescriptor());
+		assertEquals("Ljava/lang/Integer;", Descriptor.from(Integer.class).getDescriptor());
+
+		// Arrays
+		assertEquals("[I", Descriptor.from(int[].class).getDescriptor());
+		assertEquals("[Ljava/lang/String;", Descriptor.from(String[].class).getDescriptor());
+		assertEquals("[[Ljava/lang/String;", Descriptor.from(String[][].class).getDescriptor());
+	}
 }
