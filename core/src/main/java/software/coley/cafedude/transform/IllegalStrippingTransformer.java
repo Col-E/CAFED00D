@@ -5,6 +5,7 @@ import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.coley.cafedude.classfile.ClassFile;
+import software.coley.cafedude.classfile.ConstPool;
 import software.coley.cafedude.classfile.ConstantPoolConstants;
 import software.coley.cafedude.classfile.Descriptor;
 import software.coley.cafedude.classfile.Field;
@@ -653,6 +654,18 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	 * 		Flags identifying the original table entries that remain.
 	 */
 	private void remapBootstrapMethodIndices(@Nonnull boolean[] retained) {
+		remapBootstrapMethodIndices(retained, pool);
+	}
+
+	/**
+	 * Rewrites dynamic constant bootstrap indices after invalid table entries are removed.
+	 *
+	 * @param retained
+	 * 		Flags identifying the original table entries that remain.
+	 * @param pool
+	 * 		Constant pool to rewrite.
+	 */
+	public static void remapBootstrapMethodIndices(@Nonnull boolean[] retained, @Nonnull ConstPool pool) {
 		// Build an old-index to new-index map, using -1 for entries that no longer exist.
 		int[] indexMap = new int[retained.length];
 		int nextIndex = 0;

@@ -1,7 +1,6 @@
 package software.coley.cafedude;
 
 import jakarta.annotation.Nonnull;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -153,6 +152,21 @@ public class CrasherPatchingTest {
 			}
 		}
 		assertEquals(originalDynamicUses - invalidDynamicUses, retainedDynamicUses);
+	}
+
+	@Test
+	public void testMalformedBootstrapMethodRefRetained() throws IOException, InvalidClassException {
+		// Sample60 has a BootstrapMethodsAttribute with a valid entry and a malformed entry
+		// that references a CpUtf8 instead of a CpMethodHandle. This is separate from the previous test
+		// since this check happens in the attribute reader, before the stripping transformer is run.
+		File sample = new File("src/test/resources/samples/obfuscated/crasher-asm/sample60.class");
+		ClassFile classFile = new ClassFileReader().read(Files.readAllBytes(sample.toPath()));
+
+		// We should just drop the malformed entry. The valid one should stay.
+		BootstrapMethodsAttribute attribute = classFile.getAttribute(BootstrapMethodsAttribute.class);
+		assertNotNull(attribute, "BootstrapMethods attribute was dropped entirely");
+		assertEquals(1, attribute.getBootstrapMethods().size(), "Only the valid entry should survive");
+		assertEquals(9, attribute.getBootstrapMethods().get(0).getBsmMethodRef().getIndex());
 	}
 
 	/**

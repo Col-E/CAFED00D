@@ -63,6 +63,7 @@ import software.coley.cafedude.classfile.constant.CpPackage;
 import software.coley.cafedude.classfile.constant.CpUtf8;
 import software.coley.cafedude.classfile.constant.Placeholders;
 import software.coley.cafedude.classfile.instruction.Instruction;
+import software.coley.cafedude.transform.IllegalStrippingTransformer;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
@@ -950,6 +951,9 @@ public class AttributeReader {
 	private BootstrapMethodsAttribute readBoostrapMethods() throws IOException {
 		int bsmCount = is.readUnsignedShort();
 		List<BootstrapMethod> bootstrapMethods = new ArrayList<>(bsmCount);
+
+		// Track which original entries survive so dynamic bsm indices can be remapped below.
+		boolean[] retained = new boolean[bsmCount];
 		for (int i = 0; i < bsmCount; i++) {
 			// Read the method handle + args
 			CpMethodHandle methodRef = orNullInCp(CpMethodHandle.class, is.readUnsignedShort());
@@ -958,11 +962,24 @@ public class AttributeReader {
 			for (int j = 0; j < argCount; j++)
 				args.add(orNullInCp(CpEntry.class, is.readUnsignedShort()));
 
-			// Add the entry, or drop the entire attribute if the entry was malformed
-			if (methodRef == null || args.stream().anyMatch(Objects::isNull))
-				return null;
+			// Skip a malformed entry instead of dropping the whole attribute, so the
+			// transformer's per-entry repair can still operate on the surviving entries.
+			if (methodRef == null || args.stream().anyMatch(Objects::isNull)) {
+				logger.debug("Discarding malformed bootstrap method entry at index {}", i);
+				continue;
+			}
+
+			retained[i] = true;
 			bootstrapMethods.add(new BootstrapMethod(methodRef, args));
 		}
+
+		// If the table declared entries but none could be retained, drop it entirely.
+		if (bootstrapMethods.isEmpty())
+			return null;
+
+		// Rewrite dynamic bsm indices to account for the entries we skipped.
+		IllegalStrippingTransformer.remapBootstrapMethodIndices(retained, cp);
+
 		return new BootstrapMethodsAttribute(name, bootstrapMethods);
 	}
 
