@@ -335,11 +335,11 @@ public class AttributeWriter {
 					break;
 				case AttributeConstants.COMPILATION_ID:
 					CompilationIdAttribute compilationIdAttribute = (CompilationIdAttribute) attribute;
-					out.writeShort(compilationIdAttribute.getName().getIndex());
+					out.writeShort(compilationIdAttribute.getCompilationId().getIndex());
 					break;
 				case AttributeConstants.SOURCE_ID:
 					SourceIdAttribute sourceIdAttribute = (SourceIdAttribute) attribute;
-					out.writeShort(sourceIdAttribute.getName().getIndex());
+					out.writeShort(sourceIdAttribute.getSourceId().getIndex());
 					break;
 				case AttributeConstants.CHARACTER_RANGE_TABLE:
 					CharacterRangeTableAttribute characterRangeTableAttribute = (CharacterRangeTableAttribute) attribute;
