@@ -22,6 +22,7 @@ import software.coley.cafedude.classfile.annotation.TargetInfo;
 import software.coley.cafedude.classfile.annotation.TargetInfo.CatchTargetInfo;
 import software.coley.cafedude.classfile.annotation.TargetInfo.OffsetTargetInfo;
 import software.coley.cafedude.classfile.annotation.TargetInfo.SuperTypeTargetInfo;
+import software.coley.cafedude.classfile.annotation.TargetInfo.ThrowsTargetInfo;
 import software.coley.cafedude.classfile.annotation.TargetInfo.TypeArgumentTargetInfo;
 import software.coley.cafedude.classfile.annotation.TypeAnnotation;
 import software.coley.cafedude.classfile.attribute.AnnotationDefaultAttribute;
@@ -579,11 +580,15 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 					}
 				}
 
-				// Code offsets must be aligned to instruction boundaries.
+				// Offset targets must be aligned to instruction boundaries.
+				//
+				// The JVMS describes the offset as "the bytecode instruction corresponding to the expression",
+				// but javac records the offset of the operand-load that precedes the instanceof/checkcast,
+				// so checking the opcode itself would strip valid code...
 				if (targetInfo instanceof OffsetTargetInfo offsetTarget)
 					return !isInstructionBoundary(code, codeLength, offsetTarget.getOffset());
 
-				// Catch targets must be aligned to instruction boundaries.
+				// Type-argument targets must be aligned to instruction boundaries.
 				if (targetInfo instanceof TypeArgumentTargetInfo typeArgumentTarget)
 					return !isInstructionBoundary(code, codeLength, typeArgumentTarget.getOffset());
 
@@ -722,7 +727,7 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 	}
 
 	private boolean isValidDynamic(@Nonnull ConstDynamic dynamic, @Nonnull Set<ConstDynamic> active) {
-		// A dynamic constant may syntactically reference itself (§4.4.10), so guard against cycles.
+		// A dynamic constant may syntactically reference itself (4.4.10), so guard against cycles.
 		if (!active.add(dynamic))
 			return true;
 
@@ -1193,71 +1198,91 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		};
 	}
 
-	protected void addAnnotationValidation(@Nullable AttributeHolder holder,
-	                                       @Nonnull Map<CpEntry, Predicate<Integer>> expectedTypeMasks,
-	                                       @Nonnull Map<CpEntry, Predicate<CpEntry>> cpEntryValidators,
-	                                       @Nonnull Annotation anno) {
-		expectedTypeMasks.put(anno.getType(), i -> i == UTF8);
-		cpEntryValidators.put(anno.getType(), matchUtf8FieldDescriptor());
-		for (Map.Entry<CpUtf8, ElementValue> entry : anno.getValues().entrySet()) {
-			CpUtf8 elementTypeIndex = entry.getKey();
-			cpEntryValidators.put(elementTypeIndex, matchUtf8ValidUnqualifiedName());
-			addElementValueValidation(expectedTypeMasks, cpEntryValidators, entry.getValue());
-		}
-		if (anno instanceof TypeAnnotation typeAnnotation) {
-			TargetInfo targetInfo = typeAnnotation.getTargetInfo();
-			switch (targetInfo.getTargetTypeKind()) {
-				case TYPE_PARAMETER_BOUND_TARGET:
-					break;
-				case TYPE_PARAMETER_TARGET:
-					break;
-				case FORMAL_PARAMETER_TARGET:
-					break;
-				case TYPE_ARGUMENT_TARGET:
-					break;
-				case LOCALVAR_TARGET:
-					break;
-				case THROWS_TARGET:
-					// TODO: Verify with a sample what the target holder type should be
-					break;
-				case OFFSET_TARGET:
-					// TODO: Compare to code instructions / length
-					break;
-				case SUPERTYPE_TARGET:
-					if (holder instanceof ClassFile) {
-						SuperTypeTargetInfo superTypeTargetInfo = (SuperTypeTargetInfo) targetInfo;
-						if (!superTypeTargetInfo.isExtends()) {
-							ClassFile classFile = (ClassFile) holder;
-							// Enforce interfaces range
-							if (superTypeTargetInfo.getSuperTypeIndex() >= classFile.getInterfaceClasses().size()) {
-								expectedTypeMasks.put(null, i -> false);
-							}
-						}
-					} else {
-						// Illegal target kind for situation
-						expectedTypeMasks.put(null, i -> false);
-					}
-					break;
+	/**
+	 * Validates a type annotation's {@code target_info} against the holder declaring the attribute.
+	 *
+	 * @param holder
+	 * 		Holder the annotation appears in, or {@code null} for nested annotations.
+	 * @param typeAnnotation
+	 * 		Type annotation to validate.
+	 *
+	 * @return {@code true} when the target is legal for the holder.
+	 */
+	private boolean isValidTypeAnnotationTarget(@Nullable AttributeHolder holder, @Nonnull TypeAnnotation typeAnnotation) {
+		// Nested annotation values are never type annotations, so a type annotation always has a holder.
+		if (holder == null)
+			return false;
 
-				case CATCH_TARGET:
-					if (holder instanceof CodeAttribute code) {
-						CatchTargetInfo catchTargetInfo = (CatchTargetInfo) targetInfo;
+		// The target_type must be permitted in the enclosing holder (JVMS 4.7.20, Table 4.7.20-C).
+		TargetInfo targetInfo = typeAnnotation.getTargetInfo();
+		if (!AttributeHolderType.isAnnotationTargetTypeValidIn(targetInfo.getTargetType(), holder.getHolderType()))
+			return false;
 
-						// Enforce table range
-						if (catchTargetInfo.getExceptionTableIndex() >= code.getExceptionTable().size()) {
-							expectedTypeMasks.put(null, i -> false);
-						}
-					} else {
-						// Illegal target kind for situation
-						expectedTypeMasks.put(null, i -> false);
-					}
-					break;
-				case EMPTY_TARGET:
-				default:
-					// no-op
-					break;
-			}
-		}
+		return switch (targetInfo.getTargetTypeKind()) {
+			case SUPERTYPE_TARGET -> isValidSuperTypeTarget((ClassFile) holder, (SuperTypeTargetInfo) targetInfo);
+			case THROWS_TARGET -> isValidThrowsTarget((Method) holder, (ThrowsTargetInfo) targetInfo);
+			case CATCH_TARGET -> isValidCatchTarget((CodeAttribute) holder, (CatchTargetInfo) targetInfo);
+			case TYPE_PARAMETER_TARGET, TYPE_PARAMETER_BOUND_TARGET, FORMAL_PARAMETER_TARGET,
+			     LOCALVAR_TARGET, OFFSET_TARGET, TYPE_ARGUMENT_TARGET, EMPTY_TARGET ->
+				// TODO: Implement these
+				//   Type-parameter/bound ranges require Signature parsing.
+				//   Formal-parameter indices need not match the descriptor (4.7.20.1).
+				//   Code targets are validated in removeInvalidTypeAnnotations.
+					true;
+		};
+	}
+
+	/**
+	 * Validates a supertype target's index against the class's superclass and interfaces.
+	 *
+	 * @param classFile
+	 * 		Class declaring the annotation.
+	 * @param info
+	 * 		Supertype target info.
+	 *
+	 * @return {@code true} when the index references a real superclass or interface.
+	 */
+	private static boolean isValidSuperTypeTarget(@Nonnull ClassFile classFile, @Nonnull SuperTypeTargetInfo info) {
+		// Special case for interfaces, which have no superclass, and for java/lang/Object, which has no superclass.
+		if (info.isExtends())
+			return !Modifiers.has(classFile.getAccess(), Modifiers.ACC_INTERFACE) && classFile.getSuperClass() != null;
+
+		int superTypeIndex = info.getSuperTypeIndex();
+		return superTypeIndex >= 0 && superTypeIndex < classFile.getInterfaceClasses().size();
+	}
+
+	/**
+	 * Validates a throws target's index against the method's {@code Exceptions} attribute.
+	 *
+	 * @param method
+	 * 		Method declaring the annotation.
+	 * @param info
+	 * 		Throws target info.
+	 *
+	 * @return {@code true} when the index is within the method's exception table.
+	 */
+	private static boolean isValidThrowsTarget(@Nonnull Method method, @Nonnull ThrowsTargetInfo info) {
+		ExceptionsAttribute exceptions = method.getAttribute(ExceptionsAttribute.class);
+		if (exceptions == null)
+			return false;
+
+		int throwsTypeIndex = info.getThrowsTypeIndex();
+		return throwsTypeIndex >= 0 && throwsTypeIndex < exceptions.getExceptionTable().size();
+	}
+
+	/**
+	 * Validates a catch target's index against the code's exception table.
+	 *
+	 * @param code
+	 * 		Code declaring the annotation.
+	 * @param info
+	 * 		Catch target info.
+	 *
+	 * @return {@code true} when the index is within the code's exception table.
+	 */
+	private static boolean isValidCatchTarget(@Nonnull CodeAttribute code, @Nonnull CatchTargetInfo info) {
+		int tableIndex = info.getExceptionTableIndex();
+		return tableIndex >= 0 && tableIndex < code.getExceptionTable().size();
 	}
 
 	protected void addElementValueValidation(@Nonnull Map<CpEntry, Predicate<Integer>> expectedTypeMasks,
@@ -1281,6 +1306,25 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			for (ElementValue arrayValue : array)
 				addElementValueValidation(expectedTypeMasks, cpEntryValidators, arrayValue);
 		}
+	}
+
+	protected void addAnnotationValidation(@Nullable AttributeHolder holder,
+	                                       @Nonnull Map<CpEntry, Predicate<Integer>> expectedTypeMasks,
+	                                       @Nonnull Map<CpEntry, Predicate<CpEntry>> cpEntryValidators,
+	                                       @Nonnull Annotation anno) {
+		expectedTypeMasks.put(anno.getType(), i -> i == UTF8);
+		cpEntryValidators.put(anno.getType(), matchUtf8FieldDescriptor());
+		for (Map.Entry<CpUtf8, ElementValue> entry : anno.getValues().entrySet()) {
+			CpUtf8 elementTypeIndex = entry.getKey();
+			cpEntryValidators.put(elementTypeIndex, matchUtf8ValidUnqualifiedName());
+			addElementValueValidation(expectedTypeMasks, cpEntryValidators, entry.getValue());
+		}
+
+		// TODO: For some recent fixes we made list-like elements only drop the invalid entries.
+		//  Should do that here too eventually.
+		if (anno instanceof TypeAnnotation typeAnnotation)
+			if (!isValidTypeAnnotationTarget(holder, typeAnnotation))
+				expectedTypeMasks.put(null, i -> false);
 	}
 
 	/**

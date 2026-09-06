@@ -19,7 +19,7 @@ import java.util.Set;
  * <br>
  * In a class file whose version number is 50.0 or above, if a method's Code
  * attribute does not have a StackMapTable attribute, it has an implicit stack
- * map attribute (§4.10.1). This implicit stack map attribute is equivalent to
+ * map attribute (4.10.1). This implicit stack map attribute is equivalent to
  * a StackMapTable attribute with number_of_entries equal to zero.
  *
  * @author x4e
