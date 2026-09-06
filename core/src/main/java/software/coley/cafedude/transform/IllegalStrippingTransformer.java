@@ -867,7 +867,10 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 		switch (name) {
 			case AttributeConstants.CONSTANT_VALUE:
 				CpEntry valueIndex = ((ConstantValueAttribute) attribute).getConstantValue();
-				expectedTypeMasks.put(valueIndex, i -> (i >= INTEGER && i <= STRING));
+				int requiredTag = constantValueTag(((Field) holder).getType().getText());
+				if (requiredTag < 0)
+					return false;
+				expectedTypeMasks.put(valueIndex, i -> i == requiredTag);
 				break;
 			case AttributeConstants.RUNTIME_INVISIBLE_ANNOTATIONS:
 			case AttributeConstants.RUNTIME_VISIBLE_ANNOTATIONS:
@@ -1106,6 +1109,24 @@ public class IllegalStrippingTransformer extends Transformer implements Constant
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * @param fieldDesc
+	 * 		Field descriptor of the field carrying a {@code ConstantValue} attribute.
+	 *
+	 * @return The constant-pool tag the value must have, or {@code -1} when the field
+	 * type cannot carry a {@code ConstantValue} (JVMS 4.7.2, Table 4.7.2-A).
+	 */
+	private static int constantValueTag(@Nonnull String fieldDesc) {
+		return switch (fieldDesc) {
+			case "Z", "B", "C", "S", "I" -> INTEGER;
+			case "F" -> FLOAT;
+			case "J" -> LONG;
+			case "D" -> DOUBLE;
+			case "Ljava/lang/String;" -> STRING;
+			default -> -1;
+		};
 	}
 
 	protected void addAnnotationValidation(@Nullable AttributeHolder holder,
