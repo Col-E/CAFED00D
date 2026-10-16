@@ -122,13 +122,13 @@ public class ClassFileWriter {
 				out.writeInt(((CpInt) entry).getValue());
 				break;
 			case ConstantPoolConstants.FLOAT:
-				out.writeFloat(((CpFloat) entry).getValue());
+				out.writeInt(((CpFloat) entry).getRawBits());
 				break;
 			case ConstantPoolConstants.LONG:
 				out.writeLong(((CpLong) entry).getValue());
 				break;
 			case ConstantPoolConstants.DOUBLE:
-				out.writeDouble(((CpDouble) entry).getValue());
+				out.writeLong(((CpDouble) entry).getRawBits());
 				break;
 			case ConstantPoolConstants.STRING:
 				out.writeShort(((CpString) entry).getString().getIndex());

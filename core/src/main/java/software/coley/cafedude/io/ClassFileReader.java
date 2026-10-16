@@ -184,11 +184,11 @@ public class ClassFileReader {
 			case ConstantPoolConstants.INTEGER:
 				return new CpInt(is.readInt());
 			case ConstantPoolConstants.FLOAT:
-				return new CpFloat(is.readFloat());
+				return CpFloat.fromRawBits(is.readInt());
 			case ConstantPoolConstants.LONG:
 				return new CpLong(is.readLong());
 			case ConstantPoolConstants.DOUBLE:
-				return new CpDouble(is.readDouble());
+				return CpDouble.fromRawBits(is.readLong());
 			case ConstantPoolConstants.STRING:
 				is.readUnsignedShort();
 				return new CpString(Placeholders.UTF8);
@@ -250,13 +250,13 @@ public class ClassFileReader {
 				is.readInt();
 				break;
 			case ConstantPoolConstants.FLOAT:
-				is.readFloat();
+				is.readInt();
 				break;
 			case ConstantPoolConstants.LONG:
 				is.readLong();
 				break;
 			case ConstantPoolConstants.DOUBLE:
-				is.readDouble();
+				is.readLong();
 				break;
 			case ConstantPoolConstants.STRING: {
 				CpEntry param = constPool.get(is.readUnsignedShort());
