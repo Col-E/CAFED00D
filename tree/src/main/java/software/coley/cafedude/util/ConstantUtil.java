@@ -40,11 +40,11 @@ public class ConstantUtil {
 			case ConstantPoolConstants.INTEGER:
 				return Constant.of(((CpInt) entry).getValue());
 			case ConstantPoolConstants.FLOAT:
-				return Constant.of(((CpFloat) entry).getValue());
+				return Constant.ofFloatBits(((CpFloat) entry).getRawBits());
 			case ConstantPoolConstants.LONG:
 				return Constant.of(((CpLong) entry).getValue());
 			case ConstantPoolConstants.DOUBLE:
-				return Constant.of(((CpDouble) entry).getValue());
+				return Constant.ofDoubleBits(((CpDouble) entry).getRawBits());
 			case ConstantPoolConstants.CLASS: {
 				CpClass cpClass = (CpClass) entry;
 				return Constant.of(Descriptor.from('L' + cpClass.getName().getText() + ';'));

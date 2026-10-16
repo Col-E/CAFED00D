@@ -98,7 +98,23 @@ public class Constant {
 	 */
 	@Nonnull
 	public static Constant of(float value) {
-		return new Constant(Type.FLOAT, value);
+		return ofFloatBits(Float.floatToRawIntBits(value));
+	}
+
+	/**
+	 * Create a constant from the raw IEEE 754 bits of a {@code float} value.
+	 * Preserves NaN sign and payload.
+	 * <p>
+	 * Corresponds to {@code CpFloat}.
+	 *
+	 * @param rawBits
+	 * 		Raw bits of the float value, see {@link Float#floatToRawIntBits(float)}.
+	 *
+	 * @return Constant.
+	 */
+	@Nonnull
+	public static Constant ofFloatBits(int rawBits) {
+		return new Constant(Type.FLOAT, rawBits);
 	}
 
 	/**
@@ -113,7 +129,23 @@ public class Constant {
 	 */
 	@Nonnull
 	public static Constant of(double value) {
-		return new Constant(Type.DOUBLE, value);
+		return ofDoubleBits(Double.doubleToRawLongBits(value));
+	}
+
+	/**
+	 * Create a constant from the raw IEEE 754 bits of a {@code double} value.
+	 * Preserves NaN sign and payload.
+	 * <p>
+	 * Corresponds to {@code CpDouble}.
+	 *
+	 * @param rawBits
+	 * 		Raw bits of the double value, see {@link Double#doubleToRawLongBits(double)}.
+	 *
+	 * @return Constant.
+	 */
+	@Nonnull
+	public static Constant ofDoubleBits(long rawBits) {
+		return new Constant(Type.DOUBLE, rawBits);
 	}
 
 	/**
@@ -215,11 +247,45 @@ public class Constant {
 	}
 
 	/**
-	 * @return Value of constant.
+	 * Converting NaN bit patterns to a {@code float} or {@code double} is not guaranteed to preserve their payload on
+	 * every platform. Use {@link #getFloatBits()} or {@link #getDoubleBits()} when the exact encoding matters.
+	 *
+	 * @return Value of constant. A {@link Float} or {@link Double} for float and double constants.
 	 */
 	@Nonnull
 	public Object getValue() {
-		return value;
+		switch (type) {
+			case FLOAT:
+				return Float.intBitsToFloat(getFloatBits());
+			case DOUBLE:
+				return Double.longBitsToDouble(getDoubleBits());
+			default:
+				return value;
+		}
+	}
+
+	/**
+	 * @return Raw IEEE 754 bits of a float constant, see {@link Float#floatToRawIntBits(float)}.
+	 *
+	 * @throws IllegalStateException
+	 * 		If this is not a float constant.
+	 */
+	public int getFloatBits() {
+		if (type != Type.FLOAT)
+			throw new IllegalStateException("Not a float constant: " + type);
+		return (int) value;
+	}
+
+	/**
+	 * @return Raw IEEE 754 bits of a double constant, see {@link Double#doubleToRawLongBits(double)}.
+	 *
+	 * @throws IllegalStateException
+	 * 		If this is not a double constant.
+	 */
+	public long getDoubleBits() {
+		if (type != Type.DOUBLE)
+			throw new IllegalStateException("Not a double constant: " + type);
+		return (long) value;
 	}
 
 	/**
