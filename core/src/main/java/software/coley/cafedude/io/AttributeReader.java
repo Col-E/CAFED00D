@@ -333,12 +333,12 @@ public class AttributeReader {
 			}
 		}
 
-		// Code cannot exist on a method in an @annotation type. Skip.
-		if (builder.isAnnotation() && attributeName.equals(AttributeConstants.CODE))
-			return null;
-
 		switch (attributeName) {
 			case AttributeConstants.CODE:
+				// Abstract and native methods cannot have code. Skip the attribute before parsing it,
+				// since malformed code bodies may otherwise prevent us from reading the containing class.
+				if (context.isMethod() && (Modifier.isAbstract(context.memberAccess()) || Modifier.isNative(context.memberAccess())))
+					return null;
 				return readCode(context);
 			case AttributeConstants.CONSTANT_VALUE:
 				// Spec says constant-value is ignored on non-static fields, so we drop it.
