@@ -97,9 +97,9 @@ public class Symbols {
 			case LONG:
 				return newSym(new CpLong((long) value.getValue()));
 			case FLOAT:
-				return newSym(new CpFloat((float) value.getValue()));
+				return newSym(CpFloat.fromRawBits(value.getFloatBits()));
 			case DOUBLE:
-				return newSym(new CpDouble((double) value.getValue()));
+				return newSym(CpDouble.fromRawBits(value.getDoubleBits()));
 			case DESCRIPTOR: {
 				Descriptor descriptor = (Descriptor) value.getValue();
 				switch (descriptor.getKind()) {
